@@ -52,6 +52,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.06);
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
 
@@ -1309,5 +1310,45 @@
             closeJournalModal();
         }
     </script>
+
+    // Initialize Supabase
+const SUPABASE_URL = 'https://symklyxbcztdsmktvhgj.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_PKEQJvNbnKkpINoB-CckuA_OjPVU1O1';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const RECORD_ID = 'flora_main_state';
+
+// Function to save input changes
+async function saveData(dataObject) {
+  await supabaseClient
+    .from('flora_data')
+    .upsert({ id: RECORD_ID, content: dataObject });
+}
+
+// Function to load data when the page opens
+async function loadData() {
+  const { data } = await supabaseClient
+    .from('flora_data')
+    .select('content')
+    .eq('id', RECORD_ID)
+    .single();
+
+  if (data && data.content) {
+    // Populate your form inputs here with data.content values
+  }
+}
+
+// Listen for real-time updates from other devices
+supabaseClient
+  .channel('public:flora_data')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'flora_data' }, (payload) => {
+    if (payload.new && payload.new.id === RECORD_ID) {
+      // Update your UI elements with payload.new.content
+    }
+  })
+  .subscribe();
+
+// Run load on start
+loadData();
 </body>
 </html>
