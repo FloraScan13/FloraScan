@@ -105,7 +105,7 @@
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, color name, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                    <input type="text" id="plant-search" placeholder="Search plants by name, variety, color name, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
                 </div>
             </div>
 
@@ -143,26 +143,11 @@
                 </div>
 
                 <div class="flex justify-center gap-3">
-                    <button id="match-cam-btn" onclick="toggleMatchCamera()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
+                    <button id="match-cam-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
                         <i class="fa-solid fa-video"></i>
                         <span id="match-cam-btn-text">Start Camera</span>
                     </button>
-                    <button onclick="triggerColorMatch()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
-                        <i class="fa-solid fa-camera"></i>
-                        <span>Scan Tag</span>
-                    </button>
                 </div>
-            </div>
-
-            <!-- Match Result Card -->
-            <div id="match-result-card" class="hidden bg-white dark:bg-slate-800 p-6 rounded-2xl border border-emerald-500 shadow-md">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/50 px-3 py-1 rounded-full">Tag Color Recognized</span>
-                    </div>
-                    <div id="match-color-swatch" class="w-7 h-7 rounded-full border-2 border-white shadow-md"></div>
-                </div>
-                <div id="match-result-content"></div>
             </div>
         </div>
 
@@ -176,17 +161,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">User Handle / Subtitle</label>
-                        <input type="text" id="setting-username" value="@kitchengardener" placeholder="e.g. @kitchengardener" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="text" id="setting-username" value="@kitchengardener" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                     </div>
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Logo Image URL (Optional)</label>
-                        <input type="url" id="setting-logo-url" placeholder="https://example.com/logo.png" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                    </div>
-                </div>
-                <div class="flex justify-end pt-2">
-                    <button onclick="saveBrandingSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">
-                        Save Preferences
-                    </button>
                 </div>
             </div>
         </div>
@@ -200,75 +176,13 @@
                 <h3 id="modal-title" class="text-lg font-bold">Add New Plant</h3>
                 <button onclick="closePlantModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="plant-form" onsubmit="handlePlantSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
-                <input type="hidden" id="edit-plant-id">
-                <input type="hidden" id="plant-icon-key" value="cucumber">
-                
+            <form id="plant-form" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="relative">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Plant Name *</label>
                         <input type="text" id="plant-name" required autocomplete="off" placeholder="e.g. Cucumber, Tomato" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                        <div id="name-suggestions" class="autocomplete-dropdown hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden"></div>
-                    </div>
-                    <div class="relative">
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Variety</label>
-                        <input type="text" id="plant-variety" autocomplete="off" placeholder="e.g. Beth Alpha, Gardener's Delight" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                        <div id="variety-suggestions" class="autocomplete-dropdown hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden"></div>
                     </div>
                 </div>
-
-                <div>
-                    <div id="icon-picker-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2.5 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-56 overflow-y-auto custom-scrollbar"></div>
-                    <p class="text-[11px] text-slate-400 mt-1.5"><span id="selected-icon-name-display" class="font-semibold text-emerald-600 dark:text-emerald-400">Cucumber / Gherkin</span></p>
-                </div>
-
-                <div class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
-                            <i class="fa-solid fa-camera text-emerald-600"></i>
-                            <span>Tag Color Assignment</span>
-                        </label>
-                        <div class="flex items-center space-x-2">
-                            <div id="form-color-badge" class="w-5 h-5 rounded-full border-2 border-white shadow-sm" style="background-color: #16a34a;"></div>
-                            <span id="form-scanned-color-name" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Forest Green</span>
-                        </div>
-                    </div>
-                    
-                    <div class="relative aspect-video bg-black rounded-lg overflow-hidden shadow-inner">
-                        <video id="form-video" class="w-full h-full object-cover" playsinline autoplay muted></video>
-                        <canvas id="form-canvas" class="hidden"></canvas>
-                        <div class="absolute inset-0 border-2 border-white/30 rounded-lg pointer-events-none flex items-center justify-center">
-                            <div class="w-8 h-8 border-2 border-amber-400 rounded-full animate-pulse"></div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between gap-2">
-                        <button type="button" id="form-cam-toggle" onclick="toggleFormCamera()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg text-xs font-semibold transition">
-                            Start Camera Feed
-                        </button>
-                        <button type="button" onclick="captureFormColor()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center space-x-1.5">
-                            <i class="fa-solid fa-camera"></i>
-                            <span>Scan Tag</span>
-                        </button>
-                    </div>
-                    <input type="hidden" id="form-color-hex" value="#16a34a">
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Date Planted / Sown</label>
-                        <input type="date" id="plant-date" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Growing Medium / Setup</label>
-                        <input type="text" id="plant-medium" placeholder="e.g. AutoPot / Wicking Bed / Soil" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Initial Notes & Care Guide</label>
-                    <textarea id="plant-notes" rows="3" placeholder="Nutrient routine, sun exposure, pruning tips..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
-                </div>
-
                 <div class="flex justify-end space-x-3 pt-2">
                     <button type="button" onclick="closePlantModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition">Cancel</button>
                     <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Plant</button>
@@ -281,136 +195,21 @@
     <div id="journal-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white dark:bg-slate-800 max-w-2xl w-full rounded-2xl shadow-xl overflow-hidden my-8">
             <div id="journal-header" class="px-6 py-4 bg-emerald-700 text-white flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div id="journal-color-dot" class="w-4 h-4 rounded-full border border-white/60 shadow-sm"></div>
-                    <h3 id="journal-title" class="text-lg font-bold">Plant Growth Journal</h3>
-                </div>
+                <h3 id="journal-title" class="text-lg font-bold">Plant Growth Journal</h3>
                 <button onclick="closeJournalModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
-                <div class="flex flex-col sm:flex-row gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
-                    <div id="journal-icon-container" class="w-20 h-20 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0"></div>
-                    <div class="flex-1 space-y-2">
-                        <div>
-                            <span id="journal-variety" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">Variety</span>
-                            <h4 id="journal-name" class="text-xl font-bold mt-1">Plant Name</h4>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400">
-                            <div><strong class="text-slate-800 dark:text-slate-200">Planted:</strong> <span id="journal-date">-</span></div>
-                            <div><strong class="text-slate-800 dark:text-slate-200">Medium:</strong> <span id="journal-medium">-</span></div>
-                            <div><strong class="text-slate-800 dark:text-slate-200">Tag Color:</strong> <span id="journal-color-name" class="font-semibold text-emerald-600">Green</span></div>
-                        </div>
-                        <p id="journal-initial-notes" class="text-xs text-slate-600 dark:text-slate-400 italic pt-1"></p>
-                    </div>
-                </div>
-
-                <!-- Add Log Form -->
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
-                    <h4 class="text-sm font-bold mb-3 flex items-center space-x-2">
-                        <i class="fa-solid fa-pen-to-square text-emerald-600"></i>
-                        <span>Add Growth Log Entry</span>
-                    </h4>
-                    <form onsubmit="handleJournalLogSubmit(event)" class="space-y-3">
-                        <input type="hidden" id="log-plant-id">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                            <select id="log-type" onchange="toggleNutrientLibraryView()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                                <option value="Growth">Growth Update</option>
-                                <option value="Water">Watering / Irrigation</option>
-                                <option value="Feed">Nutrients / Fertilizer</option>
-                                <option value="Prune">Pruning / Training</option>
-                                <option value="Harvest">Harvest</option>
-                            </select>
-                        </div>
-
-                        <div id="tank-volume-section" class="hidden p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
-                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
-                                <i class="fa-solid fa-droplet text-emerald-600"></i>
-                                <span>Tank / Reservoir Fill Volume</span>
-                            </label>
-                            <div class="flex gap-2">
-                                <input type="number" id="tank-volume-amount" step="0.1" min="0" placeholder="e.g. 10" class="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-                                <select id="tank-volume-unit" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
-                                    <option value="Liters">Liters (L)</option>
-                                    <option value="Gallons">Gallons (gal)</option>
-                                    <option value="Milliliters">Milliliters (ml)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div id="nutrient-library-section" class="hidden p-3 bg-emerald-50/70 dark:bg-slate-900/80 rounded-xl border border-emerald-200 dark:border-emerald-800/50 space-y-2">
-                            <div class="flex items-center justify-between">
-                                <label class="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center space-x-1.5">
-                                    <i class="fa-solid fa-flask text-emerald-600"></i>
-                                    <span>Nutrient Brand Library</span>
-                                </label>
-                                <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Select & adjust dosage per product</span>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <div>
-                                    <label class="block text-[11px] text-slate-500 mb-0.5">Brand</label>
-                                    <select id="nutrient-brand-select" onchange="handleNutrientBrandChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-                                    </select>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between items-center mb-0.5">
-                                        <label class="block text-[11px] text-slate-500">Products & Dosages</label>
-                                    </div>
-                                    <div id="nutrient-product-list" class="max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg p-1.5 space-y-1">
-                                        <p class="text-[11px] text-slate-400 italic px-1">Select a brand first</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex justify-end pt-1">
-                                <button type="button" onclick="applyNutrientSelection()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1 rounded-lg text-[11px] font-semibold transition flex items-center space-x-1">
-                                    <i class="fa-solid fa-plus text-[10px]"></i>
-                                    <span>Add Selected Nutrients to Log</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <textarea id="log-text" rows="2" required placeholder="Log details..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
-                        <div class="flex justify-end">
-                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Logs Timeline -->
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-3">
-                    <h4 class="text-sm font-bold">Growth History Timeline</h4>
-                    <div id="journal-logs-container" class="space-y-3"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: DELETE PLANT CONFIRMATION -->
-    <div id="delete-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-800 max-w-sm w-full rounded-2xl shadow-xl overflow-hidden p-6 space-y-4 text-center">
-            <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto text-xl">
-                <i class="fa-solid fa-trash-can"></i>
-            </div>
-            <h3 class="text-base font-bold">Delete Plant Record?</h3>
-            <p class="text-xs text-slate-500">This will permanently remove <span id="delete-plant-name" class="font-bold text-slate-700 dark:text-slate-200"></span> and all associated growth logs.</p>
-            <div class="flex justify-center space-x-3 pt-2">
-                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
-                <button id="confirm-delete-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Delete Permanently</button>
             </div>
         </div>
     </div>
 
     <!-- Main JavaScript Application Logic & Supabase Sync -->
     <script>
-        // Initialize Supabase Client
+        // Initialize Supabase Client (Only once)
         const SUPABASE_URL = 'https://symklyxbcztdsmktvhgj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_PKEQJvNbnKkpINoB-CckuA_OjPVU1O1';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Application State & UI Control
         document.addEventListener('DOMContentLoaded', () => {
             console.log("Flora Scan & Supabase Initialized Successfully!");
-            // Load your initial plant data here when ready
         });
 
         function switchTab(tabId) {
@@ -452,15 +251,6 @@
         function closeDeleteModal() {
             const modal = document.getElementById('delete-modal');
             if (modal) modal.classList.add('hidden');
-        }
-
-        function toggleNutrientLibraryView() {
-            const logType = document.getElementById('log-type').value;
-            const tankSection = document.getElementById('tank-volume-section');
-            const nutrientSection = document.getElementById('nutrient-library-section');
-            
-            if (tankSection) tankSection.classList.toggle('hidden', logType !== 'Feed' && logType !== 'Water');
-            if (nutrientSection) nutrientSection.classList.toggle('hidden', logType !== 'Feed');
         }
     </script>
 </body>
