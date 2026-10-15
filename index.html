@@ -1309,7 +1309,39 @@
             closeDeleteModal();
             closeJournalModal();
         }
-  
+
+import { createClient } from '@supabase/supabase-js'
+
+const SUPABASE_URL = 'https://symklyxbcztdsmktvhgj.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_PKEQJvNbnKkpINoB-CckuA_OjPVU1O1'
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+// Fetch all plants and their logs for your dashboard
+export async function loadPlants() {
+  const { data, error } = await supabase
+    .from('plants')
+    .select('*, growth_logs(*)')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error loading plants:', error)
+    return []
+  }
+  return data
+}
+
+// Save a new scanned plant entry
+export async function addNewPlant(plantData) {
+  const { data, error } = await supabase
+    .from('plants')
+    .insert([plantData])
+    .select()
+
+  if (error) console.error('Error saving plant:', error)
+  return data
+}
+
+        
     // Initialize Supabase
 const SUPABASE_URL = 'https://symklyxbcztdsmktvhgj.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_PKEQJvNbnKkpINoB-CckuA_OjPVU1O1';
