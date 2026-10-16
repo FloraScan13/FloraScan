@@ -52,6 +52,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.06);
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
  
@@ -181,6 +182,14 @@
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Logo Image URL (Optional)</label>
                         <input type="url" id="setting-logo-url" placeholder="https://example.com/logo.png" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                     </div>
+                    <div>
+  <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Supabase URL</label>
+  <input type="url" id="setting-supabase-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+</div>
+<div>
+  <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Supabase Anon Key</label>
+  <input type="text" id="setting-supabase-key" placeholder="anon-key" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+</div>
                 </div>
                 <div class="flex justify-end pt-2">
                     <button onclick="saveBrandingSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">
@@ -1341,6 +1350,322 @@
             closeJournalModal();
         }
     </script>
+
+<script>
+window.supabase = null;
+
+function initSupabase() {
+  const url = document.getElementById('setting-supabase-url')?.value || localStorage.getItem('flora_supabase_url') || '';
+  const key = document.getElementById('setting-supabase-key')?.value || localStorage.getItem('flora_supabase_key') || '';
+
+  if (url && key && window.supabaseClient) {
+    window.supabase = window.supabaseClient.createClient(url, key);
+    localStorage.setItem('flora_supabase_url', url);
+    localStorage.setItem('flora_supabase_key', key);
+  } else {
+    window.supabase = null;
+  }
+}
+
+function saveBrandingSettings() {
+  appSettings.username = document.getElementById('setting-username').value || '@kitchengardener';
+  appSettings.logoUrl = document.getElementById('setting-logo-url').value || '';
+  localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+  applyBranding();
+
+  initSupabase();
+
+  if (window.supabase) {
+    const payload = {
+      id: 'global',
+      username: appSettings.username,
+      logoUrl: appSettings.logoUrl
+    };
+
+    window.supabase.from('settings').upsert(payload).then(({ error }) => {
+      if (error) console.warn('Supabase settings save failed:', error);
+    });
+  }
+}
+
+async function loadPlantsFromSupabase() {
+  if (!window.supabase) return null;
+
+  const { data, error } = await window.supabase
+    .from('plants')
+    .select('*')
+    .order('id', { ascending: true });
+
+  if (error) {
+    console.warn('Supabase load plants failed:', error);
+    return null;
+  }
+
+  return data || [];
+}
+
+async function savePlantToSupabase(plant) {
+  if (!window.supabase) return false;
+
+  const payload = {
+    id: plant.id,
+    name: plant.name,
+    variety: plant.variety || '',
+    hex: plant.hex || '#16a34a',
+    iconKey: plant.iconKey || 'cucumber',
+    date: plant.date || null,
+    medium: plant.medium || '',
+    notes: plant.notes || ''
+  };
+
+  const { error } = await window.supabase.from('plants').upsert(payload);
+
+  if (error) {
+    console.warn('Supabase save plant failed:', error);
+    return false;
+  }
+
+  return true;
+}
+
+async function deletePlantFromSupabase(plantId) {
+  if (!window.supabase) return false;
+
+  const { error: logError } = await window.supabase
+    .from('growth_logs')
+    .delete()
+    .eq('plant_id', plantId);
+
+  if (logError) console.warn('Supabase delete logs failed:', logError);
+
+  const { error } = await window.supabase
+    .from('plants')
+    .delete()
+    .eq('id', plantId);
+
+  if (error) {
+    console.warn('Supabase delete plant failed:', error);
+    return false;
+  }
+
+  return true;
+}
+
+async function loadGrowthLogsFromSupabase(plantId) {
+  if (!window.supabase) return [];
+
+  const { data, error } = await window.supabase
+    .from('growth_logs')
+    .select('*')
+    .eq('plant_id', plantId)
+    .order('date', { ascending: true });
+
+  if (error) {
+    console.warn('Supabase load logs failed:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+async function saveGrowthLogToSupabase(logEntry) {
+  if (!window.supabase) return false;
+
+  const payload = {
+    id: logEntry.id,
+    plant_id: logEntry.plant_id,
+    date: logEntry.date,
+    type: logEntry.type,
+    text: logEntry.text,
+    extra: logEntry.extra || {}
+  };
+
+  const { error } = await window.supabase.from('growth_logs').upsert(payload);
+
+  if (error) {
+    console.warn('Supabase save log failed:', error);
+    return false;
+  }
+
+  return true;
+}
+
+async function hydrateFromSupabase() {
+  initSupabase();
+
+  if (!window.supabase) return;
+
+  const { data: settingsData, error: settingsError } = await window.supabase
+    .from('settings')
+    .select('*')
+    .limit(1);
+
+  if (!settingsError && settingsData && settingsData.length) {
+    const s = settingsData[0];
+    appSettings = {
+      username: s.username || '@kitchengardener',
+      logoUrl: s.logoUrl || ''
+    };
+    localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+  }
+
+  const remotePlants = await loadPlantsFromSupabase();
+  if (remotePlants && remotePlants.length) {
+    plants = [];
+
+    for (const p of remotePlants) {
+      const logs = await loadGrowthLogsFromSupabase(p.id);
+      plants.push({
+        id: p.id,
+        name: p.name,
+        variety: p.variety || '',
+        hex: p.hex || '#16a34a',
+        iconKey: p.iconKey || 'cucumber',
+        date: p.date || '',
+        medium: p.medium || '',
+        notes: p.notes || '',
+        logs: logs.map(l => ({
+          id: l.id,
+          date: l.date,
+          type: l.type,
+          text: l.text
+        }))
+      });
+    }
+
+    localStorage.setItem('flora_plants', JSON.stringify(plants));
+  }
+
+  applyBranding();
+  renderPlants();
+}
+
+const originalHandlePlantSubmit = window.handlePlantSubmit;
+window.handlePlantSubmit = async function (event) {
+  event.preventDefault();
+
+  const id = document.getElementById('edit-plant-id').value || 'plant_' + Date.now();
+  const plant = {
+    id,
+    name: document.getElementById('plant-name').value,
+    variety: document.getElementById('plant-variety').value,
+    hex: document.getElementById('form-color-hex').value || '#16a34a',
+    iconKey: document.getElementById('plant-icon-key').value || 'cucumber',
+    date: document.getElementById('plant-date').value,
+    medium: document.getElementById('plant-medium').value,
+    notes: document.getElementById('plant-notes').value
+  };
+
+  const existing = plants.find(p => p.id === id);
+  const idx = existing ? plants.findIndex(p => p.id === id) : -1;
+
+  if (idx >= 0) {
+    plants[idx] = { ...plants[idx], ...plant };
+  } else {
+    plants.push({ ...plant, logs: [] });
+  }
+
+  localStorage.setItem('flora_plants', JSON.stringify(plants));
+  renderPlants();
+
+  initSupabase();
+  if (window.supabase) {
+    await savePlantToSupabase(plant);
+  }
+
+  closePlantModal();
+};
+
+const originalHandleJournalLogSubmit = window.handleJournalLogSubmit;
+window.handleJournalLogSubmit = async function (event) {
+  event.preventDefault();
+
+  const plantId = document.getElementById('log-plant-id').value;
+  const logId = 'log_' + Date.now();
+
+  const logEntry = {
+    id: logId,
+    plant_id: plantId,
+    date: document.getElementById('log-date').value,
+    type: document.getElementById('log-type').value,
+    text: document.getElementById('log-text').value,
+    extra: {
+      deliveryMode: document.querySelector('input[name="delivery-mode"]:checked')?.value || null,
+      volume: document.getElementById('tank-volume-amount')?.value || null,
+      unit: document.getElementById('tank-volume-unit')?.value || null
+    }
+  };
+
+  const plant = plants.find(p => p.id === plantId);
+  if (plant) {
+    plant.logs = plant.logs || [];
+    plant.logs.push({
+      id: logId,
+      date: logEntry.date,
+      type: logEntry.type,
+      text: logEntry.text
+    });
+    localStorage.setItem('flora_plants', JSON.stringify(plants));
+  }
+
+  initSupabase();
+  if (window.supabase) {
+    await saveGrowthLogToSupabase(logEntry);
+  }
+
+  if (typeof openJournalModal === 'function') openJournalModal(plantId);
+};
+
+const originalPromptDeletePlant = window.promptDeletePlant;
+window.promptDeletePlant = function (id) {
+  if (typeof originalPromptDeletePlant === 'function') {
+    originalPromptDeletePlant(id);
+  }
+
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.onclick = async function () {
+      const idx = plants.findIndex(p => p.id === id);
+      if (idx >= 0) plants.splice(idx, 1);
+      localStorage.setItem('flora_plants', JSON.stringify(plants));
+      renderPlants();
+
+      initSupabase();
+      if (window.supabase) {
+        await deletePlantFromSupabase(id);
+      }
+
+      closeDeleteModal();
+    };
+  }
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+  initSupabase();
+  const settings = JSON.parse(localStorage.getItem('flora_settings') || '{}');
+  if (settings && Object.keys(settings).length) {
+    appSettings = {
+      username: settings.username || '@kitchengardener',
+      logoUrl: settings.logoUrl || ''
+    };
+  }
+
+  const savedSupabaseUrl = localStorage.getItem('flora_supabase_url');
+  const savedSupabaseKey = localStorage.getItem('flora_supabase_key');
+
+  if (savedSupabaseUrl && savedSupabaseKey && document.getElementById('setting-supabase-url')) {
+    document.getElementById('setting-supabase-url').value = savedSupabaseUrl;
+    document.getElementById('setting-supabase-key').value = savedSupabaseKey;
+  }
+
+  applyBranding();
+  renderIconPickerGrid();
+  renderPlants();
+  setupAutocomplete();
+  hydrateFromSupabase();
+});
+</script>
+    
 </body>
 </html>
 
