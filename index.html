@@ -25,6 +25,7 @@
       }
     };
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     body { min-height: 100vh; }
@@ -355,6 +356,10 @@
     let settings = readJson(STORAGE_KEYS.settings, { ...defaultSettings });
     let plants = readJson(STORAGE_KEYS.plants, JSON.parse(JSON.stringify(defaultPlants)));
     let pendingDeleteId = null;
+    let supabaseClient = null;
+    let supabaseReady = false;
+    let syncStatusMode = 'local';
+    let syncingPlants = false;
 
     function readJson(key, fallback) {
       try {
@@ -372,6 +377,107 @@
       } catch (e) {
         return false;
       }
+    }
+
+    function setSyncStatus(message, mode = 'local') {
+      syncStatusMode = mode;
+      const status = document.getElementById('save-status');
+      if (status) status.textContent = message;
+    }
+
+    function initSupabase() {
+      const url = (settings.supabaseUrl || '').trim();
+      const key = (settings.supabaseAnonKey || '').trim();
+
+      if (!url || !key || !window.supabase) {
+        supabaseClient = null;
+        supabaseReady = false;
+        setSyncStatus('Local mode', 'local');
+        return;
+      }
+
+      try {
+        supabaseClient = window.supabase.createClient(url, key);
+        supabaseReady = true;
+        setSyncStatus('Supabase connected', 'supabase');
+      } catch (err) {
+        console.warn('Supabase init failed:', err);
+        supabaseClient = null;
+        supabaseReady = false;
+        setSyncStatus('Supabase unavailable, using local mode', 'local');
+      }
+    }
+
+    async function loadSupabaseData() {
+      if (!supabaseReady || !supabaseClient) {
+        return false;
+      }
+
+      try {
+        const [plantsRes, logsRes] = await Promise.all([
+          supabaseClient.from('plants').select('*').order('created_at', { ascending: false }),
+          supabaseClient.from('plant_logs').select('*').order('created_at', { ascending: false })
+        ]);
+
+        if (plantsRes.error) throw plantsRes.error;
+        if (logsRes.error) throw logsRes.error;
+
+        const logsByPlant = {};
+        (logsRes.data || []).forEach((log) => {
+          if (!logsByPlant[log.plant_id]) logsByPlant[log.plant_id] = [];
+          logsByPlant[log.plant_id].push({
+            id: log.id,
+            date: log.date,
+            type: log.type,
+            text: log.text
+          });
+        });
+
+        plants = (plantsRes.data || []).map((plant) => ({
+          ...plant,
+          logs: logsByPlant[plant.id] || []
+        }));
+
+        writeJson(STORAGE_KEYS.plants, plants);
+        setSyncStatus('Supabase synced', 'supabase');
+        return true;
+      } catch (err) {
+        console.warn('Supabase load failed, falling back to localStorage:', err);
+        setSyncStatus('Offline/local mode', 'local');
+        return false;
+      }
+    }
+
+    async function upsertPlantToSupabase(plant) {
+      if (!supabaseReady || !supabaseClient) return;
+      const { error } = await supabaseClient.from('plants').upsert({
+        id: plant.id,
+        name: plant.name,
+        variety: plant.variety || null,
+        color: plant.color || null,
+        medium: plant.medium || null,
+        notes: plant.notes || null,
+        date: plant.date || null
+      });
+      if (error) throw error;
+    }
+
+    async function deletePlantFromSupabase(id) {
+      if (!supabaseReady || !supabaseClient) return;
+      const { error } = await supabaseClient.from('plants').delete().eq('id', id);
+      if (error) throw error;
+    }
+
+    async function insertLogToSupabase(plantId, entry) {
+      if (!supabaseReady || !supabaseClient) return;
+      const { error } = await supabaseClient.from('plant_logs').upsert({
+        id: entry.id,
+        plant_id: plantId,
+        date: entry.date,
+        type: entry.type,
+        text: entry.text
+      });
+      if (error) throw error;
     }
 
     function applyBranding() {
@@ -408,6 +514,8 @@
       settings.supabaseUrl = document.getElementById('setting-supabase-url').value || '';
       settings.supabaseAnonKey = document.getElementById('setting-supabase-key').value || '';
       writeJson(STORAGE_KEYS.settings, settings);
+      initSupabase();
+      loadSupabaseData();
       applyBranding();
       const status = document.getElementById('save-status');
       if (status) {
@@ -567,9 +675,18 @@
         plants.unshift(plant);
       }
 
-      writeJson(STORAGE_KEYS.plants, plants);
-      renderPlants();
-      closePlantModal();
+      (async () => {
+        try {
+          await upsertPlantToSupabase(plant);
+        } catch (err) {
+          console.warn('Supabase plant save failed, keeping local fallback:', err);
+          setSyncStatus('Saved locally (Supabase unavailable)', 'local');
+        } finally {
+          writeJson(STORAGE_KEYS.plants, plants);
+          renderPlants();
+          closePlantModal();
+        }
+      })();
     }
 
     function promptDeletePlant(id) {
@@ -587,10 +704,19 @@
 
     document.getElementById('confirm-delete-btn')?.addEventListener('click', () => {
       if (!pendingDeleteId) return;
-      plants = plants.filter((item) => item.id !== pendingDeleteId);
-      writeJson(STORAGE_KEYS.plants, plants);
-      renderPlants();
-      closeDeleteModal();
+      (async () => {
+        try {
+          await deletePlantFromSupabase(pendingDeleteId);
+        } catch (err) {
+          console.warn('Supabase plant delete failed, keeping local fallback:', err);
+          setSyncStatus('Deleted locally (Supabase unavailable)', 'local');
+        } finally {
+          plants = plants.filter((item) => item.id !== pendingDeleteId);
+          writeJson(STORAGE_KEYS.plants, plants);
+          renderPlants();
+          closeDeleteModal();
+        }
+      })();
     });
 
     function openJournalModal(id) {
@@ -651,10 +777,20 @@
 
       if (!plant.logs) plant.logs = [];
       plant.logs.unshift(entry);
-      writeJson(STORAGE_KEYS.plants, plants);
-      renderJournalLogs(plant);
-      document.getElementById('log-date').value = '';
-      document.getElementById('log-text').value = '';
+
+      (async () => {
+        try {
+          await insertLogToSupabase(plantId, entry);
+        } catch (err) {
+          console.warn('Supabase log insert failed, keeping local fallback:', err);
+          setSyncStatus('Log saved locally (Supabase unavailable)', 'local');
+        } finally {
+          writeJson(STORAGE_KEYS.plants, plants);
+          renderJournalLogs(plant);
+          document.getElementById('log-date').value = '';
+          document.getElementById('log-text').value = '';
+        }
+      })();
     }
 
     function triggerColorMatch() {
@@ -692,7 +828,11 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       applyBranding();
-      renderPlants();
+      initSupabase();
+      loadSupabaseData().finally(() => {
+        if (!plants.length) plants = readJson(STORAGE_KEYS.plants, JSON.parse(JSON.stringify(defaultPlants)));
+        renderPlants();
+      });
       switchTab('plants');
     });
   </script>
