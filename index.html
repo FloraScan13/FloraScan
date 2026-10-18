@@ -350,7 +350,7 @@
                                     <input type="radio" name="delivery-mode" value="Watering Can" checked class="text-emerald-600 focus:ring-emerald-500">
                                     <span class="font-semibold text-slate-700 dark:text-slate-200"><i class="fa-solid fa-faucet-drip mr-1 text-emerald-600"></i> Watering Can</span>
                                 </label>
-                                <label class="flex items-center space-x-2 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs cursor-pointer">
+                                <label class="flex items-center space-x-2 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slace-200 dark:border-slate-700 text-xs cursor-pointer">
                                     <input type="radio" name="delivery-mode" value="Nutrient Tank" class="text-emerald-600 focus:ring-emerald-500">
                                     <span class="font-semibold text-slate-700 dark:text-slate-200"><i class="fa-solid fa-database mr-1 text-emerald-600"></i> Nutrient Tank</span>
                                 </label>
@@ -364,8 +364,8 @@
                                 <span id="volume-label-text">Volume / Capacity Fill</span>
                             </label>
                             <div class="flex gap-2">
-                                <input type="number" id="tank-volume-amount" step="0.1" min="0" placeholder="e.g. 10" class="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
-                                <select id="tank-volume-unit" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                                <input type="number" id="tank-volume-amount" step="0.1" min="0" placeholder="e.g. 10" class="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark;border-slate-700 text-sm">
+                                <select id="tank-volume-unit" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark;border-slate-700 text-xs font-semibold">
                                     <option value="Liters">Liters (L)</option>
                                     <option value="Gallons">Gallons (gal)</option>
                                     <option value="Milliliters">Milliliters (ml)</option>
@@ -393,7 +393,7 @@
                                     <div class="flex justify-between items-center mb-0.5">
                                         <label class="block text-[11px] text-slate-500">Products & Dosages</label>
                                     </div>
-                                    <div id="nutrient-product-list" class="max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg p-2">
+                                    <div id="nutrient-product-list" class="max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 dark;border-slate-700 bg-white dark:bg-slate-800 rounded-lg p-2">
                                         <p class="text-[11px] text-slate-400 italic px-1">Select a brand first</p>
                                     </div>
                                 </div>
@@ -406,7 +406,7 @@
                             </div>
                         </div>
 
-                        <textarea id="log-text" rows="2" required placeholder="Log details (e.g. topped main stem, harvested crisp Beth Alpha cucumbers)..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
+                        <textarea id="log-text" rows="2" required placeholder="Log details (e.g. topped main stem, harvested crisp Beth Alpha cucumbers)..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark;border-slate-700 text-sm"></textarea>
                         <div class="flex justify-end">
                             <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
                         </div>
@@ -414,7 +414,7 @@
                 </div>
 
                 <!-- Logs Timeline -->
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-3">
+                <div class="border-t border-slate-200 dark;border-slate-700 pt-4 space-y-3">
                     <h4 class="text-sm font-bold">Growth History Timeline</h4>
                     <div id="journal-logs-container" class="space-y-3"></div>
                 </div>
@@ -497,7 +497,7 @@
         async function loadSettingsFromSupabase() {
             if (!window.supabase) return;
             try {
-                const { data, error } = await window.supabase.from('app_settings').select('*').eq('id', 'default').maybeSingle();
+                const { data, error } = await window.supabase.from('settings').select('*').eq('id', 'default').maybeSingle();
                 if (error) {
                     console.warn('Could not load remote settings:', error.message || error);
                     return;
@@ -522,7 +522,7 @@
                     supabase_url: document.getElementById('setting-supabase-url')?.value || getStored('flora_supabase_url') || '',
                     supabase_key: document.getElementById('setting-supabase-key')?.value || getStored('flora_supabase_key') || ''
                 };
-                const { error } = await window.supabase.from('app_settings').upsert(payload, { onConflict: 'id' });
+                const { error } = await window.supabase.from('settings').upsert(payload, { onConflict: 'id' });
                 if (error) {
                     console.warn('Remote settings save failed:', error.message || error);
                 } else {
