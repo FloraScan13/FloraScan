@@ -203,11 +203,11 @@
                 </div>
 
                 <div>
-                    <div id="icon-picker-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2.5 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-[240px] overflow-y-auto custom-scrollbar"></div>
+                    <div id="icon-picker-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2.5 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark;border-slate-700 max-h-[240px] overflow-y-auto custom-scrollbar"></div>
                     <p class="text-[11px] text-slate-400 mt-1.5"><span id="selected-icon-name-display" class="font-semibold text-emerald-600 dark:text-emerald-400">Cucumber / Gherkin</span></p>
                 </div>
 
-                <div class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+                <div class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark;border-slate-700 space-y-3">
                     <div class="flex items-center justify-between">
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
                             <i class="fa-solid fa-camera text-emerald-600"></i>
@@ -245,13 +245,13 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Growing Medium / Setup</label>
-                        <input type="text" id="plant-medium" placeholder="e.g. AutoPot / Wicking Bed / Soil" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="text" id="plant-medium" placeholder="e.g. AutoPot / Wicking Bed / Soil" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark;border-slate-700 text-sm">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Initial Notes & Care Guide</label>
-                    <textarea id="plant-notes" rows="3" placeholder="Nutrient routine, sun exposure, pruning tips..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
+                    <textarea id="plant-notes" rows="3" placeholder="Nutrient routine, sun exposure, pruning tips..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark;border-slate-700 text-sm"></textarea>
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-2">
@@ -272,7 +272,7 @@
                 <button onclick="closeJournalModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
-                <div class="flex flex-col sm:flex-row gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <div class="flex flex-col sm:flex-row gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark;border-slate-700">
                     <div id="journal-icon-container" class="w-20 h-20 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0"></div>
                     <div class="flex-1 space-y-2">
                         <div>
@@ -288,7 +288,7 @@
                     </div>
                 </div>
 
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+                <div class="border-t border-slate-200 dark;border-slate-700 pt-4">
                     <h4 class="text-sm font-bold mb-3 flex items-center space-x-2">
                         <i class="fa-solid fa-pen-to-square text-emerald-600"></i>
                         <span>Add Growth Log Entry</span>
@@ -296,8 +296,8 @@
                     <form onsubmit="handleJournalLogSubmit(event)" class="space-y-3">
                         <input type="hidden" id="log-plant-id">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                            <select id="log-type" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                            <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark;border-slate-700 text-sm">
+                            <select id="log-type" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark;border-slate-700 text-sm">
                                 <option value="Growth">Growth Update</option>
                                 <option value="Water">Watering / Irrigation</option>
                                 <option value="Feed">Nutrients / Fertilizer</option>
@@ -305,14 +305,14 @@
                                 <option value="Harvest">Harvest</option>
                             </select>
                         </div>
-                        <textarea id="log-text" rows="2" required placeholder="Log details..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
+                        <textarea id="log-text" rows="2" required placeholder="Log details..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark;border-slate-700 text-sm"></textarea>
                         <div class="flex justify-end">
                             <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
                         </div>
                     </form>
                 </div>
 
-                <div class="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-3">
+                <div class="border-t border-slate-200 dark;border-slate-700 pt-4 space-y-3">
                     <h4 class="text-sm font-bold">Growth History Timeline</h4>
                     <div id="journal-logs-container" class="space-y-3"></div>
                 </div>
@@ -335,7 +335,8 @@
     </div>
 
     <script>
-        window.supabase = null;
+        // Use a separate global for the Supabase client so it doesn't overwrite the library global
+        window.supabaseClient = null;
 
         function canUseLocalStorage() {
             try {
@@ -369,6 +370,8 @@
                 return null;
             }
         }
+
+        // ... rest of constants and helper functions (unchanged) ...
 
         const MONOCHROME_VEG_SVGS = {
             cucumber: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M15,55 C12,35 30,15 50,22 C70,28 85,45 82,65 C80,82 55,88 35,82 C20,78 17,68 15,55 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
@@ -472,25 +475,26 @@
             const savedUrl = document.getElementById('setting-supabase-url')?.value || getStored('flora_supabase_url') || '';
             const savedKey = document.getElementById('setting-supabase-key')?.value || getStored('flora_supabase_key') || '';
 
-            if (!savedUrl || !savedKey || typeof supabase === 'undefined') {
-                window.supabase = null;
+            // Check that the library global 'supabase' is available (this is the UMD export)
+            if (!savedUrl || !savedKey || typeof supabase === 'undefined' || supabase === null) {
+                window.supabaseClient = null;
                 console.info('Supabase not initialized: missing url/key or library');
                 return;
             }
 
             try {
-                window.supabase = supabase.createClient(savedUrl, savedKey);
+                window.supabaseClient = supabase.createClient(savedUrl, savedKey);
                 console.info('Supabase initialized');
             } catch (error) {
                 console.warn('Failed to initialize Supabase client:', error);
-                window.supabase = null;
+                window.supabaseClient = null;
             }
         }
 
         async function loadSettingsFromSupabase() {
-            if (!window.supabase) return;
+            if (!window.supabaseClient) return;
             try {
-                const { data, error } = await window.supabase.from('settings').select('*').eq('id', 'default').maybeSingle();
+                const { data, error } = await window.supabaseClient.from('settings').select('*').eq('id', 'default').maybeSingle();
                 if (error) {
                     console.warn('Could not load remote settings:', error.message || error);
                     return;
@@ -506,7 +510,7 @@
         }
 
         async function saveSettingsToSupabase() {
-            if (!window.supabase) return false;
+            if (!window.supabaseClient) return false;
             try {
                 const payload = {
                     id: 'default',
@@ -515,7 +519,7 @@
                     supabase_url: document.getElementById('setting-supabase-url')?.value || getStored('flora_supabase_url') || '',
                     supabase_key: document.getElementById('setting-supabase-key')?.value || getStored('flora_supabase_key') || ''
                 };
-                const { error } = await window.supabase.from('settings').upsert(payload, { onConflict: 'id' });
+                const { error } = await window.supabaseClient.from('settings').upsert(payload, { onConflict: 'id' });
                 if (error) {
                     console.warn('Remote settings save failed:', error.message || error);
                     return false;
@@ -529,9 +533,9 @@
         }
 
         async function loadPlantsFromSupabase() {
-            if (!window.supabase) return;
+            if (!window.supabaseClient) return;
             try {
-                const { data, error } = await window.supabase.from('plants').select('*');
+                const { data, error } = await window.supabaseClient.from('plants').select('*');
                 if (error) {
                     console.warn('Could not load plants from Supabase:', error.message || error);
                     return;
@@ -557,7 +561,7 @@
         }
 
         async function savePlantToSupabase(plant) {
-            if (!window.supabase) return;
+            if (!window.supabaseClient) return;
             try {
                 const payload = {
                     id: plant.id,
@@ -570,7 +574,7 @@
                     notes: plant.notes || '',
                     logs: Array.isArray(plant.logs) ? plant.logs : []
                 };
-                const { error } = await window.supabase.from('plants').upsert(payload, { onConflict: 'id' });
+                const { error } = await window.supabaseClient.from('plants').upsert(payload, { onConflict: 'id' });
                 if (error) {
                     console.warn('Supabase plant save failed:', error.message || error);
                 } else {
@@ -582,9 +586,9 @@
         }
 
         async function deletePlantFromSupabase(id) {
-            if (!window.supabase) return;
+            if (!window.supabaseClient) return;
             try {
-                const { error } = await window.supabase.from('plants').delete().eq('id', id);
+                const { error } = await window.supabaseClient.from('plants').delete().eq('id', id);
                 if (error) {
                     console.warn('Supabase delete failed:', error.message || error);
                 } else {
