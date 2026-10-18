@@ -309,6 +309,34 @@
     </div>
   </div>
 
+  <div id="log-edit-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 max-w-lg w-full rounded-2xl shadow-xl overflow-hidden">
+      <div class="px-6 py-4 bg-emerald-700 text-white flex items-center justify-between">
+        <h3 class="text-lg font-bold">Edit Log Entry</h3>
+        <button type="button" onclick="closeEditLogModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleEditLogSubmit(event)" class="p-6 space-y-4">
+        <input type="hidden" id="edit-log-plant-id" />
+        <input type="hidden" id="edit-log-id" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input type="date" id="edit-log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" />
+          <select id="edit-log-type" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+            <option value="Growth">Growth Update</option>
+            <option value="Water">Watering / Irrigation</option>
+            <option value="Feed">Nutrients / Fertilizer</option>
+            <option value="Prune">Pruning / Training</option>
+            <option value="Harvest">Harvest</option>
+          </select>
+        </div>
+        <textarea id="edit-log-text" rows="3" required class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700"></textarea>
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="closeEditLogModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">Cancel</button>
+          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="delete-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-800 max-w-sm w-full rounded-2xl shadow-xl overflow-hidden p-6 space-y-4 text-center">
       <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto text-xl">
@@ -391,11 +419,11 @@
     let supabaseClient = null;
     let supabaseReady = false;
     let syncStatusMode = 'local';
-    let syncingPlants = false;
     let scannerStream = null;
     let scannerActive = false;
     let formStream = null;
     let formCameraActive = false;
+    let editingLogId = null;
 
     function readJson(key, fallback) {
       try {
@@ -469,10 +497,17 @@
           });
         });
 
-        plants = (plantsRes.data || []).map((plant) => ({
+        const remotePlants = (plantsRes.data || []).map((plant) => ({
           ...plant,
           logs: logsByPlant[plant.id] || []
         }));
+        const remoteIds = new Set(remotePlants.map((p) => p.id));
+        const localOnly = plants.filter((p) => !remoteIds.has(p.id));
+        for (const p of localOnly) {
+          await upsertPlantToSupabase(p);
+          for (const log of p.logs || []) await insertLogToSupabase(p.id, log);
+        }
+        plants = [...localOnly, ...remotePlants];
 
         writeJson(STORAGE_KEYS.plants, plants);
         setSyncStatus('Supabase synced', 'supabase');
@@ -666,51 +701,72 @@
       return COLOR_PALETTE[hex.toLowerCase()] || 'Custom Tag Color';
     }
 
-    function hexToRgb(hex) {
-      const h = hex.replace('#', '');
-      return {
-        r: parseInt(h.substring(0, 2), 16),
-        g: parseInt(h.substring(2, 4), 16),
-        b: parseInt(h.substring(4, 6), 16)
-      };
-    }
-
-    function nearestPaletteHex(r, g, b) {
-      let bestHex = '#16a34a';
-      let bestDist = Infinity;
-      Object.keys(COLOR_PALETTE).forEach((hex) => {
-        const c = hexToRgb(hex);
-        const dist = (c.r - r) ** 2 + (c.g - g) ** 2 + (c.b - b) ** 2;
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestHex = hex;
-        }
-      });
-      return bestHex;
-    }
-
-    function sampleCenterColor(video) {
-      if (!video || !video.videoWidth || !video.videoHeight) return null;
-      const size = 24;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      const sw = Math.max(8, Math.floor(video.videoWidth * 0.1));
-      const sh = Math.max(8, Math.floor(video.videoHeight * 0.1));
-      const sx = Math.floor((video.videoWidth - sw) / 2);
-      const sy = Math.floor((video.videoHeight - sh) / 2);
-      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, size, size);
-      const data = ctx.getImageData(0, 0, size, size).data;
-      let r = 0, g = 0, b = 0, count = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        r += data[i];
-        g += data[i + 1];
-        b += data[i + 2];
-        count++;
+    function renderJournalLogs(plant) {
+      const container = document.getElementById('journal-logs-container');
+      if (!container) return;
+      const logs = [...(plant.logs || [])].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      if (!logs.length) {
+        container.innerHTML = '<div class="text-xs text-slate-500">No log entries yet.</div>';
+        return;
       }
-      if (!count) return null;
-      return { r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) };
+      container.innerHTML = logs.map((log) => `
+        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div>
+              <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">${log.type}</span>
+              <div class="text-[10px] text-slate-500 mt-1">${log.date}</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="text-[10px] px-2 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" onclick="openEditLogModal('${plant.id}', '${log.id}')">Edit</button>
+              <button type="button" class="text-[10px] px-2 py-1 rounded-lg bg-red-600 text-white" onclick="deleteLogEntry('${plant.id}', '${log.id}')">Delete</button>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 dark:text-slate-400">${(log.text || '').replace(/</g,'&lt;')}</p>
+        </div>
+      `).join('');
+    }
+
+    function openEditLogModal(plantId, logId) {
+      const plant = plants.find((item) => item.id === plantId);
+      if (!plant) return;
+      const log = (plant.logs || []).find((item) => item.id === logId);
+      if (!log) return;
+      editingLogId = log.id;
+      document.getElementById('edit-log-plant-id').value = plant.id;
+      document.getElementById('edit-log-id').value = log.id;
+      document.getElementById('edit-log-date').value = log.date || '';
+      document.getElementById('edit-log-type').value = log.type || 'Growth';
+      document.getElementById('edit-log-text').value = log.text || '';
+      document.getElementById('log-edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditLogModal() {
+      editingLogId = null;
+      document.getElementById('log-edit-modal').classList.add('hidden');
+    }
+
+    function deleteLogEntry(plantId, logId) {
+      const plant = plants.find((item) => item.id === plantId);
+      if (!plant) return;
+      plant.logs = (plant.logs || []).filter((item) => item.id !== logId);
+      writeJson(STORAGE_KEYS.plants, plants);
+      renderJournalLogs(plant);
+    }
+
+    function handleEditLogSubmit(event) {
+      event.preventDefault();
+      const plantId = document.getElementById('edit-log-plant-id').value;
+      const logId = document.getElementById('edit-log-id').value;
+      const plant = plants.find((item) => item.id === plantId);
+      if (!plant) return;
+      const log = (plant.logs || []).find((item) => item.id === logId);
+      if (!log) return;
+      log.date = document.getElementById('edit-log-date').value;
+      log.type = document.getElementById('edit-log-type').value;
+      log.text = document.getElementById('edit-log-text').value.trim();
+      writeJson(STORAGE_KEYS.plants, plants);
+      renderJournalLogs(plant);
+      closeEditLogModal();
     }
 
     function handlePlantSubmit(event) {
@@ -787,6 +843,7 @@
     function openJournalModal(id) {
       const plant = plants.find((item) => item.id === id);
       if (!plant) return;
+      document.getElementById('journal-title').textContent = plant.name + ' – Growth Journal';
       document.getElementById('journal-name').textContent = plant.name;
       document.getElementById('journal-variety').textContent = plant.variety || 'Variety';
       document.getElementById('journal-date').textContent = plant.date || '-';
@@ -801,25 +858,6 @@
 
     function closeJournalModal() {
       document.getElementById('journal-modal').classList.add('hidden');
-    }
-
-    function renderJournalLogs(plant) {
-      const container = document.getElementById('journal-logs-container');
-      if (!container) return;
-      const logs = plant.logs || [];
-      if (!logs.length) {
-        container.innerHTML = '<div class="text-xs text-slate-500">No log entries yet.</div>';
-        return;
-      }
-      container.innerHTML = logs.map((log) => `
-        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3">
-          <div class="flex items-center justify-between gap-2 mb-1">
-            <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">${log.type}</span>
-            <span class="text-[10px] text-slate-500">${log.date}</span>
-          </div>
-          <p class="text-xs text-slate-600 dark:text-slate-400">${(log.text || '').replace(/</g,'&lt;')}</p>
-        </div>
-      `).join('');
     }
 
     function handleJournalLogSubmit(event) {
@@ -992,6 +1030,53 @@
       document.getElementById('form-color-badge').style.backgroundColor = hex;
       document.getElementById('form-scanned-color-name').textContent = getColorName(hex);
       if (status) status.textContent = 'Detected: ' + getColorName(hex);
+    }
+
+    function sampleCenterColor(video) {
+      if (!video || !video.videoWidth || !video.videoHeight) return null;
+      const size = 24;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      const sw = Math.max(8, Math.floor(video.videoWidth * 0.1));
+      const sh = Math.max(8, Math.floor(video.videoHeight * 0.1));
+      const sx = Math.floor((video.videoWidth - sw) / 2);
+      const sy = Math.floor((video.videoHeight - sh) / 2);
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, size, size);
+      const data = ctx.getImageData(0, 0, size, size).data;
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+        count++;
+      }
+      if (!count) return null;
+      return { r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) };
+    }
+
+    function hexToRgb(hex) {
+      const h = hex.replace('#', '');
+      return {
+        r: parseInt(h.substring(0, 2), 16),
+        g: parseInt(h.substring(2, 4), 16),
+        b: parseInt(h.substring(4, 6), 16)
+      };
+    }
+
+    function nearestPaletteHex(r, g, b) {
+      let bestHex = '#16a34a';
+      let bestDist = Infinity;
+      Object.keys(COLOR_PALETTE).forEach((hex) => {
+        const c = hexToRgb(hex);
+        const dist = (c.r - r) ** 2 + (c.g - g) ** 2 + (c.b - b) ** 2;
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestHex = hex;
+        }
+      });
+      return bestHex;
     }
 
     function triggerColorMatch() {
