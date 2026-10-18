@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flora Scan - Plant Tag & Growth Journal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -172,6 +173,8 @@
       </div>
     </div>
   </main>
+
+  <div id="sync-diagnostics" class="fixed bottom-3 right-3 z-[60] max-w-xs text-xs rounded-xl px-3 py-2 shadow bg-slate-100 text-slate-700 border border-slate-300" role="status" aria-live="polite">Supabase: not checked yet</div>
 
   <div id="plant-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white dark:bg-slate-800 max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-8">
@@ -402,7 +405,163 @@
       }
     }
 
-    function saveBrandingSettings() {
+    /*
+     * Supabase sync. Schema assumptions (see supabase/schema.sql):
+     *   app_settings(id='default', username, logo_url, updated_at)
+     *   plants(id, name, variety, color, medium, notes, date)
+     *   plant_logs(id, plant_id -> plants.id, date, type, text)
+     * Credentials (supabaseUrl / supabaseAnonKey) stay in localStorage only.
+     * The client lives in `sb`; window.supabase (the library global) is never overwritten.
+     */
+    let sb = null;
+    let sbKey = '';
+
+    function setDiagnostic(level, message) {
+      const el = document.getElementById('sync-diagnostics');
+      if (!el) return;
+      const styles = {
+        ok: 'bg-emerald-50 text-emerald-800 border-emerald-300',
+        warn: 'bg-amber-50 text-amber-800 border-amber-300',
+        error: 'bg-red-50 text-red-800 border-red-300',
+        info: 'bg-slate-100 text-slate-700 border-slate-300'
+      };
+      el.className = 'fixed bottom-3 right-3 z-[60] max-w-xs text-xs rounded-xl px-3 py-2 shadow border ' + (styles[level] || styles.info);
+      el.textContent = 'Supabase: ' + message;
+      console[level === 'error' ? 'error' : 'log']('[Supabase] ' + message);
+    }
+
+    function describeSupabaseError(err) {
+      const msg = (err && err.message) || String(err);
+      const code = err && err.code;
+      const status = err && err.status;
+      if (code === '42501' || status === 401 || status === 403 || /row-level security|permission denied|JWT|apikey/i.test(msg)) {
+        return 'blocked by auth/RLS/permissions (' + msg + '). Check the anon key and RLS policies.';
+      }
+      if (code === '42P01' || code === 'PGRST205' || /does not exist|schema cache/i.test(msg)) {
+        return 'table missing (' + msg + '). Run supabase/schema.sql in the Supabase SQL editor.';
+      }
+      if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
+        return 'network error (' + msg + '). Check the Supabase URL and your connection.';
+      }
+      return msg;
+    }
+
+    function getSupabaseClient() {
+      const url = (settings.supabaseUrl || '').trim();
+      const key = (settings.supabaseAnonKey || '').trim();
+      if (!url && !key) { sb = null; setDiagnostic('warn', 'missing Supabase URL and anon key (saved locally only)'); return null; }
+      if (!url) { sb = null; setDiagnostic('warn', 'missing Supabase URL'); return null; }
+      if (!key) { sb = null; setDiagnostic('warn', 'missing anon key'); return null; }
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        sb = null;
+        setDiagnostic('error', 'Supabase JS library not loaded (blocked or offline?)');
+        return null;
+      }
+      const cacheKey = url + '|' + key;
+      if (sb && sbKey === cacheKey) return sb;
+      try {
+        sb = window.supabase.createClient(url, key);
+        sbKey = cacheKey;
+        return sb;
+      } catch (e) {
+        sb = null;
+        setDiagnostic('error', 'client creation failed: ' + ((e && e.message) || e));
+        return null;
+      }
+    }
+
+    function plantToRow(p) {
+      return {
+        id: p.id,
+        name: p.name,
+        variety: p.variety || null,
+        color: p.color || '#16a34a',
+        medium: p.medium || null,
+        notes: p.notes || null,
+        date: p.date || null
+      };
+    }
+
+    async function pushSettings() {
+      const client = getSupabaseClient();
+      if (!client) return false;
+      const { error } = await client.from('app_settings').upsert({
+        id: 'default',
+        username: settings.username,
+        logo_url: settings.logoUrl || null,
+        updated_at: new Date().toISOString()
+      });
+      if (error) { setDiagnostic('error', 'settings sync failed: ' + describeSupabaseError(error)); return false; }
+      return true;
+    }
+
+    async function pushPlants(removedIds) {
+      const client = getSupabaseClient();
+      if (!client) return false;
+      let res;
+      if (removedIds && removedIds.length) {
+        res = await client.from('plants').delete().in('id', removedIds);
+        if (res.error) { setDiagnostic('error', 'plant delete failed: ' + describeSupabaseError(res.error)); return false; }
+      }
+      if (plants.length) {
+        res = await client.from('plants').upsert(plants.map(plantToRow));
+        if (res.error) { setDiagnostic('error', 'plant sync failed: ' + describeSupabaseError(res.error)); return false; }
+        const logs = [];
+        plants.forEach((p) => (p.logs || []).forEach((l) => logs.push({
+          id: l.id, plant_id: p.id, date: l.date, type: l.type, text: l.text
+        })));
+        if (logs.length) {
+          res = await client.from('plant_logs').upsert(logs);
+          if (res.error) { setDiagnostic('error', 'journal log sync failed: ' + describeSupabaseError(res.error)); return false; }
+        }
+      }
+      return true;
+    }
+
+    async function syncPlantsRemote(removedIds) {
+      if (!getSupabaseClient()) return false;
+      const ok = await pushPlants(removedIds);
+      if (ok) setDiagnostic('ok', 'plants synced');
+      return ok;
+    }
+
+    async function pullRemote() {
+      const client = getSupabaseClient();
+      if (!client) return;
+      setDiagnostic('info', 'connecting...');
+      const s = await client.from('app_settings').select('*').eq('id', 'default').maybeSingle();
+      if (s.error) { setDiagnostic('error', 'read failed: ' + describeSupabaseError(s.error)); return; }
+      if (s.data) {
+        settings.username = s.data.username || settings.username;
+        settings.logoUrl = s.data.logo_url || '';
+        writeJson(STORAGE_KEYS.settings, settings);
+        applyBranding();
+      }
+      const p = await client.from('plants').select('*').order('created_at', { ascending: false });
+      if (p.error) { setDiagnostic('error', 'read failed: ' + describeSupabaseError(p.error)); return; }
+      const l = await client.from('plant_logs').select('*').order('date', { ascending: false });
+      if (l.error) { setDiagnostic('error', 'read failed: ' + describeSupabaseError(l.error)); return; }
+      if (p.data.length) {
+        plants = p.data.map((row) => ({
+          id: row.id,
+          name: row.name,
+          variety: row.variety || '',
+          color: row.color || '#16a34a',
+          medium: row.medium || '',
+          notes: row.notes || '',
+          date: row.date || '',
+          logs: l.data.filter((x) => x.plant_id === row.id).map((x) => ({ id: x.id, date: x.date, type: x.type, text: x.text }))
+        }));
+        writeJson(STORAGE_KEYS.plants, plants);
+        renderPlants();
+        setDiagnostic('ok', 'connected, loaded ' + plants.length + ' plant(s)');
+      } else {
+        const ok = await pushPlants();
+        if (ok) setDiagnostic('ok', 'connected (remote empty, local data uploaded)');
+      }
+    }
+
+    async function saveBrandingSettings() {
       settings.username = document.getElementById('setting-username').value || '@kitchengardener';
       settings.logoUrl = document.getElementById('setting-logo-url').value || '';
       settings.supabaseUrl = document.getElementById('setting-supabase-url').value || '';
@@ -410,9 +569,24 @@
       writeJson(STORAGE_KEYS.settings, settings);
       applyBranding();
       const status = document.getElementById('save-status');
-      if (status) {
-        status.textContent = 'Saved locally';
-        setTimeout(() => { status.textContent = ''; }, 2200);
+      const show = (text, cls) => {
+        if (!status) return;
+        status.textContent = text;
+        status.className = 'text-sm ' + cls;
+        setTimeout(() => { status.textContent = ''; }, 4000);
+      };
+      show('Saved locally', 'text-emerald-700');
+      if (!getSupabaseClient()) {
+        show('Saved locally (Supabase not connected - see status)', 'text-amber-700');
+        return;
+      }
+      let ok = false;
+      try { ok = await pushSettings(); } catch (e) { setDiagnostic('error', 'settings sync failed: ' + describeSupabaseError(e)); }
+      if (ok) {
+        setDiagnostic('ok', 'settings synced');
+        show('Saved locally and synced to Supabase', 'text-emerald-700');
+      } else {
+        show('Saved locally; Supabase sync failed (see status)', 'text-red-700');
       }
     }
 
@@ -570,6 +744,7 @@
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
       closePlantModal();
+      syncPlantsRemote().catch((e) => setDiagnostic('error', 'plant sync failed: ' + describeSupabaseError(e)));
     }
 
     function promptDeletePlant(id) {
@@ -588,9 +763,11 @@
     document.getElementById('confirm-delete-btn')?.addEventListener('click', () => {
       if (!pendingDeleteId) return;
       plants = plants.filter((item) => item.id !== pendingDeleteId);
+      const removedId = pendingDeleteId;
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
       closeDeleteModal();
+      syncPlantsRemote([removedId]).catch((e) => setDiagnostic('error', 'plant delete failed: ' + describeSupabaseError(e)));
     });
 
     function openJournalModal(id) {
@@ -655,6 +832,7 @@
       renderJournalLogs(plant);
       document.getElementById('log-date').value = '';
       document.getElementById('log-text').value = '';
+      syncPlantsRemote().catch((e) => setDiagnostic('error', 'journal log sync failed: ' + describeSupabaseError(e)));
     }
 
     function triggerColorMatch() {
@@ -694,6 +872,7 @@
       applyBranding();
       renderPlants();
       switchTab('plants');
+      pullRemote().catch((e) => setDiagnostic('error', 'sync failed: ' + describeSupabaseError(e)));
     });
   </script>
 </body>
