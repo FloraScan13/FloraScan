@@ -92,7 +92,7 @@
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, color name, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm">
+                    <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, color name, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
                 </div>
             </div>
             <div id="plants-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -114,7 +114,7 @@
                     <i class="fa-solid fa-camera text-emerald-600"></i>
                     <span>Scan Garden Tag Color</span>
                 </h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Point your camera at a physical colored garden plant tag. Flora Scan detects the color swatch and instantly brings up the closest match.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Point your camera at a physical colored garden plant tag. Flora Scan detects the color swatch and instantly brings up the closest matching crop tag.</p>
 
                 <div class="relative max-w-md mx-auto aspect-video bg-black rounded-2xl overflow-hidden shadow-inner mb-4">
                     <video id="match-video" class="w-full h-full object-cover" playsinline autoplay muted></video>
@@ -156,19 +156,19 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">User Handle / Subtitle</label>
-                        <input type="text" id="setting-username" value="@kitchengardener" placeholder="e.g. @kitchengardener" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="text" id="setting-username" value="@kitchengardener" placeholder="e.g. @kitchengardener" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Logo Image URL (Optional)</label>
-                        <input type="url" id="setting-logo-url" placeholder="https://example.com/logo.png" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="url" id="setting-logo-url" placeholder="https://example.com/logo.png" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Supabase URL</label>
-                        <input type="url" id="setting-supabase-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="url" id="setting-supabase-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Supabase Anon Key</label>
-                        <input type="text" id="setting-supabase-key" placeholder="anon-key" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="text" id="setting-supabase-key" placeholder="anon-key" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
                 </div>
                 <div class="flex justify-end pt-2 items-center space-x-3">
@@ -194,11 +194,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="relative">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Plant Name *</label>
-                        <input type="text" id="plant-name" required autocomplete="off" placeholder="e.g. Cucumber, Tomato" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="text" id="plant-name" required autocomplete="off" placeholder="e.g. Cucumber, Tomato" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
                     <div class="relative">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Variety</label>
-                        <input type="text" id="plant-variety" autocomplete="off" placeholder="e.g. Beth Alpha, Gardener's Delight" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="text" id="plant-variety" autocomplete="off" placeholder="e.g. Beth Alpha, Gardener's Delight" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     </div>
                 </div>
 
@@ -336,6 +336,7 @@
 
     <script>
         window.supabaseClient = null;
+        window._floraSupabaseInitStarted = false;
 
         function canUseLocalStorage() {
             try {
@@ -382,7 +383,7 @@
             eggplant: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,20 C38,20 22,45 25,72 C28,90 72,90 75,72 C78,45 62,20 50,20 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
             corn: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M35,25 Q50,15 65,25 Q65,65 52,88 Q48,88 35,65 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
             beans: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M20,20 Q50,10 80,45 Q70,75 45,85 Q20,80 20,20 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
-            sprouts: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,85 L50,45" stroke="#000000" stroke-width="7" stroke-linecap="round"/><path d="M50,50 C30,45 15,25 35,15 C50,20 50,40 35,48" stroke="#000000" stroke-width="6" fill="none"/><path d="M50,52 C70,47 85,27 65,15 C50,20 50,40 65,48" stroke="#000000" stroke-width="6" fill="none"/></svg>'
+            sprouts: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,85 L50,45" stroke="#000000" stroke-width="7" stroke-linecap="round"/><path d="M50,50 C30,45 15,25 35,15 C50,20 50,40 50,50" stroke="#000000" stroke-width="7" stroke-linecap="round"/><path d="M50,50 C70,45 85,25 65,15 C50,20 50,40 50,50" stroke="#000000" stroke-width="7" stroke-linecap="round"/></svg>'
         };
 
         const CROP_ICON_LIBRARY = [
@@ -459,23 +460,46 @@
 
         let plants = JSON.parse(getStored('flora_plants') || 'null') || [
             {
-                id: 'plant_1', name: 'Cucumber', variety: 'Beth Alpha', hex: '#16a34a', iconKey: 'cucumber', date: '2026-06-01', medium: 'Wicking Bed', notes: 'Thriving with smooth crisp gherkins.', logs: [{ id: 'l1', date: '2026-07-20', type: 'Harvest', text: 'Harvested 3 crisp Beth Alpha cucumbers.' }]
+                id: 'plant_1',
+                name: 'Cucumber',
+                variety: 'Beth Alpha',
+                hex: '#16a34a',
+                iconKey: 'cucumber',
+                date: '2026-06-01',
+                medium: 'Wicking Bed',
+                notes: 'Thriving with smooth crisp gherkins.',
+                logs: [
+                    { id: 'log_1', date: '2026-06-14', type: 'Growth', text: 'Strong growth and healthy dark foliage.' },
+                    { id: 'log_2', date: '2026-06-21', type: 'Water', text: 'Watering cycle adjusted to avoid overwatering.' }
+                ]
             },
             {
-                id: 'plant_2', name: 'Cherry Tomato', variety: "Gardener's Delight", hex: '#dc2626', iconKey: 'tomato', date: '2026-05-10', medium: 'AutoPot System', notes: 'Fed with organic tomato feed.', logs: []
+                id: 'plant_2',
+                name: 'Cherry Tomato',
+                variety: "Gardener's Delight",
+                hex: '#dc2626',
+                iconKey: 'tomato',
+                date: '2026-05-10',
+                medium: 'AutoPot System',
+                notes: 'Fed with organic tomato feed and tied in well.',
+                logs: [
+                    { id: 'log_3', date: '2026-05-25', type: 'Feed', text: 'Added organic tomato feed to encourage flowering.' }
+                ]
             }
         ];
 
         let pendingDeleteId = null;
 
         function initSupabase() {
-            if (window.supabaseClient) return;
+            if (window.supabaseClient || window._floraSupabaseInitStarted) return;
+            window._floraSupabaseInitStarted = true;
 
             const savedUrl = document.getElementById('setting-supabase-url')?.value || getStored('flora_supabase_url') || '';
             const savedKey = document.getElementById('setting-supabase-key')?.value || getStored('flora_supabase_key') || '';
 
             if (!savedUrl || !savedKey || typeof supabase === 'undefined' || supabase === null) {
                 window.supabaseClient = null;
+                window._floraSupabaseInitStarted = false;
                 console.info('Supabase not initialized: missing url/key or library');
                 return;
             }
@@ -486,6 +510,7 @@
             } catch (error) {
                 console.warn('Failed to initialize Supabase client:', error);
                 window.supabaseClient = null;
+                window._floraSupabaseInitStarted = false;
             }
         }
 
@@ -512,11 +537,13 @@
             try {
                 const payload = {
                     id: 'default',
-                    username: settings.username,
-                    logo_url: settings.logoUrl,
-                    supabase_url: document.getElementById('setting-supabase-url')?.value || getStored('flora_supabase_url') || ''
+                    username: settings.username || '@kitchengardener',
+                    logo_url: settings.logoUrl || null,
+                    supabase_url: document.getElementById('setting-supabase-url')?.value || getStored('flora_supabase_url') || null
                 };
+
                 const { error } = await window.supabaseClient.from('settings').upsert(payload, { onConflict: 'id' });
+
                 if (error) {
                     console.warn('Remote settings save failed:', error.message || error);
                     return false;
@@ -632,12 +659,23 @@
                 if (supabaseUrl) setStored('flora_supabase_url', supabaseUrl);
                 if (supabaseKey) setStored('flora_supabase_key', supabaseKey);
 
-                initSupabase();
-                const remoteSaved = await saveSettingsToSupabase();
-                applyBranding();
+                if (supabaseUrl && supabaseKey) {
+                    initSupabase();
+                    const remoteSaved = await saveSettingsToSupabase();
+                    applyBranding();
 
+                    if (statusEl) {
+                        statusEl.textContent = `Saved (${storedWhere || 'none'})` + (remoteSaved ? ' • Synced' : ' • Local only');
+                        statusEl.classList.remove('text-red-600');
+                        statusEl.classList.add('text-emerald-700');
+                        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3500);
+                    }
+                    return;
+                }
+
+                applyBranding();
                 if (statusEl) {
-                    statusEl.textContent = `Saved (${storedWhere || 'none'})` + (remoteSaved ? ' • Synced' : ' • Local only');
+                    statusEl.textContent = `Saved (${storedWhere || 'none'}) • Local only`;
                     statusEl.classList.remove('text-red-600');
                     statusEl.classList.add('text-emerald-700');
                     setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3500);
