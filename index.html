@@ -1,118 +1,38 @@
-        let settings = JSON.parse(getStored('flora_settings') || 'null') || {
-            username: '@kitchengardener',
-            logoUrl: ''
-        };
-
-        let plants = JSON.parse(getStored('flora_plants') || 'null') || [
-            {
-                id: 'plant_1',
-                name: 'Cucumber',
-                variety: 'Beth Alpha',
-                hex: '#16a34a',
-                iconKey: 'cucumber',
-                date: '2026-06-01',
-                medium: 'Wicking Bed',
-                notes: 'Thriving with smooth crisp gherkins.',
-                logs: [
-                    { id: 'l1', date: '2026-07-20', type: 'Harvest', text: 'Harvested 3 crisp Beth Alpha cucumbers.' }
-                ]
-            },
-            {
-                id: 'plant_2',
-                name: 'Cherry Tomato',
-                variety: "Gardener's Delight",
-                hex: '#dc2626',
-                iconKey: 'tomato',
-                date: '2026-05-10',
-                medium: 'AutoPot System',
-                notes: 'Fed with organic tomato feed.',
-                logs: []
-            }
-        ];
-
-        let pendingDeleteId = null;
-        let activeFormStream = null;
-        let activeMatchStream = null;
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedSupabaseUrl = getStored('flora_supabase_url');
-            const savedSupabaseKey = getStored('flora_supabase_key');
-
-            if (savedSupabaseUrl && document.getElementById('setting-supabase-url')) {
-                document.getElementById('setting-supabase-url').value = savedSupabaseUrl;
-            }
-            if (savedSupabaseKey && document.getElementById('setting-supabase-key')) {
-                document.getElementById('setting-supabase-key').value = savedSupabaseKey;
-            }
-
-            initSupabase();
-            loadSettingsFromSupabase();
-            loadPlantsFromSupabase();
-            applyBranding();
-            renderIconPickerGrid();
-            renderPlants();
-            setupAutocomplete();
-            const logDateInput = document.getElementById('log-date');
-            if (logDateInput) logDateInput.valueAsDate = new Date();
-
-            const confirmBtn = document.getElementById('confirm-delete-btn');
-            if (confirmBtn) confirmBtn.addEventListener('click', confirmDeletePlant);
-
-            switchTab('plants');
-        });
-
-        function applyBranding() {
-            const subDisplay = document.getElementById('app-subtitle-display');
-            if (subDisplay) subDisplay.textContent = settings.username;
-            
-            const usernameInput = document.getElementById('setting-username');
-            if (usernameInput) usernameInput.value = settings.username;
-
-            const logoUrlInput = document.getElementById('setting-logo-url');
-            if (logoUrlInput) logoUrlInput.value = settings.logoUrl;
-
-            const logoImg = document.getElementById('header-logo-img');
-            const logoIcon = document.getElementById('header-logo-icon');
-            if (logoImg && logoIcon) {
-                if (settings.logoUrl) {
-                    logoImg.src = settings.logoUrl;
-                    logoImg.classList.remove('hidden');
-                    logoIcon.classList.add('hidden');
-                } else {
-                    logoImg.classList.add('hidden');
-                    logoIcon.classList.remove('hidden');
+        async function loadSettingsFromSupabase() {
+            if (!window.supabase) return;
+            try {
+                const { data, error } = await window.supabase.from('settings').select('*').eq('id', 'default').maybeSingle();
+                if (error) {
+                    console.warn('Could not load remote settings:', error.message || error);
+                    return;
                 }
+                if (!data) return;
+                if (data.username) settings.username = data.username;
+                if (data.logo_url) settings.logoUrl = data.logo_url;
+                setStored('flora_settings', JSON.stringify(settings));
+                applyBranding();
+            } catch (err) {
+                console.warn('Remote settings unavailable:', err);
             }
         }
 
-        function saveBrandingSettings() {
-            const statusEl = document.getElementById('save-status');
+        async function saveSettingsToSupabase() {
+            if (!window.supabase) return;
             try {
-                settings.username = document.getElementById('setting-username').value || '@kitchengardener';
-                settings.logoUrl = document.getElementById('setting-logo-url').value || '';
-                const storedWhere = setStored('flora_settings', JSON.stringify(settings));
-
-                const supabaseUrl = document.getElementById('setting-supabase-url')?.value || '';
-                const supabaseKey = document.getElementById('setting-supabase-key')?.value || '';
-                if (supabaseUrl) setStored('flora_supabase_url', supabaseUrl);
-                if (supabaseKey) setStored('flora_supabase_key', supabaseKey);
-
-                initSupabase();
-                saveSettingsToSupabase();
-                applyBranding();
-
-                if (statusEl) {
-                    statusEl.textContent = `Saved (${storedWhere || 'none'})`;
-                    statusEl.classList.remove('text-red-600');
-                    statusEl.classList.add('text-emerald-700');
-                    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+                const payload = {
+                    id: 'default',
+                    username: settings.username,
+                    logo_url: settings.logoUrl,
+                    supabase_url: document.getElementById('setting-supabase-url')?.value || getStored('flora_supabase_url') || '',
+                    supabase_key: document.getElementById('setting-supabase-key')?.value || getStored('flora_supabase_key') || ''
+                };
+                const { error } = await window.supabase.from('settings').upsert(payload, { onConflict: 'id' });
+                if (error) {
+                    console.warn('Remote settings save failed:', error.message || error);
+                } else {
+                    console.info('Remote settings saved to Supabase');
                 }
             } catch (err) {
-                console.error('Failed to save settings:', err);
-                if (statusEl) {
-                    statusEl.textContent = 'Save failed (storage blocked)';
-                    statusEl.classList.remove('text-emerald-700');
-                    statusEl.classList.add('text-red-600');
-                }
+                console.warn('Failed to sync settings to Supabase:', err);
             }
         }
