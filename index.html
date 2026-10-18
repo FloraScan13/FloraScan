@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flora Scan - Plant Tag & Growth Journal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -166,6 +167,7 @@
           </div>
         </div>
         <div class="flex justify-end pt-2 items-center space-x-3">
+          <div id="supabase-status" class="text-sm text-gray-500"></div>
           <div id="save-status" class="text-sm text-emerald-700"></div>
           <button onclick="saveBrandingSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Preferences</button>
         </div>
@@ -374,6 +376,131 @@
       }
     }
 
+    let supabaseClient = null;
+
+    function setSupabaseStatus(text, ok) {
+      const el = document.getElementById('supabase-status');
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'text-sm ' + (ok ? 'text-emerald-700' : 'text-amber-600');
+    }
+
+    function initSupabase() {
+      supabaseClient = null;
+      const url = (settings.supabaseUrl || '').trim();
+      const key = (settings.supabaseAnonKey || '').trim();
+      if (!url || !key) {
+        console.warn('Supabase not configured: set URL and anon key in Settings. Using localStorage.');
+        setSupabaseStatus('Supabase: not configured (local only)', false);
+        return;
+      }
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        console.warn('Supabase library failed to load. Using localStorage.');
+        setSupabaseStatus('Supabase: library unavailable (local only)', false);
+        return;
+      }
+      try {
+        supabaseClient = window.supabase.createClient(url, key);
+        console.log('Supabase client initialised');
+        setSupabaseStatus('Supabase: configured', true);
+      } catch (e) {
+        console.error('Supabase init failed:', e);
+        setSupabaseStatus('Supabase: init failed (local only)', false);
+      }
+    }
+
+    function supabaseFailed(action, error) {
+      console.warn('Supabase ' + action + ' failed, kept local copy:', error);
+      setSupabaseStatus('Supabase: ' + action + ' failed (saved locally)', false);
+    }
+
+    function plantToRow(plant) {
+      return {
+        id: plant.id,
+        name: plant.name,
+        variety: plant.variety || null,
+        color: plant.color || '#16a34a',
+        medium: plant.medium || null,
+        notes: plant.notes || null,
+        date: plant.date || null
+      };
+    }
+
+    async function loadPlantsFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('plants')
+          .select('*, plant_logs(*)')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        console.log('Supabase connected: loaded ' + data.length + ' plant(s)');
+        setSupabaseStatus('Supabase: connected', true);
+        if (data.length === 0 && plants.length > 0) {
+          // Remote is empty: push existing local plants up
+          for (const plant of plants) await syncPlantToSupabase(plant, true);
+          return;
+        }
+        plants = data.map((row) => ({
+          id: row.id,
+          name: row.name,
+          variety: row.variety || '',
+          color: row.color || '#16a34a',
+          medium: row.medium || '',
+          notes: row.notes || '',
+          date: row.date || '',
+          logs: (row.plant_logs || [])
+            .slice()
+            .sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.created_at || '').localeCompare(a.created_at || ''))
+            .map((l) => ({ id: l.id, date: l.date, type: l.type, text: l.text }))
+        }));
+        writeJson(STORAGE_KEYS.plants, plants);
+        renderPlants();
+      } catch (e) {
+        supabaseFailed('load', e);
+      }
+    }
+
+    async function syncPlantToSupabase(plant, includeLogs) {
+      if (!supabaseClient) return;
+      try {
+        const { error } = await supabaseClient.from('plants').upsert(plantToRow(plant));
+        if (error) throw error;
+        if (includeLogs && plant.logs && plant.logs.length) {
+          const rows = plant.logs.map((l) => ({ id: l.id, plant_id: plant.id, date: l.date, type: l.type, text: l.text }));
+          const { error: logError } = await supabaseClient.from('plant_logs').upsert(rows);
+          if (logError) throw logError;
+        }
+        setSupabaseStatus('Supabase: connected', true);
+      } catch (e) {
+        supabaseFailed('save', e);
+      }
+    }
+
+    async function deletePlantFromSupabase(id) {
+      if (!supabaseClient) return;
+      try {
+        const { error } = await supabaseClient.from('plants').delete().eq('id', id);
+        if (error) throw error;
+        setSupabaseStatus('Supabase: connected', true);
+      } catch (e) {
+        supabaseFailed('delete', e);
+      }
+    }
+
+    async function addLogToSupabase(plantId, entry) {
+      if (!supabaseClient) return;
+      try {
+        const { error } = await supabaseClient.from('plant_logs').insert({
+          id: entry.id, plant_id: plantId, date: entry.date, type: entry.type, text: entry.text
+        });
+        if (error) throw error;
+        setSupabaseStatus('Supabase: connected', true);
+      } catch (e) {
+        supabaseFailed('log save', e);
+      }
+    }
+
     function applyBranding() {
       const subtitle = document.getElementById('app-subtitle-display');
       if (subtitle) subtitle.textContent = settings.username || '@kitchengardener';
@@ -409,6 +536,8 @@
       settings.supabaseAnonKey = document.getElementById('setting-supabase-key').value || '';
       writeJson(STORAGE_KEYS.settings, settings);
       applyBranding();
+      initSupabase();
+      loadPlantsFromSupabase();
       const status = document.getElementById('save-status');
       if (status) {
         status.textContent = 'Saved locally';
@@ -540,7 +669,7 @@
       return palette[hex.toLowerCase()] || 'Custom Tag Color';
     }
 
-    function handlePlantSubmit(event) {
+    async function handlePlantSubmit(event) {
       event.preventDefault();
       const id = document.getElementById('edit-plant-id').value || `plant_${Date.now()}`;
       const name = document.getElementById('plant-name').value.trim();
@@ -570,6 +699,7 @@
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
       closePlantModal();
+      await syncPlantToSupabase(existing || plant, false);
     }
 
     function promptDeletePlant(id) {
@@ -585,12 +715,14 @@
       pendingDeleteId = null;
     }
 
-    document.getElementById('confirm-delete-btn')?.addEventListener('click', () => {
+    document.getElementById('confirm-delete-btn')?.addEventListener('click', async () => {
       if (!pendingDeleteId) return;
-      plants = plants.filter((item) => item.id !== pendingDeleteId);
+      const deletedId = pendingDeleteId;
+      plants = plants.filter((item) => item.id !== deletedId);
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
       closeDeleteModal();
+      await deletePlantFromSupabase(deletedId);
     });
 
     function openJournalModal(id) {
@@ -631,7 +763,7 @@
       `).join('');
     }
 
-    function handleJournalLogSubmit(event) {
+    async function handleJournalLogSubmit(event) {
       event.preventDefault();
       const plantId = document.getElementById('log-plant-id').value;
       const plant = plants.find((item) => item.id === plantId);
@@ -655,6 +787,7 @@
       renderJournalLogs(plant);
       document.getElementById('log-date').value = '';
       document.getElementById('log-text').value = '';
+      await addLogToSupabase(plant.id, entry);
     }
 
     function triggerColorMatch() {
@@ -692,8 +825,10 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       applyBranding();
+      initSupabase();
       renderPlants();
       switchTab('plants');
+      loadPlantsFromSupabase();
     });
   </script>
 </body>
