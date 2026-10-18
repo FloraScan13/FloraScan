@@ -337,6 +337,8 @@
     <script>
         window.supabaseClient = null;
         window._floraSupabaseInitStarted = false;
+        window._formStream = null;
+        window._matchStream = null;
 
         function canUseLocalStorage() {
             try {
@@ -845,39 +847,137 @@
             }
         }
 
-        function toggleFormCamera() {
+        // Camera helpers
+        async function startCameraForVideo(videoEl, facingMode = { ideal: 'environment' }) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Camera not supported in this browser or insecure context. Use HTTPS or localhost.');
+            }
+            const constraints = { video: { facingMode }, audio: false };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            videoEl.srcObject = stream;
+            await videoEl.play().catch(() => {});
+            return stream;
+        }
+
+        function stopStream(stream) {
+            try {
+                if (!stream) return;
+                const tracks = stream.getTracks();
+                tracks.forEach(t => t.stop());
+            } catch (e) { console.warn('Error stopping stream', e); }
+        }
+
+        async function toggleFormCamera() {
             const btn = document.getElementById('form-cam-toggle');
-            if (!btn) return;
-            if (btn.dataset.active === '1') {
-                btn.dataset.active = '0';
-                btn.textContent = 'Start Camera';
-            } else {
-                btn.dataset.active = '1';
-                btn.textContent = 'Stop Camera';
+            const video = document.getElementById('form-video');
+            if (!video) return;
+
+            // If already running, stop it
+            if (window._formStream) {
+                stopStream(window._formStream);
+                window._formStream = null;
+                if (video) video.srcObject = null;
+                if (btn) btn.textContent = 'Start Camera';
+                return;
+            }
+
+            try {
+                // start camera with environment facing mode if available
+                window._formStream = await startCameraForVideo(video, 'environment');
+                if (btn) btn.textContent = 'Stop Camera';
+            } catch (err) {
+                console.warn('Form camera start failed:', err);
+                alert(err.message || 'Could not start the camera. Ensure you are on HTTPS or localhost and that the page has camera permissions.');
             }
         }
 
-        function toggleMatchCamera() {
+        async function toggleMatchCamera() {
             const btnText = document.getElementById('match-cam-btn-text');
-            if (!btnText) return;
-            btnText.textContent = (btnText.textContent.includes('Start')) ? 'Stop Camera' : 'Start Camera';
+            const video = document.getElementById('match-video');
+            if (!video) return;
+
+            if (window._matchStream) {
+                stopStream(window._matchStream);
+                window._matchStream = null;
+                video.srcObject = null;
+                if (btnText) btnText.textContent = 'Start Camera';
+                return;
+            }
+
+            try {
+                window._matchStream = await startCameraForVideo(video, 'environment');
+                if (btnText) btnText.textContent = 'Stop Camera';
+            } catch (err) {
+                console.warn('Match camera start failed:', err);
+                alert(err.message || 'Could not start the camera. Ensure you are on HTTPS or localhost and that the page has camera permissions.');
+            }
+        }
+
+        // Sample average color from video center (samplesize x samplesize)
+        function sampleVideoCenterColor(videoEl, sampleSize = 9) {
+            const canvas = document.createElement('canvas');
+            const w = videoEl.videoWidth || videoEl.clientWidth || 640;
+            const h = videoEl.videoHeight || videoEl.clientHeight || 480;
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            try {
+                ctx.drawImage(videoEl, 0, 0, w, h);
+            } catch (e) {
+                throw new Error('Unable to capture frame from video');
+            }
+            const cx = Math.floor(w / 2);
+            const cy = Math.floor(h / 2);
+            const half = Math.floor(sampleSize / 2);
+            let r = 0, g = 0, b = 0, count = 0;
+            for (let dx = -half; dx <= half; dx++) {
+                for (let dy = -half; dy <= half; dy++) {
+                    const x = Math.min(w - 1, Math.max(0, cx + dx));
+                    const y = Math.min(h - 1, Math.max(0, cy + dy));
+                    const data = ctx.getImageData(x, y, 1, 1).data;
+                    r += data[0]; g += data[1]; b += data[2]; count++;
+                }
+            }
+            r = Math.round(r / count);
+            g = Math.round(g / count);
+            b = Math.round(b / count);
+            return rgbToHex(r, g, b);
         }
 
         function captureFormColor() {
-            const hex = '#65a30d';
-            document.getElementById('form-color-hex').value = hex;
-            document.getElementById('form-color-badge').style.backgroundColor = hex;
-            document.getElementById('form-scanned-color-name').textContent = getCommonColorName(hex);
+            const video = document.getElementById('form-video');
+            const badge = document.getElementById('form-color-badge');
+            const nameEl = document.getElementById('form-scanned-color-name');
+            const hexInput = document.getElementById('form-color-hex');
+            if (!video) return alert('Camera not started');
+
+            try {
+                const hex = sampleVideoCenterColor(video, 9);
+                if (hexInput) hexInput.value = hex;
+                if (badge) badge.style.backgroundColor = hex;
+                if (nameEl) nameEl.textContent = getCommonColorName(hex);
+            } catch (err) {
+                console.warn('Capture failed', err);
+                alert('Could not capture color from camera. Try allowing camera permissions or using a different lighting condition.');
+            }
         }
 
         function triggerColorMatch() {
-            const hex = '#16a34a';
+            const video = document.getElementById('match-video');
             const resultCard = document.getElementById('match-result-card');
             const swatch = document.getElementById('match-color-swatch');
             const content = document.getElementById('match-result-content');
-            if (swatch) swatch.style.backgroundColor = hex;
-            if (content) content.innerHTML = `<div class="text-sm font-semibold">${getCommonColorName(hex)}</div><div class="text-xs text-slate-500 mt-1">Hex: ${hex}</div>`;
-            if (resultCard) resultCard.classList.remove('hidden');
+            if (!video) return alert('Camera not started');
+
+            try {
+                const hex = sampleVideoCenterColor(video, 9);
+                if (swatch) swatch.style.backgroundColor = hex;
+                if (content) content.innerHTML = `<div class="text-sm font-semibold">${getCommonColorName(hex)}</div><div class="text-xs text-slate-500 mt-1">Hex: ${hex}</div>`;
+                if (resultCard) resultCard.classList.remove('hidden');
+            } catch (err) {
+                console.warn('Match capture failed', err);
+                alert('Could not capture color from camera. Try allowing camera permissions or using a different lighting condition.');
+            }
         }
 
         async function handlePlantSubmit(e) {
