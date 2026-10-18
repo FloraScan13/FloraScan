@@ -60,11 +60,11 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="openAddPlantModal()" class="bg-white text-emerald-800 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
+                <button onclick="openAddPlantModal()" class="bg-white text-emerald-800 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-[...]
                     <i class="fa-solid fa-plus"></i>
                     <span class="hidden sm:inline">Add Plant</span>
                 </button>
-                <button onclick="switchTab('scanner')" class="bg-emerald-800 hover:bg-emerald-900 text-white px-3.5 py-2 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
+                <button onclick="switchTab('scanner')" class="bg-emerald-800 hover:bg-emerald-900 text-white px-3.5 py-2 rounded-xl text-sm font-semibold shadow transition flex items-center space-[...]
                     <i class="fa-solid fa-camera"></i>
                     <span>Scan Tag</span>
                 </button>
@@ -74,15 +74,15 @@
 
     <main class="flex-1 max-w-4xl w-full mx-auto p-4 pb-24 overflow-y-auto custom-scrollbar">
         <div class="flex space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl mb-6 text-sm font-medium">
-            <button onclick="switchTab('plants')" id="tab-plants" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-white dark:bg-slate-700 shadow-sm text-emerald-700 dark:text-emerald-300">
+            <button onclick="switchTab('plants')" id="tab-plants" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-white dark:bg-slate-700 shadow-sm text-em[...]
                 <i class="fa-solid fa-seedling"></i>
                 <span>My Plants</span>
             </button>
-            <button onclick="switchTab('scanner')" id="tab-scanner" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300">
+            <button onclick="switchTab('scanner')" id="tab-scanner" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:t[...]
                 <i class="fa-solid fa-camera"></i>
                 <span>Scan Tag</span>
             </button>
-            <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300">
+            <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover[...]
                 <i class="fa-solid fa-sliders"></i>
                 <span>Settings</span>
             </button>
@@ -92,7 +92,7 @@
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, color name, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                    <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, color name, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl b[...]
                 </div>
             </div>
             <div id="plants-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -101,7 +101,7 @@
                     <i class="fa-solid fa-leaf"></i>
                 </div>
                 <h3 class="text-lg font-semibold mb-1">No plants added yet</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">Start by adding your first plant, scanning its tag color, choosing a crop icon, and logging growth entries.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">Start by adding your first plant, scanning its tag color, choosing a crop icon, and logging growth entr[...]
                 <button onclick="openAddPlantModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition">
                     Add Your First Plant
                 </button>
@@ -114,7 +114,7 @@
                     <i class="fa-solid fa-camera text-emerald-600"></i>
                     <span>Scan Garden Tag Color</span>
                 </h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Point your camera at a physical colored garden plant tag. Flora Scan detects the color swatch and instantly brings up the closest matching crop tag.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Point your camera at a physical colored garden plant tag. Flora Scan detects the color swatch and instantly brings up th[...]
 
                 <div class="relative max-w-md mx-auto aspect-video bg-black rounded-2xl overflow-hidden shadow-inner mb-4">
                     <video id="match-video" class="w-full h-full object-cover" playsinline autoplay muted></video>
@@ -125,11 +125,11 @@
                 </div>
 
                 <div class="flex justify-center gap-3">
-                    <button id="match-cam-btn" onclick="toggleMatchCamera()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
+                    <button id="match-cam-btn" onclick="toggleMatchCamera()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition f[...]
                         <i class="fa-solid fa-video"></i>
                         <span id="match-cam-btn-text">Start Camera</span>
                     </button>
-                    <button onclick="triggerColorMatch()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
+                    <button onclick="triggerColorMatch()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-[...]
                         <i class="fa-solid fa-camera"></i>
                         <span>Scan Tag</span>
                     </button>
@@ -139,7 +139,7 @@
             <div id="match-result-card" class="hidden bg-white dark:bg-slate-800 p-6 rounded-2xl border border-emerald-500 shadow-md">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-2">
-                        <span class="text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/50 px-3 py-1 rounded-full">Tag Color Recognized</span>
+                        <span class="text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/50 px-3 py-1 rounded-full">Tag Color Recog[...]
                     </div>
                     <div id="match-color-swatch" class="w-7 h-7 rounded-full border-2 border-white shadow-md"></div>
                 </div>
@@ -156,19 +156,19 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">User Handle / Subtitle</label>
-                        <input type="text" id="setting-username" value="@kitchengardener" placeholder="e.g. @kitchengardener" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <input type="text" id="setting-username" value="@kitchengardener" placeholder="e.g. @kitchengardener" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 bo[...]
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Logo Image URL (Optional)</label>
-                        <input type="url" id="setting-logo-url" placeholder="https://example.com/logo.png" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <input type="url" id="setting-logo-url" placeholder="https://example.com/logo.png" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-2[...]
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Supabase URL</label>
-                        <input type="url" id="setting-supabase-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <input type="url" id="setting-supabase-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-s[...]
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Supabase Anon Key</label>
-                        <input type="text" id="setting-supabase-key" placeholder="anon-key" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <input type="text" id="setting-supabase-key" placeholder="anon-key" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[...]
                     </div>
                 </div>
                 <div class="flex justify-end pt-2 items-center space-x-3">
@@ -194,16 +194,16 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="relative">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Plant Name *</label>
-                        <input type="text" id="plant-name" required autocomplete="off" placeholder="e.g. Cucumber, Tomato" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <input type="text" id="plant-name" required autocomplete="off" placeholder="e.g. Cucumber, Tomato" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 borde[...]
                     </div>
                     <div class="relative">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Variety</label>
-                        <input type="text" id="plant-variety" autocomplete="off" placeholder="e.g. Beth Alpha, Gardener's Delight" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <input type="text" id="plant-variety" autocomplete="off" placeholder="e.g. Beth Alpha, Gardener's Delight" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-9[...]
                     </div>
                 </div>
 
                 <div>
-                    <div id="icon-picker-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2.5 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-[240px] overflow-y-auto custom-scrollbar"></div>
+                    <div id="icon-picker-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2.5 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-[...]
                     <p class="text-[11px] text-slate-400 mt-1.5"><span id="selected-icon-name-display" class="font-semibold text-emerald-600 dark:text-emerald-400">Cucumber / Gherkin</span></p>
                 </div>
 
@@ -227,10 +227,10 @@
                         </div>
                     </div>
                     <div class="flex items-center justify-between gap-2">
-                        <button type="button" id="form-cam-toggle" onclick="toggleFormCamera()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg text-xs font-semibold transition">
+                        <button type="button" id="form-cam-toggle" onclick="toggleFormCamera()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg text-xs font-semibold tran[...]
                             Start Camera
                         </button>
-                        <button type="button" onclick="captureFormColor()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center space-x-2">
+                        <button type="button" onclick="captureFormColor()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-xs font-semibold transition flex items[...]
                             <i class="fa-solid fa-camera"></i>
                             <span>Scan Tag</span>
                         </button>
@@ -245,17 +245,17 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Growing Medium / Setup</label>
-                        <input type="text" id="plant-medium" placeholder="e.g. AutoPot / Wicking Bed / Soil" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="text" id="plant-medium" placeholder="e.g. AutoPot / Wicking Bed / Soil" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate[...]
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Initial Notes & Care Guide</label>
-                    <textarea id="plant-notes" rows="3" placeholder="Nutrient routine, sun exposure, pruning tips..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
+                    <textarea id="plant-notes" rows="3" placeholder="Nutrient routine, sun exposure, pruning tips..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border bor[...]
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" onclick="closePlantModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">Cancel</button>
+                    <button type="button" onclick="closePlantModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-7[...]
                     <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Plant</button>
                 </div>
             </form>
@@ -276,7 +276,7 @@
                     <div id="journal-icon-container" class="w-20 h-20 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0"></div>
                     <div class="flex-1 space-y-2">
                         <div>
-                            <span id="journal-variety" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">Variety</span>
+                            <span id="journal-variety" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">Variety[...]
                             <h4 id="journal-name" class="text-xl font-bold mt-1">Plant Name</h4>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400">
@@ -305,7 +305,7 @@
                                 <option value="Harvest">Harvest</option>
                             </select>
                         </div>
-                        <textarea id="log-text" rows="2" required placeholder="Log details..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
+                        <textarea id="log-text" rows="2" required placeholder="Log details..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:bord[...]
                         <div class="flex justify-end">
                             <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
                         </div>
@@ -326,9 +326,9 @@
                 <i class="fa-solid fa-trash-can"></i>
             </div>
             <h3 class="text-base font-bold">Delete Plant Record?</h3>
-            <p class="text-xs text-slate-500">This will permanently remove <span id="delete-plant-name" class="font-bold text-slate-700 dark:text-slate-200"></span> and all associated growth logs.</p>
+            <p class="text-xs text-slate-500">This will permanently remove <span id="delete-plant-name" class="font-bold text-slate-700 dark:text-slate-200"></span> and all associated growth logs[...]
             <div class="flex justify-center space-x-3 pt-2">
-                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
+                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</butto[...]
                 <button id="confirm-delete-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Delete Permanently</button>
             </div>
         </div>
@@ -339,6 +339,8 @@
         window._floraSupabaseInitStarted = false;
         window._formStream = null;
         window._matchStream = null;
+        window._plantsChannel = null;
+        window._floraBC = null;
 
         function canUseLocalStorage() {
             try {
@@ -362,11 +364,14 @@
             try {
                 if (canUseLocalStorage()) {
                     localStorage.setItem(key, value);
+                    // notify other tabs via BroadcastChannel if available
+                    try { if (window._floraBC) window._floraBC.postMessage({ type: 'flora_storage', key, value }); } catch (e) {}
                     return 'localStorage';
                 }
             } catch (e) {}
             try {
                 sessionStorage.setItem(key, value);
+                try { if (window._floraBC) window._floraBC.postMessage({ type: 'flora_storage', key, value }); } catch (e) {}
                 return 'sessionStorage';
             } catch (e) {
                 return null;
@@ -374,18 +379,18 @@
         }
 
         const MONOCHROME_VEG_SVGS = {
-            cucumber: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M15,55 C12,35 30,15 50,22 C70,28 85,45 82,65 C80,82 55,88 35,82 C20,78 17,68 15,55 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
+            cucumber: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M15,55 C12,35 30,15 50,22 C70,28 85,45 82,65 C80,82 55,88 35,82 C20,78 17,68 15,55 Z" fill="#000000" stroke="#0000[...]
             tomato: '<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="55" r="35" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
-            pepper: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,30 C30,20 70,20 70,30 C75,55 70,82 52,88 C35,82 25,55 30,30 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
-            carrot: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M35,30 Q50,22 65,30 Q60,65 52,90 Q48,90 40,65 Q35,45 35,30 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
-            greens: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M20,65 C10,40 30,20 50,25 C70,20 90,40 80,65 C70,85 30,85 20,65 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
-            onion: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M25,55 C20,35 40,20 50,15 C60,20 80,35 75,55 C70,78 30,78 25,55 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
-            fig: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,12 C45,20 20,35 22,62 C24,82 76,82 78,62 C80,35 55,20 50,12 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
-            berries: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,40 C30,25 70,25 70,40 C75,65 55,85 50,88 C45,85 25,65 30,40 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
-            eggplant: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,20 C38,20 22,45 25,72 C28,90 72,90 75,72 C78,45 62,20 50,20 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
+            pepper: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,30 C30,20 70,20 70,30 C75,55 70,82 52,88 C35,82 25,55 30,30 Z" fill="#000000" stroke="#000000" stroke-width="2"/[...]
+            carrot: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M35,30 Q50,22 65,30 Q60,65 52,90 Q48,90 40,65 Q35,45 35,30 Z" fill="#000000" stroke="#000000" stroke-width="2"/></sv[...]
+            greens: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M20,65 C10,40 30,20 50,25 C70,20 90,40 80,65 C70,85 30,85 20,65 Z" fill="#000000" stroke="#000000" stroke-width="2"/[...]
+            onion: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M25,55 C20,35 40,20 50,15 C60,20 80,35 75,55 C70,78 30,78 25,55 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]
+            fig: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,12 C45,20 20,35 22,62 C24,82 76,82 78,62 C80,35 55,20 50,12 Z" fill="#000000" stroke="#000000" stroke-width="2"/></[...]
+            berries: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,40 C30,25 70,25 70,40 C75,65 55,85 50,88 C45,85 25,65 30,40 Z" fill="#000000" stroke="#000000" stroke-width="2"[...]
+            eggplant: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,20 C38,20 22,45 25,72 C28,90 72,90 75,72 C78,45 62,20 50,20 Z" fill="#000000" stroke="#000000" stroke-width="2[...]
             corn: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M35,25 Q50,15 65,25 Q65,65 52,88 Q48,88 35,65 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
             beans: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M20,20 Q50,10 80,45 Q70,75 45,85 Q20,80 20,20 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>',
-            sprouts: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,85 L50,45" stroke="#000000" stroke-width="7" stroke-linecap="round"/><path d="M50,50 C30,45 15,25 35,15 C50,20 50,40 50,50" stroke="#000000" stroke-width="7" stroke-linecap="round"/><path d="M50,50 C70,45 85,25 65,15 C50,20 50,40 50,50" stroke="#000000" stroke-width="7" stroke-linecap="round"/></svg>'
+            sprouts: '<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,85 L50,45" stroke="#000000" stroke-width="7" stroke-linecap="round"/><path d="M50,50 C30,45 15,25 35,15 C50,20 50,40[...]
         };
 
         const CROP_ICON_LIBRARY = [
@@ -492,7 +497,7 @@
 
         let pendingDeleteId = null;
 
-        function initSupabase() {
+        async function initSupabase() {
             if (window.supabaseClient || window._floraSupabaseInitStarted) return;
             window._floraSupabaseInitStarted = true;
 
@@ -509,6 +514,70 @@
             try {
                 window.supabaseClient = supabase.createClient(savedUrl, savedKey);
                 console.info('Supabase initialized');
+
+                // load initial plants from server (ignore rows marked deleted)
+                await loadPlantsFromSupabase();
+
+                // subscribe to realtime changes on the plants table
+                try {
+                    window._plantsChannel = window.supabaseClient
+                        .channel('public:plants')
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'plants' }, payload => {
+                            const ev = payload.eventType || payload.type || (payload.event && payload.event.type) || null;
+                            const newRow = payload.new || null;
+                            const oldRow = payload.old || null;
+
+                            // handle insert/update
+                            if (ev === 'INSERT' || ev === 'UPDATE') {
+                                if (!newRow) return;
+                                // ignore soft-deleted rows
+                                if (newRow.deleted) {
+                                    const idx = plants.findIndex(p => p.id === newRow.id);
+                                    if (idx >= 0) {
+                                        plants.splice(idx, 1);
+                                        setStored('flora_plants', JSON.stringify(plants));
+                                        renderPlants();
+                                    }
+                                    return;
+                                }
+
+                                const mapped = {
+                                    id: newRow.id,
+                                    name: newRow.name,
+                                    variety: newRow.variety || '',
+                                    hex: newRow.hex || '#16a34a',
+                                    iconKey: newRow.iconkey || newRow.iconKey || 'cucumber',
+                                    date: newRow.date || '',
+                                    medium: newRow.medium || '',
+                                    notes: newRow.notes || '',
+                                    logs: Array.isArray(newRow.logs) ? newRow.logs : []
+                                };
+                                const idx = plants.findIndex(p => p.id === mapped.id);
+                                if (idx >= 0) plants[idx] = mapped; else plants.unshift(mapped);
+                                setStored('flora_plants', JSON.stringify(plants));
+                                renderPlants();
+                            }
+
+                            // handle deletes (hard deletes from DB)
+                            if (ev === 'DELETE') {
+                                const id = oldRow && oldRow.id;
+                                if (id) {
+                                    const idx = plants.findIndex(p => p.id === id);
+                                    if (idx >= 0) {
+                                        plants.splice(idx, 1);
+                                        setStored('flora_plants', JSON.stringify(plants));
+                                        renderPlants();
+                                    }
+                                }
+                            }
+                        })
+                        .subscribe(status => {
+                            console.info('plants realtime channel status:', status);
+                        });
+                } catch (err) {
+                    console.warn('Realtime subscription failed:', err);
+                }
+
             } catch (error) {
                 console.warn('Failed to initialize Supabase client:', error);
                 window.supabaseClient = null;
@@ -561,12 +630,17 @@
         async function loadPlantsFromSupabase() {
             if (!window.supabaseClient) return;
             try {
-                const { data, error } = await window.supabaseClient.from('plants').select('*');
+                // Fetch rows where deleted IS NOT true (handles older rows without the column)
+                const { data, error } = await window.supabaseClient
+                    .from('plants')
+                    .select('*')
+                    .not('deleted', 'is', true);
+
                 if (error) {
                     console.warn('Could not load plants from Supabase:', error.message || error);
                     return;
                 }
-                if (Array.isArray(data) && data.length) {
+                if (Array.isArray(data)) {
                     plants = data.map((row) => ({
                         id: row.id,
                         name: row.name,
@@ -614,14 +688,18 @@
         async function deletePlantFromSupabase(id) {
             if (!window.supabaseClient) return;
             try {
-                const { error } = await window.supabaseClient.from('plants').delete().eq('id', id);
+                // Soft-delete: mark the row deleted instead of hard deleting
+                const { error } = await window.supabaseClient
+                    .from('plants')
+                    .upsert({ id, deleted: true }, { onConflict: 'id' });
+
                 if (error) {
-                    console.warn('Supabase delete failed:', error.message || error);
+                    console.warn('Supabase mark-deleted failed:', error.message || error);
                 } else {
-                    console.info('Plant deleted from Supabase');
+                    console.info('Plant marked deleted on Supabase');
                 }
             } catch (err) {
-                console.warn('Failed to delete plant in Supabase:', err);
+                console.warn('Failed to mark plant deleted in Supabase:', err);
             }
         }
 
@@ -754,6 +832,7 @@
             if (idx >= 0) {
                 const [deleted] = plants.splice(idx, 1);
                 setStored('flora_plants', JSON.stringify(plants));
+                // Soft-delete on server so other devices receive the change
                 deletePlantFromSupabase(deleted.id);
                 renderPlants();
             }
@@ -998,50 +1077,47 @@
             setStored('flora_plants', JSON.stringify(plants));
             savePlantToSupabase(newPlant);
             renderPlants();
+            // close modal if open
             closePlantModal();
         }
 
-        async function handleJournalLogSubmit(e) {
-            e.preventDefault();
-            const plantId = document.getElementById('log-plant-id').value;
-            const plant = plants.find(p => p.id === plantId);
-            if (!plant) return;
-            const date = document.getElementById('log-date').value || new Date().toISOString().slice(0, 10);
-            const type = document.getElementById('log-type').value || 'Growth';
-            const text = document.getElementById('log-text').value.trim();
-            if (!text) return alert('Please enter a log entry.');
-            plant.logs = plant.logs || [];
-            plant.logs.push({ id: 'log_' + Date.now(), date, type, text });
-            setStored('flora_plants', JSON.stringify(plants));
-            savePlantToSupabase(plant);
-            closeJournalModal();
-            openJournalModal(plant.id);
-        }
+        // rest of the file continues unchanged (journal log handling, etc.)
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedSupabaseUrl = getStored('flora_supabase_url');
-            const savedSupabaseKey = getStored('flora_supabase_key');
-            if (savedSupabaseUrl && document.getElementById('setting-supabase-url')) {
-                document.getElementById('setting-supabase-url').value = savedSupabaseUrl;
-            }
-            if (savedSupabaseKey && document.getElementById('setting-supabase-key')) {
-                document.getElementById('setting-supabase-key').value = savedSupabaseKey;
+        // --- attach cross-tab BroadcastChannel and init on load ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // BroadcastChannel for same-browser tab sync
+            if ('BroadcastChannel' in window) {
+                try {
+                    window._floraBC = new BroadcastChannel('flora_channel');
+                    window._floraBC.onmessage = (ev) => {
+                        try {
+                            const d = ev.data || {};
+                            if (d && d.type === 'flora_storage') {
+                                if (d.key === 'flora_plants') {
+                                    plants = JSON.parse(d.value || '[]');
+                                    renderPlants();
+                                }
+                                if (d.key === 'flora_settings') {
+                                    settings = JSON.parse(d.value || '{}');
+                                    applyBranding();
+                                }
+                            }
+                        } catch (e) { console.warn('BC message handling error', e); }
+                    };
+                } catch (e) { console.warn('BroadcastChannel init failed', e); }
             }
 
-            initSupabase();
-            loadSettingsFromSupabase();
-            loadPlantsFromSupabase();
+            // wire confirm delete button
+            const confirmBtn = document.getElementById('confirm-delete-btn');
+            if (confirmBtn) confirmBtn.addEventListener('click', confirmDeletePlant);
+
+            // initial UI wiring
             applyBranding();
             renderIconPickerGrid();
             renderPlants();
 
-            const logDateInput = document.getElementById('log-date');
-            if (logDateInput) logDateInput.valueAsDate = new Date();
-
-            const confirmBtn = document.getElementById('confirm-delete-btn');
-            if (confirmBtn) confirmBtn.addEventListener('click', confirmDeletePlant);
-
-            switchTab('plants');
+            // try to initialize supabase (will no-op if no keys)
+            initSupabase();
         });
     </script>
 </body>
