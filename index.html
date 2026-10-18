@@ -494,6 +494,112 @@
             }
         }
 
+        async function loadSettingsFromSupabase() {
+            if (!window.supabase) return;
+            try {
+                const { data, error } = await window.supabase.from('app_settings').select('*').eq('id', 'default').maybeSingle();
+                if (error) {
+                    console.warn('Could not load remote settings:', error.message || error);
+                    return;
+                }
+                if (!data) return;
+                if (data.username) appSettings.username = data.username;
+                if (data.logo_url) appSettings.logoUrl = data.logo_url;
+                setStored('flora_settings', JSON.stringify(appSettings));
+                applyBranding();
+            } catch (err) {
+                console.warn('Remote settings unavailable:', err);
+            }
+        }
+
+        async function saveSettingsToSupabase() {
+            if (!window.supabase) return;
+            try {
+                const payload = {
+                    id: 'default',
+                    username: appSettings.username,
+                    logo_url: appSettings.logoUrl,
+                    supabase_url: document.getElementById('setting-supabase-url')?.value || getStored('flora_supabase_url') || '',
+                    supabase_key: document.getElementById('setting-supabase-key')?.value || getStored('flora_supabase_key') || ''
+                };
+                const { error } = await window.supabase.from('app_settings').upsert(payload, { onConflict: 'id' });
+                if (error) {
+                    console.warn('Remote settings save failed:', error.message || error);
+                } else {
+                    console.info('Remote settings saved to Supabase');
+                }
+            } catch (err) {
+                console.warn('Failed to sync settings to Supabase:', err);
+            }
+        }
+
+        async function loadPlantsFromSupabase() {
+            if (!window.supabase) return;
+            try {
+                const { data, error } = await window.supabase.from('plants').select('*');
+                if (error) {
+                    console.warn('Could not load plants from Supabase:', error.message || error);
+                    return;
+                }
+                if (Array.isArray(data) && data.length) {
+                    plants = data.map((row) => ({
+                        id: row.id,
+                        name: row.name,
+                        variety: row.variety || '',
+                        hex: row.hex || '#16a34a',
+                        iconKey: row.iconkey || row.iconKey || 'cucumber',
+                        date: row.date || '',
+                        medium: row.medium || '',
+                        notes: row.notes || '',
+                        logs: Array.isArray(row.logs) ? row.logs : []
+                    }));
+                    setStored('flora_plants', JSON.stringify(plants));
+                    renderPlants();
+                }
+            } catch (err) {
+                console.warn('Remote plant load failed:', err);
+            }
+        }
+
+        async function savePlantToSupabase(plant) {
+            if (!window.supabase) return;
+            try {
+                const payload = {
+                    id: plant.id,
+                    name: plant.name,
+                    variety: plant.variety || '',
+                    hex: plant.hex || '#16a34a',
+                    iconkey: plant.iconKey || 'cucumber',
+                    date: plant.date || null,
+                    medium: plant.medium || '',
+                    notes: plant.notes || '',
+                    logs: Array.isArray(plant.logs) ? plant.logs : []
+                };
+                const { error } = await window.supabase.from('plants').upsert(payload, { onConflict: 'id' });
+                if (error) {
+                    console.warn('Supabase plant save failed:', error.message || error);
+                } else {
+                    console.info('Plant saved to Supabase');
+                }
+            } catch (err) {
+                console.warn('Failed to sync plant to Supabase:', err);
+            }
+        }
+
+        async function deletePlantFromSupabase(id) {
+            if (!window.supabase) return;
+            try {
+                const { error } = await window.supabase.from('plants').delete().eq('id', id);
+                if (error) {
+                    console.warn('Supabase delete failed:', error.message || error);
+                } else {
+                    console.info('Plant deleted from Supabase');
+                }
+            } catch (err) {
+                console.warn('Failed to delete plant in Supabase:', err);
+            }
+        }
+
         // High-contrast, Monochrome / Black & White Vegetable Vector SVG Artwork
         const MONOCHROME_VEG_SVGS = {
             cucumber: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M15,55 C12,35 30,15 50,22 C70,28 85,45 82,65 C80,82 55,88 35,82 C20,78 17,68 15,55 Z" fill="#000000" stroke="#000000"/></svg>`,
@@ -631,6 +737,8 @@
             }
 
             initSupabase();
+            loadSettingsFromSupabase();
+            loadPlantsFromSupabase();
             applyBranding();
             renderIconPickerGrid();
             renderPlants();
@@ -638,11 +746,9 @@
             const logDateInput = document.getElementById('log-date');
             if (logDateInput) logDateInput.valueAsDate = new Date();
 
-            // Wire confirm delete
             const confirmBtn = document.getElementById('confirm-delete-btn');
             if (confirmBtn) confirmBtn.addEventListener('click', confirmDeletePlant);
 
-            // Default tab
             switchTab('plants');
         });
 
@@ -679,11 +785,12 @@
 
                 const supabaseUrl = document.getElementById('setting-supabase-url')?.value || '';
                 const supabaseKey = document.getElementById('setting-supabase-key')?.value || '';
-                const s1 = supabaseUrl ? setStored('flora_supabase_url', supabaseUrl) : null;
-                const s2 = supabaseKey ? setStored('flora_supabase_key', supabaseKey) : null;
+                if (supabaseUrl) setStored('flora_supabase_url', supabaseUrl);
+                if (supabaseKey) setStored('flora_supabase_key', supabaseKey);
 
-                applyBranding();
                 initSupabase();
+                saveSettingsToSupabase();
+                applyBranding();
 
                 if (statusEl) {
                     statusEl.textContent = `Saved (${storedWhere || 'none'})`;
@@ -722,7 +829,6 @@
             const modal = document.getElementById('plant-modal');
             if (!modal) return;
             document.getElementById('modal-title').textContent = 'Add New Plant';
-            // reset form
             document.getElementById('edit-plant-id').value = '';
             document.getElementById('plant-name').value = '';
             document.getElementById('plant-variety').value = '';
@@ -759,7 +865,6 @@
             const iconContainer = document.getElementById('journal-icon-container');
             iconContainer.innerHTML = MONOCHROME_VEG_SVGS[plant.iconKey] || '';
 
-            // populate logs
             const logsContainer = document.getElementById('journal-logs-container');
             logsContainer.innerHTML = '';
             (plant.logs || []).slice().reverse().forEach(log => {
@@ -855,7 +960,6 @@
         }
 
         function captureFormColor() {
-            // Minimal stub: just set to a sample color and update badge
             const hex = '#65a30d';
             document.getElementById('form-color-hex').value = hex;
             document.getElementById('form-color-badge').style.backgroundColor = hex;
@@ -863,7 +967,6 @@
         }
 
         function triggerColorMatch() {
-            // Minimal stub: show match card with a sample match
             const hex = '#16a34a';
             const resultCard = document.getElementById('match-result-card');
             const swatch = document.getElementById('match-color-swatch');
@@ -873,7 +976,7 @@
             if (resultCard) resultCard.classList.remove('hidden');
         }
 
-        function handlePlantSubmit(e) {
+        async function handlePlantSubmit(e) {
             e.preventDefault();
             const id = document.getElementById('edit-plant-id').value || 'plant_' + Date.now();
             const name = document.getElementById('plant-name').value.trim();
@@ -886,18 +989,25 @@
             const hex = document.getElementById('form-color-hex').value || '#16a34a';
 
             const existing = plants.find(p => p.id === id);
+            const newPlant = {
+                id,
+                name,
+                variety,
+                date,
+                medium,
+                notes,
+                iconKey,
+                hex,
+                logs: existing ? existing.logs || [] : []
+            };
+
             if (existing) {
-                existing.name = name;
-                existing.variety = variety;
-                existing.date = date;
-                existing.medium = medium;
-                existing.notes = notes;
-                existing.iconKey = iconKey;
-                existing.hex = hex;
+                Object.assign(existing, newPlant);
             } else {
-                plants.push({ id, name, variety, date, medium, notes, iconKey, hex, logs: [] });
+                plants.push(newPlant);
             }
             setStored('flora_plants', JSON.stringify(plants));
+            await savePlantToSupabase(newPlant);
             renderPlants();
             closePlantModal();
         }
@@ -916,16 +1026,18 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        function confirmDeletePlant() {
+        async function confirmDeletePlant() {
             if (!pendingDeleteId) return closeDeleteModal();
-            plants = plants.filter(p => p.id !== pendingDeleteId);
+            const deletedId = pendingDeleteId;
+            plants = plants.filter(p => p.id !== deletedId);
             setStored('flora_plants', JSON.stringify(plants));
+            await deletePlantFromSupabase(deletedId);
             pendingDeleteId = null;
             renderPlants();
             closeDeleteModal();
         }
 
-        function handleJournalLogSubmit(e) {
+        async function handleJournalLogSubmit(e) {
             e.preventDefault();
             const plantId = document.getElementById('log-plant-id').value;
             const plant = plants.find(p => p.id === plantId);
@@ -937,7 +1049,8 @@
             plant.logs = plant.logs || [];
             plant.logs.push({ id, date, type, text });
             setStored('flora_plants', JSON.stringify(plants));
-            openJournalModal(plantId); // refresh
+            await savePlantToSupabase(plant);
+            openJournalModal(plantId);
             document.getElementById('log-text').value = '';
         }
 
