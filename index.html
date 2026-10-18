@@ -191,7 +191,8 @@
   <input type="text" id="setting-supabase-key" placeholder="anon-key" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
 </div>
                 </div>
-                <div class="flex justify-end pt-2">
+                <div class="flex justify-end pt-2 items-center space-x-3">
+                    <div id="save-status" class="text-sm text-emerald-700"></div>
                     <button onclick="saveBrandingSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">
                         Save Preferences
                     </button>
@@ -440,12 +441,47 @@
         // Supabase client
         window.supabase = null;
 
+        function canUseLocalStorage() {
+            try {
+                const testKey = '__flora_test__';
+                localStorage.setItem(testKey, '1');
+                localStorage.removeItem(testKey);
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function getStored(key) {
+            try {
+                if (canUseLocalStorage()) return localStorage.getItem(key);
+            } catch (e) { /* fallthrough */ }
+            try { return sessionStorage.getItem(key); } catch (e) { return null; }
+        }
+        function setStored(key, value) {
+            try {
+                if (canUseLocalStorage()) {
+                    localStorage.setItem(key, value);
+                    return 'localStorage';
+                }
+            } catch (e) {
+                // ignore
+            }
+            try {
+                sessionStorage.setItem(key, value);
+                return 'sessionStorage';
+            } catch (e) {
+                return null;
+            }
+        }
+
         function initSupabase() {
-            const savedUrl = document.getElementById('setting-supabase-url')?.value || localStorage.getItem('flora_supabase_url') || '';
-            const savedKey = document.getElementById('setting-supabase-key')?.value || localStorage.getItem('flora_supabase_key') || '';
+            const savedUrl = document.getElementById('setting-supabase-url')?.value || getStored('flora_supabase_url') || '';
+            const savedKey = document.getElementById('setting-supabase-key')?.value || getStored('flora_supabase_key') || '';
 
             if (!savedUrl || !savedKey || typeof supabase === 'undefined') {
                 window.supabase = null;
+                console.info('Supabase not initialized: missing url/key or library');
                 return;
             }
 
@@ -547,12 +583,12 @@
             return closestName;
         }
 
-        let appSettings = JSON.parse(localStorage.getItem('flora_settings')) || {
+        let appSettings = JSON.parse(getStored('flora_settings') || 'null') || {
             username: '@kitchengardener',
             logoUrl: ''
         };
 
-        let plants = JSON.parse(localStorage.getItem('flora_plants')) || [
+        let plants = JSON.parse(getStored('flora_plants') || 'null') || [
             {
                 id: 'plant_1',
                 name: 'Cucumber',
@@ -584,8 +620,8 @@
         let activeMatchStream = null;
 
         window.addEventListener('DOMContentLoaded', () => {
-            const savedSupabaseUrl = localStorage.getItem('flora_supabase_url');
-            const savedSupabaseKey = localStorage.getItem('flora_supabase_key');
+            const savedSupabaseUrl = getStored('flora_supabase_url');
+            const savedSupabaseKey = getStored('flora_supabase_key');
 
             if (savedSupabaseUrl && document.getElementById('setting-supabase-url')) {
                 document.getElementById('setting-supabase-url').value = savedSupabaseUrl;
@@ -635,17 +671,34 @@
         }
 
         function saveBrandingSettings() {
-            appSettings.username = document.getElementById('setting-username').value || '@kitchengardener';
-            appSettings.logoUrl = document.getElementById('setting-logo-url').value || '';
-            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            const statusEl = document.getElementById('save-status');
+            try {
+                appSettings.username = document.getElementById('setting-username').value || '@kitchengardener';
+                appSettings.logoUrl = document.getElementById('setting-logo-url').value || '';
+                const storedWhere = setStored('flora_settings', JSON.stringify(appSettings));
 
-            const supabaseUrl = document.getElementById('setting-supabase-url')?.value || '';
-            const supabaseKey = document.getElementById('setting-supabase-key')?.value || '';
-            if (supabaseUrl) localStorage.setItem('flora_supabase_url', supabaseUrl);
-            if (supabaseKey) localStorage.setItem('flora_supabase_key', supabaseKey);
+                const supabaseUrl = document.getElementById('setting-supabase-url')?.value || '';
+                const supabaseKey = document.getElementById('setting-supabase-key')?.value || '';
+                const s1 = supabaseUrl ? setStored('flora_supabase_url', supabaseUrl) : null;
+                const s2 = supabaseKey ? setStored('flora_supabase_key', supabaseKey) : null;
 
-            applyBranding();
-            initSupabase();
+                applyBranding();
+                initSupabase();
+
+                if (statusEl) {
+                    statusEl.textContent = `Saved (${storedWhere || 'none'})`;
+                    statusEl.classList.remove('text-red-600');
+                    statusEl.classList.add('text-emerald-700');
+                    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+                }
+            } catch (err) {
+                console.error('Failed to save settings:', err);
+                if (statusEl) {
+                    statusEl.textContent = 'Save failed (storage blocked)';
+                    statusEl.classList.remove('text-emerald-700');
+                    statusEl.classList.add('text-red-600');
+                }
+            }
         }
 
         // Minimal implementations so buttons work
@@ -844,7 +897,7 @@
             } else {
                 plants.push({ id, name, variety, date, medium, notes, iconKey, hex, logs: [] });
             }
-            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            setStored('flora_plants', JSON.stringify(plants));
             renderPlants();
             closePlantModal();
         }
@@ -866,7 +919,7 @@
         function confirmDeletePlant() {
             if (!pendingDeleteId) return closeDeleteModal();
             plants = plants.filter(p => p.id !== pendingDeleteId);
-            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            setStored('flora_plants', JSON.stringify(plants));
             pendingDeleteId = null;
             renderPlants();
             closeDeleteModal();
@@ -883,7 +936,7 @@
             const id = 'log_' + Date.now();
             plant.logs = plant.logs || [];
             plant.logs.push({ id, date, type, text });
-            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            setStored('flora_plants', JSON.stringify(plants));
             openJournalModal(plantId); // refresh
             document.getElementById('log-text').value = '';
         }
