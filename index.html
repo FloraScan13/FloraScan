@@ -111,20 +111,24 @@
         <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Point your camera at a physical colored garden plant tag. Flora Scan detects the color swatch and instantly brings up the closest crop match.</p>
 
         <div class="relative max-w-md mx-auto aspect-video bg-black rounded-2xl overflow-hidden shadow-inner mb-4">
-          <div class="absolute inset-0 border-2 border-white/40 rounded-2xl pointer-events-none flex items-center justify-center">
+          <video id="scanner-video" class="w-full h-full object-cover hidden" playsinline autoplay muted></video>
+          <canvas id="scanner-canvas" class="hidden"></canvas>
+          <div id="scanner-placeholder" class="absolute inset-0 border-2 border-white/40 rounded-2xl pointer-events-none flex items-center justify-center">
             <div class="w-12 h-12 border-2 border-emerald-400 rounded-full animate-pulse"></div>
           </div>
-          <div class="w-full h-full flex items-center justify-center text-white text-3xl">
+          <div id="scanner-icon" class="w-full h-full flex items-center justify-center text-white text-3xl">
             <i class="fa-solid fa-camera"></i>
           </div>
         </div>
 
+        <div id="camera-status" class="text-xs text-slate-500 dark:text-slate-400 mb-4"></div>
+
         <div class="flex justify-center gap-3">
-          <button onclick="alert('Camera scanning is enabled in the full app flow; the scanner UI is restored and ready for browser camera integration.')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
+          <button type="button" id="camera-toggle-btn" onclick="toggleScannerCamera()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
             <i class="fa-solid fa-video"></i>
             <span>Start Camera</span>
           </button>
-          <button onclick="triggerColorMatch()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
+          <button type="button" onclick="triggerColorMatch()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
             <i class="fa-solid fa-camera"></i>
             <span>Scan Tag</span>
           </button>
@@ -360,6 +364,8 @@
     let supabaseReady = false;
     let syncStatusMode = 'local';
     let syncingPlants = false;
+    let scannerStream = null;
+    let scannerActive = false;
 
     function readJson(key, fallback) {
       try {
@@ -793,6 +799,72 @@
       })();
     }
 
+    async function startScannerCamera() {
+      const video = document.getElementById('scanner-video');
+      const placeholder = document.getElementById('scanner-placeholder');
+      const icon = document.getElementById('scanner-icon');
+      const status = document.getElementById('camera-status');
+      const btn = document.getElementById('camera-toggle-btn');
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        if (status) status.textContent = 'Camera access is not supported in this browser.';
+        alert('Camera access is not supported in this browser.');
+        return;
+      }
+
+      try {
+        scannerStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false
+        });
+        video.srcObject = scannerStream;
+        await video.play();
+        video.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        icon.classList.add('hidden');
+        scannerActive = true;
+        if (status) status.textContent = 'Camera is live. Point it at a plant tag.';
+        if (btn) {
+          btn.innerHTML = '<i class="fa-solid fa-video-slash"></i><span>Stop Camera</span>';
+          btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+          btn.classList.add('bg-red-600', 'hover:bg-red-700');
+        }
+      } catch (err) {
+        console.error('Could not start camera:', err);
+        if (status) status.textContent = 'Could not access the camera. Check browser permissions.';
+        alert('Could not access the camera. Please allow camera permissions and try again.');
+      }
+    }
+
+    function stopScannerCamera() {
+      const video = document.getElementById('scanner-video');
+      const placeholder = document.getElementById('scanner-placeholder');
+      const icon = document.getElementById('scanner-icon');
+      const status = document.getElementById('camera-status');
+      const btn = document.getElementById('camera-toggle-btn');
+
+      if (scannerStream) {
+        scannerStream.getTracks().forEach((track) => track.stop());
+        scannerStream = null;
+      }
+      video.srcObject = null;
+      video.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+      icon.classList.remove('hidden');
+      scannerActive = false;
+      if (status) status.textContent = 'Camera stopped.';
+      if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-video"></i><span>Start Camera</span>';
+        btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+      }
+    }
+
+    function toggleScannerCamera() {
+      if (scannerActive) stopScannerCamera();
+      else startScannerCamera();
+    }
+
     function triggerColorMatch() {
       const resultCard = document.getElementById('match-result-card');
       const resultContent = document.getElementById('match-result-content');
@@ -811,12 +883,6 @@
         </div>
       `;
       resultCard.classList.remove('hidden');
-    }
-
-    function toggleFormCamera() {
-      const btn = document.getElementById('form-cam-toggle');
-      btn.textContent = btn.textContent.includes('Stop') ? 'Start Camera' : 'Stop Camera';
-      alert('Camera preview is restored in the full plant form flow for browser capture integration.');
     }
 
     function captureFormColor() {
