@@ -311,6 +311,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const STORAGE_KEYS = {
       settings: 'flora_settings',
@@ -374,6 +375,149 @@
       }
     }
 
+    let sb = null;
+    let sbKey = '';
+
+    function notify(message, isError) {
+      const status = document.getElementById('save-status');
+      if (status) {
+        status.textContent = message;
+        status.style.color = isError ? '#dc2626' : '';
+        setTimeout(() => { status.textContent = ''; status.style.color = ''; }, 4000);
+      }
+      if (isError) {
+        console.warn(message);
+        let toast = document.getElementById('sb-toast');
+        if (!toast) {
+          toast = document.createElement('div');
+          toast.id = 'sb-toast';
+          toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] max-w-sm px-4 py-2 rounded-xl bg-red-600 text-white text-xs shadow-lg';
+          document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.classList.remove('hidden');
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => toast.classList.add('hidden'), 5000);
+      }
+    }
+
+    function getSupabase() {
+      const url = (settings.supabaseUrl || '').trim();
+      const key = (settings.supabaseAnonKey || '').trim();
+      if (!url || !key) { sb = null; sbKey = ''; return null; }
+      if (!window.supabase || !window.supabase.createClient) {
+        return null;
+      }
+      if (sb && sbKey === url + '|' + key) return sb;
+      try {
+        sb = window.supabase.createClient(url, key);
+        sbKey = url + '|' + key;
+      } catch (e) {
+        sb = null;
+        sbKey = '';
+        notify('Supabase is misconfigured: check URL and key. Using local storage.', true);
+      }
+      return sb;
+    }
+
+    function toDbPlant(p) {
+      return {
+        id: p.id,
+        name: p.name,
+        variety: p.variety || null,
+        color: p.color || null,
+        medium: p.medium || null,
+        notes: p.notes || null,
+        date: p.date || null
+      };
+    }
+
+    function toDbLog(plantId, l) {
+      return { id: l.id, plant_id: plantId, date: l.date, type: l.type || null, text: l.text || null };
+    }
+
+    async function sbRun(fn, label) {
+      const client = getSupabase();
+      if (!client) return false;
+      try {
+        const { error } = await fn(client);
+        if (error) throw error;
+        return true;
+      } catch (e) {
+        notify(`Supabase unavailable (${label}): ${e.message || e}. Saved locally.`, true);
+        return false;
+      }
+    }
+
+    function syncPlantToSupabase(plant) {
+      return sbRun((c) => c.from('plants').upsert(toDbPlant(plant)), 'save plant');
+    }
+
+    function deletePlantFromSupabase(id) {
+      return sbRun((c) => c.from('plants').delete().eq('id', id), 'delete plant');
+    }
+
+    function insertLogToSupabase(plantId, entry) {
+      return sbRun((c) => c.from('plant_logs').insert(toDbLog(plantId, entry)), 'add log');
+    }
+
+    async function loadFromSupabase() {
+      const client = getSupabase();
+      if (!client) {
+        if ((settings.supabaseUrl || settings.supabaseAnonKey) && !(settings.supabaseUrl && settings.supabaseAnonKey)) {
+          notify('Supabase URL and anon key are both required. Using local storage.', true);
+        }
+        return false;
+      }
+      try {
+        const [pRes, lRes] = await Promise.all([
+          client.from('plants').select('*').order('created_at', { ascending: false }),
+          client.from('plant_logs').select('*').order('date', { ascending: false })
+        ]);
+        if (pRes.error) throw pRes.error;
+        if (lRes.error) throw lRes.error;
+
+        const logsByPlant = {};
+        (lRes.data || []).forEach((l) => {
+          (logsByPlant[l.plant_id] = logsByPlant[l.plant_id] || []).push({
+            id: l.id, date: l.date, type: l.type || 'Growth', text: l.text || ''
+          });
+        });
+
+        const localById = {};
+        plants.forEach((p) => { localById[p.id] = p; });
+        const remoteIds = new Set();
+        const merged = (pRes.data || []).map((p) => {
+          remoteIds.add(p.id);
+          const logs = logsByPlant[p.id] || [];
+          const seen = new Set(logs.map((l) => l.id));
+          const localOnlyLogs = ((localById[p.id] || {}).logs || []).filter((l) => !seen.has(l.id));
+          localOnlyLogs.forEach((l) => insertLogToSupabase(p.id, l));
+          return {
+            id: p.id, name: p.name, variety: p.variety || '', color: p.color || '#16a34a',
+            medium: p.medium || '', notes: p.notes || '', date: p.date || '',
+            logs: logs.concat(localOnlyLogs)
+          };
+        });
+
+        // Push local-only plants (and their logs) up to Supabase
+        const localOnly = plants.filter((p) => !remoteIds.has(p.id));
+        for (const p of localOnly) {
+          if (await syncPlantToSupabase(p)) {
+            (p.logs || []).forEach((l) => insertLogToSupabase(p.id, l));
+          }
+        }
+
+        plants = merged.concat(localOnly);
+        writeJson(STORAGE_KEYS.plants, plants);
+        renderPlants();
+        return true;
+      } catch (e) {
+        notify(`Supabase unavailable: ${e.message || e}. Using local storage.`, true);
+        return false;
+      }
+    }
+
     function applyBranding() {
       const subtitle = document.getElementById('app-subtitle-display');
       if (subtitle) subtitle.textContent = settings.username || '@kitchengardener';
@@ -409,10 +553,9 @@
       settings.supabaseAnonKey = document.getElementById('setting-supabase-key').value || '';
       writeJson(STORAGE_KEYS.settings, settings);
       applyBranding();
-      const status = document.getElementById('save-status');
-      if (status) {
-        status.textContent = 'Saved locally';
-        setTimeout(() => { status.textContent = ''; }, 2200);
+      notify('Saved locally');
+      if (settings.supabaseUrl || settings.supabaseAnonKey) {
+        loadFromSupabase().then((ok) => { if (ok) notify('Connected to Supabase'); });
       }
     }
 
@@ -570,6 +713,7 @@
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
       closePlantModal();
+      syncPlantToSupabase(existing || plant);
     }
 
     function promptDeletePlant(id) {
@@ -587,6 +731,8 @@
 
     document.getElementById('confirm-delete-btn')?.addEventListener('click', () => {
       if (!pendingDeleteId) return;
+      const deletedId = pendingDeleteId;
+      deletePlantFromSupabase(deletedId);
       plants = plants.filter((item) => item.id !== pendingDeleteId);
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
@@ -655,6 +801,10 @@
       renderJournalLogs(plant);
       document.getElementById('log-date').value = '';
       document.getElementById('log-text').value = '';
+      insertLogToSupabase(plant.id, entry).then(() => {
+        const current = plants.find((item) => item.id === plantId);
+        if (current) renderJournalLogs(current);
+      });
     }
 
     function triggerColorMatch() {
@@ -694,6 +844,11 @@
       applyBranding();
       renderPlants();
       switchTab('plants');
+      loadFromSupabase().then(() => {
+        const open = document.getElementById('log-plant-id').value;
+        const p = plants.find((item) => item.id === open);
+        if (p && !document.getElementById('journal-modal').classList.contains('hidden')) renderJournalLogs(p);
+      });
     });
   </script>
 </body>
