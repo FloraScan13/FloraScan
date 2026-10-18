@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flora Scan - Plant Tag & Growth Journal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -166,6 +167,7 @@
           </div>
         </div>
         <div class="flex justify-end pt-2 items-center space-x-3">
+          <div id="supabase-status" class="text-xs text-slate-500">Supabase: not configured (using local storage)</div>
           <div id="save-status" class="text-sm text-emerald-700"></div>
           <button onclick="saveBrandingSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Preferences</button>
         </div>
@@ -374,6 +376,122 @@
       }
     }
 
+    let supabaseClient = null;
+
+    function setSupabaseStatus(message, ok) {
+      const el = document.getElementById('supabase-status');
+      if (!el) return;
+      el.textContent = message;
+      el.className = 'text-xs ' + (ok === true ? 'text-emerald-700' : ok === false ? 'text-amber-600' : 'text-slate-500');
+    }
+
+    function initSupabase() {
+      supabaseClient = null;
+      const url = (settings.supabaseUrl || '').trim();
+      const key = (settings.supabaseAnonKey || '').trim();
+      if (!url || !key) {
+        setSupabaseStatus('Supabase: not configured (using local storage)', null);
+        return false;
+      }
+      if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        setSupabaseStatus('Supabase: library unavailable, using local storage', false);
+        return false;
+      }
+      try {
+        supabaseClient = window.supabase.createClient(url, key);
+        return true;
+      } catch (e) {
+        setSupabaseStatus('Supabase: invalid credentials, using local storage', false);
+        return false;
+      }
+    }
+
+    function plantToRow(plant) {
+      return {
+        id: plant.id,
+        name: plant.name,
+        variety: plant.variety || null,
+        color: plant.color || null,
+        medium: plant.medium || null,
+        notes: plant.notes || null,
+        date: plant.date || null
+      };
+    }
+
+    function logToRow(plantId, log) {
+      return { id: log.id, plant_id: plantId, date: log.date, type: log.type || null, text: log.text || null };
+    }
+
+    function mergeLogs(a, b) {
+      const seen = new Set();
+      return [...(a || []), ...(b || [])].filter((log) => {
+        if (seen.has(log.id)) return false;
+        seen.add(log.id);
+        return true;
+      }).sort((x, y) => (y.date || '').localeCompare(x.date || ''));
+    }
+
+    async function loadFromSupabase() {
+      if (!initSupabase()) return;
+      try {
+        const [plantRes, logRes] = await Promise.all([
+          supabaseClient.from('plants').select('*').order('created_at', { ascending: false }),
+          supabaseClient.from('plant_logs').select('*').order('date', { ascending: false })
+        ]);
+        if (plantRes.error) throw plantRes.error;
+        if (logRes.error) throw logRes.error;
+
+        if (!plantRes.data.length) {
+          // Empty remote: seed it from the local cache
+          if (plants.length) {
+            const seed = await supabaseClient.from('plants').upsert(plants.map(plantToRow));
+            if (seed.error) throw seed.error;
+            const rows = plants.flatMap((p) => (p.logs || []).map((l) => logToRow(p.id, l)));
+            if (rows.length) {
+              const logSeed = await supabaseClient.from('plant_logs').upsert(rows);
+              if (logSeed.error) throw logSeed.error;
+            }
+          }
+        } else {
+          const localById = new Map(plants.map((p) => [p.id, p]));
+          const logsByPlant = {};
+          logRes.data.forEach((row) => {
+            (logsByPlant[row.plant_id] = logsByPlant[row.plant_id] || []).push({
+              id: row.id, date: row.date, type: row.type || '', text: row.text || ''
+            });
+          });
+          plants = plantRes.data.map((row) => ({
+            id: row.id,
+            name: row.name,
+            variety: row.variety || '',
+            color: row.color || '#16a34a',
+            medium: row.medium || '',
+            notes: row.notes || '',
+            date: row.date || '',
+            logs: mergeLogs(logsByPlant[row.id], (localById.get(row.id) || {}).logs)
+          }));
+        }
+        writeJson(STORAGE_KEYS.plants, plants);
+        renderPlants();
+        setSupabaseStatus('Supabase: connected', true);
+      } catch (e) {
+        console.error('Supabase load failed', e);
+        setSupabaseStatus('Supabase: unavailable, using local storage', false);
+      }
+    }
+
+    async function runSupabase(action, failMessage) {
+      if (!supabaseClient) return;
+      try {
+        const res = await action(supabaseClient);
+        if (res && res.error) throw res.error;
+        setSupabaseStatus('Supabase: connected', true);
+      } catch (e) {
+        console.error(failMessage, e);
+        setSupabaseStatus('Supabase: ' + failMessage + ', saved locally', false);
+      }
+    }
+
     function applyBranding() {
       const subtitle = document.getElementById('app-subtitle-display');
       if (subtitle) subtitle.textContent = settings.username || '@kitchengardener';
@@ -409,6 +527,7 @@
       settings.supabaseAnonKey = document.getElementById('setting-supabase-key').value || '';
       writeJson(STORAGE_KEYS.settings, settings);
       applyBranding();
+      loadFromSupabase();
       const status = document.getElementById('save-status');
       if (status) {
         status.textContent = 'Saved locally';
@@ -570,6 +689,7 @@
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
       closePlantModal();
+      runSupabase((c) => c.from('plants').upsert(plantToRow(plant)), 'save failed');
     }
 
     function promptDeletePlant(id) {
@@ -587,10 +707,12 @@
 
     document.getElementById('confirm-delete-btn')?.addEventListener('click', () => {
       if (!pendingDeleteId) return;
-      plants = plants.filter((item) => item.id !== pendingDeleteId);
+      const deleteId = pendingDeleteId;
+      plants = plants.filter((item) => item.id !== deleteId);
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
       closeDeleteModal();
+      runSupabase((c) => c.from('plants').delete().eq('id', deleteId), 'delete failed');
     });
 
     function openJournalModal(id) {
@@ -655,6 +777,11 @@
       renderJournalLogs(plant);
       document.getElementById('log-date').value = '';
       document.getElementById('log-text').value = '';
+      runSupabase(async (c) => {
+        const parent = await c.from('plants').upsert(plantToRow(plant));
+        if (parent.error) return parent;
+        return c.from('plant_logs').insert(logToRow(plantId, entry));
+      }, 'log save failed');
     }
 
     function triggerColorMatch() {
@@ -694,6 +821,7 @@
       applyBranding();
       renderPlants();
       switchTab('plants');
+      loadFromSupabase();
     });
   </script>
 </body>
