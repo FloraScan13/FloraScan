@@ -8,6 +8,7 @@ create table if not exists public.plants (
   name text not null,
   variety text,
   color text not null default '#16a34a',
+  icon_key text default 'leaf',
   medium text,
   notes text,
   date date,
@@ -22,6 +23,17 @@ create table if not exists public.plant_logs (
   type text not null,
   text text not null,
   created_at timestamptz not null default now()
+);
+
+-- For databases created before icon_key existed
+alter table public.plants add column if not exists icon_key text default 'leaf';
+
+-- App settings (single row, id = 'default'). Supabase credentials are never stored here.
+create table if not exists public.settings (
+  id text primary key,
+  username text,
+  logo_url text,
+  updated_at timestamptz not null default now()
 );
 
 create index if not exists idx_plants_updated_at on public.plants(updated_at desc);
@@ -48,6 +60,7 @@ execute function public.set_updated_at();
 -- Recommended baseline RLS
 alter table public.plants enable row level security;
 alter table public.plant_logs enable row level security;
+alter table public.settings enable row level security;
 
 -- For now, allow anon read/write (adjust for auth later)
 drop policy if exists "anon full access plants" on public.plants;
@@ -61,6 +74,14 @@ with check (true);
 drop policy if exists "anon full access plant_logs" on public.plant_logs;
 create policy "anon full access plant_logs"
 on public.plant_logs
+for all
+to anon
+using (true)
+with check (true);
+
+drop policy if exists "anon full access settings" on public.settings;
+create policy "anon full access settings"
+on public.settings
 for all
 to anon
 using (true)
