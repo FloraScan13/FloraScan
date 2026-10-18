@@ -162,7 +162,7 @@
           </div>
           <div>
             <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Supabase Anon Key</label>
-            <input type="text" id="setting-supabase-key" placeholder="anon-key" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700" />
+            <input type="text" id="setting-supabase-key" placeholder="sb_publishable_..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700" />
           </div>
         </div>
         <div class="flex justify-end pt-2 items-center space-x-3">
@@ -311,6 +311,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const STORAGE_KEYS = {
       settings: 'flora_settings',
@@ -320,9 +321,22 @@
     const defaultSettings = {
       username: '@kitchengardener',
       logoUrl: '',
-      supabaseUrl: '',
-      supabaseAnonKey: ''
+      // Publishable (client-safe) Supabase credentials; overridable in Settings.
+      supabaseUrl: 'https://symklyxbcztdsmktvhgj.supabase.co/',
+      supabaseAnonKey: 'sb_publishable_PKEQJvNbnKkpINoB-CckuA_OjPVU1O1'
     };
+
+    /*
+     * Expected Supabase schema (minimal, text primary keys so client-generated ids work):
+     *   plants      (id text primary key, name text, variety text, color text,
+     *                medium text, notes text, planted_date text)
+     *   plant_logs  (id text primary key, plant_id text references plants(id) on delete cascade,
+     *                log_date text, log_type text, log_text text)
+     * RLS policies must allow the publishable key to select/insert/update/delete.
+     * If Supabase is unconfigured or any call fails, data is kept in localStorage only.
+     */
+    const TABLES = { plants: 'plants', logs: 'plant_logs' };
+    let supabaseClient = null;
 
     const defaultPlants = [
       {
@@ -352,7 +366,9 @@
       }
     ];
 
-    let settings = readJson(STORAGE_KEYS.settings, { ...defaultSettings });
+    let settings = { ...defaultSettings, ...readJson(STORAGE_KEYS.settings, {}) };
+    settings.supabaseUrl = settings.supabaseUrl || defaultSettings.supabaseUrl;
+    settings.supabaseAnonKey = settings.supabaseAnonKey || defaultSettings.supabaseAnonKey;
     let plants = readJson(STORAGE_KEYS.plants, JSON.parse(JSON.stringify(defaultPlants)));
     let pendingDeleteId = null;
 
@@ -372,6 +388,85 @@
       } catch (e) {
         return false;
       }
+    }
+
+    function initSupabase() {
+      supabaseClient = null;
+      if (!settings.supabaseUrl || !settings.supabaseAnonKey || !window.supabase?.createClient) return;
+      try {
+        supabaseClient = window.supabase.createClient(settings.supabaseUrl.trim(), settings.supabaseAnonKey.trim());
+      } catch (e) {
+        console.warn('Supabase init failed', e);
+      }
+    }
+
+    function setStatus(text) {
+      const status = document.getElementById('save-status');
+      if (!status) return;
+      status.textContent = text;
+      setTimeout(() => { status.textContent = ''; }, 2200);
+    }
+
+    // Run a Supabase operation; returns true on success, false if unavailable/failed (local fallback used).
+    async function remote(fn) {
+      if (!supabaseClient) return false;
+      try {
+        const { error } = await fn(supabaseClient);
+        if (error) throw error;
+        return true;
+      } catch (e) {
+        console.warn('Supabase error, using local data', e);
+        setStatus('Supabase unavailable - saved locally');
+        return false;
+      }
+    }
+
+    function plantToRow(p) {
+      return { id: p.id, name: p.name, variety: p.variety, color: p.color, medium: p.medium, notes: p.notes, planted_date: p.date };
+    }
+
+    async function loadPlants() {
+      if (!supabaseClient) return;
+      try {
+        const [pr, lr] = await Promise.all([
+          supabaseClient.from(TABLES.plants).select('*'),
+          supabaseClient.from(TABLES.logs).select('*')
+        ]);
+        if (pr.error) throw pr.error;
+        if (lr.error) throw lr.error;
+        if (!pr.data.length && plants.length) {
+          // Remote is empty: seed it from local data.
+          for (const p of plants) await savePlantRemote(p);
+          return;
+        }
+        plants = pr.data.map((row) => ({
+          id: row.id,
+          name: row.name || '',
+          variety: row.variety || '',
+          color: row.color || '#16a34a',
+          medium: row.medium || '',
+          notes: row.notes || '',
+          date: row.planted_date || '',
+          logs: (lr.data || [])
+            .filter((l) => l.plant_id === row.id)
+            .map((l) => ({ id: l.id, date: l.log_date, type: l.log_type, text: l.log_text }))
+            .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+        }));
+        writeJson(STORAGE_KEYS.plants, plants);
+        renderPlants();
+      } catch (e) {
+        console.warn('Supabase load failed, using local data', e);
+      }
+    }
+
+    async function savePlantRemote(plant) {
+      if (!(await remote((c) => c.from(TABLES.plants).upsert(plantToRow(plant))))) return false;
+      if (plant.logs?.length) {
+        return remote((c) => c.from(TABLES.logs).upsert(plant.logs.map((l) => ({
+          id: l.id, plant_id: plant.id, log_date: l.date, log_type: l.type, log_text: l.text
+        }))));
+      }
+      return true;
     }
 
     function applyBranding() {
@@ -409,11 +504,9 @@
       settings.supabaseAnonKey = document.getElementById('setting-supabase-key').value || '';
       writeJson(STORAGE_KEYS.settings, settings);
       applyBranding();
-      const status = document.getElementById('save-status');
-      if (status) {
-        status.textContent = 'Saved locally';
-        setTimeout(() => { status.textContent = ''; }, 2200);
-      }
+      setStatus('Saved locally');
+      initSupabase();
+      loadPlants();
     }
 
     function switchTab(tab) {
@@ -540,7 +633,7 @@
       return palette[hex.toLowerCase()] || 'Custom Tag Color';
     }
 
-    function handlePlantSubmit(event) {
+    async function handlePlantSubmit(event) {
       event.preventDefault();
       const id = document.getElementById('edit-plant-id').value || `plant_${Date.now()}`;
       const name = document.getElementById('plant-name').value.trim();
@@ -570,6 +663,7 @@
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
       closePlantModal();
+      await remote((c) => c.from(TABLES.plants).upsert(plantToRow(existing || plant)));
     }
 
     function promptDeletePlant(id) {
@@ -585,12 +679,15 @@
       pendingDeleteId = null;
     }
 
-    document.getElementById('confirm-delete-btn')?.addEventListener('click', () => {
+    document.getElementById('confirm-delete-btn')?.addEventListener('click', async () => {
       if (!pendingDeleteId) return;
-      plants = plants.filter((item) => item.id !== pendingDeleteId);
+      const id = pendingDeleteId;
+      plants = plants.filter((item) => item.id !== id);
       writeJson(STORAGE_KEYS.plants, plants);
       renderPlants();
       closeDeleteModal();
+      await remote((c) => c.from(TABLES.logs).delete().eq('plant_id', id));
+      await remote((c) => c.from(TABLES.plants).delete().eq('id', id));
     });
 
     function openJournalModal(id) {
@@ -631,7 +728,7 @@
       `).join('');
     }
 
-    function handleJournalLogSubmit(event) {
+    async function handleJournalLogSubmit(event) {
       event.preventDefault();
       const plantId = document.getElementById('log-plant-id').value;
       const plant = plants.find((item) => item.id === plantId);
@@ -655,6 +752,9 @@
       renderJournalLogs(plant);
       document.getElementById('log-date').value = '';
       document.getElementById('log-text').value = '';
+      await remote((c) => c.from(TABLES.logs).upsert({
+        id: entry.id, plant_id: plant.id, log_date: entry.date, log_type: entry.type, log_text: entry.text
+      }));
     }
 
     function triggerColorMatch() {
@@ -694,6 +794,8 @@
       applyBranding();
       renderPlants();
       switchTab('plants');
+      initSupabase();
+      loadPlants();
     });
   </script>
 </body>
