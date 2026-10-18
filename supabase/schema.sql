@@ -65,3 +65,15 @@ for all
 to anon
 using (true)
 with check (true);
+
+-- App settings (one canonical row, id = 'default')
+create table if not exists public.settings (
+  id text primary key,
+  username text,
+  logo_url text,
+  updated_at timestamptz not null default now()
+);
+alter table public.settings enable row level security;
+-- Demo-only policy: scope to auth.uid() for real use.
+create policy "anon all settings" on public.settings
+  for all using (true) with check (true);

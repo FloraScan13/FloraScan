@@ -26,6 +26,7 @@
     };
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { min-height: 100vh; }
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -402,17 +403,97 @@
       }
     }
 
-    function saveBrandingSettings() {
+    /*
+      Supabase schema (run once in the SQL editor):
+        create table if not exists public.settings (
+          id text primary key,
+          username text,
+          logo_url text,
+          updated_at timestamptz not null default now()
+        );
+        alter table public.settings enable row level security;
+        create policy "anon all settings" on public.settings
+          for all using (true) with check (true);
+    */
+    const SETTINGS_ROW_ID = 'default';
+    let supabaseClient = null;
+
+    function initSupabase() {
+      supabaseClient = null;
+      const url = (settings.supabaseUrl || '').trim();
+      const key = (settings.supabaseAnonKey || '').trim();
+      if (!url || !key || !window.supabase || typeof window.supabase.createClient !== 'function') return false;
+      try {
+        if (!/^https?:\/\//i.test(url)) return false;
+        supabaseClient = window.supabase.createClient(url, key);
+      } catch (e) {
+        console.warn('Supabase init failed', e);
+        supabaseClient = null;
+      }
+      return !!supabaseClient;
+    }
+
+    function settingsToRow() {
+      return {
+        id: SETTINGS_ROW_ID,
+        username: settings.username || '',
+        logo_url: settings.logoUrl || '',
+        updated_at: new Date().toISOString()
+      };
+    }
+
+    function rowToSettings(row) {
+      return { username: row.username || '@kitchengardener', logoUrl: row.logo_url || '' };
+    }
+
+    async function upsertSettingsRemote() {
+      if (!supabaseClient) throw new Error('Supabase not configured');
+      const { error } = await supabaseClient.from('settings').upsert(settingsToRow());
+      if (error) throw error;
+    }
+
+    async function fetchRemoteSettings() {
+      if (!initSupabase()) return;
+      try {
+        const { data, error } = await supabaseClient.from('settings').select('*').eq('id', SETTINGS_ROW_ID).maybeSingle();
+        if (error) throw error;
+        if (data) {
+          Object.assign(settings, rowToSettings(data));
+          writeJson(STORAGE_KEYS.settings, settings);
+          applyBranding();
+        }
+      } catch (e) {
+        console.warn('Fetching remote settings failed', e);
+      }
+    }
+
+    let statusTimer = null;
+    function setSaveStatus(text, delay) {
+      const status = document.getElementById('save-status');
+      if (!status) return;
+      status.textContent = text;
+      clearTimeout(statusTimer);
+      if (delay) statusTimer = setTimeout(() => { status.textContent = ''; }, delay);
+    }
+
+    async function saveBrandingSettings() {
       settings.username = document.getElementById('setting-username').value || '@kitchengardener';
       settings.logoUrl = document.getElementById('setting-logo-url').value || '';
       settings.supabaseUrl = document.getElementById('setting-supabase-url').value || '';
       settings.supabaseAnonKey = document.getElementById('setting-supabase-key').value || '';
       writeJson(STORAGE_KEYS.settings, settings);
       applyBranding();
-      const status = document.getElementById('save-status');
-      if (status) {
-        status.textContent = 'Saved locally';
-        setTimeout(() => { status.textContent = ''; }, 2200);
+      if (!initSupabase()) {
+        setSaveStatus('Saved locally', 2200);
+        return;
+      }
+      setSaveStatus('Saving...');
+      try {
+        await upsertSettingsRemote();
+        setSaveStatus('Saved locally and synced to Supabase', 3000);
+      } catch (e) {
+        console.warn('Supabase sync failed', e);
+        setSaveStatus('Saved locally, but Supabase sync failed', 4000);
       }
     }
 
@@ -694,6 +775,7 @@
       applyBranding();
       renderPlants();
       switchTab('plants');
+      fetchRemoteSettings();
     });
   </script>
 </body>
