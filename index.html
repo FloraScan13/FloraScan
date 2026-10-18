@@ -531,7 +531,7 @@
         const remoteTime = Date.parse(data.updated_at) || 0;
         const localTime = Date.parse(settings.updatedAt) || 0;
         if (remoteTime > localTime) {
-          settings.username = data.username || settings.username;
+          settings.username = data.username || defaultSettings.username;
           settings.logoUrl = data.logo_url || '';
           settings.updatedAt = data.updated_at;
           writeJson(STORAGE_KEYS.settings, settings);
@@ -566,10 +566,6 @@
           })));
           if (logError) throw logError;
         }
-        const { data: remoteLogs } = await sb.from('plant_logs').select('id').eq('plant_id', plant.id);
-        const keep = new Set(logs.map((log) => log.id));
-        const stale = (remoteLogs || []).map((row) => row.id).filter((logId) => !keep.has(logId));
-        if (stale.length) await sb.from('plant_logs').delete().in('id', stale);
       } catch (e) {
         console.warn('Plant sync failed', e);
         setStatus('Saved locally (sync failed: ' + (e.message || e) + ')', 4000);
@@ -695,6 +691,7 @@
 
     function switchTab(tab) {
       const tabs = ['plants', 'scanner', 'settings'];
+      if (tab !== 'scanner') stopScannerCamera();
       tabs.forEach((name) => {
         const view = document.getElementById('view-' + name);
         const btn = document.getElementById('tab-' + name);
@@ -945,7 +942,7 @@
       if (!grid) return;
       const selected = document.getElementById('plant-icon-key').value || 'leaf';
       grid.innerHTML = Object.keys(CROP_ICONS).map((key) => `
-        <button type="button" title="${esc(CROP_ICONS[key].label)}" onclick="selectIcon('${key}')" class="icon-option w-full aspect-square p-1.5 rounded-xl bg-white ${key === selected ? 'selected' : ''}">${CROP_ICONS[key].svg}</button>
+        <button type="button" title="${esc(CROP_ICONS[key].label)}" aria-label="${esc(CROP_ICONS[key].label)}" aria-pressed="${key === selected}" onclick="selectIcon('${key}')" class="icon-option w-full aspect-square p-1.5 rounded-xl bg-white ${key === selected ? 'selected' : ''}">${CROP_ICONS[key].svg}</button>
       `).join('');
       document.getElementById('selected-icon-name-display').textContent = getIcon(selected).label;
     }
@@ -1118,11 +1115,7 @@
       const status = document.getElementById('form-cam-status');
       const video = document.getElementById('form-video');
       if (formStream) {
-        stopStream(formStream, video);
-        formStream = null;
-        container.classList.add('hidden');
-        btn.textContent = 'Start Camera';
-        status.textContent = '';
+        stopFormCamera();
         return;
       }
       try {
@@ -1137,7 +1130,21 @@
 
     function stopFormCamera() {
       if (!formStream) return;
-      toggleFormCamera();
+      stopStream(formStream, document.getElementById('form-video'));
+      formStream = null;
+      document.getElementById('form-cam-container').classList.add('hidden');
+      document.getElementById('form-cam-toggle').textContent = 'Start Camera';
+      document.getElementById('form-cam-status').textContent = '';
+    }
+
+    function stopScannerCamera() {
+      if (!scannerStream) return;
+      stopStream(scannerStream, document.getElementById('scanner-video'));
+      scannerStream = null;
+      document.getElementById('scanner-video').classList.add('hidden');
+      document.getElementById('scanner-placeholder').classList.remove('hidden');
+      document.querySelector('#scanner-cam-toggle span').textContent = 'Start Camera';
+      document.getElementById('scanner-status').textContent = '';
     }
 
     function setFormColor(hex) {
@@ -1163,12 +1170,7 @@
       const status = document.getElementById('scanner-status');
       const label = document.querySelector('#scanner-cam-toggle span');
       if (scannerStream) {
-        stopStream(scannerStream, video);
-        scannerStream = null;
-        video.classList.add('hidden');
-        placeholder.classList.remove('hidden');
-        label.textContent = 'Start Camera';
-        status.textContent = '';
+        stopScannerCamera();
         return;
       }
       try {
