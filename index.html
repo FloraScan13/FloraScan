@@ -70,11 +70,11 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="openAddPlantModal()" class="bg-white text-emerald-800 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-[...]">
+                <button onclick="openAddPlantModal()" class="bg-white text-emerald-800 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
                     <i class="fa-solid fa-plus"></i>
                     <span class="hidden sm:inline">Add Plant</span>
                 </button>
-                <button onclick="switchTab('scanner')" class="bg-emerald-800 hover:bg-emerald-900 text-white px-3.5 py-2 rounded-xl text-sm font-semibold shadow transition flex items-center space-[...]">
+                <button onclick="switchTab('scanner')" class="bg-emerald-800 hover:bg-emerald-900 text-white px-3.5 py-2 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
                     <i class="fa-solid fa-camera"></i>
                     <span>Scan Tag</span>
                 </button>
@@ -86,15 +86,15 @@
  
         <!-- Navigation Tabs -->
         <div class="flex space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl mb-6 text-sm font-medium">
-            <button onclick="switchTab('plants')" id="tab-plants" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-white dark:bg-slate-700 shadow-sm text-em[...]">
+            <button onclick="switchTab('plants')" id="tab-plants" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-white dark:bg-slate-700 shadow-sm text-emerald-700">
                 <i class="fa-solid fa-seedling"></i>
                 <span>My Plants</span>
             </button>
-            <button onclick="switchTab('scanner')" id="tab-scanner" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:t[...]">
+            <button onclick="switchTab('scanner')" id="tab-scanner" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-emerald-700">
                 <i class="fa-solid fa-camera"></i>
                 <span>Scan Tag</span>
             </button>
-            <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover[...]">
+            <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-emerald-700">
                 <i class="fa-solid fa-sliders"></i>
                 <span>Settings</span>
             </button>
@@ -105,20 +105,20 @@
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, color name, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl [...]"></input>
+                    <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, color name, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-sm">
                 </div>
             </div>
- 
+
             <!-- Plants Grid -->
             <div id="plants-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
- 
+
             <!-- Empty State -->
             <div id="plants-empty" class="hidden text-center py-16 px-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-2xl">
                     <i class="fa-solid fa-leaf"></i>
                 </div>
                 <h3 class="text-lg font-semibold mb-1">No plants added yet</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">Start by adding your first plant, scanning its tag color, choosing a crop icon, and logging growth entr[...]</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">Start by adding your first plant, scanning its tag color, choosing a crop icon, and logging growth entries.</p>
                 <button onclick="openAddPlantModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition">
                     Add Your First Plant
                 </button>
@@ -132,7 +132,7 @@
                     <i class="fa-solid fa-camera text-emerald-600"></i>
                     <span>Scan Garden Tag Color</span>
                 </h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Point your camera at a physical colored garden plant tag. Flora Scan detects the color swatch and instantly brings up th[...]</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Point your camera at a physical colored garden plant tag. Flora Scan detects the color swatch and instantly brings up the closest match.</p>
 
                 <div class="relative max-w-md mx-auto aspect-video bg-black rounded-2xl overflow-hidden shadow-inner mb-4">
                     <video id="match-video" class="w-full h-full object-cover" playsinline autoplay muted></video>
@@ -143,11 +143,11 @@
                 </div>
 
                 <div class="flex justify-center gap-3">
-                    <button id="match-cam-btn" onclick="toggleMatchCamera()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition f[...]">
+                    <button id="match-cam-btn" onclick="toggleMatchCamera()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
                         <i class="fa-solid fa-video"></i>
                         <span id="match-cam-btn-text">Start Camera</span>
                     </button>
-                    <button onclick="triggerColorMatch()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-[...]">
+                    <button onclick="triggerColorMatch()" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
                         <i class="fa-solid fa-camera"></i>
                         <span>Scan Tag</span>
                     </button>
@@ -158,7 +158,7 @@
             <div id="match-result-card" class="hidden bg-white dark:bg-slate-800 p-6 rounded-2xl border border-emerald-500 shadow-md">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-2">
-                        <span class="text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/50 px-3 py-1 rounded-full">Tag Color Recog[...]</span>
+                        <span class="text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/50 px-3 py-1 rounded-full">Tag Color Recognized</span>
                     </div>
                     <div id="match-color-swatch" class="w-7 h-7 rounded-full border-2 border-white shadow-md"></div>
                 </div>
@@ -176,15 +176,15 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">User Handle / Subtitle</label>
-                        <input type="text" id="setting-username" value="@kitchengardener" placeholder="e.g. @kitchengardener" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 bo[...]">
+                        <input type="text" id="setting-username" value="@kitchengardener" placeholder="e.g. @kitchengardener" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Logo Image URL (Optional)</label>
-                        <input type="url" id="setting-logo-url" placeholder="https://example.com/logo.png" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-2[...]">
+                        <input type="url" id="setting-logo-url" placeholder="https://example.com/logo.png" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                     </div>
                     <div>
   <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Supabase URL</label>
-  <input type="url" id="setting-supabase-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-s[...]">
+  <input type="url" id="setting-supabase-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
 </div>
 <div>
   <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Supabase Anon Key</label>
@@ -216,20 +216,20 @@
                     <!-- Plant Name with Predictive Autocomplete -->
                     <div class="relative">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Plant Name *</label>
-                        <input type="text" id="plant-name" required autocomplete="off" placeholder="e.g. Cucumber, Tomato" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 borde[...]">
-                        <div id="name-suggestions" class="autocomplete-dropdown hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-7[...]" ></div>
+                        <input type="text" id="plant-name" required autocomplete="off" placeholder="e.g. Cucumber, Tomato" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <div id="name-suggestions" class="autocomplete-dropdown hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"></div>
                     </div>
                     <!-- Variety with Predictive Autocomplete -->
                     <div class="relative">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Variety</label>
-                        <input type="text" id="plant-variety" autocomplete="off" placeholder="e.g. Beth Alpha, Gardener's Delight" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-9[...]">
-                        <div id="variety-suggestions" class="autocomplete-dropdown hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slat[...]" ></div>
+                        <input type="text" id="plant-variety" autocomplete="off" placeholder="e.g. Beth Alpha, Gardener's Delight" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <div id="variety-suggestions" class="autocomplete-dropdown hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"></div>
                     </div>
                 </div>
 
                 <!-- Black & White Vegetable SVG Icon Selection Library -->
                 <div>
-                    <div id="icon-picker-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2.5 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-[...]">
+                    <div id="icon-picker-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2.5 p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 max-h-[240px] overflow-y-auto custom-scrollbar">
                         <!-- SVG Icon buttons injected dynamically -->
                     </div>
                     <p class="text-[11px] text-slate-400 mt-1.5"><span id="selected-icon-name-display" class="font-semibold text-emerald-600 dark:text-emerald-400">Cucumber / Gherkin</span></p>
@@ -256,12 +256,10 @@
                         </div>
                     </div>
                     <div class="flex items-center justify-between gap-2">
-                        <button type="button" id="form-cam-toggle" onclick="toggleFormCamera()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg text-xs font-semibold tran[...]">
-                            Start Camera Feed
-                        </button>
-                        <button type="button" onclick="captureFormColor()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-xs font-semibold transition flex items-[...]">
+                        <button type="button" id="form-cam-toggle" onclick="toggleFormCamera()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg text-xs font-semibold transition">Start Camera Feed</button>
+                        <button type="button" onclick="captureFormColor()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center">
                             <i class="fa-solid fa-camera"></i>
-                            <span>Scan Tag</span>
+                            <span class="ml-2">Scan Tag</span>
                         </button>
                     </div>
                     <input type="hidden" id="form-color-hex" value="#16a34a">
@@ -274,17 +272,17 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Growing Medium / Setup</label>
-                        <input type="text" id="plant-medium" placeholder="e.g. AutoPot / Wicking Bed / Soil" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate[...]">
+                        <input type="text" id="plant-medium" placeholder="e.g. AutoPot / Wicking Bed / Soil" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Initial Notes & Care Guide</label>
-                    <textarea id="plant-notes" rows="3" placeholder="Nutrient routine, sun exposure, pruning tips..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border bor[...]"></textarea>
+                    <textarea id="plant-notes" rows="3" placeholder="Nutrient routine, sun exposure, pruning tips..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" onclick="closePlantModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-7[...]">Cancel</button>
+                    <button type="button" onclick="closePlantModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">Cancel</button>
                     <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Plant</button>
                 </div>
             </form>
@@ -331,7 +329,7 @@
                         <input type="hidden" id="log-plant-id">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                            <select id="log-type" onchange="toggleNutrientLibraryView()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 [...]">
+                            <select id="log-type" onchange="toggleNutrientLibraryView()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                                 <option value="Growth">Growth Update</option>
                                 <option value="Water">Watering / Irrigation</option>
                                 <option value="Feed">Nutrients / Fertilizer</option>
@@ -365,7 +363,7 @@
                                 <span id="volume-label-text">Volume / Capacity Fill</span>
                             </label>
                             <div class="flex gap-2">
-                                <input type="number" id="tank-volume-amount" step="0.1" min="0" placeholder="e.g. 10" class="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border[...]">
+                                <input type="number" id="tank-volume-amount" step="0.1" min="0" placeholder="e.g. 10" class="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
                                 <select id="tank-volume-unit" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
                                     <option value="Liters">Liters (L)</option>
                                     <option value="Gallons">Gallons (gal)</option>
@@ -386,7 +384,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] text-slate-500 mb-0.5">Brand</label>
-                                    <select id="nutrient-brand-select" onchange="handleNutrientBrandChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate[...]">
+                                    <select id="nutrient-brand-select" onchange="handleNutrientBrandChange()" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
                                         <!-- Injected dynamically -->
                                     </select>
                                 </div>
@@ -394,20 +392,20 @@
                                     <div class="flex justify-between items-center mb-0.5">
                                         <label class="block text-[11px] text-slate-500">Products & Dosages</label>
                                     </div>
-                                    <div id="nutrient-product-list" class="max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 round[...]">
+                                    <div id="nutrient-product-list" class="max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg p-2">
                                         <p class="text-[11px] text-slate-400 italic px-1">Select a brand first</p>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex justify-end pt-1">
-                                <button type="button" onclick="applyNutrientSelection()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1 rounded-lg text-[11px] font-semibold trans[...]">
+                                <button type="button" onclick="applyNutrientSelection()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1 rounded-lg text-[11px] font-semibold transition">
                                     <i class="fa-solid fa-plus text-[10px]"></i>
                                     <span>Add Selected Nutrients to Log</span>
                                 </button>
                             </div>
                         </div>
 
-                        <textarea id="log-text" rows="2" required placeholder="Log details (e.g. topped main stem, harvested crisp Beth Alpha cucumbers)..." class="w-full px-3.5 py-2 rounded-xl b[...]"></textarea>
+                        <textarea id="log-text" rows="2" required placeholder="Log details (e.g. topped main stem, harvested crisp Beth Alpha cucumbers)..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
                         <div class="flex justify-end">
                             <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
                         </div>
@@ -462,18 +460,18 @@
 
         // High-contrast, Monochrome / Black & White Vegetable Vector SVG Artwork
         const MONOCHROME_VEG_SVGS = {
-            cucumber: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M15,55 C12,35 30,15 50,22 C70,28 85,45 82,65 C80,82 55,88 35,82 C20,78 17,68 15,55 Z" fill="#000000" stroke="#000000" s[...]`,
-            tomato: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="55" r="35" fill="#000000" stroke="#000000" stroke-width="2"/><ellipse cx="42" cy="45" rx="28" ry="22" fill="#3[...]`,
-            pepper: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,30 C30,20 70,20 70,30 C75,55 70,82 52,88 C35,82 25,55 30,30 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]`,
-            carrot: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M35,30 Q50,22 65,30 Q60,65 52,90 Q48,90 40,65 Q35,45 35,30 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]`,
-            greens: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M20,65 C10,40 30,20 50,25 C70,20 90,40 80,65 C70,85 30,85 20,65 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]`,
-            onion: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M25,55 C20,35 40,20 50,15 C60,20 80,35 75,55 C70,78 30,78 25,55 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]`,
-            fig: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,12 C45,20 20,35 22,62 C24,82 76,82 78,62 C80,35 55,20 50,12 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]`,
-            berries: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,40 C30,25 70,25 70,40 C75,65 55,85 50,88 C45,85 25,65 30,40 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]`,
-            eggplant: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,20 C38,20 22,45 25,72 C28,90 72,90 75,72 C78,45 62,20 50,20 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]`,
-            corn: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M35,25 Q50,15 65,25 Q65,65 52,88 Q48,88 35,65 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]`,
-            beans: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M20,20 Q50,10 80,45 Q70,75 45,85 Q20,80 20,20 Z" fill="#000000" stroke="#000000" stroke-width="2"/>[...]`,
-            sprouts: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,85 L50,45" stroke="#000000" stroke-width="7" stroke-linecap="round"/><path d="M50,50 C30,45 15,25 35,15 C50,20 50,40[...]"/></svg>`
+            cucumber: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M15,55 C12,35 30,15 50,22 C70,28 85,45 82,65 C80,82 55,88 35,82 C20,78 17,68 15,55 Z" fill="#000000" stroke="#000000"/></svg>`,
+            tomato: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="55" r="35" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            pepper: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,30 C30,20 70,20 70,30 C75,55 70,82 52,88 C35,82 25,55 30,30 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            carrot: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M35,30 Q50,22 65,30 Q60,65 52,90 Q48,90 40,65 Q35,45 35,30 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            greens: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M20,65 C10,40 30,20 50,25 C70,20 90,40 80,65 C70,85 30,85 20,65 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            onion: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M25,55 C20,35 40,20 50,15 C60,20 80,35 75,55 C70,78 30,78 25,55 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            fig: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,12 C45,20 20,35 22,62 C24,82 76,82 78,62 C80,35 55,20 50,12 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            berries: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,40 C30,25 70,25 70,40 C75,65 55,85 50,88 C45,85 25,65 30,40 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            eggplant: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,20 C38,20 22,45 25,72 C28,90 72,90 75,72 C78,45 62,20 50,20 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            corn: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M35,25 Q50,15 65,25 Q65,65 52,88 Q48,88 35,65 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            beans: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M20,20 Q50,10 80,45 Q70,75 45,85 Q20,80 20,20 Z" fill="#000000" stroke="#000000" stroke-width="2"/></svg>`,
+            sprouts: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50,85 L50,45" stroke="#000000" stroke-width="7" stroke-linecap="round"/><path d="M50,50 C30,45 15,25 35,15 C50,20 50,40" stroke="#000000" stroke-width="6" stroke-linecap="round" fill="none"/></svg>`
         };
  
         const CROP_ICON_LIBRARY = [
@@ -549,8 +547,6 @@
             return closestName;
         }
 
-        // ... rest of app code unchanged (autocomplete, PLANT_DATABASE, NUTRIENT_BRANDS_LIBRARY, state, etc.)
-
         let appSettings = JSON.parse(localStorage.getItem('flora_settings')) || {
             username: '@kitchengardener',
             logoUrl: ''
@@ -605,6 +601,13 @@
             setupAutocomplete();
             const logDateInput = document.getElementById('log-date');
             if (logDateInput) logDateInput.valueAsDate = new Date();
+
+            // Wire confirm delete
+            const confirmBtn = document.getElementById('confirm-delete-btn');
+            if (confirmBtn) confirmBtn.addEventListener('click', confirmDeletePlant);
+
+            // Default tab
+            switchTab('plants');
         });
 
         function applyBranding() {
@@ -645,7 +648,254 @@
             initSupabase();
         }
 
-        // ... the rest of the original JavaScript continues unchanged (renderIconPickerGrid, setupAutocomplete, selectPlantName, save/load plants, camera functions, etc.)
+        // Minimal implementations so buttons work
+        function switchTab(tab) {
+            const views = ['plants', 'scanner', 'settings'];
+            views.forEach(v => {
+                const el = document.getElementById('view-' + v);
+                const tabBtn = document.getElementById('tab-' + v);
+                if (!el || !tabBtn) return;
+                if (v === tab) {
+                    el.classList.remove('hidden');
+                    tabBtn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm');
+                } else {
+                    el.classList.add('hidden');
+                    tabBtn.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm');
+                }
+            });
+        }
+
+        function openAddPlantModal() {
+            const modal = document.getElementById('plant-modal');
+            if (!modal) return;
+            document.getElementById('modal-title').textContent = 'Add New Plant';
+            // reset form
+            document.getElementById('edit-plant-id').value = '';
+            document.getElementById('plant-name').value = '';
+            document.getElementById('plant-variety').value = '';
+            document.getElementById('plant-date').value = '';
+            document.getElementById('plant-medium').value = '';
+            document.getElementById('plant-notes').value = '';
+            document.getElementById('plant-icon-key').value = 'cucumber';
+            document.getElementById('selected-icon-name-display').textContent = 'Cucumber / Gherkin';
+            document.getElementById('form-color-hex').value = '#16a34a';
+            document.getElementById('form-color-badge').style.backgroundColor = '#16a34a';
+            document.getElementById('form-scanned-color-name').textContent = 'Forest Green';
+            modal.classList.remove('hidden');
+        }
+
+        function closePlantModal() {
+            const modal = document.getElementById('plant-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function closeJournalModal() {
+            const modal = document.getElementById('journal-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openJournalModal(plantId) {
+            const plant = plants.find(p => p.id === plantId);
+            if (!plant) return;
+            document.getElementById('journal-name').textContent = plant.name;
+            document.getElementById('journal-variety').textContent = plant.variety || 'Variety';
+            document.getElementById('journal-date').textContent = plant.date || '-';
+            document.getElementById('journal-medium').textContent = plant.medium || '-';
+            document.getElementById('journal-initial-notes').textContent = plant.notes || '';
+            document.getElementById('journal-color-name').textContent = getCommonColorName(plant.hex) || 'Tag Color';
+            const iconContainer = document.getElementById('journal-icon-container');
+            iconContainer.innerHTML = MONOCHROME_VEG_SVGS[plant.iconKey] || '';
+
+            // populate logs
+            const logsContainer = document.getElementById('journal-logs-container');
+            logsContainer.innerHTML = '';
+            (plant.logs || []).slice().reverse().forEach(log => {
+                const div = document.createElement('div');
+                div.className = 'p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700';
+                div.innerHTML = `<div class="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400"><div>${log.date}</div><div class="font-semibold">${log.type}</div></div><div class="mt-2 text-sm">${log.text}</div>`;
+                logsContainer.appendChild(div);
+            });
+
+            document.getElementById('log-plant-id').value = plant.id;
+            const modal = document.getElementById('journal-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function renderPlants() {
+            const grid = document.getElementById('plants-grid');
+            const empty = document.getElementById('plants-empty');
+            const q = (document.getElementById('plant-search')?.value || '').toLowerCase();
+            grid.innerHTML = '';
+            const filtered = plants.filter(p => {
+                return [p.name, p.variety, p.notes, getCommonColorName(p.hex)].join(' ').toLowerCase().includes(q);
+            });
+            if (filtered.length === 0) {
+                empty.classList.remove('hidden');
+            } else {
+                empty.classList.add('hidden');
+                filtered.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-start gap-3';
+                    card.innerHTML = `
+                        <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0">${MONOCHROME_VEG_SVGS[p.iconKey] || ''}</div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-sm font-semibold">${p.name} <span class="text-xs text-slate-500">${p.variety ? '· ' + p.variety : ''}</span></div>
+                                    <div class="text-[11px] text-slate-500 mt-1">${getCommonColorName(p.hex)}</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button class="text-xs px-2 py-1 rounded-lg bg-emerald-600 text-white" onclick="openJournalModal('${p.id}')">Open</button>
+                                    <button class="text-xs px-2 py-1 rounded-lg bg-slate-100" onclick="promptDeletePlant('${p.id}')">Delete</button>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2">${p.notes || ''}</p>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        function renderIconPickerGrid() {
+            const grid = document.getElementById('icon-picker-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            CROP_ICON_LIBRARY.forEach(icon => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center';
+                btn.innerHTML = `<div class="w-8 h-8">${MONOCHROME_VEG_SVGS[icon.key] || ''}</div>`;
+                btn.title = icon.label;
+                btn.addEventListener('click', () => {
+                    document.getElementById('plant-icon-key').value = icon.key;
+                    document.getElementById('selected-icon-name-display').textContent = icon.label;
+                });
+                grid.appendChild(btn);
+            });
+        }
+
+        function setupAutocomplete() {
+            // Placeholder - real autocomplete data not included in this minimal patch
+        }
+
+        function toggleFormCamera() {
+            const btn = document.getElementById('form-cam-toggle');
+            if (!btn) return;
+            if (btn.dataset.active === '1') {
+                btn.dataset.active = '0';
+                btn.textContent = 'Start Camera Feed';
+            } else {
+                btn.dataset.active = '1';
+                btn.textContent = 'Stop Camera Feed';
+            }
+        }
+
+        function toggleMatchCamera() {
+            const btnText = document.getElementById('match-cam-btn-text');
+            if (!btnText) return;
+            if (btnText.textContent.includes('Start')) {
+                btnText.textContent = 'Stop Camera';
+            } else {
+                btnText.textContent = 'Start Camera';
+            }
+        }
+
+        function captureFormColor() {
+            // Minimal stub: just set to a sample color and update badge
+            const hex = '#65a30d';
+            document.getElementById('form-color-hex').value = hex;
+            document.getElementById('form-color-badge').style.backgroundColor = hex;
+            document.getElementById('form-scanned-color-name').textContent = getCommonColorName(hex);
+        }
+
+        function triggerColorMatch() {
+            // Minimal stub: show match card with a sample match
+            const hex = '#16a34a';
+            const resultCard = document.getElementById('match-result-card');
+            const swatch = document.getElementById('match-color-swatch');
+            const content = document.getElementById('match-result-content');
+            if (swatch) swatch.style.backgroundColor = hex;
+            if (content) content.innerHTML = `<div class="text-sm font-semibold">${getCommonColorName(hex)}</div><div class="text-xs text-slate-500 mt-1">Hex: ${hex}</div>`;
+            if (resultCard) resultCard.classList.remove('hidden');
+        }
+
+        function handlePlantSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-plant-id').value || 'plant_' + Date.now();
+            const name = document.getElementById('plant-name').value.trim();
+            if (!name) return alert('Plant name is required');
+            const variety = document.getElementById('plant-variety').value.trim();
+            const date = document.getElementById('plant-date').value || '';
+            const medium = document.getElementById('plant-medium').value || '';
+            const notes = document.getElementById('plant-notes').value || '';
+            const iconKey = document.getElementById('plant-icon-key').value || 'cucumber';
+            const hex = document.getElementById('form-color-hex').value || '#16a34a';
+
+            const existing = plants.find(p => p.id === id);
+            if (existing) {
+                existing.name = name;
+                existing.variety = variety;
+                existing.date = date;
+                existing.medium = medium;
+                existing.notes = notes;
+                existing.iconKey = iconKey;
+                existing.hex = hex;
+            } else {
+                plants.push({ id, name, variety, date, medium, notes, iconKey, hex, logs: [] });
+            }
+            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            renderPlants();
+            closePlantModal();
+        }
+
+        function promptDeletePlant(id) {
+            pendingDeleteId = id;
+            const plant = plants.find(p => p.id === id);
+            if (plant) document.getElementById('delete-plant-name').textContent = plant.name;
+            const modal = document.getElementById('delete-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            pendingDeleteId = null;
+            const modal = document.getElementById('delete-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function confirmDeletePlant() {
+            if (!pendingDeleteId) return closeDeleteModal();
+            plants = plants.filter(p => p.id !== pendingDeleteId);
+            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            pendingDeleteId = null;
+            renderPlants();
+            closeDeleteModal();
+        }
+
+        function handleJournalLogSubmit(e) {
+            e.preventDefault();
+            const plantId = document.getElementById('log-plant-id').value;
+            const plant = plants.find(p => p.id === plantId);
+            if (!plant) return;
+            const date = document.getElementById('log-date').value || new Date().toISOString().slice(0,10);
+            const type = document.getElementById('log-type').value || 'Growth';
+            const text = document.getElementById('log-text').value || '';
+            const id = 'log_' + Date.now();
+            plant.logs = plant.logs || [];
+            plant.logs.push({ id, date, type, text });
+            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            openJournalModal(plantId); // refresh
+            document.getElementById('log-text').value = '';
+        }
+
+        function applyNutrientSelection() { /* stub */ }
+        function handleNutrientBrandChange() { /* stub */ }
+        function toggleNutrientLibraryView() {
+            const type = document.getElementById('log-type').value;
+            document.getElementById('tank-volume-section').classList.toggle('hidden', !(type === 'Water' || type === 'Feed'));
+            document.getElementById('nutrient-library-section').classList.toggle('hidden', type !== 'Feed');
+            document.getElementById('delivery-method-section').classList.toggle('hidden', type === 'Growth' || type === 'Prune' || type === 'Harvest');
+        }
 
     </script>
 </body>
