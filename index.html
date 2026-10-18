@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flora Scan - Plant Tag & Growth Journal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -402,17 +403,82 @@
       }
     }
 
-    function saveBrandingSettings() {
+    let sb = null;
+    const SETTINGS_ROW_ID = 'default';
+
+    function initSupabase() {
+      sb = null;
+      if (settings.supabaseUrl && settings.supabaseAnonKey && window.supabase) {
+        try {
+          sb = window.supabase.createClient(settings.supabaseUrl, settings.supabaseAnonKey);
+        } catch (e) {
+          console.warn('Supabase init failed', e);
+        }
+      }
+      return !!sb;
+    }
+
+    function showSaveStatus(message, isError) {
+      const status = document.getElementById('save-status');
+      if (!status) return;
+      status.textContent = message;
+      status.classList.toggle('text-red-600', !!isError);
+      status.classList.toggle('text-emerald-700', !isError);
+      clearTimeout(showSaveStatus.timer);
+      showSaveStatus.timer = setTimeout(() => { status.textContent = ''; }, 3500);
+    }
+
+    async function pushSettings() {
+      const { error } = await sb.from('app_settings').upsert({
+        id: SETTINGS_ROW_ID,
+        username: settings.username,
+        logo_url: settings.logoUrl,
+        supabase_url: settings.supabaseUrl,
+        supabase_anon_key: settings.supabaseAnonKey,
+        updated_at: new Date().toISOString()
+      });
+      return error;
+    }
+
+    async function pullSettings() {
+      if (!initSupabase()) return;
+      try {
+        const { data, error } = await sb.from('app_settings').select('*').eq('id', SETTINGS_ROW_ID).maybeSingle();
+        if (error) throw error;
+        if (!data) return;
+        settings = {
+          username: data.username || settings.username,
+          logoUrl: data.logo_url ?? settings.logoUrl,
+          // keep local connection settings so a working connection is never replaced
+          supabaseUrl: settings.supabaseUrl,
+          supabaseAnonKey: settings.supabaseAnonKey
+        };
+        writeJson(STORAGE_KEYS.settings, settings);
+        applyBranding();
+      } catch (e) {
+        console.warn('Settings pull failed', e);
+      }
+    }
+
+    async function saveBrandingSettings() {
       settings.username = document.getElementById('setting-username').value || '@kitchengardener';
       settings.logoUrl = document.getElementById('setting-logo-url').value || '';
       settings.supabaseUrl = document.getElementById('setting-supabase-url').value || '';
       settings.supabaseAnonKey = document.getElementById('setting-supabase-key').value || '';
       writeJson(STORAGE_KEYS.settings, settings);
       applyBranding();
-      const status = document.getElementById('save-status');
-      if (status) {
-        status.textContent = 'Saved locally';
-        setTimeout(() => { status.textContent = ''; }, 2200);
+      if (!initSupabase()) {
+        showSaveStatus('Saved locally (Supabase not configured)');
+        return;
+      }
+      showSaveStatus('Saved locally. Syncing to Supabase...');
+      try {
+        const error = await pushSettings();
+        if (error) throw error;
+        showSaveStatus('Saved locally and synced to Supabase');
+      } catch (e) {
+        console.error(e);
+        showSaveStatus('Saved locally, Supabase sync failed: ' + (e.message || e), true);
       }
     }
 
@@ -694,6 +760,7 @@
       applyBranding();
       renderPlants();
       switchTab('plants');
+      pullSettings();
     });
   </script>
 </body>

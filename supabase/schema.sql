@@ -65,3 +65,23 @@ for all
 to anon
 using (true)
 with check (true);
+
+-- App settings (branding + connection), single row keyed by id = 'default'
+create table if not exists public.app_settings (
+  id text primary key default 'default',
+  username text,
+  logo_url text,
+  supabase_url text,
+  supabase_anon_key text,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.app_settings enable row level security;
+
+drop policy if exists "anon full access app_settings" on public.app_settings;
+create policy "anon full access app_settings"
+on public.app_settings
+for all
+to anon
+using (true)
+with check (true);
