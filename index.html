@@ -1707,18 +1707,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Unified: View Toggle & PDF Export
+// FloraScan Unified: Broad & Resilient Script
 // ==========================================
 
 (function() {
-    // 1. Inject CSS rules for the List/Grid View toggle
+    // 1. Inject robust CSS rules that catch any main plant container
     if (!document.getElementById('floraViewToggleStyles')) {
         const style = document.createElement('style');
         style.id = 'floraViewToggleStyles';
         style.innerHTML = `
-            body.plant-list-view #plantsContainer,
-            body.plant-list-view [id*="plantsContainer"],
-            body.plant-list-view main .grid {
+            body.plant-list-view main .grid,
+            body.plant-list-view .grid,
+            body.plant-list-view [class*="grid"] {
                 display: flex !important;
                 flex-direction: column !important;
                 gap: 0.75rem !important;
@@ -1733,20 +1733,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         document.head.appendChild(style);
     }
 
-    // 2. Load the html2pdf library script via CDN
+    // 2. Load html2pdf for journal exports
     if (!window.html2pdf) {
         const pdfScript = document.createElement('script');
         pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         document.head.appendChild(pdfScript);
     }
 
-    // 3. Initialize view state from localStorage
+    // 3. Initialize view state
     let currentView = localStorage.getItem('plant_view_mode') || 'grid';
     if (currentView === 'list') {
         document.body.classList.add('plant-list-view');
     }
 
-    // 4. Global setPlantView function to support inline HTML onclick handlers
+    // 4. Global toggle function
     window.setPlantView = function(mode) {
         currentView = mode;
         localStorage.setItem('plant_view_mode', mode);
@@ -1765,15 +1765,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     };
 
-    // 5. PDF Export Function for Growth Journal
+    // 5. PDF Export function
     window.downloadPlantJournalPDF = function() {
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
-        const journalHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase().includes('growth journal'));
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
+        const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
         
-        let targetElement = null;
-        if (journalHeading) {
-            targetElement = journalHeading.closest('div').parentElement;
-        }
+        let targetElement = journalHeading ? journalHeading.closest('div').parentElement : null;
+        if (!targetElement) targetElement = document.querySelector('main');
 
         if (!targetElement) {
             alert("Please open a plant's growth journal first!");
@@ -1781,11 +1779,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         const opt = {
-            margin:       10,
-            filename:     'plant-growth-journal.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            margin: 10,
+            filename: 'plant-growth-journal.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
         if (window.html2pdf) {
@@ -1795,14 +1793,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     };
 
-    // 6. Coordinated UI Injector (handles both features safely)
+    // 6. Flexible UI Injector
     function injectUI() {
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
 
-        // A. Inject Grid/List Toggle next to "My Plants" if missing
-        const myPlantsHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase() === 'my plants');
-        if (myPlantsHeading && !document.getElementById('gridViewBtn')) {
-            const headerWrapper = myPlantsHeading.parentElement;
+        // Inject Toggle next to "Plants" or "My Plants"
+        const plantHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('plant'));
+        if (plantHeading && !document.getElementById('gridViewBtn')) {
+            const headerWrapper = plantHeading.parentElement;
             if (headerWrapper) {
                 headerWrapper.style.display = 'flex';
                 headerWrapper.style.justifyContent = 'space-between';
@@ -1819,17 +1817,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     </button>
                 `;
                 headerWrapper.appendChild(toggleDiv);
-
-                const section = headerWrapper.closest('div').parentElement;
-                if (section) {
-                    const gridCandidate = section.querySelector('.grid') || section.querySelector('div:not(:first-child)');
-                    if (gridCandidate) gridCandidate.id = 'plantsContainer';
-                }
             }
         }
 
-        // B. Inject PDF Button next to "Growth Journal"
-        const journalHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase().includes('growth journal'));
+        // Inject PDF Button next to "Journal"
+        const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
         if (journalHeading && !document.getElementById('downloadJournalPdfBtn')) {
             const journalHeader = journalHeading.parentElement;
             if (journalHeader) {
@@ -1850,12 +1842,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     }
 
-    // 7. Run injection checks safely on load and periodically
     window.addEventListener('DOMContentLoaded', () => {
         window.setPlantView(currentView);
         injectUI();
     });
-    setInterval(injectUI, 1000);
+    setInterval(injectUI, 800);
 })();
         
 
