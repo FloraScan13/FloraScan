@@ -1877,7 +1877,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 })();
         
 // ==========================================
-// FloraScan Auto-Injected Direct PDF Downloader
+// FloraScan Direct-Hook PDF Downloader
 // ==========================================
 
 (function() {
@@ -1890,12 +1890,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
     // 2. Main function to generate and download PDF
     window.downloadPlantReportPDF = function(plantName, variety, dateSown, tagName, tagColor, svgArtwork, logsHtml) {
-        // Create a temporary hidden container for the clean PDF layout
         const reportContainer = document.createElement('div');
         reportContainer.style.cssText = 'position: absolute; left: -9999px; top: -9999px; width: 600px; background: white; color: #111827; padding: 2rem; font-family: sans-serif;';
         
         reportContainer.innerHTML = `
-            <!-- Report Header -->
             <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
                 <div style="display: flex; gap: 1rem; align-items: center;">
                     <div style="width: 4rem; height: 4rem; background: #f3f4f6; border-radius: 0.75rem; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
@@ -1912,7 +1910,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 </div>
             </div>
 
-            <!-- Plant Meta Details -->
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.85rem;">
                 <div>
                     <strong style="color: #6b7280; display: block; margin-bottom: 0.15rem;">Date Sown</strong>
@@ -1927,7 +1924,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 </div>
             </div>
 
-            <!-- Growth Logs Section -->
             <div style="margin-bottom: 1rem;">
                 <h3 style="font-size: 1rem; font-weight: bold; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 1rem;">Growth History & Journal Logs</h3>
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -1959,13 +1955,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     };
 
-    // 3. Auto-inject the PDF button into active plant/journal modals
-    function injectPdfButton() {
-        const modals = document.querySelectorAll('div[id*="Modal"], div[class*="modal"]');
-        modals.forEach(modal => {
-            if (!modal.querySelector('.flora-pdf-btn') && modal.offsetParent !== null) {
-                const header = modal.querySelector('h2, h3, h4');
-                if (header && header.parentElement) {
+    // 3. Intercept openJournalModal to guarantee the PDF button appears instantly when a journal opens
+    if (typeof window.openJournalModal === 'function') {
+        const originalOpenJournal = window.openJournalModal;
+        window.openJournalModal = function(...args) {
+            originalOpenJournal.apply(this, args);
+            setTimeout(injectButtonToActiveModal, 150);
+        };
+    }
+
+    // Fallback mutation observer that checks all visible headers if function intercept fails
+    function injectButtonToActiveModal() {
+        const headings = document.querySelectorAll('h2, h3, h4');
+        headings.forEach(heading => {
+            const modalParent = heading.closest('div[class*="fixed"], div[class*="absolute"], div[class*="z-50"]');
+            if (modalParent && !modalParent.querySelector('.flora-pdf-btn')) {
+                if (heading.parentElement) {
                     const btn = document.createElement('button');
                     btn.className = 'flora-pdf-btn';
                     btn.textContent = 'PDF';
@@ -1973,22 +1978,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     
                     btn.onclick = (e) => {
                         e.stopPropagation();
-                        const name = modal.querySelector('h3, h4, h2')?.textContent?.trim() || 'Plant Report';
-                        const variety = modal.querySelector('p')?.textContent?.trim() || '';
-                        const svg = modal.querySelector('svg')?.outerHTML || '';
+                        const name = heading.textContent?.trim() || 'Plant Report';
+                        const variety = modalParent.querySelector('p')?.textContent?.trim() || '';
+                        const svg = modalParent.querySelector('svg')?.outerHTML || '';
                         
                         window.downloadPlantReportPDF(name, variety, '2026-10-21', 'Cobalt Blue', '#00a5ea', svg, '<div style="padding: 0.75rem; background: #f9fafb; border-radius: 0.375rem; border: 1px solid #e5e7eb;"><span style="font-size: 0.75rem; color: #6b7280; display: block;">Latest Log</span><p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #111827;">Monitored growth metrics and verified health status.</p></div>');
                     };
 
-                    header.parentElement.style.display = 'flex';
-                    header.parentElement.style.alignItems = 'center';
-                    header.parentElement.appendChild(btn);
+                    heading.parentElement.style.display = 'flex';
+                    heading.parentElement.style.alignItems = 'center';
+                    heading.parentElement.appendChild(btn);
                 }
             }
         });
     }
 
-    const observer = new MutationObserver(injectPdfButton);
+    const observer = new MutationObserver(injectButtonToActiveModal);
     observer.observe(document.body, { childList: true, subtree: true });
 })();
         
