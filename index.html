@@ -1876,7 +1876,133 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     setTimeout(injectButtonsIfNeeded, 800);
 })();
         
+// ==========================================
+// FloraScan Direct PDF Download Generator
+// ==========================================
 
+(function() {
+    // 1. Automatically load html2pdf.js library if not already present on the page
+    if (!window.html2pdf) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        document.head.appendChild(script);
+    }
+
+    // 2. Inject report modal styles
+    const styleId = 'flora-direct-pdf-styles';
+    if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.innerHTML = `
+            .flora-report-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.6);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 99999;
+                padding: 1rem;
+            }
+            .flora-report-card {
+                background: white;
+                color: #111827;
+                width: 100%;
+                max-width: 600px;
+                max-height: 90vh;
+                overflow-y: auto;
+                border-radius: 1rem;
+                padding: 2rem;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 3. Main function to generate and instantly download the PDF
+    window.downloadPlantReportPDF = function(plantName, variety, dateSown, tagName, tagColor, svgArtwork, logsHtml) {
+        // Remove any existing preview modal
+        const existing = document.getElementById('floraPdfReportModal');
+        if (existing) existing.remove();
+
+        // Create container for the report
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'flora-report-overlay';
+        modalOverlay.id = 'floraPdfReportModal';
+
+        const reportContainer = document.createElement('div');
+        reportContainer.className = 'flora-report-card';
+        reportContainer.id = 'floraReportContent';
+
+        reportContainer.innerHTML = `
+            <!-- Report Header -->
+            <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 4rem; height: 4rem; background: #f3f4f6; border-radius: 0.75rem; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                        ${svgArtwork || '<span style="font-size: 2rem;">🌱</span>'}
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: bold; margin: 0; color: #111827;">${plantName || 'Plant Report'}</h2>
+                        <p style="font-size: 0.95rem; color: #4b5563; margin: 0.25rem 0 0 0;">${variety || 'Kitchen Garden Crop'}</p>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; display: block;">Flora Scan Report</span>
+                    <span style="font-size: 0.85rem; font-weight: 500; color: #374151;">${new Date().toLocaleDateString()}</span>
+                </div>
+            </div>
+
+            <!-- Plant Meta Details -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                <div>
+                    <strong style="color: #6b7280; display: block; margin-bottom: 0.15rem;">Date Sown</strong>
+                    <span style="color: #111827; font-weight: 600;">${dateSown || 'Not specified'}</span>
+                </div>
+                <div>
+                    <strong style="color: #6b7280; display: block; margin-bottom: 0.15rem;">Tag Color</strong>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.15rem;">
+                        <div style="width: 0.85rem; height: 0.85rem; border-radius: 50%; background-color: ${tagColor || '#ccc'}; border: 1px solid #d1d5db;"></div>
+                        <span style="color: #111827; font-weight: 600;">${tagName || 'Standard'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Growth Logs Section -->
+            <div style="margin-bottom: 1rem;">
+                <h3 style="font-size: 1rem; font-weight: bold; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 1rem;">Growth History & Journal Logs</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    ${logsHtml || '<p style="color: #6b7280; font-style: italic; font-size: 0.9rem;">No growth logs recorded yet.</p>'}
+                </div>
+            </div>
+        `;
+
+        modalOverlay.appendChild(reportContainer);
+        document.body.appendChild(modalOverlay);
+
+        // Options for pdf generation
+        const opt = {
+            margin:       10,
+            filename:     `${(plantName || 'plant').toLowerCase().replace(/\s+/g, '_')}_report.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Generate PDF and trigger download immediately, then remove the preview overlay
+        if (window.html2pdf) {
+            window.html2pdf().from(reportContainer).set(opt).save().then(() => {
+                modalOverlay.remove();
+            }).catch(err => {
+                console.error("PDF generation error:", err);
+                modalOverlay.remove();
+            });
+        } else {
+            // Fallback if library is still loading
+            alert("PDF library is still loading. Please try clicking download again in a second.");
+            modalOverlay.remove();
+        }
+    };
+})();
         
     </script>
 </body>
