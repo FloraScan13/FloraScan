@@ -1798,7 +1798,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 })();
         
 // ==========================================
-// FloraScan Reliable Plant Journal PDF Export
+// FloraScan Precision Plant Journal PDF Export
 // ==========================================
 
 (function() {
@@ -1809,21 +1809,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         document.head.appendChild(pdfScript);
     }
 
-    // 2. Core PDF Export Function
+    // 2. Core PDF Export Function (Precision targeted to journal view)
     window.downloadPlantJournalPDF = function() {
-        // Find the journal heading or fallback to main content areas
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
         const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
         
         let targetElement = null;
         if (journalHeading) {
-            // Find the container holding the journal content (closest parent with substantial content)
-            targetElement = journalHeading.closest('main') || journalHeading.closest('section') || journalHeading.parentElement;
+            // Find the active modal, detail view, or container holding this specific plant's info and logs
+            targetElement = journalHeading.closest('div[class*="fixed"], div[class*="absolute"], div[class*="modal"], main > div > div') || journalHeading.closest('main');
         }
-        
-        // Ultimate fallbacks if specific containers aren't caught
-        if (!targetElement || targetElement.innerHTML.trim() === '') {
-            targetElement = document.querySelector('main') || document.body;
+
+        if (!targetElement) {
+            targetElement = document.querySelector('main');
         }
 
         if (!targetElement) {
@@ -1853,12 +1851,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     };
 
-    // 3. UI Injector to add the button next to the "Growth Journal" heading
+    // 3. UI Injector strictly for individual plant journal views
     function injectPDFButton() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
         const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
 
-        if (journalHeading && !document.getElementById('downloadJournalPdfBtn')) {
+        // Only inject if we are inside a plant detail view (checking for back buttons, close icons, or log-specific terms)
+        const isPlantDetailView = document.querySelector('button svg path[d*="M10 19l-7-7m0 0l7-7m-7 7h18"]') || // back arrow check
+                                  document.querySelector('button[title*="Close"], button[aria-label*="Close"]') ||
+                                  document.body.innerText.includes('Add Log') || 
+                                  document.body.innerText.includes('Growth Log');
+
+        if (journalHeading && isPlantDetailView && !document.getElementById('downloadJournalPdfBtn')) {
             const pdfBtn = document.createElement('button');
             pdfBtn.id = 'downloadJournalPdfBtn';
             pdfBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ml-3 shadow-sm';
