@@ -1707,57 +1707,49 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Clean Mobile Data-List Toggle
+// FloraScan Safe Mobile-Friendly View Toggle
 // ==========================================
 
 (function() {
     let currentView = localStorage.getItem('plant_view_mode') || 'grid';
 
-    // Inject styles for clean list wrapper
-    const styleId = 'flora-list-view-styles';
+    // 1. Inject clean list mode styles safely
+    const styleId = 'flora-safe-list-styles';
     if (!document.getElementById(styleId)) {
         const styleEl = document.createElement('style');
         styleEl.id = styleId;
         styleEl.innerHTML = `
-            .flora-custom-list-view {
+            .flora-list-mode {
                 display: flex !important;
                 flex-direction: column !important;
                 gap: 0.5rem !important;
-                width: 100% !important;
+                grid-template-columns: none !important;
             }
-            .flora-list-item {
+            .flora-list-mode > div,
+            .flora-list-mode > article {
                 display: flex !important;
+                flex-direction: row !important;
                 align-items: center !important;
-                justify-content: space-between !important;
-                padding: 0.75rem 1rem !important;
-                background-color: white !important;
+                gap: 0.75rem !important;
+                padding: 0.75rem !important;
+                background-color: #ffffff !important;
                 border: 1px solid #e5e7eb !important;
                 border-radius: 0.5rem !important;
                 width: 100% !important;
-                text-decoration: none !important;
-                color: inherit !important;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+                box-shadow: none !important;
             }
-            .flora-list-item-content {
-                display: flex !important;
-                align-items: center !important;
-                gap: 0.75rem !important;
-            }
-            .flora-list-item img {
-                width: 2.5rem !important;
-                height: 2.5rem !important;
+            .flora-list-mode img {
+                width: 3rem !important;
+                height: 3rem !important;
                 object-fit: cover !important;
                 border-radius: 0.375rem !important;
-            }
-            .flora-list-item span {
-                font-weight: 500 !important;
-                font-size: 0.95rem !important;
-                color: #111827 !important;
+                flex-shrink: 0 !important;
             }
         `;
         document.head.appendChild(styleEl);
     }
 
+    // 2. Apply view mode to the plant container
     window.setPlantView = function(mode) {
         currentView = mode;
         localStorage.setItem('plant_view_mode', mode);
@@ -1766,70 +1758,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     };
 
     function applyViewMode() {
-        const container = document.getElementById('view-plants') || document.querySelector('.view-plants');
+        const container = document.getElementById('view-plants') || document.querySelector('.view-plants') || document.querySelector('main > div > div');
         if (!container) return;
 
-        let listViewWrapper = document.getElementById('floraCustomListView');
-
         if (currentView === 'list') {
-            // Hide the original grid container
-            container.style.display = 'none';
-
-            // Create or update the clean custom list view
-            if (!listViewWrapper) {
-                listViewWrapper = document.createElement('div');
-                listViewWrapper.id = 'floraCustomListView';
-                listViewWrapper.className = 'flora-custom-list-view';
-                container.parentNode.insertBefore(listViewWrapper, container.nextSibling);
-            }
-
-            // Extract plants from original cards to build clean list rows
-            const cards = container.querySelectorAll('div, article');
-            let listHtml = '';
-            
-            // Track processed names to prevent duplicates from nested divs
-            const seenNames = new Set();
-
-            cards.forEach(card => {
-                const img = card.querySelector('img');
-                const titleEl = card.querySelector('h3, h4, strong, span');
-                const name = titleEl ? titleEl.textContent.trim() : '';
-                
-                if (name && name.length < 40 && !seenNames.has(name) && !name.includes('Flora Scan') && !name.includes('Plants')) {
-                    seenNames.add(name);
-                    const imgSrc = img ? img.src : '';
-                    
-                    // Grab click/touch action from the original card if available
-                    listHtml += `
-                        <div class="flora-list-item" onclick="this.dataset.actionClick">
-                            <div class="flora-list-item-content">
-                                ${imgSrc ? `<img src="${imgSrc}" alt="${name}">` : `<div style="width:2.5rem;height:2.5rem;background:#f3f4f6;border-radius:0.375rem;display:flex;align-items:center;justify-content:center;">🌱</div>`}
-                                <span>${name}</span>
-                            </div>
-                            <svg style="width:1.25rem;height:1.25rem;color:#9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </div>
-                    `;
-                }
-            });
-
-            listViewWrapper.innerHTML = listHtml || '<p style="text-align:center;color:#6b7280;padding:1rem;">No plants found for list view.</p>';
-            
-            // Wire up clicks to mirror the original card interactions
-            const customItems = listViewWrapper.querySelectorAll('.flora-list-item');
-            const originalCards = Array.from(container.children);
-            customItems.forEach((item, index) => {
-                if (originalCards[index]) {
-                    item.onclick = () => originalCards[index].click();
-                }
-            });
-
-            listViewWrapper.style.display = 'flex';
+            container.classList.add('flora-list-mode');
         } else {
-            // Restore original grid view and hide custom list
-            container.style.display = '';
-            if (listViewWrapper) {
-                listViewWrapper.style.display = 'none';
-            }
+            container.classList.remove('flora-list-mode');
         }
     }
 
@@ -1838,19 +1773,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         const listBtn = document.getElementById('listViewBtn');
         if (gridBtn && listBtn) {
             if (currentView === 'list') {
-                listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
-                listBtn.classList.remove('text-gray-400');
-                gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-                gridBtn.classList.add('text-gray-400');
+                listBtn.className = 'p-2 rounded-md bg-white shadow-sm text-black transition-colors';
+                gridBtn.className = 'p-2 rounded-md text-gray-400 hover:text-black transition-colors';
             } else {
-                gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
-                gridBtn.classList.remove('text-gray-400');
-                listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-                listBtn.classList.add('text-gray-400');
+                gridBtn.className = 'p-2 rounded-md bg-white shadow-sm text-black transition-colors';
+                listBtn.className = 'p-2 rounded-md text-gray-400 hover:text-black transition-colors';
             }
         }
     }
 
+    // 3. Inject toggle buttons next to the "My Plants" heading
     function injectUI() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
         const plantHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('plant') && !h.textContent.toLowerCase().includes('journal'));
@@ -1859,38 +1791,46 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const toggleDiv = document.createElement('div');
             toggleDiv.className = 'inline-flex items-center gap-1 bg-gray-100 p-1 rounded-lg ml-3';
             toggleDiv.innerHTML = `
-                <button id="gridViewBtn" class="p-2 rounded-md text-gray-500 hover:text-black transition-colors" title="Grid View">
+                <button id="gridViewBtn" title="Grid View">
                     <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                 </button>
-                <button id="listViewBtn" class="p-2 rounded-md text-gray-500 hover:text-black transition-colors" title="List View">
+                <button id="listViewBtn" title="List View">
                     <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
             `;
             plantHeading.appendChild(toggleDiv);
 
-            document.getElementById('gridViewBtn').addEventListener('touchend', (e) => { e.preventDefault(); setPlantView('grid'); });
-            document.getElementById('gridViewBtn').addEventListener('click', () => setPlantView('grid'));
+            // Bind both touch and click events safely
+            const gBtn = document.getElementById('gridViewBtn');
+            const lBtn = document.getElementById('listViewBtn');
 
-            document.getElementById('listViewBtn').addEventListener('touchend', (e) => { e.preventDefault(); setPlantView('list'); });
-            document.getElementById('listViewBtn').addEventListener('click', () => setPlantView('list'));
+            gBtn.addEventListener('touchend', (e) => { e.preventDefault(); setPlantView('grid'); });
+            gBtn.addEventListener('click', () => setPlantView('grid'));
+
+            lBtn.addEventListener('touchend', (e) => { e.preventDefault(); setPlantView('list'); });
+            lBtn.addEventListener('click', () => setPlantView('list'));
         }
 
         applyViewMode();
         updateButtonStyles();
     }
 
-    const observer = new MutationObserver(() => {
-        injectUI();
-        if (currentView === 'list') applyViewMode();
+    // 4. Safe, non-recursive interval/observer to catch page re-renders
+    const safeObserver = new MutationObserver(() => {
+        if (!document.getElementById('gridViewBtn')) {
+            injectUI();
+        } else {
+            applyViewMode();
+        }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // Only observe direct child list changes to avoid heavy CPU load
+    safeObserver.observe(document.body, { childList: true });
 
     window.addEventListener('DOMContentLoaded', () => {
         injectUI();
-        applyViewMode();
-        updateButtonStyles();
     });
-    
+
     injectUI();
 })();
         
