@@ -1707,20 +1707,21 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Clean, Non-Destructive Script
+// FloraScan Precise Toggle & PDF Export
 // ==========================================
 
 (function() {
-    // 1. Inject isolated styles that don't touch headers or break layout
-    if (!document.getElementById('floraCleanStyles')) {
+    // 1. Inject precise CSS rules targeting only #view-plants
+    if (!document.getElementById('floraViewStyles')) {
         const style = document.createElement('style');
-        style.id = 'floraCleanStyles';
+        style.id = 'floraViewStyles';
         style.innerHTML = `
-            /* Non-destructive list view styling */
-            body.plant-list-view .grid {
+            body.plant-list-view #view-plants,
+            body.plant-list-view .view-plants {
                 display: flex !important;
                 flex-direction: column !important;
                 gap: 0.75rem !important;
+                grid-template-columns: none !important;
             }
             .plant-view-btn-active {
                 background-color: white !important;
@@ -1801,7 +1802,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     };
 
-    // 4. Safe UI Injector (Appends buttons without modifying header styles)
+    // 4. UI Injector for Toggle Buttons & PDF Button
     function injectUI() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
 
@@ -1840,6 +1841,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
     window.addEventListener('DOMContentLoaded', () => {
         injectUI();
+        if (currentView === 'list') {
+            document.body.classList.add('plant-list-view');
+        }
         updateButtonStyles();
     });
     setInterval(injectUI, 1000);
