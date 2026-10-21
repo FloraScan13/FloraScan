@@ -1707,12 +1707,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// My Plants List / Grid View Toggle (Global Scope)
+// Robust My Plants List / Grid View Toggle
 // ==========================================
 
 let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
 
-// Define globally so inline onclick="setPlantView(...)" can find it
 window.setPlantView = function(mode) {
     currentPlantView = mode;
     localStorage.setItem('plant_view_mode', mode);
@@ -1726,32 +1725,63 @@ window.setPlantView = function(mode) {
         return;
     }
 
+    // Toggle active state on buttons
     if (mode === 'list') {
-        container.className = "flex flex-col gap-3 w-full";
+        container.setAttribute('data-view', 'list');
         if (gridBtn) {
-            gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-            gridBtn.classList.add('text-gray-500');
+            gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black', 'bg-slate-200');
+            gridBtn.classList.add('text-gray-400');
         }
         if (listBtn) {
-            listBtn.classList.remove('text-gray-500');
+            listBtn.classList.remove('text-gray-400');
             listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
         }
     } else {
-        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
+        container.setAttribute('data-view', 'grid');
         if (listBtn) {
             listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-            listBtn.classList.add('text-gray-500');
+            listBtn.classList.add('text-gray-400');
         }
         if (gridBtn) {
-            gridBtn.classList.remove('text-gray-500');
+            gridBtn.classList.remove('text-gray-400');
             gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
         }
     }
+
+    // Force style application directly via inline styles or class swapping
+    applyViewLayout(container, mode);
 };
 
-// Initialize view mode on page load
+function applyViewLayout(container, mode) {
+    if (mode === 'list') {
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '0.75rem';
+        // Remove grid properties if any inline styles lingered
+        container.style.display = ''; 
+        container.className = "flex flex-col gap-3 w-full";
+    } else {
+        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
+    }
+}
+
+// Hook into DOM load and also observe if the app re-renders the container
 window.addEventListener('DOMContentLoaded', () => {
     window.setPlantView(currentPlantView);
+    
+    // Optional MutationObserver: if your app re-renders the container and wipes out our classes, 
+    // this instantly re-applies the saved user view preference!
+    const container = document.getElementById('plantsContainer');
+    if (container) {
+        const observer = new MutationObserver(() => {
+            if (container.className.includes('grid') && currentPlantView === 'list') {
+                applyViewLayout(container, 'list');
+            } else if (!container.className.includes('flex') && currentPlantView === 'list') {
+                applyViewLayout(container, 'list');
+            }
+        });
+        observer.observe(container, { attributes: true, attributeFilter: ['class'] });
+    }
 });
         
     </script>
