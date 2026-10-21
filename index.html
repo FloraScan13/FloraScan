@@ -1707,39 +1707,51 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Mobile-Ready & Simplified List Toggle
+// FloraScan Clean Mobile List View Toggle
 // ==========================================
 
 (function() {
     let currentView = localStorage.getItem('plant_view_mode') || 'grid';
 
-    // Inject custom CSS rules for simplified list view cards
+    // Inject clean, streamlined styling for mobile list view
     const styleId = 'flora-list-view-styles';
     if (!document.getElementById(styleId)) {
         const styleEl = document.createElement('style');
         styleEl.id = styleId;
         styleEl.innerHTML = `
-            /* Compact list card styling */
-            .flora-list-mode .plant-card, 
-            .flora-list-mode > div > div {
+            /* Clean Mobile List Mode */
+            .flora-list-mode {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+                width: 100% !important;
+            }
+            .flora-list-mode > div,
+            .flora-list-mode article,
+            .flora-list-mode .plant-card {
                 display: flex !important;
                 flex-direction: row !important;
                 align-items: center !important;
+                justify-content: space-between !important;
                 padding: 0.5rem 0.75rem !important;
-                gap: 0.75rem !important;
+                background-color: white !important;
+                border-radius: 0.5rem !important;
+                border: 1px solid #e5e7eb !important;
                 width: 100% !important;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+                box-shadow: none !important;
             }
-            /* Shrink images in list mode */
+            /* Hide non-essential inner elements on mobile list view for neatness */
             .flora-list-mode img {
-                width: 3rem !important;
-                height: 3rem !important;
+                width: 2.5rem !important;
+                height: 2.5rem !important;
                 object-fit: cover !important;
-                border-radius: 0.375rem !important;
+                border-radius: 0.25rem !important;
+                flex-shrink: 0 !important;
             }
-            /* Hide verbose metadata paragraphs in list mode to keep it simplified */
-            .flora-list-mode p:not(:first-of-type) {
-                display: none !important;
+            .flora-list-mode p, 
+            .flora-list-mode span:not(:first-child) {
+                font-size: 0.85rem !important;
+                color: #4b5563 !important;
             }
         `;
         document.head.appendChild(styleEl);
@@ -1806,7 +1818,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             `;
             plantHeading.appendChild(toggleDiv);
 
-            // Bind both click and touch events for bulletproof mobile support
             document.getElementById('gridViewBtn').addEventListener('touchend', (e) => { e.preventDefault(); setPlantView('grid'); });
             document.getElementById('gridViewBtn').addEventListener('click', () => setPlantView('grid'));
 
