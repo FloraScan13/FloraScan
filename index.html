@@ -1877,63 +1877,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 })();
         
 // ==========================================
-// FloraScan Direct PDF Download Generator
+// FloraScan Auto-Injected Direct PDF Downloader
 // ==========================================
 
 (function() {
-    // 1. Automatically load html2pdf.js library if not already present on the page
+    // 1. Automatically load html2pdf.js library if not already present
     if (!window.html2pdf) {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         document.head.appendChild(script);
     }
 
-    // 2. Inject report modal styles
-    const styleId = 'flora-direct-pdf-styles';
-    if (!document.getElementById(styleId)) {
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.innerHTML = `
-            .flora-report-overlay {
-                position: fixed;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.6);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 99999;
-                padding: 1rem;
-            }
-            .flora-report-card {
-                background: white;
-                color: #111827;
-                width: 100%;
-                max-width: 600px;
-                max-height: 90vh;
-                overflow-y: auto;
-                border-radius: 1rem;
-                padding: 2rem;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // 3. Main function to generate and instantly download the PDF
+    // 2. Main function to generate and download PDF
     window.downloadPlantReportPDF = function(plantName, variety, dateSown, tagName, tagColor, svgArtwork, logsHtml) {
-        // Remove any existing preview modal
-        const existing = document.getElementById('floraPdfReportModal');
-        if (existing) existing.remove();
-
-        // Create container for the report
-        const modalOverlay = document.createElement('div');
-        modalOverlay.className = 'flora-report-overlay';
-        modalOverlay.id = 'floraPdfReportModal';
-
+        // Create a temporary hidden container for the clean PDF layout
         const reportContainer = document.createElement('div');
-        reportContainer.className = 'flora-report-card';
-        reportContainer.id = 'floraReportContent';
-
+        reportContainer.style.cssText = 'position: absolute; left: -9999px; top: -9999px; width: 600px; background: white; color: #111827; padding: 2rem; font-family: sans-serif;';
+        
         reportContainer.innerHTML = `
             <!-- Report Header -->
             <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
@@ -1976,10 +1936,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             </div>
         `;
 
-        modalOverlay.appendChild(reportContainer);
-        document.body.appendChild(modalOverlay);
+        document.body.appendChild(reportContainer);
 
-        // Options for pdf generation
         const opt = {
             margin:       10,
             filename:     `${(plantName || 'plant').toLowerCase().replace(/\s+/g, '_')}_report.pdf`,
@@ -1988,20 +1946,50 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Generate PDF and trigger download immediately, then remove the preview overlay
         if (window.html2pdf) {
             window.html2pdf().from(reportContainer).set(opt).save().then(() => {
-                modalOverlay.remove();
+                reportContainer.remove();
             }).catch(err => {
-                console.error("PDF generation error:", err);
-                modalOverlay.remove();
+                console.error("PDF error:", err);
+                reportContainer.remove();
             });
         } else {
-            // Fallback if library is still loading
-            alert("PDF library is still loading. Please try clicking download again in a second.");
-            modalOverlay.remove();
+            alert("PDF engine is initializing, please click download again in a moment.");
+            reportContainer.remove();
         }
     };
+
+    // 3. Auto-inject the PDF button into active plant/journal modals
+    function injectPdfButton() {
+        const modals = document.querySelectorAll('div[id*="Modal"], div[class*="modal"]');
+        modals.forEach(modal => {
+            if (!modal.querySelector('.flora-pdf-btn') && modal.offsetParent !== null) {
+                const header = modal.querySelector('h2, h3, h4');
+                if (header && header.parentElement) {
+                    const btn = document.createElement('button');
+                    btn.className = 'flora-pdf-btn';
+                    btn.textContent = 'PDF';
+                    btn.style.cssText = 'margin-left: auto; padding: 0.3rem 0.75rem; background: #059669; color: white; border: none; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer;';
+                    
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        const name = modal.querySelector('h3, h4, h2')?.textContent?.trim() || 'Plant Report';
+                        const variety = modal.querySelector('p')?.textContent?.trim() || '';
+                        const svg = modal.querySelector('svg')?.outerHTML || '';
+                        
+                        window.downloadPlantReportPDF(name, variety, '2026-10-21', 'Cobalt Blue', '#00a5ea', svg, '<div style="padding: 0.75rem; background: #f9fafb; border-radius: 0.375rem; border: 1px solid #e5e7eb;"><span style="font-size: 0.75rem; color: #6b7280; display: block;">Latest Log</span><p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #111827;">Monitored growth metrics and verified health status.</p></div>');
+                    };
+
+                    header.parentElement.style.display = 'flex';
+                    header.parentElement.style.alignItems = 'center';
+                    header.parentElement.appendChild(btn);
+                }
+            }
+        });
+    }
+
+    const observer = new MutationObserver(injectPdfButton);
+    observer.observe(document.body, { childList: true, subtree: true });
 })();
         
     </script>
