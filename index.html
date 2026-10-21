@@ -1707,12 +1707,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// My Plants List / Grid View Toggle
+// My Plants List / Grid View Toggle (Global Scope)
 // ==========================================
 
 let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
 
-function setPlantView(mode) {
+// Define globally so inline onclick="setPlantView(...)" can find it
+window.setPlantView = function(mode) {
     currentPlantView = mode;
     localStorage.setItem('plant_view_mode', mode);
     
@@ -1720,36 +1721,37 @@ function setPlantView(mode) {
     const gridBtn = document.getElementById('gridViewBtn');
     const listBtn = document.getElementById('listViewBtn');
 
-    if (!container) return;
+    if (!container) {
+        console.warn("Plants container element with id 'plantsContainer' not found.");
+        return;
+    }
 
     if (mode === 'list') {
-        // Switch container to list view layout
-        container.className = "flex flex-col gap-3";
+        container.className = "flex flex-col gap-3 w-full";
         if (gridBtn) {
             gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-            gridBtn.classList.add('text-gray-600');
+            gridBtn.classList.add('text-gray-500');
         }
         if (listBtn) {
-            listBtn.classList.remove('text-gray-600');
+            listBtn.classList.remove('text-gray-500');
             listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
         }
     } else {
-        // Switch container to grid view layout
-        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4";
+        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
         if (listBtn) {
             listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-            listBtn.classList.add('text-gray-600');
+            listBtn.classList.add('text-gray-500');
         }
         if (gridBtn) {
-            gridBtn.classList.remove('text-gray-600');
+            gridBtn.classList.remove('text-gray-500');
             gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
         }
     }
-}
+};
 
-// Apply the saved view preference when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    setPlantView(currentPlantView);
+// Initialize view mode on page load
+window.addEventListener('DOMContentLoaded', () => {
+    window.setPlantView(currentPlantView);
 });
         
     </script>
