@@ -1797,78 +1797,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     setTimeout(injectButtonsIfNeeded, 800); // Retry after app renders data
 })();
         
-// ==========================================
-// Isolated Plant Growth Journal PDF Export
-// ==========================================
 
-(function() {
-    // 1. Load the html2pdf library script via CDN if not already loaded
-    if (!window.html2pdf) {
-        const pdfScript = document.createElement('script');
-        pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-        document.head.appendChild(pdfScript);
-    }
-
-    // 2. Core function to generate and download the PDF
-    window.downloadPlantJournalPDF = function() {
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
-        const journalHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase().includes('growth journal'));
-        
-        let targetElement = null;
-        if (journalHeading) {
-            targetElement = journalHeading.closest('div').parentElement;
-        }
-
-        if (!targetElement) {
-            alert("Please open a plant's growth journal first!");
-            return;
-        }
-
-        const opt = {
-            margin:       10,
-            filename:     'plant-growth-journal.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        if (window.html2pdf) {
-            window.html2pdf().from(targetElement).set(opt).save();
-        } else {
-            window.print();
-        }
-    };
-
-    // 3. Auto-inject the PDF button specifically into the Plant Growth Journal header
-    function injectPDFButton() {
-        if (document.getElementById('downloadJournalPdfBtn')) return;
-
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
-        const journalHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase().includes('growth journal'));
-        
-        if (journalHeading) {
-            const journalHeader = journalHeading.parentElement;
-            if (journalHeader) {
-                journalHeader.style.display = 'flex';
-                journalHeader.style.alignItems = 'center';
-                journalHeader.style.justifyModel = 'space-between';
-
-                const pdfBtn = document.createElement('button');
-                pdfBtn.id = 'downloadJournalPdfBtn';
-                pdfBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ml-auto shadow-sm';
-                pdfBtn.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h2.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span>Download PDF</span>
-                `;
-                pdfBtn.onclick = window.downloadPlantJournalPDF;
-                journalHeader.appendChild(pdfBtn);
-            }
-        }
-    }
-
-    // 4. Periodically check for the journal modal opening without touching any other elements
-    setInterval(injectPDFButton, 1000);
-})();
         
     </script>
 </body>
