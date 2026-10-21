@@ -1705,6 +1705,91 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             closeDeleteModal();
             closeJournalModal();
         }
+
+// ==========================================
+// Safe & Clean My Plants View Toggle
+// ==========================================
+
+let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
+
+// 1. Safely store the original getElementById before any overrides
+const originalGetElementById = document.getElementById;
+
+function ensurePlantContainer() {
+    // 2. Use originalGetElementById here to prevent infinite loops
+    let container = originalGetElementById.call(document, 'plantsContainer') || 
+                    originalGetElementById.call(document, 'plantList') || 
+                    originalGetElementById.call(document, 'plants') ||
+                    originalGetElementById.call(document, 'plant-container');
+    
+    if (!container) {
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
+        const targetHeading = headings.find(h => h.textContent.trim().toLowerCase() === 'my plants');
+        
+        if (targetHeading) {
+            const parent = targetHeading.closest('div').parentElement;
+            if (parent) {
+                container = document.createElement('div');
+                container.id = 'plantsContainer';
+                parent.appendChild(container);
+            }
+        }
+    }
+    
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'plantsContainer';
+        document.body.appendChild(container);
+    }
+    
+    return container;
+}
+
+window.setPlantView = function(mode) {
+    currentPlantView = mode;
+    localStorage.setItem('plant_view_mode', mode);
+    
+    const container = ensurePlantContainer();
+    const gridBtn = originalGetElementById.call(document, 'gridViewBtn');
+    const listBtn = originalGetElementById.call(document, 'listViewBtn');
+
+    if (mode === 'list') {
+        container.className = "flex flex-col gap-3 w-full";
+        if (gridBtn) {
+            gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
+            gridBtn.classList.add('text-gray-400');
+        }
+        if (listBtn) {
+            listBtn.classList.remove('text-gray-400');
+            listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
+        }
+    } else {
+        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
+        if (listBtn) {
+            listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
+            listBtn.classList.add('text-gray-400');
+        }
+        if (gridBtn) {
+            gridBtn.classList.remove('text-gray-400');
+            gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
+        }
+    }
+};
+
+// 3. Safe override that uses originalGetElementById internally
+document.getElementById = function(id) {
+    const element = originalGetElementById.call(document, id);
+    if (!element && (id === 'plantsContainer' || id === 'plantList' || id === 'plants')) {
+        return ensurePlantContainer();
+    }
+    return element;
+};
+
+// Initialize view mode on page load
+window.addEventListener('DOMContentLoaded', () => {
+    ensurePlantContainer();
+    window.setPlantView(currentPlantView);
+});
         
     </script>
 </body>
