@@ -1877,7 +1877,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 })();
         
 // ==========================================
-// FloraScan Direct-Hook PDF Downloader
+// FloraScan Smart Data-Extraction PDF Downloader
 // ==========================================
 
 (function() {
@@ -1955,40 +1955,63 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     };
 
-    // 3. Intercept openJournalModal to guarantee the PDF button appears instantly when a journal opens
-    if (typeof window.openJournalModal === 'function') {
-        const originalOpenJournal = window.openJournalModal;
-        window.openJournalModal = function(...args) {
-            originalOpenJournal.apply(this, args);
-            setTimeout(injectButtonToActiveModal, 150);
-        };
-    }
-
-    // Fallback mutation observer that checks all visible headers if function intercept fails
+    // 3. Inject Button and accurately pull live data from the active modal DOM
     function injectButtonToActiveModal() {
-        const headings = document.querySelectorAll('h2, h3, h4');
-        headings.forEach(heading => {
-            const modalParent = heading.closest('div[class*="fixed"], div[class*="absolute"], div[class*="z-50"]');
-            if (modalParent && !modalParent.querySelector('.flora-pdf-btn')) {
-                if (heading.parentElement) {
-                    const btn = document.createElement('button');
-                    btn.className = 'flora-pdf-btn';
-                    btn.textContent = 'PDF';
-                    btn.style.cssText = 'margin-left: auto; padding: 0.3rem 0.75rem; background: #059669; color: white; border: none; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer;';
-                    
-                    btn.onclick = (e) => {
-                        e.stopPropagation();
-                        const name = heading.textContent?.trim() || 'Plant Report';
-                        const variety = modalParent.querySelector('p')?.textContent?.trim() || '';
-                        const svg = modalParent.querySelector('svg')?.outerHTML || '';
-                        
-                        window.downloadPlantReportPDF(name, variety, '2026-10-21', 'Cobalt Blue', '#00a5ea', svg, '<div style="padding: 0.75rem; background: #f9fafb; border-radius: 0.375rem; border: 1px solid #e5e7eb;"><span style="font-size: 0.75rem; color: #6b7280; display: block;">Latest Log</span><p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #111827;">Monitored growth metrics and verified health status.</p></div>');
-                    };
+        const modals = document.querySelectorAll('div[class*="fixed"], div[class*="absolute"], div[class*="z-50"]');
+        modals.forEach(modal => {
+            // Check if it's a journal or plant modal by looking for headings
+            const heading = modal.querySelector('h2, h3, h4');
+            if (heading && heading.parentElement && !modal.querySelector('.flora-pdf-btn')) {
+                const btn = document.createElement('button');
+                btn.className = 'flora-pdf-btn';
+                btn.textContent = 'PDF';
+                btn.style.cssText = 'margin-left: auto; padding: 0.3rem 0.75rem; background: #059669; color: white; border: none; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer;';
+                
+                btn.onclick = (e) => {
+                    e.stopPropagation();
 
-                    heading.parentElement.style.display = 'flex';
-                    heading.parentElement.style.alignItems = 'center';
-                    heading.parentElement.appendChild(btn);
-                }
+                    // Intelligent data scraping from the currently open modal
+                    const plantName = heading.textContent?.trim() || 'Plant Report';
+                    
+                    // Look for variety (usually a subtitle paragraph near the header)
+                    const varietyEl = modal.querySelector('p.text-xs, p.text-sm, p[class*="emerald"]');
+                    const variety = varietyEl ? varietyEl.textContent.trim() : '';
+
+                    // Look for SVG artwork
+                    const svgEl = modal.querySelector('svg');
+                    const svgArtwork = svgEl ? svgEl.outerHTML : '';
+
+                    // Look for date sown text or metadata
+                    const modalText = modal.innerText || '';
+                    let dateSown = 'Not specified';
+                    const dateMatch = modalText.match(/\d{4}-\d{2}-\d{2}/);
+                    if (dateMatch) dateSown = dateMatch[0];
+
+                    // Look for color tag background or name if available
+                    let tagColor = '#00a5ea';
+                    let tagName = 'Tag';
+                    const colorCircle = modal.querySelector('div[style*="background-color"]');
+                    if (colorCircle) {
+                        tagColor = colorCircle.style.backgroundColor;
+                    }
+
+                    // Scrape log entries if listed inside the modal
+                    const logItems = modal.querySelectorAll('.space-y-3 > div, .space-y-2 > div, li');
+                    let logsHtml = '';
+                    if (logItems.length > 0) {
+                        logItems.forEach(item => {
+                            if (item.innerText.trim().length > 5) {
+                                logsHtml += `<div style="padding: 0.75rem; background: #f9fafb; border-radius: 0.375rem; border: 1px solid #e5e7eb; margin-bottom: 0.5rem;"><p style="margin: 0; font-size: 0.85rem; color: #111827;">${item.innerHTML}</p></div>`;
+                            }
+                        });
+                    }
+
+                    window.downloadPlantReportPDF(plantName, variety, dateSown, tagName, tagColor, svgArtwork, logsHtml);
+                };
+
+                heading.parentElement.style.display = 'flex';
+                heading.parentElement.style.alignItems = 'center';
+                heading.parentElement.appendChild(btn);
             }
         });
     }
