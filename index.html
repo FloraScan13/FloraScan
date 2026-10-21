@@ -1705,6 +1705,53 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             closeDeleteModal();
             closeJournalModal();
         }
+
+// ==========================================
+// My Plants List / Grid View Toggle
+// ==========================================
+
+let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
+
+function setPlantView(mode) {
+    currentPlantView = mode;
+    localStorage.setItem('plant_view_mode', mode);
+    
+    const container = document.getElementById('plantsContainer');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const listBtn = document.getElementById('listViewBtn');
+
+    if (!container) return;
+
+    if (mode === 'list') {
+        // Switch container to list view layout
+        container.className = "flex flex-col gap-3";
+        if (gridBtn) {
+            gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
+            gridBtn.classList.add('text-gray-600');
+        }
+        if (listBtn) {
+            listBtn.classList.remove('text-gray-600');
+            listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
+        }
+    } else {
+        // Switch container to grid view layout
+        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4";
+        if (listBtn) {
+            listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
+            listBtn.classList.add('text-gray-600');
+        }
+        if (gridBtn) {
+            gridBtn.classList.remove('text-gray-600');
+            gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
+        }
+    }
+}
+
+// Apply the saved view preference when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    setPlantView(currentPlantView);
+});
+        
     </script>
 </body>
 </html>
