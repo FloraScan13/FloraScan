@@ -1707,49 +1707,50 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Clean & Precise View Toggle & PDF Export
+// FloraScan Clean, Non-Destructive Script
 // ==========================================
 
 (function() {
-    // 1. Load html2pdf library for journal exports
+    // 1. Inject isolated styles that don't touch headers or break layout
+    if (!document.getElementById('floraCleanStyles')) {
+        const style = document.createElement('style');
+        style.id = 'floraCleanStyles';
+        style.innerHTML = `
+            /* Non-destructive list view styling */
+            body.plant-list-view .grid {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0.75rem !important;
+            }
+            .plant-view-btn-active {
+                background-color: white !important;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+                color: black !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 2. Load html2pdf for journal exports
     if (!window.html2pdf) {
         const pdfScript = document.createElement('script');
         pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         document.head.appendChild(pdfScript);
     }
 
-    // 2. View state management
     let currentView = localStorage.getItem('plant_view_mode') || 'grid';
-
-    // Precise function to locate the plant cards container
-    function getPlantContainer() {
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
-        const plantHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('plant') && !h.textContent.toLowerCase().includes('journal'));
-        
-        if (plantHeading) {
-            // Look near the heading for the grid/container holding the cards
-            const section = plantHeading.closest('section') || plantHeading.parentElement.parentElement;
-            if (section) {
-                const grid = section.querySelector('.grid');
-                if (grid) return grid;
-            }
-        }
-        // Fallback search
-        return document.querySelector('main .grid') || document.querySelector('.grid');
+    if (currentView === 'list') {
+        document.body.classList.add('plant-list-view');
     }
 
-    // Apply view mode strictly to the plant container
     window.setPlantView = function(mode) {
         currentView = mode;
         localStorage.setItem('plant_view_mode', mode);
 
-        const container = getPlantContainer();
-        if (container) {
-            if (mode === 'list') {
-                container.className = "flex flex-col gap-3 w-full";
-            } else {
-                container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
-            }
+        if (mode === 'list') {
+            document.body.classList.add('plant-list-view');
+        } else {
+            document.body.classList.remove('plant-list-view');
         }
         updateButtonStyles();
     };
@@ -1759,14 +1760,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         const listBtn = document.getElementById('listViewBtn');
         if (gridBtn && listBtn) {
             if (currentView === 'list') {
-                listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
+                listBtn.classList.add('plant-view-btn-active');
                 listBtn.classList.remove('text-gray-400');
-                gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
+                gridBtn.classList.remove('plant-view-btn-active');
                 gridBtn.classList.add('text-gray-400');
             } else {
-                gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
+                gridBtn.classList.add('plant-view-btn-active');
                 gridBtn.classList.remove('text-gray-400');
-                listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
+                listBtn.classList.remove('plant-view-btn-active');
                 listBtn.classList.add('text-gray-400');
             }
         }
@@ -1800,68 +1801,48 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     };
 
-    // 4. UI Injector for Toggle Buttons & PDF Button
+    // 4. Safe UI Injector (Appends buttons without modifying header styles)
     function injectUI() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
 
         // Inject Toggle next to "Plants" or "My Plants"
         const plantHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('plant') && !h.textContent.toLowerCase().includes('journal'));
         if (plantHeading && !document.getElementById('gridViewBtn')) {
-            const headerWrapper = plantHeading.parentElement;
-            if (headerWrapper) {
-                headerWrapper.style.display = 'flex';
-                headerWrapper.style.justifyContent = 'space-between';
-                headerWrapper.style.alignItems = 'center';
-
-                const toggleDiv = document.createElement('div');
-                toggleDiv.className = 'flex items-center gap-1 bg-gray-100 p-1 rounded-lg';
-                toggleDiv.innerHTML = `
-                    <button id="gridViewBtn" onclick="setPlantView('grid')" class="p-1.5 rounded-md text-gray-500 hover:text-black transition-colors" title="Grid View">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                    </button>
-                    <button id="listViewBtn" onclick="setPlantView('list')" class="p-1.5 rounded-md text-gray-500 hover:text-black transition-colors" title="List View">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    </button>
-                `;
-                headerWrapper.appendChild(toggleDiv);
-            }
+            const toggleDiv = document.createElement('div');
+            toggleDiv.className = 'inline-flex items-center gap-1 bg-gray-100 p-1 rounded-lg ml-3';
+            toggleDiv.innerHTML = `
+                <button id="gridViewBtn" onclick="setPlantView('grid')" class="p-1.5 rounded-md text-gray-500 hover:text-black transition-colors" title="Grid View">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                </button>
+                <button id="listViewBtn" onclick="setPlantView('list')" class="p-1.5 rounded-md text-gray-500 hover:text-black transition-colors" title="List View">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            `;
+            plantHeading.appendChild(toggleDiv);
         }
 
         // Inject PDF Button next to "Journal"
         const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
         if (journalHeading && !document.getElementById('downloadJournalPdfBtn')) {
-            const journalHeader = journalHeading.parentElement;
-            if (journalHeader) {
-                journalHeader.style.display = 'flex';
-                journalHeader.style.alignItems = 'center';
-                journalHeader.style.justifyContent = 'space-between';
-
-                const pdfBtn = document.createElement('button');
-                pdfBtn.id = 'downloadJournalPdfBtn';
-                pdfBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ml-auto shadow-sm';
-                pdfBtn.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h2.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span>Download PDF</span>
-                `;
-                pdfBtn.onclick = window.downloadPlantJournalPDF;
-                journalHeader.appendChild(pdfBtn);
-            }
+            const pdfBtn = document.createElement('button');
+            pdfBtn.id = 'downloadJournalPdfBtn';
+            pdfBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ml-3 shadow-sm';
+            pdfBtn.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h2.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Download PDF</span>
+            `;
+            pdfBtn.onclick = window.downloadPlantJournalPDF;
+            journalHeading.appendChild(pdfBtn);
         }
 
-        // Re-apply view mode to ensure it sticks
-        window.setPlantView(currentView);
+        updateButtonStyles();
     }
-
-    // 5. Gentle observer that re-applies view mode when cards update
-    const observer = new MutationObserver(() => {
-        injectUI();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
 
     window.addEventListener('DOMContentLoaded', () => {
         injectUI();
-        window.setPlantView(currentView);
+        updateButtonStyles();
     });
+    setInterval(injectUI, 1000);
 })();
         
 
