@@ -1707,29 +1707,52 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// Robust My Plants List / Grid View Toggle
+// Auto-Detecting My Plants List / Grid View Toggle
 // ==========================================
 
 let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
+
+// Helper to automatically find the plants container on your page
+function getPlantsContainer() {
+    let container = document.getElementById('plantsContainer');
+    if (container) return container;
+
+    // Search for the "My Plants" heading and find its container sibling/parent
+    const headings = Array.from(document.querySelectorAll('h2, h3, h1'));
+    const targetHeading = headings.find(h => h.textContent.trim().toLowerCase() === 'my plants');
+    
+    if (targetHeading) {
+        // Look for a grid or content wrapper near the heading
+        const parentSection = targetHeading.closest('div').parentElement;
+        if (parentSection) {
+            // Find the first element that looks like a container (or next sibling div)
+            const possibleContainer = parentSection.querySelector('.grid') || parentSection.querySelector('div:not(:first-child)');
+            if (possibleContainer) {
+                possibleContainer.id = 'plantsContainer'; // Assign it dynamically
+                return possibleContainer;
+            }
+        }
+    }
+    return null;
+}
 
 window.setPlantView = function(mode) {
     currentPlantView = mode;
     localStorage.setItem('plant_view_mode', mode);
     
-    const container = document.getElementById('plantsContainer');
+    const container = getPlantsContainer();
     const gridBtn = document.getElementById('gridViewBtn');
     const listBtn = document.getElementById('listViewBtn');
 
     if (!container) {
-        console.warn("Plants container element with id 'plantsContainer' not found.");
+        console.warn("Could not automatically locate the plants container element.");
         return;
     }
 
-    // Toggle active state on buttons
     if (mode === 'list') {
-        container.setAttribute('data-view', 'list');
+        container.className = "flex flex-col gap-3 w-full";
         if (gridBtn) {
-            gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black', 'bg-slate-200');
+            gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
             gridBtn.classList.add('text-gray-400');
         }
         if (listBtn) {
@@ -1737,7 +1760,7 @@ window.setPlantView = function(mode) {
             listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
         }
     } else {
-        container.setAttribute('data-view', 'grid');
+        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
         if (listBtn) {
             listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
             listBtn.classList.add('text-gray-400');
@@ -1747,41 +1770,11 @@ window.setPlantView = function(mode) {
             gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
         }
     }
-
-    // Force style application directly via inline styles or class swapping
-    applyViewLayout(container, mode);
 };
 
-function applyViewLayout(container, mode) {
-    if (mode === 'list') {
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.gap = '0.75rem';
-        // Remove grid properties if any inline styles lingered
-        container.style.display = ''; 
-        container.className = "flex flex-col gap-3 w-full";
-    } else {
-        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
-    }
-}
-
-// Hook into DOM load and also observe if the app re-renders the container
+// Initialize view mode on page load
 window.addEventListener('DOMContentLoaded', () => {
     window.setPlantView(currentPlantView);
-    
-    // Optional MutationObserver: if your app re-renders the container and wipes out our classes, 
-    // this instantly re-applies the saved user view preference!
-    const container = document.getElementById('plantsContainer');
-    if (container) {
-        const observer = new MutationObserver(() => {
-            if (container.className.includes('grid') && currentPlantView === 'list') {
-                applyViewLayout(container, 'list');
-            } else if (!container.className.includes('flex') && currentPlantView === 'list') {
-                applyViewLayout(container, 'list');
-            }
-        });
-        observer.observe(container, { attributes: true, attributeFilter: ['class'] });
-    }
 });
         
     </script>
