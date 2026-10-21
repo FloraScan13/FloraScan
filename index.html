@@ -1722,6 +1722,27 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             gap: 0.75rem !important;
             grid-template-columns: none !important;
         }
+        /* Transform individual plant cards into clean horizontal list rows */
+        body.plant-list-view #plantsContainer > *,
+        body.plant-list-view [id*="plantsContainer"] > *,
+        body.plant-list-view main .grid > * {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
+            padding: 0.5rem 0.75rem !important;
+            width: 100% !important;
+        }
+        /* Shrink plant images into neat, compact thumbnails in list mode */
+        body.plant-list-view #plantsContainer img,
+        body.plant-list-view [id*="plantsContainer"] img,
+        body.plant-list-view main .grid img {
+            width: 3rem !important;
+            height: 3rem !important;
+            object-fit: cover !important;
+            border-radius: 0.375rem !important;
+            flex-shrink: 0 !important;
+        }
         .plant-view-toggle-btn.active {
             background-color: white !important;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
