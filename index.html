@@ -1707,131 +1707,94 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Safe Mobile-Friendly View Toggle
+// Bulletproof CSS-Injected View Mode Toggle
 // ==========================================
 
 (function() {
+    // 1. Inject CSS rules so app re-renders can't overwrite or break it
+    const style = document.createElement('style');
+    style.innerHTML = `
+        body.plant-list-view #plantsContainer,
+        body.plant-list-view [id*="plantsContainer"],
+        body.plant-list-view main .grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+            grid-template-columns: none !important;
+        }
+        .plant-view-toggle-btn.active {
+            background-color: white !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            color: black !important;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 2. Load saved preference
     let currentView = localStorage.getItem('plant_view_mode') || 'grid';
-
-    // 1. Inject clean list mode styles safely
-    const styleId = 'flora-safe-list-styles';
-    if (!document.getElementById(styleId)) {
-        const styleEl = document.createElement('style');
-        styleEl.id = styleId;
-        styleEl.innerHTML = `
-            .flora-list-mode {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 0.5rem !important;
-                grid-template-columns: none !important;
-            }
-            .flora-list-mode > div,
-            .flora-list-mode > article {
-                display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                gap: 0.75rem !important;
-                padding: 0.75rem !important;
-                background-color: #ffffff !important;
-                border: 1px solid #e5e7eb !important;
-                border-radius: 0.5rem !important;
-                width: 100% !important;
-                box-shadow: none !important;
-            }
-            .flora-list-mode img {
-                width: 3rem !important;
-                height: 3rem !important;
-                object-fit: cover !important;
-                border-radius: 0.375rem !important;
-                flex-shrink: 0 !important;
-            }
-        `;
-        document.head.appendChild(styleEl);
+    if (currentView === 'list') {
+        document.body.classList.add('plant-list-view');
     }
 
-    // 2. Apply view mode to the plant container
-    window.setPlantView = function(mode) {
-        currentView = mode;
-        localStorage.setItem('plant_view_mode', mode);
-        applyViewMode();
-        updateButtonStyles();
-    };
+    // 3. Auto-inject buttons next to the "My Plants" heading
+    function injectButtonsIfNeeded() {
+        if (document.getElementById('gridViewBtn') && document.getElementById('listViewBtn')) return;
 
-    function applyViewMode() {
-        const container = document.getElementById('view-plants') || document.querySelector('.view-plants') || document.querySelector('main > div > div');
-        if (!container) return;
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
+        const myPlantsHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase() === 'my plants');
+        
+        if (myPlantsHeading) {
+            const headerWrapper = myPlantsHeading.parentElement;
+            headerWrapper.style.display = 'flex';
+            headerWrapper.style.justifyContent = 'space-between';
+            headerWrapper.style.alignItems = 'center';
 
-        if (currentView === 'list') {
-            container.classList.add('flora-list-mode');
-        } else {
-            container.classList.remove('flora-list-mode');
-        }
-    }
-
-    function updateButtonStyles() {
-        const gridBtn = document.getElementById('gridViewBtn');
-        const listBtn = document.getElementById('listViewBtn');
-        if (gridBtn && listBtn) {
-            if (currentView === 'list') {
-                listBtn.className = 'p-2 rounded-md bg-white shadow-sm text-black transition-colors';
-                gridBtn.className = 'p-2 rounded-md text-gray-400 hover:text-black transition-colors';
-            } else {
-                gridBtn.className = 'p-2 rounded-md bg-white shadow-sm text-black transition-colors';
-                listBtn.className = 'p-2 rounded-md text-gray-400 hover:text-black transition-colors';
-            }
-        }
-    }
-
-    // 3. Inject toggle buttons next to the "My Plants" heading
-    function injectUI() {
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
-        const plantHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('plant') && !h.textContent.toLowerCase().includes('journal'));
-
-        if (plantHeading && !document.getElementById('gridViewBtn')) {
             const toggleDiv = document.createElement('div');
-            toggleDiv.className = 'inline-flex items-center gap-1 bg-gray-100 p-1 rounded-lg ml-3';
+            toggleDiv.className = 'flex items-center gap-1 bg-gray-100 p-1 rounded-lg';
             toggleDiv.innerHTML = `
-                <button id="gridViewBtn" title="Grid View">
-                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                <button id="gridViewBtn" class="plant-view-toggle-btn p-1.5 rounded-md text-gray-500 hover:text-black transition-colors ${currentView === 'grid' ? 'active' : ''}" title="Grid View">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                 </button>
-                <button id="listViewBtn" title="List View">
-                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <button id="listViewBtn" class="plant-view-toggle-btn p-1.5 rounded-md text-gray-500 hover:text-black transition-colors ${currentView === 'list' ? 'active' : ''}" title="List View">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
             `;
-            plantHeading.appendChild(toggleDiv);
+            headerWrapper.appendChild(toggleDiv);
 
-            // Bind both touch and click events safely
-            const gBtn = document.getElementById('gridViewBtn');
-            const lBtn = document.getElementById('listViewBtn');
-
-            gBtn.addEventListener('touchend', (e) => { e.preventDefault(); setPlantView('grid'); });
-            gBtn.addEventListener('click', () => setPlantView('grid'));
-
-            lBtn.addEventListener('touchend', (e) => { e.preventDefault(); setPlantView('list'); });
-            lBtn.addEventListener('click', () => setPlantView('list'));
+            // Assign id to the plant container
+            const section = headerWrapper.closest('div').parentElement;
+            if (section) {
+                const gridCandidate = section.querySelector('.grid') || section.querySelector('div:not(:first-child)');
+                if (gridCandidate) gridCandidate.id = 'plantsContainer';
+            }
         }
-
-        applyViewMode();
-        updateButtonStyles();
     }
 
-    // 4. Safe, non-recursive interval/observer to catch page re-renders
-    const safeObserver = new MutationObserver(() => {
-        if (!document.getElementById('gridViewBtn')) {
-            injectUI();
-        } else {
-            applyViewMode();
+    // 4. Handle clicks reliably
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#gridViewBtn, #listViewBtn');
+        if (!btn) return;
+
+        const gridBtn = document.getElementById('gridViewBtn');
+        const listBtn = document.getElementById('listViewBtn');
+
+        if (btn.id === 'gridViewBtn') {
+            currentView = 'grid';
+            localStorage.setItem('plant_view_mode', 'grid');
+            document.body.classList.remove('plant-list-view');
+            if (gridBtn) gridBtn.classList.add('active');
+            if (listBtn) listBtn.classList.remove('active');
+        } else if (btn.id === 'listViewBtn') {
+            currentView = 'list';
+            localStorage.setItem('plant_view_mode', 'list');
+            document.body.classList.add('plant-list-view');
+            if (listBtn) listBtn.classList.add('active');
+            if (gridBtn) gridBtn.classList.remove('active');
         }
     });
-    
-    // Only observe direct child list changes to avoid heavy CPU load
-    safeObserver.observe(document.body, { childList: true });
 
-    window.addEventListener('DOMContentLoaded', () => {
-        injectUI();
-    });
-
-    injectUI();
+    window.addEventListener('DOMContentLoaded', injectButtonsIfNeeded);
+    setTimeout(injectButtonsIfNeeded, 800); // Retry after app renders data
 })();
         
 
