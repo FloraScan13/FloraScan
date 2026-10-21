@@ -1877,73 +1877,56 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 })();
         
 // ==========================================
-// FloraScan Complete Data-Driven PDF Downloader
+// FloraScan Supabase-Driven PDF Downloader
 // ==========================================
 
 (function() {
-    // 1. Automatically load html2pdf.js library if not already present
+    // 1. Ensure html2pdf.js is loaded
     if (!window.html2pdf) {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         document.head.appendChild(script);
     }
 
-    // 2. Helper to find plant data from app storage / memory
-    function getPlantDataFromModal(modal) {
-        // Try to find any element with an edit/delete or modal trigger ID (e.g. plant_1792594143019)
-        const htmlContent = modal.innerHTML || '';
-        const idMatch = htmlContent.match(/plant_[a-zA-Z0-9_]+/);
-        
-        let targetId = idMatch ? idMatch[0] : null;
-
-        // Fallback: search localStorage if app stores plants there (common for single-page apps)
-        if (!targetId) {
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                const val = localStorage.getItem(key);
-                if (val && val.includes(modal.querySelector('h2, h3, h4')?.textContent?.trim())) {
-                    try {
-                        const parsed = JSON.parse(val);
-                        if (Array.isArray(parsed)) {
-                            // Find matching plant object
-                            const found = parsed.find(p => p.id || p.name);
-                            if (found) return found;
-                        }
-                    } catch(e) {}
-                }
-            }
+    // 2. Fetch complete plant and log data straight from Supabase
+    async function fetchPlantFromSupabase(plantId) {
+        if (!window.supabase) {
+            console.error("Supabase client not found globally.");
+            return null;
         }
 
-        // Fallback structural object built from visible DOM if no storage match
-        const heading = modal.querySelector('h2, h3, h4');
-        const varietyEl = modal.querySelector('p.text-xs, p.text-sm, p[class*="emerald"]');
-        const svgEl = modal.querySelector('svg');
-        
-        // Grab all text paragraphs/logs inside the modal
-        const textElements = Array.from(modal.querySelectorAll('p, li, div[class*="log"]'));
-        let logsList = [];
-        textElements.forEach(el => {
-            const txt = el.textContent.trim();
-            if (txt.length > 3 && !txt.includes('PDF') && !txt.includes('Close')) {
-                logsList.push(txt);
-            }
-        });
+        try {
+            // Fetch plant details (adjust table name if yours differs, e.g., 'plants')
+            const { data: plant, error: plantError } = await window.supabase
+                .from('plants')
+                .select('*')
+                .eq('id', plantId)
+                .single();
 
-        return {
-            name: heading ? heading.textContent.trim() : 'Plant Report',
-            variety: varietyEl ? varietyEl.textContent.trim() : 'Kitchen Garden Crop',
-            dateSown: modal.innerText.match(/\d{4}-\d{2}-\d{2}/)?.[0] || 'Not specified',
-            tagName: 'Cobalt Blue',
-            tagColor: '#00a5ea',
-            svgArtwork: svgEl ? svgEl.outerHTML : '',
-            logs: logsList
-        };
+            if (plantError) throw plantError;
+
+            // Fetch associated logs/journals for this plant
+            const { data: logs, error: logsError } = await window.supabase
+                .from('plant_logs') // Adjust table name if needed
+                .select('*')
+                .eq('plant_id', plantId)
+                .order('created_at', { ascending: false });
+
+            return {
+                ...plant,
+                logs: logs || []
+            };
+        } catch (err) {
+            console.error("Error fetching from Supabase:", err);
+            return null;
+        }
     }
 
-    // 3. Main function to generate and download PDF via visible container
-    window.downloadPlantReportPDF = function(plantData) {
-        if (!window.html2pdf) {
-            alert("PDF engine is still loading. Please try again in a second.");
+    // 3. Generate and download PDF from Supabase data object
+    window.downloadSupabasePlantReport = async function(plantId) {
+        const plantData = await fetchPlantFromSupabase(plantId);
+        if (!plantData) {
+            alert("Could not load plant data from Supabase.");
             return;
         }
 
@@ -1953,27 +1936,26 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         const reportContainer = document.createElement('div');
         reportContainer.style.cssText = 'width: 100%; max-width: 600px; background: white; color: #111827; padding: 2rem; border-radius: 0.75rem; font-family: sans-serif; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;';
         
-        // Build clean HTML logs string from raw data array
+        // Build logs HTML from Supabase log rows
         let logsHtml = '';
         if (plantData.logs && plantData.logs.length > 0) {
-            plantData.logs.forEach(logText => {
-                logsHtml += `<div style="padding: 0.75rem; background: #f9fafb; border-radius: 0.375rem; border: 1px solid #e5e7eb; margin-bottom: 0.5rem;"><p style="margin: 0; font-size: 0.85rem; color: #111827; line-height: 1.4;">${logText}</p></div>`;
+            plantData.logs.forEach(log => {
+                logsHtml += `
+                    <div style="padding: 0.75rem; background: #f9fafb; border-radius: 0.375rem; border: 1px solid #e5e7eb; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #6b7280; display: block; margin-bottom: 0.25rem;">${log.created_at ? new Date(log.created_at).toLocaleDateString() : 'Journal Entry'}</span>
+                        <p style="margin: 0; font-size: 0.85rem; color: #111827; line-height: 1.4;">${log.notes || log.content || JSON.stringify(log)}</p>
+                    </div>`;
             });
         } else {
-            logsHtml = '<p style="color: #6b7280; font-style: italic; font-size: 0.9rem;">No journal data recorded yet.</p>';
+            logsHtml = '<p style="color: #6b7280; font-style: italic; font-size: 0.9rem;">No journal logs found in database.</p>';
         }
 
         reportContainer.innerHTML = `
-            <div style="text-align: center; margin-bottom: 1rem; font-size: 0.85rem; color: #059669; font-weight: 600;">Generating Complete Report...</div>
+            <div style="text-align: center; margin-bottom: 1rem; font-size: 0.85rem; color: #059669; font-weight: 600;">Generating Database Report...</div>
             <div style="border-bottom: 2px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
-                <div style="display: flex; gap: 1rem; align-items: center;">
-                    <div style="width: 4rem; height: 4rem; background: #f3f4f6; border-radius: 0.75rem; padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-                        ${plantData.svgArtwork || '<span style="font-size: 2rem;">🌱</span>'}
-                    </div>
-                    <div>
-                        <h2 style="font-size: 1.5rem; font-weight: bold; margin: 0; color: #111827;">${plantData.name}</h2>
-                        <p style="font-size: 0.95rem; color: #4b5563; margin: 0.25rem 0 0 0;">${plantData.variety}</p>
-                    </div>
+                <div>
+                    <h2 style="font-size: 1.5rem; font-weight: bold; margin: 0; color: #111827;">${plantData.name || 'Plant Report'}</h2>
+                    <p style="font-size: 0.95rem; color: #4b5563; margin: 0.25rem 0 0 0;">${plantData.variety || 'Kitchen Garden Crop'}</p>
                 </div>
                 <div style="text-align: right;">
                     <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; display: block;">Flora Scan Report</span>
@@ -1984,19 +1966,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.85rem;">
                 <div>
                     <strong style="color: #6b7280; display: block; margin-bottom: 0.15rem;">Date Sown</strong>
-                    <span style="color: #111827; font-weight: 600;">${plantData.dateSown}</span>
+                    <span style="color: #111827; font-weight: 600;">${plantData.date_sown || plantData.dateSown || 'Not specified'}</span>
                 </div>
                 <div>
                     <strong style="color: #6b7280; display: block; margin-bottom: 0.15rem;">Tag Color</strong>
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.15rem;">
-                        <div style="width: 0.85rem; height: 0.85rem; border-radius: 50%; background-color: ${plantData.tagColor || '#ccc'}; border: 1px solid #d1d5db;"></div>
-                        <span style="color: #111827; font-weight: 600;">${plantData.tagName}</span>
-                    </div>
+                    <span style="color: #111827; font-weight: 600;">${plantData.tag_color || plantData.tagName || 'Standard'}</span>
                 </div>
             </div>
 
             <div style="margin-bottom: 1rem;">
-                <h3 style="font-size: 1rem; font-weight: bold; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 1rem;">Complete Plant Journal & Data Logs</h3>
+                <h3 style="font-size: 1rem; font-weight: bold; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 1rem;">Supabase Journal Logs (${plantData.logs.length})</h3>
                 <div style="display: flex; flex-direction: column;">
                     ${logsHtml}
                 </div>
@@ -2008,7 +1987,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         const opt = {
             margin:       10,
-            filename:     `${plantData.name.toLowerCase().replace(/\s+/g, '_')}_complete_report.pdf`,
+            filename:     `${(plantData.name || 'plant').toLowerCase().replace(/\s+/g, '_')}_supabase_report.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2, useCORS: true, logging: false },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -2024,26 +2003,31 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }, 300);
     };
 
-    // 4. Inject Button into active modals
+    // 4. Inject button into modals by looking for the plant's ID attribute
     function injectButtonToActiveModal() {
         const modals = document.querySelectorAll('div[class*="fixed"], div[class*="absolute"], div[class*="z-50"]');
         modals.forEach(modal => {
             const heading = modal.querySelector('h2, h3, h4');
             if (heading && heading.parentElement && !modal.querySelector('.flora-pdf-btn')) {
-                const btn = document.createElement('button');
-                btn.className = 'flora-pdf-btn';
-                btn.textContent = 'PDF';
-                btn.style.cssText = 'margin-left: auto; padding: 0.3rem 0.75rem; background: #059669; color: white; border: none; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer;';
+                // Extract plant ID from modal HTML (e.g. plant_1792594143019 or UUID)
+                const htmlMatch = modal.innerHTML.match(/plant_[a-zA-Z0-9_]+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
                 
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    const plantData = getPlantDataFromModal(modal);
-                    window.downloadPlantReportPDF(plantData);
-                };
+                if (htmlMatch) {
+                    const plantId = htmlMatch[0];
+                    const btn = document.createElement('button');
+                    btn.className = 'flora-pdf-btn';
+                    btn.textContent = 'PDF';
+                    btn.style.cssText = 'margin-left: auto; padding: 0.3rem 0.75rem; background: #059669; color: white; border: none; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer;';
+                    
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        window.downloadSupabasePlantReport(plantId);
+                    };
 
-                heading.parentElement.style.display = 'flex';
-                heading.parentElement.style.alignItems = 'center';
-                heading.parentElement.appendChild(btn);
+                    heading.parentElement.style.display = 'flex';
+                    heading.parentElement.style.alignItems = 'center';
+                    heading.parentElement.appendChild(btn);
+                }
             }
         });
     }
