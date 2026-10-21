@@ -1809,13 +1809,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         document.head.appendChild(pdfScript);
     }
 
-    // 2. Core PDF Export Function
+    // 2. Core PDF Export Function (Grabs full journal container)
     window.downloadPlantJournalPDF = function() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
         const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
         
-        let targetElement = journalHeading ? journalHeading.closest('div').parentElement : null;
-        if (!targetElement) targetElement = document.querySelector('main');
+        let targetElement = null;
+        if (journalHeading) {
+            // Traverse up a few levels to find the main card or section wrapper holding all journal entries
+            targetElement = journalHeading.closest('section') || journalHeading.closest('main') || journalHeading.parentElement.parentElement.parentElement;
+        }
+        
+        if (!targetElement) {
+            targetElement = document.querySelector('main');
+        }
 
         if (!targetElement) {
             alert("Please open a plant's growth journal first!");
