@@ -1707,89 +1707,95 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// Event Delegation My Plants View Toggle
+// Bulletproof CSS-Injected View Mode Toggle
 // ==========================================
 
-let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
+(function() {
+    // 1. Inject CSS rules so app re-renders can't overwrite or break it
+    const style = document.createElement('style');
+    style.innerHTML = `
+        body.plant-list-view #plantsContainer,
+        body.plant-list-view [id*="plantsContainer"],
+        body.plant-list-view main .grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+            grid-template-columns: none !important;
+        }
+        .plant-view-toggle-btn.active {
+            background-color: white !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            color: black !important;
+        }
+    `;
+    document.head.appendChild(style);
 
-function applyPlantView(mode) {
-    currentPlantView = mode;
-    localStorage.setItem('plant_view_mode', mode);
-    
-    // Find or locate the plants container
-    let container = document.getElementById('plantsContainer') || 
-                    document.getElementById('plantList') || 
-                    document.getElementById('plants');
-    
-    if (!container) {
+    // 2. Load saved preference
+    let currentView = localStorage.getItem('plant_view_mode') || 'grid';
+    if (currentView === 'list') {
+        document.body.classList.add('plant-list-view');
+    }
+
+    // 3. Auto-inject buttons next to the "My Plants" heading
+    function injectButtonsIfNeeded() {
+        if (document.getElementById('gridViewBtn') && document.getElementById('listViewBtn')) return;
+
         const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
-        const targetHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase() === 'my plants');
-        if (targetHeading) {
-            const parent = targetHeading.closest('div');
-            if (parent) {
-                // Look for any child grid/div that holds cards
-                container = parent.querySelector('.grid') || parent.nextElementSibling;
-                if (container && !container.id) container.id = 'plantsContainer';
+        const myPlantsHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase() === 'my plants');
+        
+        if (myPlantsHeading) {
+            const headerWrapper = myPlantsHeading.parentElement;
+            headerWrapper.style.display = 'flex';
+            headerWrapper.style.justifyContent = 'space-between';
+            headerWrapper.style.alignItems = 'center';
+
+            const toggleDiv = document.createElement('div');
+            toggleDiv.className = 'flex items-center gap-1 bg-gray-100 p-1 rounded-lg';
+            toggleDiv.innerHTML = `
+                <button id="gridViewBtn" class="plant-view-toggle-btn p-1.5 rounded-md text-gray-500 hover:text-black transition-colors ${currentView === 'grid' ? 'active' : ''}" title="Grid View">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                </button>
+                <button id="listViewBtn" class="plant-view-toggle-btn p-1.5 rounded-md text-gray-500 hover:text-black transition-colors ${currentView === 'list' ? 'active' : ''}" title="List View">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            `;
+            headerWrapper.appendChild(toggleDiv);
+
+            // Assign id to the plant container
+            const section = headerWrapper.closest('div').parentElement;
+            if (section) {
+                const gridCandidate = section.querySelector('.grid') || section.querySelector('div:not(:first-child)');
+                if (gridCandidate) gridCandidate.id = 'plantsContainer';
             }
         }
     }
-    
-    if (!container) {
-        // Fallback: look for any grid container on the page
-        container = document.querySelector('.grid.grid-cols-1') || document.querySelector('main .grid');
-        if (container && !container.id) container.id = 'plantsContainer';
-    }
 
-    if (!container) {
-        console.warn("Plants container not found yet.");
-        return;
-    }
+    // 4. Handle clicks reliably
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#gridViewBtn, #listViewBtn');
+        if (!btn) return;
 
-    const gridBtn = document.getElementById('gridViewBtn');
-    const listBtn = document.getElementById('listViewBtn');
+        const gridBtn = document.getElementById('gridViewBtn');
+        const listBtn = document.getElementById('listViewBtn');
 
-    if (mode === 'list') {
-        container.className = "flex flex-col gap-3 w-full";
-        if (gridBtn) {
-            gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-            gridBtn.classList.add('text-gray-400');
+        if (btn.id === 'gridViewBtn') {
+            currentView = 'grid';
+            localStorage.setItem('plant_view_mode', 'grid');
+            document.body.classList.remove('plant-list-view');
+            if (gridBtn) gridBtn.classList.add('active');
+            if (listBtn) listBtn.classList.remove('active');
+        } else if (btn.id === 'listViewBtn') {
+            currentView = 'list';
+            localStorage.setItem('plant_view_mode', 'list');
+            document.body.classList.add('plant-list-view');
+            if (listBtn) listBtn.classList.add('active');
+            if (gridBtn) gridBtn.classList.remove('active');
         }
-        if (listBtn) {
-            listBtn.classList.remove('text-gray-400');
-            listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
-        }
-    } else {
-        container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
-        if (listBtn) {
-            listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-            listBtn.classList.add('text-gray-400');
-        }
-        if (gridBtn) {
-            gridBtn.classList.remove('text-gray-400');
-            gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
-        }
-    }
-}
+    });
 
-// Global click listener that catches clicks anywhere on grid or list buttons
-document.addEventListener('click', (event) => {
-    const target = event.target.closest('button, [role="button"], span, svg');
-    if (!target) return;
-
-    // Check if clicked element or its parent is the grid or list toggle
-    if (target.id === 'gridViewBtn' || target.closest('#gridViewBtn')) {
-        applyPlantView('grid');
-    } else if (target.id === 'listViewBtn' || target.closest('#listViewBtn')) {
-        applyPlantView('list');
-    }
-});
-
-// Run on load and whenever plants update
-window.addEventListener('DOMContentLoaded', () => {
-    applyPlantView(currentPlantView);
-});
-
-window.setPlantView = applyPlantView;
+    window.addEventListener('DOMContentLoaded', injectButtonsIfNeeded);
+    setTimeout(injectButtonsIfNeeded, 800); // Retry after app renders data
+})();
         
     </script>
 </body>
