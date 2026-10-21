@@ -1798,7 +1798,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 })();
         
 // ==========================================
-// FloraScan Modal-Targeted Plant Journal PDF
+// FloraScan Exact Plant Journal PDF Export
 // ==========================================
 
 (function() {
@@ -1809,36 +1809,32 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         document.head.appendChild(pdfScript);
     }
 
-    // 2. Core PDF Export Function targeting the open plant card/modal
+    // 2. Core PDF Export Function (Smart container hunter)
     window.downloadPlantJournalPDF = function() {
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
-        const journalHeading = headings.find(h => {
-            const text = h.textContent ? h.textContent.toLowerCase() : '';
-            return text.includes('journal') && !text.includes('all');
-        });
+        const allElements = Array.from(document.querySelectorAll('h1, h2, h3, h4, div'));
+        const journalHeading = allElements.find(el => el.textContent && el.textContent.includes('Plant Growth Journal') && el.children.length === 0);
         
-        if (!journalHeading) {
-            alert("Please open a specific plant's growth journal first!");
-            return;
-        }
-
-        // Find the specific modal or detail card wrapper enclosing this plant's journal
-        let targetElement = journalHeading.closest('.fixed, .absolute, [class*="modal"], [class*="detail"], article');
-        
-        if (!targetElement) {
-            // Walk up parents to find the immediate card container holding the journal details
-            let parent = journalHeading.parentElement;
-            while (parent && parent !== document.body && parent.tagName !== 'MAIN') {
-                if (parent.querySelectorAll('img, p, button').length > 3) {
-                    targetElement = parent;
+        let targetElement = null;
+        if (journalHeading) {
+            // Walk up the DOM tree until we find the container that also wraps the timeline or log entries
+            let current = journalHeading.parentElement;
+            while (current && current !== document.body) {
+                if (current.innerText.includes('Growth History Timeline') || current.innerText.includes('Add Growth Log Entry')) {
+                    targetElement = current;
                     break;
                 }
-                parent = parent.parentElement;
+                current = current.parentElement;
             }
         }
 
+        // Fallback if specific container isn't caught
         if (!targetElement) {
-            targetElement = journalHeading.parentElement.parentElement;
+            targetElement = document.querySelector('main');
+        }
+
+        if (!targetElement) {
+            alert("Please open a plant's growth journal first!");
+            return;
         }
 
         const opt = {
@@ -1863,21 +1859,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     };
 
-    // 3. UI Injector strictly limited to individual plant modals/detail views
+    // 3. UI Injector for the "Plant Growth Journal" heading
     function injectPDFButton() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
-        const journalHeading = headings.find(h => {
-            const text = h.textContent ? h.textContent.toLowerCase() : '';
-            return text.includes('journal') && !text.includes('all');
-        });
+        const journalHeading = headings.find(h => h.textContent && h.textContent.includes('Plant Growth Journal'));
 
-        // Verify we are inside a plant modal or detail view (checking for overlay/modal classes or close buttons)
-        const isDetailView = journalHeading && (
-            journalHeading.closest('.fixed, .absolute, [class*="modal"], [class*="detail"], article') ||
-            document.querySelector('button[title*="Close"], button[aria-label*="Close"]')
-        );
-
-        if (journalHeading && isDetailView && !document.getElementById('downloadJournalPdfBtn')) {
+        if (journalHeading && !document.getElementById('downloadJournalPdfBtn')) {
             const pdfBtn = document.createElement('button');
             pdfBtn.id = 'downloadJournalPdfBtn';
             pdfBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ml-3 shadow-sm';
@@ -1890,7 +1877,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     }
 
-    // 4. MutationObserver to watch for modal openings
+    // 4. MutationObserver to watch for panel/modal openings
     const observer = new MutationObserver(() => {
         injectPDFButton();
     });
