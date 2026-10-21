@@ -1707,7 +1707,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// Robust My Plants View Toggle (Event Listener Version)
+// Event Delegation My Plants View Toggle
 // ==========================================
 
 let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
@@ -1716,27 +1716,33 @@ function applyPlantView(mode) {
     currentPlantView = mode;
     localStorage.setItem('plant_view_mode', mode);
     
-    // Find or create the plants container safely
+    // Find or locate the plants container
     let container = document.getElementById('plantsContainer') || 
                     document.getElementById('plantList') || 
                     document.getElementById('plants');
     
     if (!container) {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
-        const targetHeading = headings.find(h => h.textContent.trim().toLowerCase() === 'my plants');
+        const targetHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase() === 'my plants');
         if (targetHeading) {
-            const parent = targetHeading.closest('div').parentElement;
+            const parent = targetHeading.closest('div');
             if (parent) {
-                container = document.createElement('div');
-                container.id = 'plantsContainer';
-                parent.appendChild(container);
+                // Look for any child grid/div that holds cards
+                container = parent.querySelector('.grid') || parent.nextElementSibling;
+                if (container && !container.id) container.id = 'plantsContainer';
             }
         }
     }
+    
     if (!container) {
-        container = document.createElement('div');
-        container.id = 'plantsContainer';
-        document.body.appendChild(container);
+        // Fallback: look for any grid container on the page
+        container = document.querySelector('.grid.grid-cols-1') || document.querySelector('main .grid');
+        if (container && !container.id) container.id = 'plantsContainer';
+    }
+
+    if (!container) {
+        console.warn("Plants container not found yet.");
+        return;
     }
 
     const gridBtn = document.getElementById('gridViewBtn');
@@ -1765,22 +1771,24 @@ function applyPlantView(mode) {
     }
 }
 
-// Bind event listeners dynamically when DOM loads (no inline onclick needed)
-window.addEventListener('DOMContentLoaded', () => {
-    applyPlantView(currentPlantView);
+// Global click listener that catches clicks anywhere on grid or list buttons
+document.addEventListener('click', (event) => {
+    const target = event.target.closest('button, [role="button"], span, svg');
+    if (!target) return;
 
-    const gridBtn = document.getElementById('gridViewBtn');
-    const listBtn = document.getElementById('listViewBtn');
-
-    if (gridBtn) {
-        gridBtn.addEventListener('click', () => applyPlantView('grid'));
-    }
-    if (listBtn) {
-        listBtn.addEventListener('click', () => applyPlantView('list'));
+    // Check if clicked element or its parent is the grid or list toggle
+    if (target.id === 'gridViewBtn' || target.closest('#gridViewBtn')) {
+        applyPlantView('grid');
+    } else if (target.id === 'listViewBtn' || target.closest('#listViewBtn')) {
+        applyPlantView('list');
     }
 });
 
-// Expose globally just in case
+// Run on load and whenever plants update
+window.addEventListener('DOMContentLoaded', () => {
+    applyPlantView(currentPlantView);
+});
+
 window.setPlantView = applyPlantView;
         
     </script>
