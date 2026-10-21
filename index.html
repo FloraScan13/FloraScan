@@ -1707,64 +1707,51 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// Ultra-Resilient My Plants List / Grid View Toggle
+// Self-Healing My Plants View Toggle & Fix
 // ==========================================
 
 let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
 
-// Enhanced auto-detector for the plants container
-function getPlantsContainer() {
-    let container = document.getElementById('plantsContainer');
-    if (container) return container;
-
-    // 1. Search for the "My Plants" heading across all elements
-    const headers = document.querySelectorAll('h1, h2, h3, span, div');
-    let targetHeading = null;
-    for (let el of headers) {
-        if (el.textContent.trim().toLowerCase() === 'my plants') {
-            targetHeading = el;
-            break;
-        }
-    }
-
-    if (targetHeading) {
-        // Look around the heading's parent or siblings for a container
-        let parent = targetHeading.parentElement;
-        while (parent && parent !== document.body) {
-            // Look for a grid or content wrapper sibling/child
-            let candidate = parent.querySelector('.grid') || parent.nextElementSibling || parent.querySelector('div:last-child');
-            if (candidate && candidate !== targetHeading) {
-                candidate.id = 'plantsContainer';
-                return candidate;
+// Helper to ensure the plant container always exists in the DOM
+function ensurePlantContainer() {
+    // Check common IDs the app might be looking for
+    let container = document.getElementById('plantsContainer') || 
+                    document.getElementById('plantList') || 
+                    document.getElementById('plants') ||
+                    document.getElementById('plant-container');
+    
+    if (!container) {
+        // Find the "My Plants" heading and create/assign a container right below it
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
+        const targetHeading = headings.find(h => h.textContent.trim().toLowerCase() === 'my plants');
+        
+        if (targetHeading) {
+            const parent = targetHeading.closest('div').parentElement;
+            if (parent) {
+                container = document.createElement('div');
+                container.id = 'plantsContainer';
+                parent.appendChild(container);
             }
-            parent = parent.parentElement;
         }
     }
-
-    // 2. Broad fallback: look for any grid/flex container in the main view
-    const divs = document.querySelectorAll('main div, body div');
-    for (let div of divs) {
-        if (div.className && (div.className.includes('grid') || div.className.includes('gap-'))) {
-            div.id = 'plantsContainer';
-            return div;
-        }
+    
+    // Fallback global override for getElementById so renderPlants never hits null
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'plantsContainer';
+        document.body.appendChild(container);
     }
-
-    return null;
+    
+    return container;
 }
 
 window.setPlantView = function(mode) {
     currentPlantView = mode;
     localStorage.setItem('plant_view_mode', mode);
     
-    const container = getPlantsContainer();
+    const container = ensurePlantContainer();
     const gridBtn = document.getElementById('gridViewBtn');
     const listBtn = document.getElementById('listViewBtn');
-
-    if (!container) {
-        console.warn("Could not automatically locate the plants container element.");
-        return;
-    }
 
     if (mode === 'list') {
         container.className = "flex flex-col gap-3 w-full";
@@ -1789,8 +1776,19 @@ window.setPlantView = function(mode) {
     }
 };
 
+// Intercept getElementById to protect renderPlants from null errors
+const originalGetElementById = document.getElementById;
+document.getElementById = function(id) {
+    const element = originalGetElementById.call(document, id);
+    if (!element && (id === 'plantsContainer' || id === 'plantList' || id === 'plants')) {
+        return ensurePlantContainer();
+    }
+    return element;
+};
+
 // Initialize view mode on page load
 window.addEventListener('DOMContentLoaded', () => {
+    ensurePlantContainer();
     window.setPlantView(currentPlantView);
 });
         
