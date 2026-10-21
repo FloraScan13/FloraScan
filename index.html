@@ -1798,7 +1798,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 })();
         
 // ==========================================
-// FloraScan Plant Journal PDF Export (Full Content)
+// FloraScan Full-Content Plant Journal PDF Export
 // ==========================================
 
 (function() {
@@ -1809,20 +1809,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         document.head.appendChild(pdfScript);
     }
 
-    // 2. Core PDF Export Function (Grabs header + journal logs)
+    // 2. Core PDF Export Function with Full-Height Expansion
     window.downloadPlantJournalPDF = function() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
         const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
         
         let targetElement = null;
         if (journalHeading) {
-            // Find the closest card or container that wraps both the header section and the content/logs below it
-            const cardWrapper = journalHeading.closest('.bg-white, .rounded-xl, article, div[class*="p-"], main > div');
-            targetElement = cardWrapper ? cardWrapper.parentElement : journalHeading.closest('main');
-        }
-        
-        if (!targetElement) {
-            targetElement = document.querySelector('main');
+            // Find the main view container or main tag holding the entire journal page
+            targetElement = journalHeading.closest('main') || journalHeading.closest('section') || document.querySelector('main');
         }
 
         if (!targetElement) {
@@ -1830,16 +1825,41 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return;
         }
 
+        // Temporarily override styles to prevent clipping of scrollable content
+        const originalOverflow = targetElement.style.overflow;
+        const originalMaxHeight = targetElement.style.maxHeight;
+        const originalHeight = targetElement.style.height;
+
+        targetElement.style.overflow = 'visible';
+        targetElement.style.maxHeight = 'none';
+        targetElement.style.height = 'auto';
+
         const opt = {
             margin:       10,
             filename:     'plant-growth-journal.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
         if (window.html2pdf) {
-            window.html2pdf().from(targetElement).set(opt).save();
+            window.html2pdf()
+                .from(targetElement)
+                .set(opt)
+                .save()
+                .then(() => {
+                    // Restore original styles after export
+                    targetElement.style.overflow = originalOverflow;
+                    targetElement.style.maxHeight = originalMaxHeight;
+                    targetElement.style.height = originalHeight;
+                })
+                .catch(err => {
+                    console.error("PDF generation error:", err);
+                    // Ensure styles are restored even if it fails
+                    targetElement.style.overflow = originalOverflow;
+                    targetElement.style.maxHeight = originalMaxHeight;
+                    targetElement.style.height = originalHeight;
+                });
         } else {
             window.print();
         }
