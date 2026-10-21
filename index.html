@@ -1798,7 +1798,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 })();
         
 // ==========================================
-// FloraScan Standalone Plant Journal PDF Export
+// FloraScan Plant Journal PDF Export (Full Content)
 // ==========================================
 
 (function() {
@@ -1809,15 +1809,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         document.head.appendChild(pdfScript);
     }
 
-    // 2. Core PDF Export Function (Grabs full journal container)
+    // 2. Core PDF Export Function (Grabs header + journal logs)
     window.downloadPlantJournalPDF = function() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
         const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
         
         let targetElement = null;
         if (journalHeading) {
-            // Traverse up a few levels to find the main card or section wrapper holding all journal entries
-            targetElement = journalHeading.closest('section') || journalHeading.closest('main') || journalHeading.parentElement.parentElement.parentElement;
+            // Find the closest card or container that wraps both the header section and the content/logs below it
+            const cardWrapper = journalHeading.closest('.bg-white, .rounded-xl, article, div[class*="p-"], main > div');
+            targetElement = cardWrapper ? cardWrapper.parentElement : journalHeading.closest('main');
         }
         
         if (!targetElement) {
