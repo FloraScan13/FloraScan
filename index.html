@@ -1707,64 +1707,49 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Bulletproof View Toggle & PDF Export
+// FloraScan Clean & Precise View Toggle & PDF Export
 // ==========================================
 
 (function() {
-    // 1. Inject nuclear-strength CSS rules that override internal card widths
-    if (!document.getElementById('floraViewStyles')) {
-        const style = document.createElement('style');
-        style.id = 'floraViewStyles';
-        style.innerHTML = `
-            /* Force any grid to flex column */
-            body.plant-list-view .grid,
-            body.plant-list-view main div,
-            body.plant-list-view [class*="grid"] {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 1rem !important;
-                grid-template-columns: none !important;
-                width: 100% !important;
-            }
-            /* Force plant cards and all inner wrappers to full width */
-            body.plant-list-view .grid > *,
-            body.plant-list-view main div > *,
-            body.plant-list-view [class*="grid"] > * {
-                width: 100% !important;
-                max-width: 100% !important;
-            }
-
-            /* Active toggle button style */
-            .plant-view-btn-active {
-                background-color: white !important;
-                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-                color: black !important;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // 2. Load html2pdf library for journal exports
+    // 1. Load html2pdf library for journal exports
     if (!window.html2pdf) {
         const pdfScript = document.createElement('script');
         pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         document.head.appendChild(pdfScript);
     }
 
-    // 3. View state management
+    // 2. View state management
     let currentView = localStorage.getItem('plant_view_mode') || 'grid';
-    if (currentView === 'list') {
-        document.body.classList.add('plant-list-view');
+
+    // Precise function to locate the plant cards container
+    function getPlantContainer() {
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
+        const plantHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('plant') && !h.textContent.toLowerCase().includes('journal'));
+        
+        if (plantHeading) {
+            // Look near the heading for the grid/container holding the cards
+            const section = plantHeading.closest('section') || plantHeading.parentElement.parentElement;
+            if (section) {
+                const grid = section.querySelector('.grid');
+                if (grid) return grid;
+            }
+        }
+        // Fallback search
+        return document.querySelector('main .grid') || document.querySelector('.grid');
     }
 
+    // Apply view mode strictly to the plant container
     window.setPlantView = function(mode) {
         currentView = mode;
         localStorage.setItem('plant_view_mode', mode);
 
-        if (mode === 'list') {
-            document.body.classList.add('plant-list-view');
-        } else {
-            document.body.classList.remove('plant-list-view');
+        const container = getPlantContainer();
+        if (container) {
+            if (mode === 'list') {
+                container.className = "flex flex-col gap-3 w-full";
+            } else {
+                container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
+            }
         }
         updateButtonStyles();
     };
@@ -1774,20 +1759,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         const listBtn = document.getElementById('listViewBtn');
         if (gridBtn && listBtn) {
             if (currentView === 'list') {
-                listBtn.classList.add('plant-view-btn-active');
+                listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
                 listBtn.classList.remove('text-gray-400');
-                gridBtn.classList.remove('plant-view-btn-active');
+                gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
                 gridBtn.classList.add('text-gray-400');
             } else {
-                gridBtn.classList.add('plant-view-btn-active');
+                gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
                 gridBtn.classList.remove('text-gray-400');
-                listBtn.classList.remove('plant-view-btn-active');
+                listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
                 listBtn.classList.add('text-gray-400');
             }
         }
     }
 
-    // 4. PDF Export Function for Growth Journal
+    // 3. PDF Export Function for Growth Journal
     window.downloadPlantJournalPDF = function() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
         const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
@@ -1815,7 +1800,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
     };
 
-    // 5. UI Injector for Toggle Buttons & PDF Button
+    // 4. UI Injector for Toggle Buttons & PDF Button
     function injectUI() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
 
@@ -1863,24 +1848,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
-        updateButtonStyles();
+        // Re-apply view mode to ensure it sticks
+        window.setPlantView(currentView);
     }
 
-    // 6. Observer to enforce state during app re-renders
+    // 5. Gentle observer that re-applies view mode when cards update
     const observer = new MutationObserver(() => {
         injectUI();
-        if (currentView === 'list') {
-            document.body.classList.add('plant-list-view');
-        }
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
     window.addEventListener('DOMContentLoaded', () => {
         injectUI();
-        if (currentView === 'list') {
-            document.body.classList.add('plant-list-view');
-        }
-        updateButtonStyles();
+        window.setPlantView(currentView);
     });
 })();
         
