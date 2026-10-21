@@ -1707,25 +1707,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// Safe & Clean My Plants View Toggle
+// Robust My Plants View Toggle (Event Listener Version)
 // ==========================================
 
 let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
 
-// 1. Safely store the original getElementById before any overrides
-const originalGetElementById = document.getElementById;
-
-function ensurePlantContainer() {
-    // 2. Use originalGetElementById here to prevent infinite loops
-    let container = originalGetElementById.call(document, 'plantsContainer') || 
-                    originalGetElementById.call(document, 'plantList') || 
-                    originalGetElementById.call(document, 'plants') ||
-                    originalGetElementById.call(document, 'plant-container');
+function applyPlantView(mode) {
+    currentPlantView = mode;
+    localStorage.setItem('plant_view_mode', mode);
+    
+    // Find or create the plants container safely
+    let container = document.getElementById('plantsContainer') || 
+                    document.getElementById('plantList') || 
+                    document.getElementById('plants');
     
     if (!container) {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
         const targetHeading = headings.find(h => h.textContent.trim().toLowerCase() === 'my plants');
-        
         if (targetHeading) {
             const parent = targetHeading.closest('div').parentElement;
             if (parent) {
@@ -1735,23 +1733,14 @@ function ensurePlantContainer() {
             }
         }
     }
-    
     if (!container) {
         container = document.createElement('div');
         container.id = 'plantsContainer';
         document.body.appendChild(container);
     }
-    
-    return container;
-}
 
-window.setPlantView = function(mode) {
-    currentPlantView = mode;
-    localStorage.setItem('plant_view_mode', mode);
-    
-    const container = ensurePlantContainer();
-    const gridBtn = originalGetElementById.call(document, 'gridViewBtn');
-    const listBtn = originalGetElementById.call(document, 'listViewBtn');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const listBtn = document.getElementById('listViewBtn');
 
     if (mode === 'list') {
         container.className = "flex flex-col gap-3 w-full";
@@ -1774,22 +1763,25 @@ window.setPlantView = function(mode) {
             gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
         }
     }
-};
+}
 
-// 3. Safe override that uses originalGetElementById internally
-document.getElementById = function(id) {
-    const element = originalGetElementById.call(document, id);
-    if (!element && (id === 'plantsContainer' || id === 'plantList' || id === 'plants')) {
-        return ensurePlantContainer();
-    }
-    return element;
-};
-
-// Initialize view mode on page load
+// Bind event listeners dynamically when DOM loads (no inline onclick needed)
 window.addEventListener('DOMContentLoaded', () => {
-    ensurePlantContainer();
-    window.setPlantView(currentPlantView);
+    applyPlantView(currentPlantView);
+
+    const gridBtn = document.getElementById('gridViewBtn');
+    const listBtn = document.getElementById('listViewBtn');
+
+    if (gridBtn) {
+        gridBtn.addEventListener('click', () => applyPlantView('grid'));
+    }
+    if (listBtn) {
+        listBtn.addEventListener('click', () => applyPlantView('list'));
+    }
 });
+
+// Expose globally just in case
+window.setPlantView = applyPlantView;
         
     </script>
 </body>
