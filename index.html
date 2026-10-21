@@ -1797,6 +1797,85 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     setTimeout(injectButtonsIfNeeded, 800); // Retry after app renders data
 })();
         
+// ==========================================
+// Plant Growth Journal PDF Export Feature
+// ==========================================
+
+(function() {
+    // 1. Inject the html2pdf library script via CDN if not already loaded
+    if (!window.html2pdf) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        document.head.appendChild(script);
+    }
+
+    // 2. Core function to generate and download the PDF
+    window.downloadPlantJournalPDF = function() {
+        // Locate the Plant Growth Journal modal/container on the page
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
+        const journalHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase().includes('growth journal'));
+        
+        let targetElement = null;
+        if (journalHeading) {
+            // Get the parent card wrapper of the journal
+            targetElement = journalHeading.closest('div').parentElement;
+        }
+
+        if (!targetElement) {
+            alert("Please open a plant's growth journal first!");
+            return;
+        }
+
+        // Configuration options for the PDF export
+        const opt = {
+            margin:       10,
+            filename:     'plant-growth-journal.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Trigger file download
+        if (window.html2pdf) {
+            window.html2pdf().from(targetElement).set(opt).save();
+        } else {
+            // Fallback to browser print dialog if CDN is still loading
+            window.print();
+        }
+    };
+
+    // 3. Auto-inject the "Download PDF" button into the journal header
+    function injectPDFButton() {
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
+        const journalHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase().includes('growth journal'));
+        
+        if (journalHeading) {
+            const headerDiv = journalHeading.parentElement;
+            if (!document.getElementById('downloadJournalPdfBtn') && headerDiv) {
+                const btn = document.createElement('button');
+                btn.id = 'downloadJournalPdfBtn';
+                btn.className = 'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ml-auto shadow-sm';
+                btn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Download PDF</span>
+                `;
+                btn.onclick = window.downloadPlantJournalPDF;
+                
+                // Align the header nicely with flexbox
+                headerDiv.style.display = 'flex';
+                headerDiv.style.alignItems = 'center';
+                headerDiv.style.justifyContent = 'space-between';
+                headerDiv.appendChild(btn);
+            }
+        }
+    }
+
+    // Periodically check for when the user opens a plant journal modal
+    window.addEventListener('DOMContentLoaded', () => {
+        setInterval(injectPDFButton, 800);
+    });
+})();
+        
     </script>
 </body>
 </html>
