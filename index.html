@@ -1707,29 +1707,29 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan CSS-Forced View Toggle & PDF Export
+// FloraScan Bulletproof View Toggle & PDF Export
 // ==========================================
 
 (function() {
-    // 1. Inject authoritative CSS rules that override app layout constraints
+    // 1. Inject nuclear-strength CSS rules that override internal card widths
     if (!document.getElementById('floraViewStyles')) {
         const style = document.createElement('style');
         style.id = 'floraViewStyles';
         style.innerHTML = `
-            /* Force Grid to Flex Column in List View */
-            body.plant-list-view main .grid,
-            body.plant-list-view section .grid,
-            body.plant-list-view [id*="plants"] .grid,
-            body.plant-list-view .grid {
+            /* Force any grid to flex column */
+            body.plant-list-view .grid,
+            body.plant-list-view main div,
+            body.plant-list-view [class*="grid"] {
                 display: flex !important;
                 flex-direction: column !important;
-                gap: 0.75rem !important;
+                gap: 1rem !important;
                 grid-template-columns: none !important;
+                width: 100% !important;
             }
-            /* Force individual plant cards to full width in list view */
-            body.plant-list-view main .grid > *,
-            body.plant-list-view section .grid > *,
-            body.plant-list-view .grid > * {
+            /* Force plant cards and all inner wrappers to full width */
+            body.plant-list-view .grid > *,
+            body.plant-list-view main div > *,
+            body.plant-list-view [class*="grid"] > * {
                 width: 100% !important;
                 max-width: 100% !important;
             }
@@ -1866,7 +1866,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         updateButtonStyles();
     }
 
-    // 6. Observer to keep styles locked in even after app re-renders data
+    // 6. Observer to enforce state during app re-renders
     const observer = new MutationObserver(() => {
         injectUI();
         if (currentView === 'list') {
