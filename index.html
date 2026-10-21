@@ -1707,141 +1707,94 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Final Resilient Toggle & PDF Export
+// Bulletproof CSS-Injected View Mode Toggle
 // ==========================================
 
 (function() {
-    // 1. Load html2pdf library for journal exports
-    if (!window.html2pdf) {
-        const pdfScript = document.createElement('script');
-        pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-        document.head.appendChild(pdfScript);
-    }
-
-    // 2. View state management
-    let currentView = localStorage.getItem('plant_view_mode') || 'grid';
-
-    window.setPlantView = function(mode) {
-        currentView = mode;
-        localStorage.setItem('plant_view_mode', mode);
-        applyViewMode();
-        updateButtonStyles();
-    };
-
-    function applyViewMode() {
-        const container = document.getElementById('view-plants') || document.querySelector('.view-plants');
-        if (!container) return;
-
-        if (currentView === 'list') {
-            container.style.display = 'flex';
-            container.style.flexDirection = 'column';
-            container.style.gap = '0.75rem';
-            container.style.gridTemplateColumns = 'none';
-        } else {
-            // Clear inline overrides to restore original grid styling
-            container.style.display = '';
-            container.style.flexDirection = '';
-            container.style.gap = '';
-            container.style.gridTemplateColumns = '';
+    // 1. Inject CSS rules so app re-renders can't overwrite or break it
+    const style = document.createElement('style');
+    style.innerHTML = `
+        body.plant-list-view #plantsContainer,
+        body.plant-list-view [id*="plantsContainer"],
+        body.plant-list-view main .grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+            grid-template-columns: none !important;
         }
+        .plant-view-toggle-btn.active {
+            background-color: white !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            color: black !important;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 2. Load saved preference
+    let currentView = localStorage.getItem('plant_view_mode') || 'grid';
+    if (currentView === 'list') {
+        document.body.classList.add('plant-list-view');
     }
 
-    function updateButtonStyles() {
-        const gridBtn = document.getElementById('gridViewBtn');
-        const listBtn = document.getElementById('listViewBtn');
-        if (gridBtn && listBtn) {
-            if (currentView === 'list') {
-                listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
-                listBtn.classList.remove('text-gray-400');
-                gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-                gridBtn.classList.add('text-gray-400');
-            } else {
-                gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
-                gridBtn.classList.remove('text-gray-400');
-                listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
-                listBtn.classList.add('text-gray-400');
+    // 3. Auto-inject buttons next to the "My Plants" heading
+    function injectButtonsIfNeeded() {
+        if (document.getElementById('gridViewBtn') && document.getElementById('listViewBtn')) return;
+
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
+        const myPlantsHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase() === 'my plants');
+        
+        if (myPlantsHeading) {
+            const headerWrapper = myPlantsHeading.parentElement;
+            headerWrapper.style.display = 'flex';
+            headerWrapper.style.justifyContent = 'space-between';
+            headerWrapper.style.alignItems = 'center';
+
+            const toggleDiv = document.createElement('div');
+            toggleDiv.className = 'flex items-center gap-1 bg-gray-100 p-1 rounded-lg';
+            toggleDiv.innerHTML = `
+                <button id="gridViewBtn" class="plant-view-toggle-btn p-1.5 rounded-md text-gray-500 hover:text-black transition-colors ${currentView === 'grid' ? 'active' : ''}" title="Grid View">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                </button>
+                <button id="listViewBtn" class="plant-view-toggle-btn p-1.5 rounded-md text-gray-500 hover:text-black transition-colors ${currentView === 'list' ? 'active' : ''}" title="List View">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            `;
+            headerWrapper.appendChild(toggleDiv);
+
+            // Assign id to the plant container
+            const section = headerWrapper.closest('div').parentElement;
+            if (section) {
+                const gridCandidate = section.querySelector('.grid') || section.querySelector('div:not(:first-child)');
+                if (gridCandidate) gridCandidate.id = 'plantsContainer';
             }
         }
     }
 
-    // 3. PDF Export Function for Growth Journal
-    window.downloadPlantJournalPDF = function() {
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
-        const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
-        
-        let targetElement = journalHeading ? journalHeading.closest('div').parentElement : null;
-        if (!targetElement) targetElement = document.querySelector('main');
+    // 4. Handle clicks reliably
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#gridViewBtn, #listViewBtn');
+        if (!btn) return;
 
-        if (!targetElement) {
-            alert("Please open a plant's growth journal first!");
-            return;
+        const gridBtn = document.getElementById('gridViewBtn');
+        const listBtn = document.getElementById('listViewBtn');
+
+        if (btn.id === 'gridViewBtn') {
+            currentView = 'grid';
+            localStorage.setItem('plant_view_mode', 'grid');
+            document.body.classList.remove('plant-list-view');
+            if (gridBtn) gridBtn.classList.add('active');
+            if (listBtn) listBtn.classList.remove('active');
+        } else if (btn.id === 'listViewBtn') {
+            currentView = 'list';
+            localStorage.setItem('plant_view_mode', 'list');
+            document.body.classList.add('plant-list-view');
+            if (listBtn) listBtn.classList.add('active');
+            if (gridBtn) gridBtn.classList.remove('active');
         }
-
-        const opt = {
-            margin: 10,
-            filename: 'plant-growth-journal.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        if (window.html2pdf) {
-            window.html2pdf().from(targetElement).set(opt).save();
-        } else {
-            window.print();
-        }
-    };
-
-    // 4. UI Injector for Toggle Buttons & PDF Button
-    function injectUI() {
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
-
-        // Inject Toggle next to "Plants" or "My Plants"
-        const plantHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('plant') && !h.textContent.toLowerCase().includes('journal'));
-        if (plantHeading && !document.getElementById('gridViewBtn')) {
-            const toggleDiv = document.createElement('div');
-            toggleDiv.className = 'inline-flex items-center gap-1 bg-gray-100 p-1 rounded-lg ml-3';
-            toggleDiv.innerHTML = `
-                <button id="gridViewBtn" onclick="setPlantView('grid')" class="p-1.5 rounded-md text-gray-500 hover:text-black transition-colors" title="Grid View">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                </button>
-                <button id="listViewBtn" onclick="setPlantView('list')" class="p-1.5 rounded-md text-gray-500 hover:text-black transition-colors" title="List View">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-            `;
-            plantHeading.appendChild(toggleDiv);
-        }
-
-        // Inject PDF Button next to "Journal"
-        const journalHeading = headings.find(h => h.textContent && h.textContent.toLowerCase().includes('journal'));
-        if (journalHeading && !document.getElementById('downloadJournalPdfBtn')) {
-            const pdfBtn = document.createElement('button');
-            pdfBtn.id = 'downloadJournalPdfBtn';
-            pdfBtn.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors ml-3 shadow-sm';
-            pdfBtn.innerHTML = `
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h2.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <span>Download PDF</span>
-            `;
-            pdfBtn.onclick = window.downloadPlantJournalPDF;
-            journalHeading.appendChild(pdfBtn);
-        }
-
-        applyViewMode();
-        updateButtonStyles();
-    }
-
-    // 5. Active MutationObserver to maintain view state across re-renders
-    const observer = new MutationObserver(() => {
-        injectUI();
-        applyViewMode();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
 
-    window.addEventListener('DOMContentLoaded', () => {
-        injectUI();
-        applyViewMode();
-        updateButtonStyles();
-    });
+    window.addEventListener('DOMContentLoaded', injectButtonsIfNeeded);
+    setTimeout(injectButtonsIfNeeded, 800); // Retry after app renders data
 })();
         
 
