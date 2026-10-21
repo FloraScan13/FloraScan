@@ -1707,7 +1707,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Direct Class-Swap Toggle & PDF
+// FloraScan Final Resilient Toggle & PDF Export
 // ==========================================
 
 (function() {
@@ -1718,34 +1718,31 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         document.head.appendChild(pdfScript);
     }
 
-    // 2. View state management & direct element class manipulation
+    // 2. View state management
     let currentView = localStorage.getItem('plant_view_mode') || 'grid';
 
     window.setPlantView = function(mode) {
         currentView = mode;
         localStorage.setItem('plant_view_mode', mode);
-        applyViewToContainer();
+        applyViewMode();
         updateButtonStyles();
     };
 
-    function applyViewToContainer() {
+    function applyViewMode() {
         const container = document.getElementById('view-plants') || document.querySelector('.view-plants');
         if (!container) return;
 
         if (currentView === 'list') {
-            // Store original grid classes if not already saved
-            if (!container.dataset.gridClasses) {
-                container.dataset.gridClasses = container.className;
-            }
-            // Force vertical stack
-            container.className = "flex flex-col gap-3 w-full";
+            container.style.display = 'flex';
+            container.style.flexDirection = 'column';
+            container.style.gap = '0.75rem';
+            container.style.gridTemplateColumns = 'none';
         } else {
-            // Restore original grid classes if available, otherwise apply a standard grid
-            if (container.dataset.gridClasses) {
-                container.className = container.dataset.gridClasses;
-            } else {
-                container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
-            }
+            // Clear inline overrides to restore original grid styling
+            container.style.display = '';
+            container.style.flexDirection = '';
+            container.style.gap = '';
+            container.style.gridTemplateColumns = '';
         }
     }
 
@@ -1829,20 +1826,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             journalHeading.appendChild(pdfBtn);
         }
 
-        applyViewToContainer();
+        applyViewMode();
         updateButtonStyles();
     }
 
-    // 5. Watch for app re-renders to maintain the list view class seamlessly
+    // 5. Active MutationObserver to maintain view state across re-renders
     const observer = new MutationObserver(() => {
         injectUI();
-        applyViewToContainer();
+        applyViewMode();
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
     window.addEventListener('DOMContentLoaded', () => {
         injectUI();
-        applyViewToContainer();
+        applyViewMode();
         updateButtonStyles();
     });
 })();
