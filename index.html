@@ -1707,32 +1707,49 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// Auto-Detecting My Plants List / Grid View Toggle
+// Ultra-Resilient My Plants List / Grid View Toggle
 // ==========================================
 
 let currentPlantView = localStorage.getItem('plant_view_mode') || 'grid';
 
-// Helper to automatically find the plants container on your page
+// Enhanced auto-detector for the plants container
 function getPlantsContainer() {
     let container = document.getElementById('plantsContainer');
     if (container) return container;
 
-    // Search for the "My Plants" heading and find its container sibling/parent
-    const headings = Array.from(document.querySelectorAll('h2, h3, h1'));
-    const targetHeading = headings.find(h => h.textContent.trim().toLowerCase() === 'my plants');
-    
-    if (targetHeading) {
-        // Look for a grid or content wrapper near the heading
-        const parentSection = targetHeading.closest('div').parentElement;
-        if (parentSection) {
-            // Find the first element that looks like a container (or next sibling div)
-            const possibleContainer = parentSection.querySelector('.grid') || parentSection.querySelector('div:not(:first-child)');
-            if (possibleContainer) {
-                possibleContainer.id = 'plantsContainer'; // Assign it dynamically
-                return possibleContainer;
-            }
+    // 1. Search for the "My Plants" heading across all elements
+    const headers = document.querySelectorAll('h1, h2, h3, span, div');
+    let targetHeading = null;
+    for (let el of headers) {
+        if (el.textContent.trim().toLowerCase() === 'my plants') {
+            targetHeading = el;
+            break;
         }
     }
+
+    if (targetHeading) {
+        // Look around the heading's parent or siblings for a container
+        let parent = targetHeading.parentElement;
+        while (parent && parent !== document.body) {
+            // Look for a grid or content wrapper sibling/child
+            let candidate = parent.querySelector('.grid') || parent.nextElementSibling || parent.querySelector('div:last-child');
+            if (candidate && candidate !== targetHeading) {
+                candidate.id = 'plantsContainer';
+                return candidate;
+            }
+            parent = parent.parentElement;
+        }
+    }
+
+    // 2. Broad fallback: look for any grid/flex container in the main view
+    const divs = document.querySelectorAll('main div, body div');
+    for (let div of divs) {
+        if (div.className && (div.className.includes('grid') || div.className.includes('gap-'))) {
+            div.id = 'plantsContainer';
+            return div;
+        }
+    }
+
     return null;
 }
 
