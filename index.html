@@ -1707,68 +1707,61 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// FloraScan Precise Toggle & PDF Export
+// FloraScan Direct Class-Swap Toggle & PDF
 // ==========================================
 
 (function() {
-    // 1. Inject precise CSS rules targeting only #view-plants
-    if (!document.getElementById('floraViewStyles')) {
-        const style = document.createElement('style');
-        style.id = 'floraViewStyles';
-        style.innerHTML = `
-            body.plant-list-view #view-plants,
-            body.plant-list-view .view-plants {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 0.75rem !important;
-                grid-template-columns: none !important;
-            }
-            .plant-view-btn-active {
-                background-color: white !important;
-                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-                color: black !important;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // 2. Load html2pdf for journal exports
+    // 1. Load html2pdf library for journal exports
     if (!window.html2pdf) {
         const pdfScript = document.createElement('script');
         pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
         document.head.appendChild(pdfScript);
     }
 
+    // 2. View state management & direct element class manipulation
     let currentView = localStorage.getItem('plant_view_mode') || 'grid';
-    if (currentView === 'list') {
-        document.body.classList.add('plant-list-view');
-    }
 
     window.setPlantView = function(mode) {
         currentView = mode;
         localStorage.setItem('plant_view_mode', mode);
-
-        if (mode === 'list') {
-            document.body.classList.add('plant-list-view');
-        } else {
-            document.body.classList.remove('plant-list-view');
-        }
+        applyViewToContainer();
         updateButtonStyles();
     };
+
+    function applyViewToContainer() {
+        const container = document.getElementById('view-plants') || document.querySelector('.view-plants');
+        if (!container) return;
+
+        if (currentView === 'list') {
+            // Store original grid classes if not already saved
+            if (!container.dataset.gridClasses) {
+                container.dataset.gridClasses = container.className;
+            }
+            // Force vertical stack
+            container.className = "flex flex-col gap-3 w-full";
+        } else {
+            // Restore original grid classes if available, otherwise apply a standard grid
+            if (container.dataset.gridClasses) {
+                container.className = container.dataset.gridClasses;
+            } else {
+                container.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full";
+            }
+        }
+    }
 
     function updateButtonStyles() {
         const gridBtn = document.getElementById('gridViewBtn');
         const listBtn = document.getElementById('listViewBtn');
         if (gridBtn && listBtn) {
             if (currentView === 'list') {
-                listBtn.classList.add('plant-view-btn-active');
+                listBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
                 listBtn.classList.remove('text-gray-400');
-                gridBtn.classList.remove('plant-view-btn-active');
+                gridBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
                 gridBtn.classList.add('text-gray-400');
             } else {
-                gridBtn.classList.add('plant-view-btn-active');
+                gridBtn.classList.add('bg-white', 'shadow-sm', 'text-black');
                 gridBtn.classList.remove('text-gray-400');
-                listBtn.classList.remove('plant-view-btn-active');
+                listBtn.classList.remove('bg-white', 'shadow-sm', 'text-black');
                 listBtn.classList.add('text-gray-400');
             }
         }
@@ -1836,17 +1829,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             journalHeading.appendChild(pdfBtn);
         }
 
+        applyViewToContainer();
         updateButtonStyles();
     }
 
+    // 5. Watch for app re-renders to maintain the list view class seamlessly
+    const observer = new MutationObserver(() => {
+        injectUI();
+        applyViewToContainer();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
     window.addEventListener('DOMContentLoaded', () => {
         injectUI();
-        if (currentView === 'list') {
-            document.body.classList.add('plant-list-view');
-        }
+        applyViewToContainer();
         updateButtonStyles();
     });
-    setInterval(injectUI, 1000);
 })();
         
 
