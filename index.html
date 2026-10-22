@@ -54,6 +54,64 @@
             border: 2px solid #000000 !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.06);
         }
+
+
+        
+/* FloraScan mobile usability improvements */
+button,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+button {
+  min-height: 44px;
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
+  scroll-margin-bottom: 100px;
+}
+
+#app-header {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+#plant-modal {
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 380px) {
+  #app-header > div {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  main {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  #plantViewToggle button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  #view-scanner .flex.justify-center {
+    flex-wrap: wrap;
+  }
+
+  #view-scanner .flex.justify-center button {
+    flex: 1 1 120px;
+  }
+}
+
+
+        
     </style>
     <!-- Inline SVG App Icon -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2310b981'/><path d='M50 20C50 20 30 38 30 58C30 69.0457 38.9543 78 50 78C61.0457 78 70 69.0457 70 58C70 38 50 20 50 20Z' fill='white'/></svg>">
