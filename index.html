@@ -593,7 +593,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <option value="Feed">Nutrients</option>
                                 <option value="Prune">Pruning</option>
                                 <option value="Harvest">Harvest</option>
+                                <option value="Medium">Growth Medium</option>
                             </select>
+                        </div>
+
+                        <div id="growth-medium-section" class="hidden p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                            <label for="log-growth-medium" class="block text-xs font-semibold text-slate-600 dark:text-slate-300">New growing medium / setup</label>
+                            <input type="text" id="log-growth-medium" placeholder="e.g. coco coir, soil, hydroponics, AutoPot" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Saving this entry updates the medium shown in the plant details and profile card.</p>
                         </div>
 
                         <!-- Tank Volume Fill Input (Shown when Feed or Water is selected) -->
@@ -1510,6 +1517,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${p.notes || 'No notes added.'}</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${p.medium || 'Not specified'}</strong></p>
                                 <span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-2">
                                     <i class="fa-solid fa-book-open mr-1 text-[10px]"></i> ${p.logs ? p.logs.length : 0} Growth Logs
                                 </span>
@@ -1727,6 +1735,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const logType = document.getElementById('log-type').value;
             const librarySec = document.getElementById('nutrient-library-section');
             const tankSec = document.getElementById('tank-volume-section');
+            const mediumSec = document.getElementById('growth-medium-section');
+            if (mediumSec) mediumSec.classList.toggle('hidden', logType !== 'Medium');
             
             if (logType === 'Feed') {
                 librarySec.classList.remove('hidden');
@@ -1994,6 +2004,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const type = document.getElementById('log-type').value;
             const tankVol = document.getElementById('tank-volume-amount').value;
             const tankUnit = document.getElementById('tank-volume-unit').value;
+            const newMedium = document.getElementById('log-growth-medium').value.trim();
             let text = document.getElementById('log-text').value;
 
             if (type === 'Feed') {
@@ -2013,16 +2024,32 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const p = plants.find(item => item.id === plantId);
             if (!p) return;
 
+            if (type === 'Medium') {
+                if (!newMedium) {
+                    alert('Please enter the new growing medium or setup.');
+                    document.getElementById('log-growth-medium').focus();
+                    return;
+                }
+                const previousMedium = p.medium || 'Not specified';
+                p.medium = newMedium;
+                text = (text.trim() ? text.trim() + ' ' : '') + '(Growing medium changed from ' + previousMedium + ' to ' + newMedium + '.)';
+            }
+
             if (!p.logs) p.logs = [];
             const newLog = { id: 'log_' + Date.now(), date, type, text };
             p.logs.unshift(newLog);
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
+            if (type === 'Medium') await syncPlantToCloud(p);
             await syncLogToCloud(plantId, newLog);
 
             renderJournalLogs(p);
+            document.getElementById('journal-medium').textContent = p.medium || 'Not specified';
             renderPlants();
             document.getElementById('log-text').value = '';
+            document.getElementById('log-growth-medium').value = '';
+            document.getElementById('log-type').value = 'Growth';
+            toggleNutrientLibraryView();
             document.getElementById('tank-volume-amount').value = '';
             document.getElementById('nutrient-watering-can-enabled').checked = false;
             document.getElementById('watering-can-capacity').value = '';
