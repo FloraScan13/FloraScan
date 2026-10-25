@@ -292,6 +292,13 @@ textarea {
 
             <!-- Appearance Settings -->
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                <div class="space-y-3">
+                    <div>
+                        <h4 class="text-sm font-bold">Colour themes</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Choose a ready-made combination. It applies straight away.</p>
+                    </div>
+                    <div id="appearance-presets" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                </div>
                 <h3 class="text-base font-bold flex items-center space-x-2">
                     <i class="fa-solid fa-palette text-emerald-600"></i>
                     <span>Appearance</span>
@@ -949,7 +956,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             supabaseUrl: '',
             supabaseKey: '',
             theme: 'system',
-            accentColor: 'green'
+            accentColor: 'green',
+            appearancePreset: 'garden'
         };
 
         let supabaseClient = null;
@@ -1249,11 +1257,57 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const accentInput = document.getElementById('setting-accent-color');
             if (themeInput) themeInput.value = theme;
             if (accentInput) accentInput.value = accent;
+            document.querySelectorAll('.appearance-preset').forEach(button => {
+                const selected = button.dataset.preset === (appSettings.appearancePreset || 'garden');
+                button.classList.toggle('ring-2', selected);
+                button.classList.toggle('ring-emerald-500', selected);
+                const check = button.querySelector('.appearance-preset-check');
+                if (check) check.classList.toggle('hidden', !selected);
+            });
+        }
+
+        const FLORA_APPEARANCE_PRESETS = {
+            garden: { name: 'Garden Fresh', theme: 'light', accentColor: 'green', preview: ['#f0fdf4', '#16a34a', '#14532d'] },
+            ocean: { name: 'Coastal Calm', theme: 'light', accentColor: 'blue', preview: ['#eff6ff', '#2563eb', '#1e3a8a'] },
+            lavender: { name: 'Lavender Bloom', theme: 'light', accentColor: 'purple', preview: ['#faf5ff', '#9333ea', '#581c87'] },
+            rose: { name: 'Rose Garden', theme: 'light', accentColor: 'rose', preview: ['#fff1f2', '#e11d48', '#881337'] },
+            harvest: { name: 'Autumn Harvest', theme: 'light', accentColor: 'amber', preview: ['#fffbeb', '#d97706', '#78350f'] },
+            midnight: { name: 'Midnight Fern', theme: 'dark', accentColor: 'green', preview: ['#0f172a', '#22c55e', '#bbf7d0'] },
+            twilight: { name: 'Twilight Ocean', theme: 'dark', accentColor: 'blue', preview: ['#0f172a', '#3b82f6', '#bfdbfe'] },
+            berry: { name: 'Berry Night', theme: 'dark', accentColor: 'rose', preview: ['#1f172a', '#f43f5e', '#fecdd3'] }
+        };
+
+        function renderAppearancePresets() {
+            const container = document.getElementById('appearance-presets');
+            if (!container) return;
+            container.innerHTML = Object.entries(FLORA_APPEARANCE_PRESETS).map(([key, preset]) => {
+                const swatches = preset.preview.map(colour => '<span class="block h-5 flex-1 rounded-md border border-black/5" style="background:' + colour + '"></span>').join('');
+                return '<button type="button" onclick="selectAppearancePreset(\'' + key + '\')" class="appearance-preset text-left rounded-xl border border-slate-200 dark:border-slate-700 p-3 hover:border-emerald-500 transition focus:outline-none focus:ring-2 focus:ring-emerald-500" data-preset="' + key + '">' +
+                    '<span class="flex items-center justify-between gap-2"><span class="text-sm font-semibold">' + preset.name + '</span><span class="appearance-preset-check text-emerald-600 text-xs font-bold hidden"><i class="fa-solid fa-check"></i> Selected</span></span>' +
+                    '<span class="flex gap-1.5 mt-3" aria-hidden="true">' + swatches + '</span>' +
+                    '<span class="block mt-2 text-xs text-slate-500 dark:text-slate-400">' + (preset.theme === 'dark' ? 'Dark mode' : 'Light mode') + ' · ' + preset.accentColor.charAt(0).toUpperCase() + preset.accentColor.slice(1) + ' accents</span></button>';
+            }).join('');
+            applyAppearance();
+        }
+
+        function selectAppearancePreset(presetKey) {
+            const preset = FLORA_APPEARANCE_PRESETS[presetKey];
+            if (!preset) return;
+            appSettings.appearancePreset = presetKey;
+            appSettings.theme = preset.theme;
+            appSettings.accentColor = preset.accentColor;
+            const themeInput = document.getElementById('setting-theme');
+            const accentInput = document.getElementById('setting-accent-color');
+            if (themeInput) themeInput.value = preset.theme;
+            if (accentInput) accentInput.value = preset.accentColor;
+            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            applyAppearance();
         }
 
         function saveAppearanceSettings() {
             appSettings.theme = document.getElementById('setting-theme').value;
             appSettings.accentColor = document.getElementById('setting-accent-color').value;
+            appSettings.appearancePreset = 'custom';
             localStorage.setItem('flora_settings', JSON.stringify(appSettings));
             applyAppearance();
         }
