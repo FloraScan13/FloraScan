@@ -1258,12 +1258,40 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
+        async function deleteJournalPhotoFiles(paths) {
+            const safePaths = [...new Set((Array.isArray(paths) ? paths : []).filter(path =>
+                typeof path === 'string' &&
+                path.startsWith(currentUser.id + '/') &&
+                !path.startsWith('data:') &&
+                !path.startsWith('blob:')
+            ))];
+            if (!safePaths.length) return;
+            const { error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).remove(safePaths);
+            if (error) throw error;
+        }
+
         async function deletePlantFromCloud(plantId) {
-            if (!supabaseClient || !currentUser) return;
+            if (!supabaseClient || !currentUser) return null;
             try {
-                await supabaseClient.from('plants').delete().eq('id', plantId).eq('user_id', currentUser.id);
+                const { data: logs, error: logsError } = await supabaseClient
+                    .from('plant_logs').select('id, photos')
+                    .eq('plant_id', plantId).eq('user_id', currentUser.id);
+                if (logsError) throw logsError;
+
+                const photoPaths = (logs || []).flatMap(log => Array.isArray(log.photos) ? log.photos : []);
+                await deleteJournalPhotoFiles(photoPaths);
+
+                const { error: deleteLogsError } = await supabaseClient
+                    .from('plant_logs').delete().eq('plant_id', plantId).eq('user_id', currentUser.id);
+                if (deleteLogsError) throw deleteLogsError;
+
+                const { error: deletePlantError } = await supabaseClient
+                    .from('plants').delete().eq('id', plantId).eq('user_id', currentUser.id);
+                if (deletePlantError) throw deletePlantError;
+                return true;
             } catch (err) {
-                console.error("Failed to delete plant from cloud:", err);
+                console.error("Failed to delete plant and journal photos from cloud:", err);
+                return false;
             }
         }
 
@@ -1286,11 +1314,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function deleteLogFromCloud(logId) {
-            if (!supabaseClient || !currentUser) return;
+            if (!supabaseClient || !currentUser) return null;
             try {
-                await supabaseClient.from('plant_logs').delete().eq('id', logId).eq('user_id', currentUser.id);
+                const { data: log, error: fetchError } = await supabaseClient
+                    .from('plant_logs').select('photos')
+                    .eq('id', logId).eq('user_id', currentUser.id).maybeSingle();
+                if (fetchError) throw fetchError;
+
+                await deleteJournalPhotoFiles(log && Array.isArray(log.photos) ? log.photos : []);
+
+                const { error: deleteError } = await supabaseClient
+                    .from('plant_logs').delete().eq('id', logId).eq('user_id', currentUser.id);
+                if (deleteError) throw deleteError;
+                return true;
             } catch (err) {
-                console.error("Failed to delete log from cloud:", err);
+                console.error("Failed to delete journal entry and photos from cloud:", err);
+                return false;
             }
         }
 
@@ -2196,7 +2235,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             p.logs = p.logs.filter((l, idx) => (l.id ? l.id !== logId : idx.toString() !== logId));
             localStorage.setItem('flora_plants', JSON.stringify(plants));
-            await deleteLogFromCloud(logId);
+            const cloudDeleteResult = await deleteLogFromCloud(logId);
+            if (cloudDeleteResult === false) {
+                alert("The journal entry was removed on this device, but cloud cleanup failed. The cloud entry and/or photos may still be present. Please try again after checking your connection.");
+            }
 
             renderJournalLogs(p);
             renderPlants();
@@ -2221,7 +2263,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const delId = pendingDeleteId;
             plants = plants.filter(p => p.id !== delId);
             localStorage.setItem('flora_plants', JSON.stringify(plants));
-            await deletePlantFromCloud(delId);
+            const cloudDeleteResult = await deletePlantFromCloud(delId);
+            if (cloudDeleteResult === false) {
+                alert("The plant was removed on this device, but cloud cleanup failed. Its cloud records and/or photos may still be present. Please try again after checking your connection.");
+            }
 
             renderPlants();
             closeDeleteModal();
