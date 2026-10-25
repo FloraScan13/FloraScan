@@ -420,9 +420,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     <!-- MODAL: ADD / EDIT PLANT -->
     <div id="plant-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white dark:bg-slate-800 max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-8">
-            <div class="px-6 py-4 bg-white text-slate-800 flex items-center justify-end border-b border-slate-200">
+            <div class="px-4 py-2 bg-white text-slate-800 flex items-center justify-end border-b border-slate-200">
                 <h3 id="modal-title" class="hidden">Add New Plant</h3>
-                <button onclick="closePlantModal()" class="text-slate-500 hover:text-slate-800 text-lg" aria-label="Close plant form"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="closePlantModal()" class="text-slate-500 hover:text-slate-800 text-base leading-none p-1" aria-label="Close plant form"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="plant-form" onsubmit="handlePlantSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
                 <input type="hidden" id="edit-plant-id">
@@ -510,8 +510,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     <!-- MODAL: PLANT DETAILS & GROWTH JOURNAL -->
     <div id="journal-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white dark:bg-slate-800 max-w-2xl w-full rounded-2xl shadow-xl overflow-hidden my-8">
-            <div id="journal-header" class="px-6 py-3 bg-white text-slate-800 flex items-center justify-end border-b border-slate-200">
-                <button onclick="closeJournalModal()" class="text-slate-500 hover:text-slate-800 text-lg" aria-label="Close journal"><i class="fa-solid fa-xmark"></i></button>
+            <div id="journal-header" class="px-4 py-2 bg-white text-slate-800 flex items-center justify-end border-b border-slate-200">
+                <button onclick="closeJournalModal()" class="text-slate-500 hover:text-slate-800 text-base leading-none p-1" aria-label="Close journal"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
                 <!-- Summary Card -->
