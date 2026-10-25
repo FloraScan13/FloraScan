@@ -684,6 +684,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
 
                         <textarea id="log-text" rows="2" required placeholder="Log details (e.g. topped main stem, harvested crisp Beth Alpha cucumbers)..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
+                        <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 space-y-2">
+                            <label for="journal-photo-input" class="block text-xs font-semibold text-slate-600 dark:text-slate-300"><i class="fa-solid fa-camera mr-1"></i> Add photos (up to 4)</label>
+                            <input id="journal-photo-input" type="file" accept="image/*" multiple onchange="previewJournalPhotos()" class="block w-full text-xs text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-emerald-800">
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Photos are resized to help save space in your plant journal.</p>
+                            <div id="journal-photo-preview" class="flex flex-wrap gap-2"></div>
+                        </div>
                         <div class="flex justify-end">
                             <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
                         </div>
@@ -1160,6 +1166,31 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         // Fetch plants from Supabase Cloud or Local Storage Fallback
+        const JOURNAL_PHOTO_BUCKET = 'journal-photos';
+
+        async function createJournalPhotoUrl(path) {
+            if (!supabaseClient || !path || path.startsWith('data:') || path.startsWith('blob:')) return path;
+            const { data, error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).createSignedUrl(path, 60 * 60 * 24 * 7);
+            if (error) {
+                console.error('Could not create journal photo URL:', error);
+                return '';
+            }
+            return data.signedUrl;
+        }
+
+        async function uploadJournalPhoto(dataUrl, plantId, logId, index) {
+            if (!supabaseClient || !currentUser) throw new Error('Sign in to Supabase before syncing journal photos across devices.');
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+            const path = currentUser.id + '/' + plantId + '/' + logId + '/' + index + '.jpg';
+            const { error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).upload(path, blob, {
+                contentType: 'image/jpeg',
+                upsert: true
+            });
+            if (error) throw error;
+            return path;
+        }
+
         async function fetchPlantsFromCloudOrLocal() {
             if (supabaseClient && currentUser) {
                 try {
@@ -1176,7 +1207,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             .eq('user_id', currentUser.id)
                             .order('created_at', { ascending: false });
 
-                        plants = dbPlants.map(p => ({
+                        plants = await Promise.all(dbPlants.map(async p => ({
                             id: p.id,
                             name: p.name,
                             variety: p.variety,
@@ -1185,8 +1216,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             date: p.date,
                             medium: p.medium,
                             notes: p.notes,
-                            logs: (dbLogs || []).filter(l => l.plant_id === p.id)
-                        }));
+                            logs: await Promise.all((dbLogs || []).filter(l => l.plant_id === p.id).map(async l => {
+                                const photoPaths = Array.isArray(l.photos) ? l.photos : [];
+                                const photoUrls = await Promise.all(photoPaths.map(createJournalPhotoUrl));
+                                return { ...l, photos: photoUrls.filter(Boolean), photoPaths };
+                            }))
+                        })));
                         localStorage.setItem('flora_plants', JSON.stringify(plants));
                         return;
                     }
@@ -1228,14 +1263,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function syncLogToCloud(plantId, log) {
             if (!supabaseClient || !currentUser) return;
             try {
-                await supabaseClient.from('plant_logs').upsert({
+                const { error } = await supabaseClient.from('plant_logs').upsert({
                     id: log.id,
                     plant_id: plantId,
                     user_id: currentUser.id,
                     date: log.date,
                     type: log.type,
-                    text: log.text
+                    text: log.text,
+                    photos: Array.isArray(log.photoPaths) ? log.photoPaths : []
                 });
+                if (error) throw error;
             } catch (err) {
                 console.error("Failed to sync log to cloud:", err);
             }
@@ -1970,6 +2007,45 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-modal').classList.add('hidden');
         }
 
+        function previewJournalPhotos() {
+            const input = document.getElementById('journal-photo-input');
+            const preview = document.getElementById('journal-photo-preview');
+            const files = Array.from(input.files || []);
+            if (files.length > 4) {
+                alert('Please choose up to 4 photos per journal entry.');
+                input.value = '';
+                preview.innerHTML = '';
+                return;
+            }
+            preview.innerHTML = files.map(file => {
+                const url = URL.createObjectURL(file);
+                return '<img src="' + url + '" alt="Selected journal photo preview" class="w-16 h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-700">';
+            }).join('');
+        }
+
+        function compressJournalPhoto(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error('Could not read photo.'));
+                reader.onload = () => {
+                    const image = new Image();
+                    image.onerror = () => reject(new Error('Could not process photo.'));
+                    image.onload = () => {
+                        const maxSide = 1200;
+                        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(image.width * scale));
+                        canvas.height = Math.max(1, Math.round(image.height * scale));
+                        const context = canvas.getContext('2d');
+                        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.72));
+                    };
+                    image.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         function renderJournalLogs(p) {
             const container = document.getElementById('journal-logs-container');
             if (!p.logs || p.logs.length === 0) {
@@ -1985,6 +2061,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <span class="text-[10px] text-slate-400">• ${log.date}</span>
                         </div>
                         <p class="text-slate-600 dark:text-slate-400">${log.text}</p>
+                        ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a>').join('') + '</div>' : ''}
                     </div>
                     <button onclick="deleteJournalLog('${p.id}', '${log.id || idx}')" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button>
                 </div>
@@ -1999,6 +2076,29 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const tankVol = document.getElementById('tank-volume-amount').value;
             const tankUnit = document.getElementById('tank-volume-unit').value;
             const newMedium = document.getElementById('log-growth-medium').value.trim();
+            const photoFiles = Array.from(document.getElementById('journal-photo-input').files || []);
+            if (photoFiles.length > 4) {
+                alert('Please choose up to 4 photos per journal entry.');
+                return;
+            }
+            let photos = [];
+            let photoPaths = [];
+            try {
+                photos = await Promise.all(photoFiles.map(compressJournalPhoto));
+                if (photos.length && supabaseClient && currentUser) {
+                    const logId = 'log_' + Date.now();
+                    photoPaths = await Promise.all(photos.map((photo, index) => uploadJournalPhoto(photo, plantId, logId, index)));
+                    photos = await Promise.all(photoPaths.map(createJournalPhotoUrl));
+                    if (photos.some(photo => !photo)) throw new Error('Could not prepare uploaded photo previews.');
+                    window.pendingJournalLogId = logId;
+                } else if (photos.length) {
+                    alert('These photos will be saved on this device only. To sync them across devices, connect and sign in to Supabase and apply the journal photo storage setup.');
+                }
+            } catch (error) {
+                console.error('Journal photo upload failed:', error);
+                alert('Could not upload journal photos. Check your Supabase connection and photo storage setup, then try again. No journal entry was saved.');
+                return;
+            }
             let text = document.getElementById('log-text').value;
 
             if (type === 'Feed') {
@@ -2030,7 +2130,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
 
             if (!p.logs) p.logs = [];
-            const newLog = { id: 'log_' + Date.now(), date, type, text };
+            const logId = window.pendingJournalLogId || ('log_' + Date.now());
+            window.pendingJournalLogId = null;
+            const newLog = { id: logId, date, type, text, ...(photos.length ? { photos } : {}), ...(photoPaths.length ? { photoPaths } : {}) };
             p.logs.unshift(newLog);
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
@@ -2041,6 +2143,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-medium').textContent = p.medium || 'Not specified';
             renderPlants();
             document.getElementById('log-text').value = '';
+            document.getElementById('journal-photo-input').value = '';
+            document.getElementById('journal-photo-preview').innerHTML = '';
             document.getElementById('log-growth-medium').value = '';
             document.getElementById('log-type').value = 'Growth';
             toggleNutrientLibraryView();
