@@ -552,7 +552,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <div id="journal-color-dot" class="w-4 h-4 rounded-full border border-white/60 shadow-sm"></div>
                     <h3 id="journal-title" class="text-lg font-bold">Plant Growth Journal</h3>
                 </div>
-                <button onclick="closeJournalModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex items-center gap-2">
+                    <button onclick="downloadPlantJournalPDF(document.getElementById('log-plant-id').value)" class="bg-white/15 hover:bg-white/25 text-white px-3 py-2 rounded-lg text-xs font-semibold transition" title="Export this plant journal as a PDF"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button>
+                    <button onclick="closeJournalModal()" class="text-white/80 hover:text-white text-lg" aria-label="Close journal"><i class="fa-solid fa-xmark"></i></button>
+                </div>
             </div>
             <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
                 <!-- Summary Card -->
@@ -1877,6 +1880,86 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             toggleNutrientLibraryView();
             renderJournalLogs(p);
             document.getElementById('journal-modal').classList.remove('hidden');
+        }
+
+        function escapePDFHTML(value) {
+            return String(value == null ? '' : value).replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[character]));
+        }
+
+        function downloadPlantJournalPDF(plantId) {
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            if (!plant) {
+                alert('Could not find this plant journal. Please close and reopen it, then try again.');
+                return;
+            }
+
+            const logs = Array.isArray(plant.logs) ? [...plant.logs] : [];
+            logs.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+            const entriesHTML = logs.length ? logs.map((log, index) => `
+                <article class="entry">
+                    <div class="entry-heading">
+                        <strong>${escapePDFHTML(log.type || 'Growth Update')}</strong>
+                        <span>${escapePDFHTML(log.date || 'Date not specified')}</span>
+                    </div>
+                    <p>${escapePDFHTML(log.text || 'No notes recorded.').replace(/\n/g, '<br>')}</p>
+                </article>
+            `).join('') : '<p class="empty">No journal entries have been recorded for this plant yet.</p>';
+
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert('Your browser blocked the PDF window. Please allow pop-ups for FloraScan and try again.');
+                return;
+            }
+
+            const title = escapePDFHTML(plant.name || 'Plant Journal');
+            const variety = escapePDFHTML(plant.variety || 'Standard Variety');
+            const date = escapePDFHTML(plant.date || 'Not specified');
+            const medium = escapePDFHTML(plant.medium || 'Not specified');
+            const color = escapePDFHTML(getCommonColorName(plant.hex));
+            const notes = escapePDFHTML(plant.notes || 'No initial notes recorded.');
+            const generated = escapePDFHTML(new Date().toLocaleDateString());
+
+            printWindow.document.open();
+            printWindow.document.write(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title} - Plant Journal</title>
+<style>
+    @page { size: A4; margin: 18mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #1f2937; font-size: 11pt; line-height: 1.55; }
+    header { border-bottom: 3px solid #15803d; padding-bottom: 14px; margin-bottom: 20px; }
+    .brand { color: #15803d; font-size: 10pt; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+    h1 { font-size: 25pt; margin: 6px 0 2px; overflow-wrap: anywhere; }
+    .subtitle { color: #64748b; margin: 0; }
+    h2 { font-size: 15pt; margin: 22px 0 10px; border-bottom: 1px solid #d1d5db; padding-bottom: 5px; }
+    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 14px; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .detail-label { color: #64748b; font-size: 9pt; text-transform: uppercase; letter-spacing: .5px; }
+    .detail-value { font-weight: 600; overflow-wrap: anywhere; }
+    .notes { white-space: normal; overflow-wrap: anywhere; }
+    .entry { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin: 10px 0; break-inside: avoid; }
+    .entry-heading { display: flex; justify-content: space-between; gap: 14px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+    .entry-heading span { color: #64748b; white-space: nowrap; font-size: 9.5pt; }
+    .entry p { margin: 8px 0 0; overflow-wrap: anywhere; }
+    .empty { color: #64748b; font-style: italic; }
+    footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 9pt; }
+    @media print { .no-print { display: none; } }
+</style></head><body>
+<header><div class="brand">FloraScan · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
+<section class="details">
+<div><div class="detail-label">Planting date</div><div class="detail-value">${date}</div></div>
+<div><div class="detail-label">Growing medium</div><div class="detail-value">${medium}</div></div>
+<div><div class="detail-label">Tag colour</div><div class="detail-value">${color}</div></div>
+<div><div class="detail-label">Journal entries</div><div class="detail-value">${logs.length}</div></div>
+</section>
+<h2>Plant notes</h2><p class="notes">${notes.replace(/\n/g, '<br>')}</p>
+<h2>Growth journal</h2>${entriesHTML}
+<footer>Exported from FloraScan on ${generated}.</footer>
+<div class="no-print" style="margin-top:24px"><button onclick="window.print()" style="background:#15803d;color:white;border:0;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer">Print / Save as PDF</button> <button onclick="window.close()" style="padding:10px 16px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer">Close</button><p style="color:#64748b;font-size:12px">In the print dialog, choose “Save as PDF” as the destination to download your journal.</p></div>
+<script>window.addEventListener('load', () => setTimeout(() => window.print(), 350));<\/script>
+</body></html>`);
+            printWindow.document.close();
         }
 
         function closeJournalModal() {
