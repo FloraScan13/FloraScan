@@ -559,6 +559,35 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 </label>
                                 <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Select & adjust dosage per product</span>
                             </div>
+
+                            <!-- Optional watering-can details for nutrient mixing -->
+                            <div class="rounded-lg border border-emerald-200 dark:border-emerald-800/60 bg-white/70 dark:bg-slate-950/30 p-2.5 space-y-2">
+                                <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer">
+                                    <input type="checkbox" id="nutrient-watering-can-enabled" onchange="toggleWateringCanFields()" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                    <i class="fa-solid fa-jug-detergent text-emerald-600"></i>
+                                    <span>Use watering can for this nutrient mix</span>
+                                </label>
+                                <div id="nutrient-watering-can-fields" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="watering-can-capacity" class="block text-[11px] text-slate-500 mb-0.5">Watering can capacity</label>
+                                        <input type="number" id="watering-can-capacity" min="0.1" step="0.1" placeholder="e.g. 10" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                                    </div>
+                                    <div>
+                                        <label for="watering-can-fill" class="block text-[11px] text-slate-500 mb-0.5">Water volume in can</label>
+                                        <input type="number" id="watering-can-fill" min="0.1" step="0.1" placeholder="e.g. 8" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label for="watering-can-unit" class="block text-[11px] text-slate-500 mb-0.5">Volume unit (capacity and fill)</label>
+                                        <select id="watering-can-unit" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                                            <option value="L">Liters (L)</option>
+                                            <option value="gal">Gallons (gal)</option>
+                                            <option value="ml">Milliliters (ml)</option>
+                                        </select>
+                                    </div>
+                                    <p class="sm:col-span-2 text-[10px] text-slate-500 dark:text-slate-400">Capacity and fill volume will be saved with the nutrient mixing details in your journal entry.</p>
+                                </div>
+                            </div>
+
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-[11px] text-slate-500 mb-0.5">Brand</label>
@@ -1560,6 +1589,36 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
+        function toggleWateringCanFields() {
+            const enabled = document.getElementById('nutrient-watering-can-enabled').checked;
+            document.getElementById('nutrient-watering-can-fields').classList.toggle('hidden', !enabled);
+        }
+
+        // Returns a journal-ready summary, or null when enabled fields are invalid.
+        function getWateringCanSummary() {
+            const enabled = document.getElementById('nutrient-watering-can-enabled').checked;
+            if (!enabled) return '';
+
+            const capacity = Number(document.getElementById('watering-can-capacity').value);
+            const fill = Number(document.getElementById('watering-can-fill').value);
+            const unit = document.getElementById('watering-can-unit').value;
+
+            if (!Number.isFinite(capacity) || capacity <= 0) {
+                alert('Enter a watering-can capacity greater than zero.');
+                return null;
+            }
+            if (!Number.isFinite(fill) || fill <= 0) {
+                alert('Enter a water fill volume greater than zero.');
+                return null;
+            }
+            if (fill > capacity) {
+                alert('Water fill volume cannot exceed watering-can capacity.');
+                return null;
+            }
+
+            return `Watering can: ${fill} ${unit} water in a ${capacity} ${unit} capacity can`;
+        }
+
         function populateNutrientBrandOptions() {
             const brandSelect = document.getElementById('nutrient-brand-select');
             if (!brandSelect) return;
@@ -1629,16 +1688,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             const tankVol = document.getElementById('tank-volume-amount').value;
             const tankUnit = document.getElementById('tank-volume-unit').value;
-            
+            const wateringCanSummary = getWateringCanSummary();
+            if (wateringCanSummary === null) return;
+
             const logTextarea = document.getElementById('log-text');
             const summaryParts = selectedProducts.map(item => `${item.product.name} (${item.amount})`);
-            
+
             let nutrientSummary = '';
             if (tankVol) {
                 nutrientSummary = `Filled tank with ${tankVol} ${tankUnit} water. Fed with ${brandName}: ${summaryParts.join(', ')}.`;
             } else {
                 nutrientSummary = `Fed with ${brandName}: ${summaryParts.join(', ')}.`;
             }
+            if (wateringCanSummary) nutrientSummary = `${wateringCanSummary}. ${nutrientSummary}`;
 
             if (logTextarea.value.trim().length > 0) {
                 logTextarea.value += `\n${nutrientSummary}`;
@@ -1702,6 +1764,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const tankUnit = document.getElementById('tank-volume-unit').value;
             let text = document.getElementById('log-text').value;
 
+            if (type === 'Feed') {
+                const wateringCanSummary = getWateringCanSummary();
+                if (wateringCanSummary === null) return;
+                // The apply button may already have inserted these details; avoid duplicating them.
+                if (wateringCanSummary && !text.includes(wateringCanSummary)) {
+                    text = `${wateringCanSummary}. ${text}`.trim();
+                }
+            }
+
             if (type === 'Water' && tankVol) {
                 const waterPrefix = `Filled tank with ${tankVol} ${tankUnit} pure water. `;
                 text = waterPrefix + text;
@@ -1721,6 +1792,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             renderPlants();
             document.getElementById('log-text').value = '';
             document.getElementById('tank-volume-amount').value = '';
+            document.getElementById('nutrient-watering-can-enabled').checked = false;
+            document.getElementById('watering-can-capacity').value = '';
+            document.getElementById('watering-can-fill').value = '';
+            toggleWateringCanFields();
         }
 
         async function deleteJournalLog(plantId, logId) {
