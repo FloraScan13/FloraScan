@@ -1166,6 +1166,31 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         // Fetch plants from Supabase Cloud or Local Storage Fallback
+        const JOURNAL_PHOTO_BUCKET = 'journal-photos';
+
+        async function createJournalPhotoUrl(path) {
+            if (!supabaseClient || !path || path.startsWith('data:') || path.startsWith('blob:')) return path;
+            const { data, error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).createSignedUrl(path, 60 * 60 * 24 * 7);
+            if (error) {
+                console.error('Could not create journal photo URL:', error);
+                return '';
+            }
+            return data.signedUrl;
+        }
+
+        async function uploadJournalPhoto(dataUrl, plantId, logId, index) {
+            if (!supabaseClient || !currentUser) throw new Error('Sign in to Supabase before syncing journal photos across devices.');
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+            const path = currentUser.id + '/' + plantId + '/' + logId + '/' + index + '.jpg';
+            const { error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).upload(path, blob, {
+                contentType: 'image/jpeg',
+                upsert: true
+            });
+            if (error) throw error;
+            return path;
+        }
+
         async function fetchPlantsFromCloudOrLocal() {
             if (supabaseClient && currentUser) {
                 try {
@@ -1182,7 +1207,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             .eq('user_id', currentUser.id)
                             .order('created_at', { ascending: false });
 
-                        plants = dbPlants.map(p => ({
+                        plants = await Promise.all(dbPlants.map(async p => ({
                             id: p.id,
                             name: p.name,
                             variety: p.variety,
@@ -1191,8 +1216,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             date: p.date,
                             medium: p.medium,
                             notes: p.notes,
-                            logs: (dbLogs || []).filter(l => l.plant_id === p.id)
-                        }));
+                            logs: await Promise.all((dbLogs || []).filter(l => l.plant_id === p.id).map(async l => {
+                                const photoPaths = Array.isArray(l.photos) ? l.photos : [];
+                                const photoUrls = await Promise.all(photoPaths.map(createJournalPhotoUrl));
+                                return { ...l, photos: photoUrls.filter(Boolean), photoPaths };
+                            }))
+                        })));
                         localStorage.setItem('flora_plants', JSON.stringify(plants));
                         return;
                     }
@@ -1234,14 +1263,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function syncLogToCloud(plantId, log) {
             if (!supabaseClient || !currentUser) return;
             try {
-                await supabaseClient.from('plant_logs').upsert({
+                const { error } = await supabaseClient.from('plant_logs').upsert({
                     id: log.id,
                     plant_id: plantId,
                     user_id: currentUser.id,
                     date: log.date,
                     type: log.type,
-                    text: log.text
+                    text: log.text,
+                    photos: Array.isArray(log.photoPaths) ? log.photoPaths : []
                 });
+                if (error) throw error;
             } catch (err) {
                 console.error("Failed to sync log to cloud:", err);
             }
@@ -2051,10 +2082,21 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return;
             }
             let photos = [];
+            let photoPaths = [];
             try {
                 photos = await Promise.all(photoFiles.map(compressJournalPhoto));
+                if (photos.length && supabaseClient && currentUser) {
+                    const logId = 'log_' + Date.now();
+                    photoPaths = await Promise.all(photos.map((photo, index) => uploadJournalPhoto(photo, plantId, logId, index)));
+                    photos = await Promise.all(photoPaths.map(createJournalPhotoUrl));
+                    if (photos.some(photo => !photo)) throw new Error('Could not prepare uploaded photo previews.');
+                    window.pendingJournalLogId = logId;
+                } else if (photos.length) {
+                    alert('These photos will be saved on this device only. To sync them across devices, connect and sign in to Supabase and apply the journal photo storage setup.');
+                }
             } catch (error) {
-                alert('One or more photos could not be processed. Please try another image.');
+                console.error('Journal photo upload failed:', error);
+                alert('Could not upload journal photos. Check your Supabase connection and photo storage setup, then try again. No journal entry was saved.');
                 return;
             }
             let text = document.getElementById('log-text').value;
@@ -2088,7 +2130,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
 
             if (!p.logs) p.logs = [];
-            const newLog = { id: 'log_' + Date.now(), date, type, text, ...(photos.length ? { photos } : {}) };
+            const logId = window.pendingJournalLogId || ('log_' + Date.now());
+            window.pendingJournalLogId = null;
+            const newLog = { id: logId, date, type, text, ...(photos.length ? { photos } : {}), ...(photoPaths.length ? { photoPaths } : {}) };
             p.logs.unshift(newLog);
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
