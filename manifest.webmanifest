@@ -1,0 +1,18 @@
+{
+  "name": "FloraScan - Plant Journal",
+  "short_name": "FloraScan",
+  "description": "Track your plants and growth journals with FloraScan.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#15803d",
+  "icons": [
+    {
+      "src": "./leaf-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
