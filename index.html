@@ -43,6 +43,26 @@
             background: rgba(156, 163, 175, 0.4);
             border-radius: 9999px;
         }
+        /* Appearance preferences: theme accents override the app's default emerald utilities. */
+        body[data-accent="green"] { --flora-50:#f0fdf4; --flora-100:#dcfce7; --flora-400:#4ade80; --flora-500:#22c55e; --flora-600:#16a34a; --flora-700:#15803d; --flora-800:#166534; --flora-900:#14532d; }
+        body[data-accent="blue"] { --flora-50:#eff6ff; --flora-100:#dbeafe; --flora-400:#60a5fa; --flora-500:#3b82f6; --flora-600:#2563eb; --flora-700:#1d4ed8; --flora-800:#1e40af; --flora-900:#1e3a8a; }
+        body[data-accent="purple"] { --flora-50:#faf5ff; --flora-100:#f3e8ff; --flora-400:#c084fc; --flora-500:#a855f7; --flora-600:#9333ea; --flora-700:#7e22ce; --flora-800:#6b21a8; --flora-900:#581c87; }
+        body[data-accent="rose"] { --flora-50:#fff1f2; --flora-100:#ffe4e6; --flora-400:#fb7185; --flora-500:#f43f5e; --flora-600:#e11d48; --flora-700:#be123c; --flora-800:#9f1239; --flora-900:#881337; }
+        body[data-accent="amber"] { --flora-50:#fffbeb; --flora-100:#fef3c7; --flora-400:#fbbf24; --flora-500:#f59e0b; --flora-600:#d97706; --flora-700:#b45309; --flora-800:#92400e; --flora-900:#78350f; }
+        body[data-accent] [class~="bg-emerald-600"] { background-color: var(--flora-600) !important; }
+        body[data-accent] [class~="hover:bg-emerald-700"]:hover { background-color: var(--flora-700) !important; }
+        body[data-accent] [class~="bg-emerald-700"] { background-color: var(--flora-700) !important; }
+        body[data-accent] [class~="hover:bg-emerald-800"]:hover { background-color: var(--flora-800) !important; }
+        body[data-accent] [class~="text-emerald-600"] { color: var(--flora-600) !important; }
+        body[data-accent] [class~="text-emerald-700"] { color: var(--flora-700) !important; }
+        body[data-accent] [class~="text-emerald-800"] { color: var(--flora-800) !important; }
+        body[data-accent] [class~="text-emerald-400"] { color: var(--flora-400) !important; }
+        body[data-accent] [class~="bg-emerald-50"] { background-color: var(--flora-50) !important; }
+        body[data-accent] [class~="bg-emerald-100"] { background-color: var(--flora-100) !important; }
+        body[data-accent] [class~="border-emerald-500"] { border-color: var(--flora-500) !important; }
+        body[data-accent] [class~="ring-emerald-500"] { --tw-ring-color: var(--flora-500) !important; }
+        body[data-accent] [class~="focus:ring-emerald-500"]:focus { --tw-ring-color: var(--flora-500) !important; }
+
         .autocomplete-dropdown {
             max-height: 220px;
             overflow-y: auto;
@@ -267,6 +287,38 @@ textarea {
                     <button onclick="saveBrandingSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">
                         Save Profile Preferences
                     </button>
+                </div>
+            </div>
+
+            <!-- Appearance Settings -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                <h3 class="text-base font-bold flex items-center space-x-2">
+                    <i class="fa-solid fa-palette text-emerald-600"></i>
+                    <span>Appearance</span>
+                </h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Personalise the app colours and choose light or dark mode. Your choices are saved on this device.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="setting-theme" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Colour mode</label>
+                        <select id="setting-theme" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                            <option value="system">Use device setting</option>
+                            <option value="light">Light mode</option>
+                            <option value="dark">Dark mode</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="setting-accent-color" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Accent colour</label>
+                        <select id="setting-accent-color" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                            <option value="green">Garden green</option>
+                            <option value="blue">Ocean blue</option>
+                            <option value="purple">Lavender purple</option>
+                            <option value="rose">Rose pink</option>
+                            <option value="amber">Warm amber</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end pt-1">
+                    <button onclick="saveAppearanceSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Appearance</button>
                 </div>
             </div>
 
@@ -895,7 +947,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             username: '@kitchengardener',
             logoUrl: '',
             supabaseUrl: '',
-            supabaseKey: ''
+            supabaseKey: '',
+            theme: 'system',
+            accentColor: 'green'
         };
 
         let supabaseClient = null;
@@ -933,6 +987,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let activeMatchStream = null;
 
         window.addEventListener('DOMContentLoaded', async () => {
+            applyAppearance();
             applyBranding();
             renderIconPickerGrid();
             initSupabaseClient();
@@ -1171,6 +1226,45 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 await supabaseClient.from('plant_logs').delete().eq('id', logId).eq('user_id', currentUser.id);
             } catch (err) {
                 console.error("Failed to delete log from cloud:", err);
+            }
+        }
+
+        const FLORA_ACCENT_PALETTES = {
+            green:  { 50: '#f0fdf4', 100: '#dcfce7', 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', 700: '#15803d', 800: '#166534', 900: '#14532d' },
+            blue:   { 50: '#eff6ff', 100: '#dbeafe', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
+            purple: { 50: '#faf5ff', 100: '#f3e8ff', 400: '#c084fc', 500: '#a855f7', 600: '#9333ea', 700: '#7e22ce', 800: '#6b21a8', 900: '#581c87' },
+            rose:   { 50: '#fff1f2', 100: '#ffe4e6', 400: '#fb7185', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c', 800: '#9f1239', 900: '#881337' },
+            amber:  { 50: '#fffbeb', 100: '#fef3c7', 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706', 700: '#b45309', 800: '#92400e', 900: '#78350f' }
+        };
+
+        function applyAppearance() {
+            const theme = ['light', 'dark', 'system'].includes(appSettings.theme) ? appSettings.theme : 'system';
+            const accent = FLORA_ACCENT_PALETTES[appSettings.accentColor] ? appSettings.accentColor : 'green';
+            const darkMode = theme === 'dark' || (theme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', !!darkMode);
+            document.body.dataset.accent = accent;
+            document.body.dataset.theme = theme;
+
+            const themeInput = document.getElementById('setting-theme');
+            const accentInput = document.getElementById('setting-accent-color');
+            if (themeInput) themeInput.value = theme;
+            if (accentInput) accentInput.value = accent;
+        }
+
+        function saveAppearanceSettings() {
+            appSettings.theme = document.getElementById('setting-theme').value;
+            appSettings.accentColor = document.getElementById('setting-accent-color').value;
+            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            applyAppearance();
+        }
+
+        // Keep system theme changes in sync while "Use device setting" is selected.
+        if (window.matchMedia) {
+            const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            if (systemThemeQuery.addEventListener) {
+                systemThemeQuery.addEventListener('change', () => {
+                    if (!appSettings.theme || appSettings.theme === 'system') applyAppearance();
+                });
             }
         }
 
