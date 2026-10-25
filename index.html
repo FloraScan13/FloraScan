@@ -995,6 +995,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let activeMatchStream = null;
 
         window.addEventListener('DOMContentLoaded', async () => {
+            renderAppearancePresets();
             applyAppearance();
             applyBranding();
             renderIconPickerGrid();
