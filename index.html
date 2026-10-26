@@ -257,10 +257,19 @@ textarea {
             padding: 12px 18px !important;
             min-height: 46px;
         }
-        #main-navigation-tabs button#tab-plants {
+        #main-navigation-tabs button[aria-current="page"] {
             background: #e4eadf !important;
             color: #294b34 !important;
+            border: 1px solid #d7dfd0 !important;
+            box-shadow: 0 1px 3px rgba(40,65,43,.08) !important;
+            font-weight: 600 !important;
+        }
+        #main-navigation-tabs button[aria-current="false"] {
+            background: transparent !important;
+            color: #526653 !important;
+            border-color: transparent !important;
             box-shadow: none !important;
+            font-weight: 500 !important;
         }
         #view-plants { gap: 20px !important; }
         #view-plants > .flex:first-child { margin-top: 6px; }
