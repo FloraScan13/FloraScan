@@ -330,7 +330,80 @@ textarea {
             color: #294b34 !important;
             border-color: #d7dfd0 !important;
         }
+        /* Plant cards: fully carry through the warm, botanical card treatment. */
+        #plants-grid .location-group {
+            background: #f0f2e8 !important;
+            border: 1px solid #dfe3d5 !important;
+            border-radius: 20px !important;
+            padding: 16px !important;
+            box-shadow: none !important;
+        }
+        #plants-grid .location-group-heading h3 {
+            color: #294b34 !important;
+            letter-spacing: -.015em;
+        }
+        #plants-grid .location-group-count { color: #718071 !important; }
+        #plants-grid .location-icon-button {
+            background: #fffef9 !important;
+            border-color: #d9ddcf !important;
+            color: #426047 !important;
+            border-radius: 11px !important;
+        }
+        #plants-grid .location-icon-button:hover {
+            background: #e4eadf !important;
+            border-color: #cbd7c5 !important;
+        }
+        #plants-grid .location-details {
+            color: #526653 !important;
+        }
+        #plants-grid .location-group .grid > div,
+        #plants-grid .location-group .plant-card,
         #plants-grid > div, #plants-grid article, .plant-card {
+            background: #fffef9 !important;
+            color: #294333 !important;
+            border: 1px solid #e1e1d5 !important;
+            border-radius: 18px !important;
+            box-shadow: 0 3px 12px rgba(40,65,43,.045) !important;
+            overflow: hidden;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        #plants-grid .location-group .grid > div:hover,
+        #plants-grid > div:hover, #plants-grid article:hover, .plant-card:hover {
+            border-color: #ccd8c6 !important;
+            box-shadow: 0 8px 22px rgba(40,65,43,.09) !important;
+            transform: translateY(-2px);
+        }
+        #plants-grid .location-group .grid > div > div:first-child {
+            background: #f8f8f1 !important;
+            border-color: #e8e9de !important;
+        }
+        #plants-grid .location-group .grid > div > div:last-child {
+            background: #f8f8f1 !important;
+            border-color: #e8e9de !important;
+        }
+        #plants-grid h3, #plants-grid h4, #plants-grid .font-bold {
+            color: #294333;
+        }
+        #plants-grid .crop-badge-container {
+            background: #eaf0e4 !important;
+            border: 1px solid #dce5d6 !important;
+            border-radius: 16px !important;
+            box-shadow: none !important;
+        }
+        #plants-grid .text-emerald-700, #plants-grid .text-emerald-800,
+        #plants-grid .text-emerald-600 {
+            color: #426b47 !important;
+        }
+        #plants-grid .text-slate-500, #plants-grid .text-slate-600 {
+            color: #718071 !important;
+        }
+        #plants-grid .border-slate-100, #plants-grid .border-slate-200 {
+            border-color: #e1e1d5 !important;
+        }
+        #plants-grid .bg-white {
+            background: #fffef9 !important;
+        }
+
             background: #fffef9 !important;
             color: #294333 !important;
             border: 1px solid #e1e1d5 !important;
