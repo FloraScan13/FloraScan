@@ -334,10 +334,19 @@ textarea {
             background: #edf0e7 !important;
             color: #294b34 !important;
         }
-        #main-navigation-tabs button#tab-plants {
+        #main-navigation-tabs button[aria-current="page"] {
             background: #e4eadf !important;
             color: #294b34 !important;
             border-color: #d7dfd0 !important;
+            box-shadow: 0 1px 3px rgba(40,65,43,.08) !important;
+            font-weight: 600 !important;
+        }
+        #main-navigation-tabs button[aria-current="false"] {
+            background: transparent !important;
+            color: #526653 !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+            font-weight: 500 !important;
         }
         /* Plant cards: fully carry through the warm, botanical card treatment. */
         #plants-grid .location-group {
@@ -803,7 +812,7 @@ textarea {
 
         <!-- Navigation Tabs -->
         <div id="main-navigation-tabs" class="flex space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl mb-6 text-sm font-medium">
-            <button onclick="switchTab('plants')" id="tab-plants" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-white dark:bg-slate-700 shadow-sm text-emerald-700 dark:text-emerald-400 font-semibold">
+            <button onclick="switchTab('plants')" id="tab-plants" aria-current="page" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-[#e4eadf] border border-[#d7dfd0] text-[#294b34] shadow-sm font-semibold">
                 <i class="fa-solid fa-seedling"></i>
                 <span>Plants</span>
             </button>
