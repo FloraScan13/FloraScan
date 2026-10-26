@@ -199,6 +199,12 @@ textarea {
                     <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
                     <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, color name, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
                 </div>
+                <div class="sm:w-56">
+                    <label for="plant-location-filter" class="sr-only">Filter by location</label>
+                    <select id="plant-location-filter" onchange="renderPlants()" class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                        <option value="">All locations</option>
+                    </select>
+                </div>
             </div>
 <div class="flex items-center justify-between mb-4">
     <h2 class="text-xl font-bold">My Plants</h2>
@@ -289,6 +295,19 @@ textarea {
                     <button onclick="saveBrandingSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">
                         Save Profile Preferences
                     </button>
+                </div>
+            </div>
+
+            <!-- Growing Locations Settings -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                <h3 class="text-base font-bold flex items-center space-x-2">
+                    <i class="fa-solid fa-location-dot text-emerald-600"></i>
+                    <span>Growing Locations</span>
+                </h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Create one location per line. Assign plants to places such as Grow Tent, Front Garden, Greenhouse or Windowsill.</p>
+                <textarea id="setting-plant-locations" rows="5" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="Grow Tent&#10;Front Garden&#10;Greenhouse"></textarea>
+                <div class="flex justify-end">
+                    <button onclick="savePlantLocations()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Locations</button>
                 </div>
             </div>
 
@@ -491,6 +510,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Growing Medium / Setup</label>
                         <input type="text" id="plant-medium" placeholder="e.g. AutoPot / Wicking Bed / Soil" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-location">Growing Location</label>
+                        <select id="plant-location" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></select>
+                    
                     </div>
                 </div>
 
@@ -944,6 +968,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             appearancePreset: 'garden'
         };
 
+        const DEFAULT_PLANT_LOCATIONS = ['Grow Tent', 'Front Garden', 'Back Garden', 'Greenhouse', 'Windowsill'];
+        let plantLocations = JSON.parse(localStorage.getItem('flora_plant_locations') || 'null') || [...DEFAULT_PLANT_LOCATIONS];
+
         let supabaseClient = null;
         let currentUser = null;
 
@@ -982,6 +1009,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             applyAppearance();
             applyBranding();
             renderIconPickerGrid();
+            renderPlantLocationControls();
             initSupabaseClient();
             await fetchPlantsFromCloudOrLocal();
             renderPlants();
@@ -1180,6 +1208,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             hex: p.hex,
                             date: p.date,
                             medium: p.medium,
+                            location: (JSON.parse(localStorage.getItem('flora_plants') || '[]').find(localPlant => localPlant.id === p.id) || {}).location || p.location || '',
                             notes: p.notes,
                             logs: await Promise.all((dbLogs || []).filter(l => l.plant_id === p.id).map(async l => {
                                 const photoPaths = Array.isArray(l.photos) ? l.photos : [];
@@ -1442,12 +1471,62 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (tabId !== 'plants') stopFormCamera();
         }
 
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
+        }
+
+        function renderPlantLocationControls(selectedLocation = '') {
+            const plantSelect = document.getElementById('plant-location');
+            const filterSelect = document.getElementById('plant-location-filter');
+            const settingsArea = document.getElementById('setting-plant-locations');
+            const currentFilter = filterSelect ? filterSelect.value : '';
+            if (plantSelect) {
+                const selected = selectedLocation || plantSelect.value || '';
+                plantSelect.innerHTML = '<option value="">Choose a location</option>' + plantLocations.map(location =>
+                    '<option value="' + escapeHtml(location) + '">' + escapeHtml(location) + '</option>'
+                ).join('');
+                plantSelect.value = plantLocations.includes(selected) ? selected : '';
+            }
+            if (filterSelect) {
+                filterSelect.innerHTML = '<option value="">All locations</option>' + plantLocations.map(location =>
+                    '<option value="' + escapeHtml(location) + '">' + escapeHtml(location) + '</option>'
+                ).join('');
+                filterSelect.value = plantLocations.includes(currentFilter) ? currentFilter : '';
+            }
+            if (settingsArea && document.activeElement !== settingsArea) settingsArea.value = plantLocations.join('\n');
+        }
+
+        function savePlantLocations() {
+            const raw = document.getElementById('setting-plant-locations').value;
+            const next = [...new Set(raw.split('\n').map(v => v.trim()).filter(Boolean))];
+            if (!next.length) {
+                alert('Please keep at least one growing location.');
+                return;
+            }
+            const removed = plantLocations.filter(location => !next.includes(location));
+            if (removed.length && plants.some(p => removed.includes(p.location))) {
+                const moveTo = next[0];
+                plants = plants.map(p => removed.includes(p.location) ? { ...p, location: moveTo } : p);
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+            }
+            plantLocations = next;
+            localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
+            renderPlantLocationControls();
+            renderPlants();
+            alert('Growing locations saved.');
+        }
+
         function renderPlants() {
             const query = document.getElementById('plant-search').value.toLowerCase();
             const container = document.getElementById('plants-grid');
             const emptyEl = document.getElementById('plants-empty');
+            const locationFilter = document.getElementById('plant-location-filter');
+            const selectedLocation = locationFilter ? locationFilter.value : '';
 
             let filtered = plants.filter(p => {
+                if (selectedLocation && (p.location || '') !== selectedLocation) return false;
                 const colorName = getCommonColorName(p.hex).toLowerCase();
                 return p.name.toLowerCase().includes(query) || 
                        (p.variety && p.variety.toLowerCase().includes(query)) || 
@@ -1472,6 +1551,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="min-w-0 pr-2">
                                 <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${p.name}</h4>
                                 <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate">${p.variety || 'Standard Variety'}</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate"><i class="fa-solid fa-location-dot mr-1"></i>${p.location || 'No location assigned'}</p>
                             </div>
                             <div class="flex items-center space-x-1 flex-shrink-0">
                                 <button onclick="event.stopPropagation(); openEditPlantModal('${p.id}')"  class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg transition" title="Edit Plant"><i class="fa-solid fa-pen text-xs"></i></button>
@@ -1512,6 +1592,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('modal-title').textContent = 'Add New Plant';
             document.getElementById('edit-plant-id').value = '';
             document.getElementById('plant-form').reset();
+            renderPlantLocationControls('');
             
             renderIconPickerGrid('cucumber');
 
@@ -1533,6 +1614,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-variety').value = p.variety || '';
             document.getElementById('plant-date').value = p.date || '';
             document.getElementById('plant-medium').value = p.medium || '';
+            renderPlantLocationControls(p.location || '');
             document.getElementById('plant-notes').value = p.notes || '';
             document.getElementById('form-color-hex').value = p.hex;
             document.getElementById('form-color-badge').style.backgroundColor = p.hex;
@@ -1604,6 +1686,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 hex: document.getElementById('form-color-hex').value,
                 date: document.getElementById('plant-date').value,
                 medium: document.getElementById('plant-medium').value,
+                location: document.getElementById('plant-location').value,
                 notes: document.getElementById('plant-notes').value,
                 logs: []
             };
