@@ -80,28 +80,21 @@
             .location-icon-button { min-height: 34px; width: 34px; height: 34px; }
         }
 
-        /* Keep location title, plant count and icon actions on one line. */
-        .location-group-toolbar { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; }
-        .location-group-heading { min-width: 0; }
-        .location-group-heading h3 { overflow-wrap: anywhere; }
-        .location-group-actions { flex-shrink: 0; margin-left: auto; }
+        /* Responsive location header: compact but not cramped on phones. */
+        .location-group-toolbar { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; }
+        .location-group-heading { display: flex; align-items: baseline; gap: 7px; min-width: 0; flex: 1 1 auto; }
+        .location-group-heading h3 { min-width: 0; overflow-wrap: anywhere; }
+        .location-group-count { flex-shrink: 0; white-space: nowrap; }
+        .location-group-actions { display: flex; align-items: center; gap: 5px; flex: 0 0 auto; margin-left: auto; }
+        .location-group-details { overflow-wrap: anywhere; }
         @media (max-width: 420px) {
             .location-group { padding: 10px; }
-            .location-group-toolbar { gap: 5px; }
-            .location-group-heading { gap: 5px; }
-            .location-group-heading h3 { font-size: 14px; line-height: 1.2; }
+            .location-group-toolbar { gap: 6px; }
+            .location-group-heading { flex-wrap: wrap; gap: 3px 6px; }
+            .location-group-heading h3 { font-size: 14px; line-height: 1.25; }
             .location-group-count { font-size: 10px; }
-            .location-icon-button { width: 30px; height: 30px; min-height: 30px; }
+            .location-icon-button { width: 32px; height: 32px; min-height: 32px; }
             .location-group-actions { gap: 4px; }
-        }
-
-        /* Responsive location group header and controls */
-        @media (max-width: 640px) {
-            .location-group { padding: 12px; }
-            .location-group-toolbar { align-items: stretch; }
-            .location-group-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
-            .location-group-actions button { min-width: 0; white-space: normal; line-height: 1.25; padding: 9px 8px; }
-            .location-group-details { overflow-wrap: anywhere; }
         }
 
         .autocomplete-dropdown {
