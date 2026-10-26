@@ -1646,11 +1646,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             emptyEl.classList.add('hidden');
 
-            const cardMarkup = p => {
+            const cardMarkup = (p, groupLocation) => {
                 const colorName = getCommonColorName(p.hex);
                 const svgMarkup = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
-                const plantLocation = (p.location || '').trim();
-                const sharedLocationDetails = plantLocation ? (locationDetails[plantLocation] || '') : '';
+                // Use the actual rendered group heading as the key, so every card in a group gets the same details.
+                const plantLocation = (groupLocation || p.location || '').trim();
+                const savedDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
+                const sharedLocationDetails = String(locationDetails[plantLocation] || savedDetails[plantLocation] || '');
                 return `
                     <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition overflow-hidden flex flex-col cursor-pointer">
                         <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
@@ -1710,7 +1712,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">${cards.length} ${cards.length === 1 ? 'plant' : 'plants'}</span>
                             <button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-slate-800 text-emerald-800 dark:text-emerald-300">${locationDetails[location] ? 'Edit details' : '＋ Add details'}</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${cards.map(cardMarkup).join('')}</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${cards.map(plant => cardMarkup(plant, location)).join('')}</div>
                     </section>`;
             }).join('');
         }
