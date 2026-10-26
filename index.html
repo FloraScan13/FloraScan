@@ -1994,17 +1994,28 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('variety-suggestions').classList.add('hidden');
         }
 
+        function setActiveNavigationTab(tabId) {
+            ['plants', 'scanner', 'add-plant'].forEach(t => {
+                const tab = document.getElementById(`tab-${t}`);
+                if (!tab) return;
+                tab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900";
+                tab.setAttribute('aria-current', 'false');
+            });
+            const activeTab = document.getElementById(`tab-${tabId}`);
+            if (activeTab) {
+                activeTab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-[#e4eadf] border border-[#d7dfd0] text-[#294b34] shadow-sm font-semibold";
+                activeTab.setAttribute('aria-current', 'page');
+            }
+        }
+
         function switchTab(tabId) {
             ['plants', 'scanner', 'settings'].forEach(t => {
                 const view = document.getElementById(`view-${t}`);
                 if (view) view.classList.add('hidden');
-                const tab = document.getElementById(`tab-${t}`);
-                if (tab) tab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900";
             });
             const activeView = document.getElementById(`view-${tabId}`);
             if (activeView) activeView.classList.remove('hidden');
-            const activeTab = document.getElementById(`tab-${tabId}`);
-            if (activeTab) activeTab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-white dark:bg-slate-700 shadow-sm text-emerald-700 dark:text-emerald-400 font-semibold";
+            setActiveNavigationTab(tabId);
 
             if (tabId === 'scanner') startMatchCamera();
             else stopMatchCamera();
@@ -2401,6 +2412,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function openAddPlantModal() {
+            setActiveNavigationTab('add-plant');
             document.getElementById('modal-title').textContent = 'Add New Plant';
             document.getElementById('edit-plant-id').value = '';
             document.getElementById('plant-form').reset();
@@ -2441,6 +2453,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function closePlantModal() {
             document.getElementById('plant-modal').classList.add('hidden');
             stopFormCamera();
+            setActiveNavigationTab('plants');
         }
 
         async function startFormCamera() {
