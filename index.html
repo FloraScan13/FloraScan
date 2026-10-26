@@ -1866,6 +1866,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             renderPlants();
             closePlantModal();
+            // Keep the user on the plant list after saving instead of leaving them on Settings.
+            switchTab('plants');
         }
 
         async function startMatchCamera() {
