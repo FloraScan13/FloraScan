@@ -970,6 +970,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         const DEFAULT_PLANT_LOCATIONS = ['Grow Tent', 'Front Garden', 'Back Garden', 'Greenhouse', 'Windowsill'];
         let plantLocations = JSON.parse(localStorage.getItem('flora_plant_locations') || 'null') || [...DEFAULT_PLANT_LOCATIONS];
+        let locationDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
 
         let supabaseClient = null;
         let currentUser = null;
@@ -1526,17 +1527,24 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     .maybeSingle();
                 if (error) throw error;
 
-                if (data && Array.isArray(data.locations) && data.locations.length) {
-                    // The signed-in account is authoritative; don't replace its list with this device's local list.
-                    plantLocations = [...new Set(data.locations.map(v => String(v).trim()).filter(Boolean))];
-                    localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
+                if (data && data.locations) {
+                    // Accept the original string-array format and the newer format that includes per-location details.
+                    const cloudNames = Array.isArray(data.locations) ? data.locations : data.locations.names;
+                    if (Array.isArray(cloudNames) && cloudNames.length) {
+                        plantLocations = [...new Set(cloudNames.map(v => String(v).trim()).filter(Boolean))];
+                        localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
+                    }
+                    if (!Array.isArray(data.locations) && data.locations.details && typeof data.locations.details === 'object') {
+                        locationDetails = data.locations.details;
+                        localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
+                    }
                 } else {
                     // First sign-in for this account: preserve this device's configured list and seed the cloud.
                     const { error: saveError } = await supabaseClient
                         .from('user_plant_locations')
                         .upsert({
                             user_id: currentUser.id,
-                            locations: plantLocations.length ? plantLocations : [...DEFAULT_PLANT_LOCATIONS],
+                            locations: { names: plantLocations.length ? plantLocations : [...DEFAULT_PLANT_LOCATIONS], details: locationDetails },
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'user_id' });
                     if (saveError) throw saveError;
@@ -1555,7 +1563,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     .from('user_plant_locations')
                     .upsert({
                         user_id: currentUser.id,
-                        locations: plantLocations,
+                        locations: { names: plantLocations, details: locationDetails },
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
                 if (error) throw error;
@@ -1582,7 +1590,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 localStorage.setItem('flora_plants', JSON.stringify(plants));
             }
             plantLocations = next;
+            locationDetails = Object.fromEntries(Object.entries(locationDetails).filter(([name]) => next.includes(name)));
             localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
+            localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
             renderPlantLocationControls();
             renderPlants();
             if (supabaseClient && currentUser) {
@@ -1593,6 +1603,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (results[0]) alert('Growing locations saved and synced to your account.');
             } else {
                 alert('Growing locations saved on this device only. Sign in to sync them across devices.');
+            }
+        }
+
+        async function editLocationDetails(location) {
+            const current = locationDetails[location] || '';
+            const details = prompt('Equipment and setup details for ' + location + ' (for example: grow light, heater, timer, fan, temperature).', current);
+            if (details === null) return;
+            const cleaned = details.trim();
+            if (cleaned) locationDetails[location] = cleaned;
+            else delete locationDetails[location];
+            localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
+            renderPlants();
+            if (supabaseClient && currentUser) {
+                const saved = await savePlantLocationsToCloud();
+                if (saved) alert('Details for ' + location + ' synced to your account.');
+            } else {
+                alert('Location details saved on this device only. Sign in to sync them across devices.');
             }
         }
 
@@ -1670,8 +1697,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return `
                     <section class="col-span-full min-w-0 mb-3">
                         <div class="flex items-center gap-3 mb-3 mt-2 pb-2 border-b border-emerald-200 dark:border-slate-700">
-                            <h3 class="text-lg font-bold text-emerald-800 dark:text-emerald-300">${escapeHtml(location)}</h3>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-lg font-bold text-emerald-800 dark:text-emerald-300">${escapeHtml(location)}</h3>
+                                ${locationDetails[location] ? `<p class="mt-1 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">${escapeHtml(locationDetails[location])}</p>` : '<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Add equipment or setup notes for this location.</p>'}
+                            </div>
                             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">${cards.length} ${cards.length === 1 ? 'plant' : 'plants'}</span>
+                            <button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-slate-800 text-emerald-800 dark:text-emerald-300">${locationDetails[location] ? 'Edit details' : '＋ Add details'}</button>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${cards.map(cardMarkup).join('')}</div>
                     </section>`;
