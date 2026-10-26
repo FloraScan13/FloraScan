@@ -504,6 +504,115 @@ textarea {
             font-weight: 600 !important;
             cursor: pointer !important;
         }
+        /* Harmonize the complete Add Plant form with FloraScan's cream, sage and forest-green theme. */
+        #plant-modal > div {
+            background: #fffef9 !important;
+            border-color: #e1e1d5 !important;
+        }
+        #plant-modal > div > div:first-child {
+            background: #f8f8f1 !important;
+            border-color: #e1e1d5 !important;
+        }
+        #plant-form {
+            background: #fffef9 !important;
+            color: #294333 !important;
+        }
+        #plant-form label {
+            color: #526653 !important;
+        }
+        #plant-form input:not([type="hidden"]):not([type="checkbox"]),
+        #plant-form select,
+        #plant-form textarea {
+            background: #f8f8f1 !important;
+            color: #294333 !important;
+            border-color: #d9ddcf !important;
+            border-radius: 12px !important;
+        }
+        #plant-form input::placeholder,
+        #plant-form textarea::placeholder {
+            color: #879386 !important;
+        }
+        #plant-form input:focus, #plant-form select:focus, #plant-form textarea:focus {
+            border-color: #8da687 !important;
+            box-shadow: 0 0 0 3px rgba(111,138,107,.15) !important;
+            outline: none !important;
+        }
+        #icon-picker-grid {
+            background: #f0f2e8 !important;
+            border-color: #dfe3d5 !important;
+        }
+        #icon-picker-grid button {
+            background: #fffef9 !important;
+            color: #426047 !important;
+            border-color: #d9ddcf !important;
+            border-radius: 10px !important;
+        }
+        #icon-picker-grid button:hover,
+        #icon-picker-grid button[aria-pressed="true"],
+        #icon-picker-grid button.selected {
+            background: #e4eadf !important;
+            border-color: #9db397 !important;
+            color: #294b34 !important;
+        }
+        #selected-icon-name-display,
+        #form-scanned-color-name {
+            color: #426b47 !important;
+        }
+        #plant-form > div:has(#form-video) {
+            background: #f0f2e8 !important;
+            border-color: #dfe3d5 !important;
+            border-radius: 16px !important;
+        }
+        #plant-form #form-cam-toggle {
+            background: #294b34 !important;
+            color: #fffef9 !important;
+            border-radius: 10px !important;
+        }
+        #plant-form #form-cam-toggle:hover {
+            background: #203e2a !important;
+        }
+        #plant-form button[onclick="captureFormColor()"],
+        #plant-form button[type="submit"] {
+            background: #31583b !important;
+            color: #fff !important;
+            border-radius: 12px !important;
+            box-shadow: none !important;
+        }
+        #plant-form button[onclick="captureFormColor()"]:hover,
+        #plant-form button[type="submit"]:hover {
+            background: #24462e !important;
+        }
+        #plant-form button[onclick="closePlantModal()"] {
+            color: #657565 !important;
+        }
+        #plant-form button[onclick="closePlantModal()"]:hover {
+            background: #edf0e7 !important;
+            color: #294b34 !important;
+        }
+        #plant-modal .autocomplete-dropdown {
+            background: #fffef9 !important;
+            border-color: #d9ddcf !important;
+            color: #294333 !important;
+        }
+        #plant-modal .autocomplete-dropdown > *:hover {
+            background: #eaf0e4 !important;
+        }
+        #plant-modal .text-emerald-600,
+        #plant-modal .text-emerald-700,
+        #plant-modal .text-emerald-800 {
+            color: #426b47 !important;
+        }
+        #plant-modal .border-slate-200,
+        #plant-modal .border-slate-700 {
+            border-color: #e1e1d5 !important;
+        }
+        #plant-modal .bg-slate-50,
+        #plant-modal .bg-slate-100 {
+            background: #f0f2e8 !important;
+        }
+        #plant-modal .bg-amber-400 {
+            border-color: #8da687 !important;
+        }
         #journal-location-setup {
             background: #fff0f4 !important;
             border-color: #e8a7bd !important;
