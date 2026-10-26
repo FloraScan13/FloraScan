@@ -951,6 +951,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <button type="button" onclick="closePlantModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#e4eadf] hover:bg-[#d8e4d2] text-[#31583b] transition" aria-label="Close plant form"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="plant-form" onsubmit="handlePlantSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                <h3 id="modal-title" class="hidden">Add New Plant</h3>
                 <input type="hidden" id="edit-plant-id">
                 <input type="hidden" id="plant-icon-key" value="cucumber">
                 
