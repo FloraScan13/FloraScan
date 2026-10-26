@@ -1471,6 +1471,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (tabId !== 'plants') stopFormCamera();
         }
 
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
+        }
+
         function renderPlantLocationControls(selectedLocation = '') {
             const plantSelect = document.getElementById('plant-location');
             const filterSelect = document.getElementById('plant-location-filter');
