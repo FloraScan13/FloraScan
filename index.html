@@ -70,6 +70,15 @@
         body[data-accent] [class~="ring-emerald-500"] { --tw-ring-color: var(--flora-500) !important; }
         body[data-accent] [class~="focus:ring-emerald-500"]:focus { --tw-ring-color: var(--flora-500) !important; }
 
+        /* Responsive location group header and controls */
+        @media (max-width: 640px) {
+            .location-group { padding: 12px; }
+            .location-group-toolbar { align-items: stretch; }
+            .location-group-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+            .location-group-actions button { min-width: 0; white-space: normal; line-height: 1.25; padding: 9px 8px; }
+            .location-group-details { overflow-wrap: anywhere; }
+        }
+
         .autocomplete-dropdown {
             max-height: 220px;
             overflow-y: auto;
@@ -1802,17 +1811,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             container.innerHTML = orderedLocations.map(location => {
                 const cards = groups.get(location);
                 return `
-                    <section class="col-span-full min-w-0 mb-3">
-                        <div class="flex items-center gap-3 mb-3 mt-2 pb-2 border-b border-emerald-200 dark:border-slate-700">
-                            <div class="min-w-0 flex-1">
-                                <h3 class="text-lg font-bold text-emerald-800 dark:text-emerald-300">${escapeHtml(location)}</h3>
-                                ${locationDetails[location] && locationDetailsVisibility[location] !== false ? `<p class="mt-1 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">${escapeHtml(String(locationDetails[location]).replace(/\\n/g, '\n'))}</p>` : locationDetails[location] ? '' : '<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Add equipment or setup notes for this location.</p>'}
+                    <section class="location-group col-span-full min-w-0 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4 shadow-sm">
+                        <div class="location-group-toolbar flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                            <div class="min-w-0 flex items-center gap-2">
+                                <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300"><i class="fa-solid fa-location-dot"></i></span>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="text-lg font-bold text-emerald-800 dark:text-emerald-300 break-words">${escapeHtml(location)}</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">${cards.length} ${cards.length === 1 ? 'plant' : 'plants'}</p>
+                                </div>
                             </div>
-                            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">${cards.length} ${cards.length === 1 ? 'plant' : 'plants'}</span>
-                            <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200" title="Toggle details on main view">${locationDetailsVisibility[location] === false ? '<i class="fa-regular fa-eye mr-1"></i> Show details' : '<i class="fa-regular fa-eye-slash mr-1"></i> Hide details'}</button>
-                            <button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-slate-800 text-emerald-800 dark:text-emerald-300">${locationDetails[location] ? 'Edit details' : '＋ Add details'}</button>
+                            <div class="location-group-actions flex flex-wrap items-center gap-2">
+                                <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" class="text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200" title="Toggle details on main view">${locationDetailsVisibility[location] === false ? '<i class="fa-regular fa-eye mr-1"></i> Show details' : '<i class="fa-regular fa-eye-slash mr-1"></i> Hide details'}</button>
+                                <button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="text-xs font-semibold px-3 py-2 rounded-lg border border-emerald-200 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-slate-800 text-emerald-800 dark:text-emerald-300">${locationDetails[location] ? 'Edit details' : '＋ Add details'}</button>
+                            </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${cards.map(plant => cardMarkup(plant, location)).join('')}</div>
+                        ${locationDetails[location] && locationDetailsVisibility[location] !== false ? `<div class="location-group-details mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">${escapeHtml(String(locationDetails[location]).replace(/\\n/g, '\n'))}</div>` : ''}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">${cards.map(plant => cardMarkup(plant, location)).join('')}</div>
                     </section>`;
             }).join('');
         }
