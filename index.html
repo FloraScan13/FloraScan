@@ -312,6 +312,117 @@ textarea {
             #plants-grid { gap: 12px !important; }
         }
 
+
+        /* Extend the FloraScan visual system across cards, scanner, journal, add-plant and settings. */
+        #main-navigation-tabs button {
+            color: #526653 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: 1px solid transparent !important;
+            font-weight: 600 !important;
+        }
+        #main-navigation-tabs button:hover {
+            background: #edf0e7 !important;
+            color: #294b34 !important;
+        }
+        #main-navigation-tabs button#tab-plants {
+            background: #e4eadf !important;
+            color: #294b34 !important;
+            border-color: #d7dfd0 !important;
+        }
+        #plants-grid > div, #plants-grid article, .plant-card {
+            background: #fffef9 !important;
+            color: #294333 !important;
+            border: 1px solid #e1e1d5 !important;
+            border-radius: 18px !important;
+            box-shadow: 0 3px 12px rgba(40,65,43,.045) !important;
+            overflow: hidden;
+        }
+        #plants-grid h3, #plants-grid h4, #plants-grid .font-bold {
+            color: #294333;
+        }
+        #view-scanner > div, #view-scanner #match-result-card {
+            background: #fffef9 !important;
+            color: #294333 !important;
+            border: 1px solid #e1e1d5 !important;
+            border-radius: 20px !important;
+            box-shadow: 0 4px 16px rgba(40,65,43,.05) !important;
+        }
+        #view-scanner h2, #view-scanner h3, #view-settings h3 {
+            color: #294b34 !important;
+        }
+        #view-scanner p, #view-settings p {
+            color: #657565 !important;
+        }
+        #view-scanner button.bg-amber-600 {
+            background: #a36a28 !important;
+        }
+        #view-settings > div, #view-settings .bg-white, #view-settings [class~="dark:bg-slate-800"] {
+            background: #fffef9 !important;
+            color: #294333 !important;
+            border-color: #e1e1d5 !important;
+            border-radius: 18px !important;
+            box-shadow: 0 3px 12px rgba(40,65,43,.04) !important;
+        }
+        #view-settings input, #view-settings select, #view-settings textarea,
+        #plant-form input, #plant-form select, #plant-form textarea {
+            background-color: #f8f8f1 !important;
+            color: #294333 !important;
+            border-color: #d9ddcf !important;
+            border-radius: 12px !important;
+        }
+        #plant-modal > div, #journal-modal > div {
+            background: #fffef9 !important;
+            color: #294333 !important;
+            border: 1px solid #e1e1d5 !important;
+            border-radius: 20px !important;
+            box-shadow: 0 18px 55px rgba(28,48,31,.2) !important;
+        }
+        #plant-modal > div > div:first-child, #journal-header {
+            background: #f8f8f1 !important;
+            border-color: #e1e1d5 !important;
+        }
+        #plant-form label { color: #526653 !important; }
+        #journal-modal .bg-slate-50, #journal-modal [class~="dark:bg-slate-900"] {
+            background: #f4f5ed !important;
+            border-color: #e1e1d5 !important;
+        }
+        #journal-modal h4, #journal-modal h5 {
+            color: #294b34 !important;
+        }
+        #journal-modal .text-slate-500, #journal-modal .text-slate-600,
+        #plant-modal .text-slate-500, #plant-modal .text-slate-600 {
+            color: #657565 !important;
+        }
+        #journal-modal button.bg-white, #plant-modal button.bg-white {
+            background: #fffef9 !important;
+            border-color: #d9ddcf !important;
+            color: #405b45 !important;
+            box-shadow: none !important;
+        }
+        #journal-variety {
+            background: #e4eadf !important;
+            color: #31583b !important;
+        }
+        #view-settings button.bg-emerald-600, #plant-modal button.bg-emerald-600,
+        #journal-modal button.bg-emerald-600, #view-scanner button.bg-emerald-600 {
+            background: #31583b !important;
+            border-radius: 12px !important;
+            box-shadow: none !important;
+        }
+        #view-settings button.bg-emerald-600:hover, #plant-modal button.bg-emerald-600:hover,
+        #journal-modal button.bg-emerald-600:hover, #view-scanner button.bg-emerald-600:hover {
+            background: #24462e !important;
+        }
+        #view-settings [class*="border-slate-200"], #journal-modal [class*="border-slate-200"],
+        #plant-modal [class*="border-slate-200"] {
+            border-color: #e1e1d5 !important;
+        }
+        @media (max-width: 640px) {
+            #view-scanner > div, #view-settings > div { padding: 18px !important; }
+            #plant-modal > div, #journal-modal > div { border-radius: 18px !important; }
+        }
+
     </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 </head>
