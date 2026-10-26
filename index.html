@@ -1227,9 +1227,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function syncPlantToCloud(plant) {
-            if (!supabaseClient || !currentUser) return;
+            if (!supabaseClient || !currentUser) return false;
             try {
-                await supabaseClient.from('plants').upsert({
+                const { error } = await supabaseClient.from('plants').upsert({
                     id: plant.id,
                     user_id: currentUser.id,
                     name: plant.name,
@@ -1241,8 +1241,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     notes: plant.notes,
                     location: plant.location || ''
                 });
+                if (error) {
+                    console.error("Failed to sync plant to cloud:", error);
+                    updateSyncBadge('local', 'Cloud Save Failed');
+                    alert("Your plant was saved on this device, but cloud sync failed: " + error.message + ". Check that the plants table has a location column and that your Supabase policies allow updates.");
+                    return false;
+                }
+                updateSyncBadge('cloud', 'Cloud Synced');
+                return true;
             } catch (err) {
                 console.error("Failed to sync plant to cloud:", err);
+                updateSyncBadge('local', 'Cloud Save Failed');
+                alert("Your plant was saved on this device, but cloud sync failed. Check your connection and Supabase database settings.");
+                return false;
             }
         }
 
@@ -1516,13 +1527,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
             renderPlantLocationControls();
             renderPlants();
-            // Persist changed assignments to the cloud as well as this browser.
+            // Persist plant assignments; report failures instead of silently claiming sync.
             if (supabaseClient && currentUser) {
-                Promise.all(plants.map(plant => syncPlantToCloud(plant)))
-                    .then(() => console.info('Growing locations synced to cloud.'))
-                    .catch(err => console.error('Growing location cloud sync failed:', err));
+                Promise.all(plants.map(plant => syncPlantToCloud(plant)));
+            } else {
+                alert('Growing locations saved on this device only. Sign in to enable cloud sync.');
             }
-            alert('Growing locations saved on this device; cloud sync was requested when signed in.');
         }
 
         function renderPlants() {
