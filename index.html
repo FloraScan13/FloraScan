@@ -2952,6 +2952,29 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             grid-template-columns: none !important;
         }
 
+        /* Botanical list rows: keep the outer card cream and the inner plant badge softly sage. */
+        body.plant-list-view #plants-grid .location-group {
+            background: #f0f2e8 !important;
+            border-color: #dfe3d5 !important;
+            border-radius: 18px !important;
+        }
+        body.plant-list-view #plants-grid .location-group .grid > div,
+        body.plant-list-view #plants-grid .location-group .grid > div > div:first-child,
+        body.plant-list-view #plants-grid .location-group .grid > div > div:last-child {
+            background: #fffef9 !important;
+            border-color: #e1e1d5 !important;
+        }
+        body.plant-list-view #plants-grid .location-group .grid > div {
+            border-radius: 15px !important;
+            overflow: hidden !important;
+            box-shadow: 0 2px 8px rgba(40,65,43,.045) !important;
+        }
+        body.plant-list-view #plants-grid .crop-badge-container {
+            background: #eaf0e4 !important;
+            border: 1px solid #dce5d6 !important;
+            border-radius: 13px !important;
+            box-shadow: none !important;
+        }
         /* Transform the entire card into a sleek single-line row */
         body.plant-list-view #plantsContainer > div,
         body.plant-list-view [id*="plantsContainer"] > div,
