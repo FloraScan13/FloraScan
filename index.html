@@ -1208,7 +1208,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             hex: p.hex,
                             date: p.date,
                             medium: p.medium,
-                            location: (JSON.parse(localStorage.getItem('flora_plants') || '[]').find(localPlant => localPlant.id === p.id) || {}).location || p.location || '',
+                            location: p.location || (JSON.parse(localStorage.getItem('flora_plants') || '[]').find(localPlant => localPlant.id === p.id) || {}).location || '',
                             notes: p.notes,
                             logs: await Promise.all((dbLogs || []).filter(l => l.plant_id === p.id).map(async l => {
                                 const photoPaths = Array.isArray(l.photos) ? l.photos : [];
@@ -1238,7 +1238,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     hex: plant.hex,
                     date: plant.date,
                     medium: plant.medium,
-                    notes: plant.notes
+                    notes: plant.notes,
+                    location: plant.location || ''
                 });
             } catch (err) {
                 console.error("Failed to sync plant to cloud:", err);
@@ -1515,7 +1516,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
             renderPlantLocationControls();
             renderPlants();
-            alert('Growing locations saved.');
+            // Persist changed assignments to the cloud as well as this browser.
+            if (supabaseClient && currentUser) {
+                Promise.all(plants.map(plant => syncPlantToCloud(plant)))
+                    .then(() => console.info('Growing locations synced to cloud.'))
+                    .catch(err => console.error('Growing location cloud sync failed:', err));
+            }
+            alert('Growing locations saved on this device; cloud sync was requested when signed in.');
         }
 
         function renderPlants() {
