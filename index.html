@@ -304,10 +304,11 @@ textarea {
                     <i class="fa-solid fa-location-dot text-emerald-600"></i>
                     <span>Growing Locations</span>
                 </h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Create one location per line. Assign plants to places such as Grow Tent, Front Garden, Greenhouse or Windowsill.</p>
-                <textarea id="setting-plant-locations" rows="5" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="Grow Tent&#10;Front Garden&#10;Greenhouse"></textarea>
-                <div class="flex justify-end">
-                    <button onclick="savePlantLocations()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Locations</button>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Manage each growing location separately. Add a location with the button below, or use × to remove one.</p>
+                <div id="setting-plant-locations-list" class="space-y-2"></div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input id="new-plant-location" type="text" maxlength="80" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="New location name" onkeydown="if(event.key==='Enter'){event.preventDefault();addPlantLocation();}">
+                    <button type="button" onclick="addPlantLocation()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition"><i class="fa-solid fa-plus mr-1"></i> Add Location</button>
                 </div>
             </div>
 
@@ -1504,7 +1505,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function renderPlantLocationControls(selectedLocation = '') {
             const plantSelect = document.getElementById('plant-location');
             const filterSelect = document.getElementById('plant-location-filter');
-            const settingsArea = document.getElementById('setting-plant-locations');
+            const settingsList = document.getElementById('setting-plant-locations-list');
             const currentFilter = filterSelect ? filterSelect.value : '';
             if (plantSelect) {
                 const selected = selectedLocation || plantSelect.value || '';
@@ -1519,7 +1520,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 ).join('');
                 filterSelect.value = plantLocations.includes(currentFilter) ? currentFilter : '';
             }
-            if (settingsArea && document.activeElement !== settingsArea) settingsArea.value = plantLocations.join('\n');
+            if (settingsList) {
+                settingsList.innerHTML = plantLocations.map((location, index) => `
+                    <div class="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
+                        <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"><i class="fa-solid fa-location-dot"></i></span>
+                        <span class="min-w-0 flex-1 break-words text-sm font-medium text-slate-800 dark:text-slate-100">${escapeHtml(location)}</span>
+                        <button type="button" onclick="removePlantLocation(${index})" class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/40 dark:hover:text-red-300" aria-label="Delete ${escapeHtml(location)}" title="Delete location"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                `).join('');
+            }
         }
 
         async function fetchPlantLocationsFromCloudOrLocal() {
@@ -1581,21 +1590,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
-        async function savePlantLocations() {
-            const raw = document.getElementById('setting-plant-locations').value;
-            const next = [...new Set(raw.split('\\n').map(v => v.trim()).filter(Boolean))];
-            if (!next.length) {
-                alert('Please keep at least one growing location.');
-                return;
-            }
-            const removed = plantLocations.filter(location => !next.includes(location));
-            if (removed.length && plants.some(p => removed.includes(p.location))) {
-                const moveTo = next[0];
-                plants = plants.map(p => removed.includes(p.location) ? { ...p, location: moveTo } : p);
-                localStorage.setItem('flora_plants', JSON.stringify(plants));
-            }
-            plantLocations = next;
-            locationDetails = Object.fromEntries(Object.entries(locationDetails).filter(([name]) => next.includes(name)));
+        async function persistPlantLocations() {
             localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
             localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
             renderPlantLocationControls();
@@ -1605,10 +1600,45 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     savePlantLocationsToCloud(),
                     ...plants.map(plant => syncPlantToCloud(plant))
                 ]);
-                if (results[0]) alert('Growing locations saved and synced to your account.');
+                if (results[0]) updateSyncBadge('cloud', 'Cloud Synced');
             } else {
-                alert('Growing locations saved on this device only. Sign in to sync them across devices.');
+                updateSyncBadge('local', 'Saved Locally');
             }
+        }
+
+        async function addPlantLocation() {
+            const input = document.getElementById('new-plant-location');
+            const name = (input.value || '').trim();
+            if (!name) {
+                input.focus();
+                return;
+            }
+            if (plantLocations.some(location => location.toLowerCase() === name.toLowerCase())) {
+                alert('That location already exists.');
+                input.focus();
+                return;
+            }
+            plantLocations = [...plantLocations, name];
+            input.value = '';
+            await persistPlantLocations();
+            input.focus();
+        }
+
+        async function removePlantLocation(index) {
+            if (plantLocations.length <= 1) {
+                alert('Please keep at least one growing location.');
+                return;
+            }
+            const removed = plantLocations[index];
+            if (!removed) return;
+            if (!confirm('Delete "' + removed + '"? Plants assigned to it will be moved to "' + plantLocations.find(location => location !== removed) + '".')) return;
+            const next = plantLocations.filter((location, i) => i !== index);
+            const moveTo = next[0];
+            plants = plants.map(plant => plant.location === removed ? { ...plant, location: moveTo } : plant);
+            delete locationDetails[removed];
+            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            plantLocations = next;
+            await persistPlantLocations();
         }
 
         async function editLocationDetails(location) {
