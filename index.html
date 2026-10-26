@@ -219,34 +219,54 @@ textarea {
 
         
 
-        /* Hand-painted, irregular garden-paper edge beneath the forest-green header. */
+        /* Hand-painted paper edge: cream cut-out with a visibly uneven lower contour. */
         #app-header {
             position: sticky !important;
             isolation: isolate;
             overflow: visible !important;
-            margin-bottom: 10px;
-            box-shadow: none !important;
+            margin-bottom: 8px;
         }
         #app-header::after {
             content: "";
+            display: block;
             position: absolute;
-            z-index: 2;
-            pointer-events: none;
             left: 0;
             right: 0;
             bottom: -1px;
-            height: 13px;
-            background-repeat: repeat-x;
-            background-position: bottom center;
-            background-size: 420px 13px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='13' viewBox='0 0 420 13'%3E%3Cpath fill='%23f7f6ef' d='M0 0H420V2.4L411 3.1 405 2.5 398 4.3 390 3.5 383 5.1 375 4.1 367 6.2 359 5.3 352 4.2 345 6.7 337 6 330 8.1 321 6.2 314 7.1 306 5.5 298 7.4 290 6.1 282 8.6 273 7.3 266 5.5 258 7.2 250 6.5 242 9.2 234 7.7 226 8.2 218 6.3 210 7.1 202 5.4 194 7.5 186 6.4 178 8.9 170 7.2 162 9.3 154 7.6 146 6.5 138 8.2 130 6.8 122 8.7 114 7.4 106 9.1 98 7.5 90 8.2 82 6.1 74 7.4 66 5.8 58 7.2 50 5.2 42 6.4 34 4.9 26 5.9 18 3.8 10 4.7 0 3.5Z'/%3E%3C/svg%3E");
+            height: 14px;
+            z-index: 5;
+            pointer-events: none;
+            background: #f7f6ef;
+            clip-path: polygon(
+                0 0, 100% 0, 100% 35%, 99.2% 40%, 98.5% 33%,
+                97.7% 48%, 96.5% 38%, 95.6% 54%, 94.7% 42%,
+                93.8% 50%, 92.5% 34%, 91.6% 47%, 90.4% 39%,
+                89.5% 55%, 88.4% 42%, 87.2% 48%, 86.2% 34%,
+                85.1% 45%, 84% 38%, 82.9% 56%, 81.8% 43%,
+                80.6% 49%, 79.5% 34%, 78.4% 42%, 77.2% 53%,
+                76.1% 39%, 75% 47%, 73.9% 35%, 72.8% 52%,
+                71.7% 43%, 70.5% 49%, 69.4% 34%, 68.3% 43%,
+                67.2% 55%, 66.1% 40%, 65% 48%, 63.9% 35%,
+                62.8% 44%, 61.7% 53%, 60.6% 39%, 59.5% 47%,
+                58.4% 34%, 57.3% 43%, 56.2% 52%, 55.1% 39%,
+                54% 47%, 52.9% 35%, 51.8% 44%, 50.7% 54%,
+                49.6% 40%, 48.5% 48%, 47.4% 34%, 46.3% 43%,
+                45.2% 53%, 44.1% 39%, 43% 47%, 41.9% 35%,
+                40.8% 44%, 39.7% 54%, 38.6% 40%, 37.5% 48%,
+                36.4% 34%, 35.3% 43%, 34.2% 52%, 33.1% 39%,
+                32% 47%, 30.9% 35%, 29.8% 44%, 28.7% 54%,
+                27.6% 40%, 26.5% 48%, 25.4% 34%, 24.3% 43%,
+                23.2% 52%, 22.1% 39%, 21% 47%, 19.9% 35%,
+                18.8% 44%, 17.7% 53%, 16.6% 40%, 15.5% 48%,
+                14.4% 34%, 13.3% 43%, 12.2% 52%, 11.1% 39%,
+                10% 47%, 8.9% 35%, 7.8% 44%, 6.7% 53%,
+                5.6% 40%, 4.5% 48%, 3.4% 34%, 2.3% 43%,
+                1.2% 52%, 0 40%
+            );
         }
         @media (max-width: 640px) {
-            #app-header::after {
-                height: 10px;
-                background-size: 320px 10px;
-            }
-            #app-header { margin-bottom: 7px; }
+            #app-header::after { height: 11px; }
+            #app-header { margin-bottom: 6px; }
         }
 
         /* FloraScan editorial redesign: calm Garden Organic-inspired palette, no decorative leaf background. */
