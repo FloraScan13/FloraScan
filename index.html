@@ -97,6 +97,30 @@
             .location-group-actions { gap: 4px; }
         }
 
+        /* Make the main navigation fit comfortably on phones. */
+        @media (max-width: 480px) {
+            #main-navigation-tabs { gap: 3px; padding: 4px; border-radius: 14px; }
+            #main-navigation-tabs button {
+                min-width: 0;
+                min-height: 58px;
+                padding: 8px 3px;
+                flex-direction: column;
+                justify-content: center;
+                gap: 4px;
+                border-radius: 10px;
+                font-size: 11px;
+                line-height: 1.15;
+                text-align: center;
+            }
+            #main-navigation-tabs button i { font-size: 16px; line-height: 1; }
+            #main-navigation-tabs button span {
+                display: block;
+                max-width: 100%;
+                white-space: normal;
+                overflow-wrap: anywhere;
+            }
+        }
+
         .autocomplete-dropdown {
             max-height: 220px;
             overflow-y: auto;
@@ -204,7 +228,7 @@ textarea {
     <main class="flex-1 max-w-4xl w-full mx-auto p-4 pb-24 overflow-y-auto custom-scrollbar">
 
         <!-- Navigation Tabs -->
-        <div class="flex space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl mb-6 text-sm font-medium">
+        <div id="main-navigation-tabs" class="flex space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl mb-6 text-sm font-medium">
             <button onclick="switchTab('plants')" id="tab-plants" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-white dark:bg-slate-700 shadow-sm text-emerald-700 dark:text-emerald-400 font-semibold">
                 <i class="fa-solid fa-seedling"></i>
                 <span>Plant Collection</span>
