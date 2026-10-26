@@ -219,6 +219,36 @@ textarea {
 
         
 
+        /* Hand-painted, irregular garden-paper edge beneath the forest-green header. */
+        #app-header {
+            position: sticky !important;
+            isolation: isolate;
+            overflow: visible !important;
+            margin-bottom: 10px;
+            box-shadow: none !important;
+        }
+        #app-header::after {
+            content: "";
+            position: absolute;
+            z-index: 2;
+            pointer-events: none;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 13px;
+            background-repeat: repeat-x;
+            background-position: bottom center;
+            background-size: 420px 13px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='13' viewBox='0 0 420 13'%3E%3Cpath fill='%23f7f6ef' d='M0 0H420V2.4L411 3.1 405 2.5 398 4.3 390 3.5 383 5.1 375 4.1 367 6.2 359 5.3 352 4.2 345 6.7 337 6 330 8.1 321 6.2 314 7.1 306 5.5 298 7.4 290 6.1 282 8.6 273 7.3 266 5.5 258 7.2 250 6.5 242 9.2 234 7.7 226 8.2 218 6.3 210 7.1 202 5.4 194 7.5 186 6.4 178 8.9 170 7.2 162 9.3 154 7.6 146 6.5 138 8.2 130 6.8 122 8.7 114 7.4 106 9.1 98 7.5 90 8.2 82 6.1 74 7.4 66 5.8 58 7.2 50 5.2 42 6.4 34 4.9 26 5.9 18 3.8 10 4.7 0 3.5Z'/%3E%3C/svg%3E");
+        }
+        @media (max-width: 640px) {
+            #app-header::after {
+                height: 10px;
+                background-size: 320px 10px;
+            }
+            #app-header { margin-bottom: 7px; }
+        }
+
         /* FloraScan editorial redesign: calm Garden Organic-inspired palette, no decorative leaf background. */
         :root { color-scheme: light; }
         body {
