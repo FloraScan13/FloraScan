@@ -1049,6 +1049,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     currentUser = session.user;
                     updateAuthUI(true, currentUser.email);
                     updateSyncBadge('cloud', 'Cloud Synced');
+                    await fetchPlantsFromCloudOrLocal();
+                    await fetchPlantLocationsFromCloudOrLocal();
+                    renderPlantLocationControls();
+                    renderPlants();
                 } else {
                     currentUser = null;
                     updateAuthUI(false);
@@ -1062,6 +1066,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         updateAuthUI(true, currentUser.email);
                         updateSyncBadge('cloud', 'Cloud Synced');
                         await fetchPlantsFromCloudOrLocal();
+                        await fetchPlantLocationsFromCloudOrLocal();
+                        renderPlantLocationControls();
                         renderPlants();
                     } else {
                         currentUser = null;
@@ -1510,9 +1516,61 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (settingsArea && document.activeElement !== settingsArea) settingsArea.value = plantLocations.join('\n');
         }
 
-        function savePlantLocations() {
+        async function fetchPlantLocationsFromCloudOrLocal() {
+            if (!supabaseClient || !currentUser) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('user_plant_locations')
+                    .select('locations')
+                    .eq('user_id', currentUser.id)
+                    .maybeSingle();
+                if (error) throw error;
+
+                if (data && Array.isArray(data.locations) && data.locations.length) {
+                    // The signed-in account is authoritative; don't replace its list with this device's local list.
+                    plantLocations = [...new Set(data.locations.map(v => String(v).trim()).filter(Boolean))];
+                    localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
+                } else {
+                    // First sign-in for this account: preserve this device's configured list and seed the cloud.
+                    const { error: saveError } = await supabaseClient
+                        .from('user_plant_locations')
+                        .upsert({
+                            user_id: currentUser.id,
+                            locations: plantLocations.length ? plantLocations : [...DEFAULT_PLANT_LOCATIONS],
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'user_id' });
+                    if (saveError) throw saveError;
+                }
+            } catch (err) {
+                console.error('Failed to load growing locations from cloud:', err);
+                updateSyncBadge('local', 'Location Sync Failed');
+                alert('Could not load your growing locations from the cloud. Your device copy is still available. Check the user_plant_locations table and its access policies in Supabase.');
+            }
+        }
+
+        async function savePlantLocationsToCloud() {
+            if (!supabaseClient || !currentUser) return false;
+            try {
+                const { error } = await supabaseClient
+                    .from('user_plant_locations')
+                    .upsert({
+                        user_id: currentUser.id,
+                        locations: plantLocations,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id' });
+                if (error) throw error;
+                return true;
+            } catch (err) {
+                console.error('Failed to save growing locations to cloud:', err);
+                updateSyncBadge('local', 'Location Sync Failed');
+                alert('Your location list is saved on this device, but cloud sync failed: ' + (err.message || 'Unknown Supabase error') + '.');
+                return false;
+            }
+        }
+
+        async function savePlantLocations() {
             const raw = document.getElementById('setting-plant-locations').value;
-            const next = [...new Set(raw.split('\n').map(v => v.trim()).filter(Boolean))];
+            const next = [...new Set(raw.split('\\n').map(v => v.trim()).filter(Boolean))];
             if (!next.length) {
                 alert('Please keep at least one growing location.');
                 return;
@@ -1527,11 +1585,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
             renderPlantLocationControls();
             renderPlants();
-            // Persist plant assignments; report failures instead of silently claiming sync.
             if (supabaseClient && currentUser) {
-                Promise.all(plants.map(plant => syncPlantToCloud(plant)));
+                const results = await Promise.all([
+                    savePlantLocationsToCloud(),
+                    ...plants.map(plant => syncPlantToCloud(plant))
+                ]);
+                if (results[0]) alert('Growing locations saved and synced to your account.');
             } else {
-                alert('Growing locations saved on this device only. Sign in to enable cloud sync.');
+                alert('Growing locations saved on this device only. Sign in to sync them across devices.');
             }
         }
 
