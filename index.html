@@ -1562,11 +1562,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function switchTab(tabId) {
             ['plants', 'scanner', 'settings'].forEach(t => {
-                document.getElementById(`view-${t}`).classList.add('hidden');
-                document.getElementById(`tab-${t}`).className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900";
+                const view = document.getElementById(`view-${t}`);
+                if (view) view.classList.add('hidden');
+                const tab = document.getElementById(`tab-${t}`);
+                if (tab) tab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900";
             });
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
-            document.getElementById(`tab-${tabId}`).className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-white dark:bg-slate-700 shadow-sm text-emerald-700 dark:text-emerald-400 font-semibold";
+            const activeView = document.getElementById(`view-${tabId}`);
+            if (activeView) activeView.classList.remove('hidden');
+            const activeTab = document.getElementById(`tab-${tabId}`);
+            if (activeTab) activeTab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-white dark:bg-slate-700 shadow-sm text-emerald-700 dark:text-emerald-400 font-semibold";
 
             if (tabId === 'scanner') startMatchCamera();
             else stopMatchCamera();
