@@ -2614,7 +2614,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const setupTitle = document.getElementById('journal-location-setup-title');
             const setupText = document.getElementById('journal-location-setup-details');
             if (setupSection && setupTitle && setupText) {
-                setupTitle.innerHTML = '<i class="fa-solid fa-lightbulb mr-2"></i>' + (plantLocation ? escapeHtml(plantLocation) + ' setup' : 'Location setup');
+                setupTitle.textContent = plantLocation ? escapeHtml(plantLocation) + ' setup' : 'Location setup';
                 setupText.textContent = sharedLocationDetails
                     .split(/\\r?\\n|\\s*[;•]\\s*/)
                     .map(detail => detail.trim())
