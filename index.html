@@ -1743,10 +1743,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!rows) return;
             rows.innerHTML = window.locationDetailDraft.map((detail, index) => `
                 <div class="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-2.5">
+                    <div class="flex flex-col gap-1 flex-shrink-0">
+                        <button type="button" onclick="moveLocationDetailRow(${index}, -1)" ${index === 0 ? 'disabled' : ''} class="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-emerald-900/40" aria-label="Move detail up" title="Move up"><i class="fa-solid fa-chevron-up text-xs"></i></button>
+                        <button type="button" onclick="moveLocationDetailRow(${index}, 1)" ${index === window.locationDetailDraft.length - 1 ? 'disabled' : ''} class="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-emerald-900/40" aria-label="Move detail down" title="Move down"><i class="fa-solid fa-chevron-down text-xs"></i></button>
+                    </div>
                     <input type="text" value="${escapeHtml(detail)}" maxlength="180" data-detail-index="${index}" oninput="window.locationDetailDraft[Number(this.dataset.detailIndex)] = this.value" class="min-w-0 flex-1 px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm" placeholder="e.g. Grow light, 100W">
                     <button type="button" onclick="removeLocationDetailRow(${index})" class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/40" aria-label="Delete detail" title="Delete detail"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `).join('') || '<p class="text-sm text-slate-500 dark:text-slate-400">No details yet. Add one below.</p>';
+        }
+
+        function moveLocationDetailRow(index, direction) {
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= window.locationDetailDraft.length) return;
+            const [detail] = window.locationDetailDraft.splice(index, 1);
+            window.locationDetailDraft.splice(targetIndex, 0, detail);
+            renderLocationDetailEditorRows();
         }
 
         function removeLocationDetailRow(index) {
