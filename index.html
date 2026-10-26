@@ -218,6 +218,100 @@ textarea {
 
 
         
+
+        /* FloraScan editorial redesign: calm Garden Organic-inspired palette, no decorative leaf background. */
+        :root { color-scheme: light; }
+        body {
+            background: #f7f6ef !important;
+            color: #263f2e !important;
+            background-image: none !important;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+        }
+        body.dark { background: #f7f6ef !important; color: #263f2e !important; }
+        #app-header {
+            background: #294b34 !important;
+            box-shadow: 0 2px 12px rgba(30, 55, 35, .10) !important;
+        }
+        #app-header > div { max-width: 1200px !important; padding-top: 16px !important; padding-bottom: 16px !important; }
+        #header-logo-container { background: rgba(255,255,255,.13) !important; border-radius: 14px !important; }
+        #app-header h1 { font-family: Georgia, "Times New Roman", serif !important; font-size: 1.55rem !important; letter-spacing: -.025em; }
+        main { max-width: 1200px !important; padding-top: 28px !important; }
+        #main-navigation-tabs {
+            background: transparent !important;
+            border-bottom: 1px solid #dedfd2 !important;
+            border-radius: 0 !important;
+            padding: 0 0 10px !important;
+            gap: 10px !important;
+        }
+        #main-navigation-tabs button {
+            border-radius: 12px !important;
+            padding: 12px 18px !important;
+            min-height: 46px;
+        }
+        #main-navigation-tabs button#tab-plants {
+            background: #e4eadf !important;
+            color: #294b34 !important;
+            box-shadow: none !important;
+        }
+        #view-plants { gap: 20px !important; }
+        #view-plants > .flex:first-child { margin-top: 6px; }
+        #plant-search, #plant-location-filter {
+            background-color: #fffef9 !important;
+            border-color: #d9ddcf !important;
+            border-radius: 14px !important;
+            min-height: 48px;
+            color: #294b34 !important;
+        }
+        #plant-search:focus, #plant-location-filter:focus {
+            outline: none !important;
+            border-color: #6f8a6b !important;
+            box-shadow: 0 0 0 3px rgba(111,138,107,.15) !important;
+        }
+        #plantViewToggle { background: #e8eade !important; border-radius: 13px !important; }
+        #plantViewToggle button { border-radius: 10px !important; min-height: 40px !important; }
+        #plants-grid { gap: 20px !important; }
+        #plants-grid > div {
+            background: #fffef9 !important;
+            border: 1px solid #e1e1d5 !important;
+            border-radius: 17px !important;
+            box-shadow: 0 3px 12px rgba(40,65,43,.045) !important;
+            overflow: hidden;
+            transition: box-shadow .18s ease, transform .18s ease;
+        }
+        #plants-grid > div:hover {
+            box-shadow: 0 8px 22px rgba(40,65,43,.09) !important;
+            transform: translateY(-2px);
+        }
+        #plants-empty, #view-scanner > div, #view-settings > div,
+        #view-settings .bg-white, #view-settings .dark\:bg-slate-800 {
+            border-color: #e1e1d5 !important;
+            border-radius: 18px !important;
+        }
+        button { transition: background-color .16s ease, box-shadow .16s ease, color .16s ease; }
+        button.bg-emerald-600, button[class~="bg-emerald-600"] {
+            background-color: #31583b !important;
+        }
+        button.hover\:bg-emerald-700:hover, button[class~="hover:bg-emerald-700"]:hover {
+            background-color: #24462e !important;
+        }
+        input, select, textarea {
+            border-radius: 12px;
+        }
+        /* Avoid any decorative leaf-pattern treatment; retain plant icons in the actual interface. */
+        body::before, body::after, main::before, main::after {
+            content: none !important;
+            background-image: none !important;
+        }
+        @media (min-width: 768px) {
+            #plants-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
+        @media (max-width: 640px) {
+            main { padding-top: 18px !important; }
+            #main-navigation-tabs { gap: 4px !important; }
+            #main-navigation-tabs button { padding: 10px 6px !important; }
+            #plants-grid { gap: 12px !important; }
+        }
+
     </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 </head>
