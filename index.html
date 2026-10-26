@@ -1702,7 +1702,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 ${locationDetails[location] ? `<p class="mt-1 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">${escapeHtml(locationDetails[location])}</p>` : '<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Add equipment or setup notes for this location.</p>'}
                             </div>
                             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">${cards.length} ${cards.length === 1 ? 'plant' : 'plants'}</span>
-                            <button type="button" onclick="editLocationDetails('${escapeHtml(location).replace(/'/g, '&#39;')}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-slate-800 text-emerald-800 dark:text-emerald-300">${locationDetails[location] ? 'Edit details' : '＋ Add details'}</button>
+                            <button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-slate-800 text-emerald-800 dark:text-emerald-300">${locationDetails[location] ? 'Edit details' : '＋ Add details'}</button>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${cards.map(cardMarkup).join('')}</div>
                     </section>`;
