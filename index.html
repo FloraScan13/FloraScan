@@ -625,10 +625,21 @@ textarea {
         #location-detail-editor-modal #location-detail-editor-rows button {
             color: #a63d65 !important;
         }
-        #location-detail-editor-modal button[onclick*="renderLocationDetailEditorRows"] {
+        #location-detail-editor-modal button[onclick="addLocationDetailRow()"] {
             color: #a63d65 !important;
-            border-color: #e8a7bd !important;
+            border: 1.5px dashed #d982a0 !important;
             background: #fff0f4 !important;
+            border-radius: 16px !important;
+            min-height: 56px !important;
+            font-weight: 600 !important;
+            transition: background .2s ease, border-color .2s ease !important;
+        }
+        #location-detail-editor-modal button[onclick="addLocationDetailRow()"] i {
+            color: #c6537b !important;
+        }
+        #location-detail-editor-modal button[onclick="addLocationDetailRow()"]:hover {
+            background: #f9dce6 !important;
+            border-color: #c6537b !important;
         }
         #location-detail-editor-modal button[onclick*="saveLocationDetailEditor"] {
             background: #c6537b !important;
