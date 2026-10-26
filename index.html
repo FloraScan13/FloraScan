@@ -1649,6 +1649,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const cardMarkup = p => {
                 const colorName = getCommonColorName(p.hex);
                 const svgMarkup = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
+                const plantLocation = (p.location || '').trim();
+                const sharedLocationDetails = plantLocation ? (locationDetails[plantLocation] || '') : '';
                 return `
                     <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition overflow-hidden flex flex-col cursor-pointer">
                         <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
@@ -1666,6 +1668,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
+                                ${sharedLocationDetails ? `<div class="mt-2 rounded-lg border border-emerald-100 dark:border-slate-700 bg-emerald-50/70 dark:bg-slate-900/40 px-2.5 py-2">
+                                    <p class="text-[10px] font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-lightbulb mr-1"></i> ${escapeHtml(plantLocation)} setup</p>
+                                    <p class="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap">${escapeHtml(sharedLocationDetails)}</p>
+                                </div>` : ''}
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
                                 <span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-2"><i class="fa-solid fa-book-open mr-1 text-[10px]"></i> ${p.logs ? p.logs.length : 0} Growth Logs</span>
                             </div>
