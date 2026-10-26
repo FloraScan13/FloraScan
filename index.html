@@ -560,6 +560,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     </div>
                 </div>
 
+                <section id="journal-location-setup" class="hidden rounded-xl border border-emerald-200 dark:border-slate-700 bg-emerald-50/70 dark:bg-slate-900/40 px-4 py-3">
+                    <h4 id="journal-location-setup-title" class="text-sm font-bold text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-lightbulb mr-2"></i>Location setup</h4>
+                    <p id="journal-location-setup-details" class="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap"></p>
+                </section>
+
                 <!-- Add Log Form -->
                 <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
                     <h4 class="text-sm font-bold mb-3 flex items-center space-x-2">
@@ -1670,10 +1675,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
-                                ${sharedLocationDetails ? `<div class="mt-2 rounded-lg border border-emerald-100 dark:border-slate-700 bg-emerald-50/70 dark:bg-slate-900/40 px-2.5 py-2">
-                                    <p class="text-[10px] font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300"><i class="fa-solid fa-lightbulb mr-1"></i> ${escapeHtml(plantLocation)} setup</p>
-                                    <p class="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap">${escapeHtml(sharedLocationDetails)}</p>
-                                </div>` : ''}
+
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
                                 <span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-2"><i class="fa-solid fa-book-open mr-1 text-[10px]"></i> ${p.logs ? p.logs.length : 0} Growth Logs</span>
                             </div>
@@ -2063,6 +2065,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-medium').textContent = p.medium || 'Not specified';
             document.getElementById('journal-color-name').textContent = getCommonColorName(p.hex);
             document.getElementById('journal-initial-notes').textContent = p.notes ? `"${p.notes}"` : '';
+
+            const plantLocation = (p.location || '').trim();
+            const savedLocationDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
+            const sharedLocationDetails = String(locationDetails[plantLocation] || savedLocationDetails[plantLocation] || '');
+            const setupSection = document.getElementById('journal-location-setup');
+            const setupTitle = document.getElementById('journal-location-setup-title');
+            const setupText = document.getElementById('journal-location-setup-details');
+            if (setupSection && setupTitle && setupText) {
+                setupTitle.innerHTML = '<i class="fa-solid fa-lightbulb mr-2"></i>' + (plantLocation ? escapeHtml(plantLocation) + ' setup' : 'Location setup');
+                setupText.textContent = sharedLocationDetails;
+                setupSection.classList.toggle('hidden', !sharedLocationDetails);
+            }
 
             const iconContainer = document.getElementById('journal-icon-container');
             iconContainer.innerHTML = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
