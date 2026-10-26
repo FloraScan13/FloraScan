@@ -80,6 +80,21 @@
             .location-icon-button { min-height: 34px; width: 34px; height: 34px; }
         }
 
+        /* Keep location title, plant count and icon actions on one line. */
+        .location-group-toolbar { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; }
+        .location-group-heading { min-width: 0; }
+        .location-group-heading h3 { overflow-wrap: anywhere; }
+        .location-group-actions { flex-shrink: 0; margin-left: auto; }
+        @media (max-width: 420px) {
+            .location-group { padding: 10px; }
+            .location-group-toolbar { gap: 5px; }
+            .location-group-heading { gap: 5px; }
+            .location-group-heading h3 { font-size: 14px; line-height: 1.2; }
+            .location-group-count { font-size: 10px; }
+            .location-icon-button { width: 30px; height: 30px; min-height: 30px; }
+            .location-group-actions { gap: 4px; }
+        }
+
         /* Responsive location group header and controls */
         @media (max-width: 640px) {
             .location-group { padding: 12px; }
@@ -1822,12 +1837,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const cards = groups.get(location);
                 return `
                     <section class="location-group col-span-full min-w-0 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4 shadow-sm">
-                        <div class="location-group-toolbar flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                            <div class="min-w-0 flex items-center gap-2">
-                                <div class="min-w-0 flex-1">
-                                    <h3 class="text-lg font-bold text-emerald-800 dark:text-emerald-300 break-words">${escapeHtml(location)}</h3>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400">${cards.length} ${cards.length === 1 ? 'plant' : 'plants'}</p>
-                                </div>
+                        <div class="location-group-toolbar flex items-center justify-between gap-2 mb-3">
+                            <div class="location-group-heading min-w-0 flex flex-1 items-center gap-2">
+                                <h3 class="text-base sm:text-lg font-bold text-emerald-800 dark:text-emerald-300 min-w-0 break-words">${escapeHtml(location)}</h3>
+                                <span class="location-group-count flex-shrink-0 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">(${cards.length} ${cards.length === 1 ? 'plant' : 'plants'})</span>
                             </div>
                             <div class="location-group-actions flex flex-shrink-0 items-center gap-1.5">
                                 <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" class="location-icon-button h-9 w-9 min-h-0 p-0 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200" aria-label="${locationDetailsVisibility[location] === false ? 'Show location details' : 'Hide location details'}" title="${locationDetailsVisibility[location] === false ? 'Show details' : 'Hide details'}"><i class="fa-regular ${locationDetailsVisibility[location] === false ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
