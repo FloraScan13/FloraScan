@@ -296,7 +296,7 @@ textarea {
             background: #f7f6ef !important;
             z-index: -1 !important;
             pointer-events: none !important;
-            box-shadow: 0 6px 10px rgba(38, 63, 46, .04) !important;
+            box-shadow: none !important;
         }
         /* A fine, hand-drawn sage pencil line beneath the main navigation. */
         #main-navigation-tabs::after {
@@ -1185,6 +1185,10 @@ textarea {
         /* Match the Plant Journal's compact close-button strip in Add Plant. */
         #plant-modal > div {
             position: relative !important;
+        }
+        /* Keep the Add Plant fields below the dedicated close-button / wavy header strip. */
+        #plant-modal #plant-form {
+            padding-top: 3.5rem !important;
         }
         #plant-modal > div > .absolute.top-3.right-3 {
             top: 0 !important;
