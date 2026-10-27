@@ -1201,7 +1201,7 @@ textarea {
                     <i class="fa-solid fa-leaf"></i>
                 </div>
                 <h3 class="text-lg font-semibold mb-1">No plants added yet</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">Start by adding your first plant, scanning its tag color, choosing a crop icon, and logging growth entries.</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">Start by adding your first plant, choosing a crop icon, and logging growth entries.</p>
                 <button onclick="openAddPlantModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition">
                     Add Your First Plant
                 </button>
@@ -1473,7 +1473,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <div><strong class="text-slate-800 dark:text-slate-200">Planted:</strong> <span id="journal-date">-</span></div>
                             <div><strong class="text-slate-800 dark:text-slate-200">Medium:</strong> <span id="journal-medium">-</span></div>
-                            <div><strong class="text-slate-800 dark:text-slate-200">Tag Color:</strong> <span id="journal-color-name" class="font-semibold text-emerald-600">Green</span></div>
                         </div>
                         <p id="journal-initial-notes" class="text-xs text-slate-600 dark:text-slate-400 italic pt-1"></p>
                     </div>
@@ -3226,7 +3225,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 <section class="details">
 <div><div class="detail-label">Planting date</div><div class="detail-value">${date}</div></div>
 <div><div class="detail-label">Growing medium</div><div class="detail-value">${medium}</div></div>
-<div><div class="detail-label">Tag colour</div><div class="detail-value">${color}</div></div>
 <div><div class="detail-label">Journal entries</div><div class="detail-value">${logs.length}</div></div>
 </section>
 <h2>Plant notes</h2><p class="notes">${notes.replace(/\n/g, '<br>')}</p>
