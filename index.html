@@ -1336,62 +1336,9 @@ textarea {
         }
 
     
-           /* List view: large, clearly visible plant watermark on the right side. */
-        body.plant-list-view #plants-grid .plant-card-content {
-            position: relative !important;
-            isolation: isolate !important;
-            overflow: hidden !important;
-            background: #fffef9 !important;
-            min-height: 150px !important;
-            padding-right: 1rem !important;
-        }
+           /* Hide the decorative plant watermark only in list view. */
         body.plant-list-view #plants-grid .plant-card-watermark {
-            position: absolute !important;
-            top: 50% !important;
-            right: 0 !important;
-            left: auto !important;
-            bottom: auto !important;
-            width: 58% !important;
-            height: 190% !important;
-            transform: translateY(-50%) !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: flex-end !important;
-            opacity: .16 !important;
-            pointer-events: none !important;
-            z-index: 0 !important;
-        }
-        body.plant-list-view #plants-grid .plant-card-watermark svg {
-            display: block !important;
-            width: 100% !important;
-            height: 100% !important;
-            max-width: none !important;
-            max-height: none !important;
-            object-fit: contain !important;
-            object-position: right center !important;
-        }
-        body.plant-list-view #plants-grid .plant-card-content > .crop-badge-container {
-            position: relative !important;
-            z-index: 2 !important;
-            flex-shrink: 0 !important;
-        }
-        body.plant-list-view #plants-grid .plant-card-content > .plant-card-details {
-            position: relative !important;
-            z-index: 1 !important;
-            flex: 1 1 45% !important;
-            min-width: 0 !important;
-            padding-right: 0 !important;
-        }
-        @media (max-width: 480px) {
-            body.plant-list-view #plants-grid .plant-card-content {
-                min-height: 130px !important;
-            }
-            body.plant-list-view #plants-grid .plant-card-watermark {
-                width: 58% !important;
-                height: 170% !important;
-                right: -3% !important;
-                opacity: .14 !important;
-            }
+            display: none !important;
         }
 
     </style>
