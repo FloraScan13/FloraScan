@@ -1097,13 +1097,20 @@ textarea {
 
 
 
-        /* Match the Plant Journal's top strip, wavy line and close-button placement to Add Plant. */
-        #journal-modal #journal-header {
+        /* Match the Plant Journal top strip to Add Plant: overlay the X and wavy line at the modal's top edge. */
+        #journal-modal > div {
             position: relative !important;
+        }
+        #journal-modal #journal-header {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 5 !important;
             min-height: 0 !important;
             height: 28px !important;
             padding: 0 10px !important;
-            border-bottom: 0 !important;
+            border: 0 !important;
             background: #fffef9 !important;
         }
         #journal-modal #journal-header::after {
@@ -1119,6 +1126,9 @@ textarea {
             background-size: 100% 6px !important;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
             z-index: 1 !important;
+        }
+        #journal-modal #journal-header + div {
+            padding-top: 36px !important;
         }
         /* Use the same fine sage pencil divider for the two sections in the Growth Journal. */
         #journal-modal #journal-header ~ div > div.border-t.border-slate-200,
