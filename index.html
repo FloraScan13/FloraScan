@@ -1335,6 +1335,47 @@ textarea {
             }
         }
 
+    
+        /* Keep the oversized plant-icon watermark visible in compact list view too. */
+        body.plant-list-view #plants-grid .plant-card-content {
+            position: relative !important;
+            isolation: isolate !important;
+            overflow: hidden !important;
+            background: #fffef9 !important;
+        }
+        body.plant-list-view #plants-grid .plant-card-watermark {
+            position: absolute !important;
+            right: 8px !important;
+            top: 50% !important;
+            width: 112px !important;
+            height: 112px !important;
+            transform: translateY(-50%) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            opacity: .09 !important;
+            pointer-events: none !important;
+            z-index: 0 !important;
+        }
+        body.plant-list-view #plants-grid .plant-card-watermark svg {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
+            max-height: none !important;
+        }
+        body.plant-list-view #plants-grid .plant-card-content > .crop-badge-container,
+        body.plant-list-view #plants-grid .plant-card-content > .plant-card-details {
+            position: relative !important;
+            z-index: 1 !important;
+        }
+        @media (max-width: 480px) {
+            body.plant-list-view #plants-grid .plant-card-watermark {
+                width: 88px !important;
+                height: 88px !important;
+                right: 2px !important;
+            }
+        }
+
     </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 </head>
