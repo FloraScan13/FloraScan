@@ -2886,6 +2886,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (!match) { setNfcStatus('This tag is not linked to a FloraScan plant. Open that plant and write its NFC tag first.', true); return; }
                     const plant = plants.find(p => String(p.id) === match[1]);
                     if (!plant) { setNfcStatus('No saved plant matches this NFC tag on this device/account.', true); return; }
+
+                    // Stop listening as soon as a valid plant tag is read, so the reader does not keep firing.
+                    if (typeof reader.abort === 'function') reader.abort().catch(() => {});
+                    reader.onreading = null;
+                    reader.onreadingerror = null;
                     setNfcStatus('Plant found: ' + plant.name);
                     openJournalModal(plant.id);
                 };
