@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
@@ -239,15 +240,14 @@ textarea {
             position: absolute !important;
             left: 0 !important;
             right: 0 !important;
-            bottom: -1px !important;
-            height: 2px !important;
+            bottom: -2px !important;
+            height: 4px !important;
             pointer-events: none !important;
             background-repeat: no-repeat !important;
             background-position: center !important;
-            background-size: 100% 2px !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 2' preserveAspectRatio='none'%3E%3Cpath d='M1 1 C80 0.3 120 1.7 205 0.8 S350 0.4 430 1.2 S580 1.7 665 0.7 S820 0.5 999 1' fill='none' stroke='%23b8c9b9' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+            background-size: 100% 4px !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 4' preserveAspectRatio='none'%3E%3Cpath d='M1 2.5 C80 1.1 120 3.1 205 2 S350 1.4 430 2.4 S580 3.1 665 1.9 S820 1.5 999 2.3' fill='none' stroke='%23294b34' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
         }
-        #app-header { border-bottom: 0 !important; }
         #app-header > div { max-width: 1200px !important; padding-top: 16px !important; padding-bottom: 16px !important; }
         #header-logo-container { background: rgba(255,255,255,.13) !important; border-radius: 14px !important; }
         /* Pink cloud-sync status badge to complement the journal's rose accent. */
@@ -1300,170 +1300,10 @@ textarea {
             border-radius: 0 0 8px 8px !important;
         }
 
-            /* Large, subtle watermark using each plant's own icon in the cream card body. */
-        #plants-grid .plant-card-content {
-            position: relative !important;
-            isolation: isolate;
-            overflow: hidden;
-            background: #fffef9 !important;
-        }
-        #plants-grid .plant-card-watermark {
-            position: absolute !important;
-            right: 10px !important;
-            top: 50% !important;
-            width: 180px !important;
-            height: 180px !important;
-            transform: translateY(-50%) !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            opacity: .09 !important;
-            pointer-events: none !important;
-            z-index: -1 !important;
-        }
-        #plants-grid .plant-card-watermark svg {
-            width: 100% !important;
-            height: 100% !important;
-            max-width: none !important;
-            max-height: none !important;
-        }
-        #plants-grid .plant-card-details { position: relative; z-index: 1; }
-        @media (max-width: 480px) {
-            #plants-grid .plant-card-watermark {
-                width: 140px !important;
-                height: 140px !important;
-                right: -8px !important;
-            }
-        }
-
-    
-           /* Hide the decorative plant watermark only in list view. */
-        body.plant-list-view #plants-grid .plant-card-watermark {
-            display: none !important;
-        }
-
-    
-        /* Subtle beans illustration watermark across every app view. */
-        #global-beans-watermark {
-            position: fixed;
-            right: 2vw;
-            bottom: 2vh;
-            width: min(28vw, 373px);
-            height: min(48vh, 480px);
-            object-fit: contain;
-            object-position: right bottom;
-            opacity: 0.10;
-            pointer-events: none;
-            user-select: none;
-            z-index: 0;
-        }
-
-        /* Keep app content and its cards above the page watermark. */
-        #app-header,
-        main,
-        footer,
-        #global-beans-watermark ~ * {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Dialogs must sit above the sticky header and navigation. */
-        #plant-modal,
-        #journal-modal,
-        #delete-modal,
-        #location-detail-editor-modal,
-        [role="dialog"],
-        .modal,
-        #global-beans-watermark ~ .fixed {
-            z-index: 100 !important;
-        }
-        @media (max-width: 600px) {
-            #global-beans-watermark {
-                width: 31vw;
-                height: 35vh;
-                max-height: 307px;
-                right: 1vw;
-                bottom: 1vh;
-                opacity: 0.09;
-            }
-        }
-
-
-        /* Keep Add Plant and Growth Journal fully usable on short/mobile viewports. */
-        #plant-modal,
-        #journal-modal {
-            align-items: flex-start !important;
-            justify-content: center !important;
-            padding-top: max(0.5rem, env(safe-area-inset-top, 0px)) !important;
-            padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
-            padding-left: max(0.5rem, env(safe-area-inset-left, 0px)) !important;
-            padding-right: max(0.5rem, env(safe-area-inset-right, 0px)) !important;
-            box-sizing: border-box !important;
-        }
-        #plant-modal > div,
-        #journal-modal > div {
-            display: flex !important;
-            flex-direction: column !important;
-            width: 100% !important;
-            max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1rem) !important;
-            max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1rem) !important;
-            min-height: 0 !important;
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-            overflow: hidden !important;
-            box-sizing: border-box !important;
-        }
-        #plant-modal #plant-form {
-            flex: 1 1 auto !important;
-            min-height: 0 !important;
-            max-height: none !important;
-            overflow-x: hidden !important;
-            overflow-y: auto !important;
-            overscroll-behavior: contain;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-        }
-        #journal-modal #journal-header {
-            flex: 0 0 28px !important;
-        }
-        #journal-modal #journal-header + div {
-            flex: 1 1 auto !important;
-            min-height: 0 !important;
-            max-height: none !important;
-            overflow-x: hidden !important;
-            overflow-y: auto !important;
-            overscroll-behavior: contain;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-        }
-        /* The wavy divider is the only line under each modal's close-button strip. */
-        #plant-modal > div > .absolute.top-3.right-3,
-        #journal-modal #journal-header {
-            border-bottom: 0 !important;
-            box-shadow: none !important;
-        }
-        #plant-modal > div > .absolute.top-3.right-3::before,
-        #plant-modal > div > .absolute.top-3.right-3::after,
-        #journal-modal #journal-header::before,
-        #journal-modal #journal-header::after {
-            border: 0 !important;
-            box-shadow: none !important;
-        }
-        @media (min-width: 641px) {
-            #plant-modal,
-            #journal-modal {
-                align-items: center !important;
-            }
-            #plant-modal > div { max-width: 32rem !important; }
-            #journal-modal > div { max-width: 42rem !important; }
-        }
-
-</style>
+    </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
-    <img id="global-beans-watermark" src="./assets/assets%3Aplants%3Abeans.svg" alt="" aria-hidden="true" />
-
 
     <!-- Fixed Header -->
     <header id="app-header" class="bg-emerald-700 text-white shadow-md sticky top-0 z-30 transition-colors duration-300">
@@ -1662,23 +1502,6 @@ textarea {
                                 <i class="fa-solid fa-user-plus"></i>
                                 <span>Register Account</span>
                             </button>
-                            <button onclick="handleSupabasePasswordReset()" class="text-emerald-700 dark:text-emerald-300 hover:underline px-2 py-2 text-xs font-semibold">
-                                Forgot password?
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Password recovery form, shown after opening a valid reset email -->
-                    <div id="auth-password-recovery" class="hidden p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-slate-900/70 space-y-3">
-                        <h5 class="text-sm font-bold text-slate-800 dark:text-slate-100">Set a new password</h5>
-                        <p class="text-xs text-slate-600 dark:text-slate-300">Enter your new password below. Use at least 6 characters.</p>
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="auth-new-password">New password</label>
-                        <input type="password" id="auth-new-password" autocomplete="new-password" minlength="6" placeholder="Enter a new password" class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="auth-confirm-password">Confirm new password</label>
-                        <input type="password" id="auth-confirm-password" autocomplete="new-password" minlength="6" placeholder="Enter it again" class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="handleSupabaseSetNewPassword()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Save new password</button>
-                            <button onclick="document.getElementById('auth-password-recovery').classList.add('hidden')" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300">Cancel</button>
                         </div>
                     </div>
 
@@ -2350,11 +2173,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 // Listen for auth state changes
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    if (event === 'PASSWORD_RECOVERY') {
-                        document.getElementById('auth-password-recovery')?.classList.remove('hidden');
-                        document.getElementById('auth-new-password')?.focus();
-                        return;
-                    }
                     if (session && session.user) {
                         currentUser = session.user;
                         updateAuthUI(true, currentUser.email);
@@ -2427,30 +2245,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             else {
                 alert("Sign In Successful!");
             }
-        }
-
-        async function handleSupabasePasswordReset() {
-            if (!supabaseClient) { alert("Please connect your Supabase credentials first!"); return; }
-            const email = document.getElementById('auth-email').value.trim();
-            if (!email) { alert("Enter your email address first."); document.getElementById('auth-email').focus(); return; }
-            const redirectTo = 'https://florascan13.github.io/FloraScan/';
-            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
-            if (error) alert("Password reset request failed: " + error.message);
-            else alert("If an account exists for that email, Supabase will send a password reset link. Open the newest email to continue.");
-        }
-
-        async function handleSupabaseSetNewPassword() {
-            if (!supabaseClient) { alert("Please connect your Supabase credentials first!"); return; }
-            const password = document.getElementById('auth-new-password').value;
-            const confirmation = document.getElementById('auth-confirm-password').value;
-            if (!password || password.length < 6) { alert("Please enter a password with at least 6 characters."); return; }
-            if (password !== confirmation) { alert("The passwords do not match."); return; }
-            const { error } = await supabaseClient.auth.updateUser({ password });
-            if (error) { alert("Could not update password: " + error.message); return; }
-            document.getElementById('auth-password-recovery').classList.add('hidden');
-            document.getElementById('auth-new-password').value = '';
-            document.getElementById('auth-confirm-password').value = '';
-            alert("Your password has been updated. You can now sign in with your new password.");
         }
 
         async function handleSupabaseSignUp() {
@@ -3153,10 +2947,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <button onclick="event.stopPropagation(); promptDeletePlant('${p.id}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg transition" title="Delete Plant"><i class="fa-solid fa-trash text-xs"></i></button>
                             </div>
                         </div>
-                        <div class="plant-card-content p-5 flex space-x-4 items-center">
-                            <div class="plant-card-watermark" aria-hidden="true">${svgMarkup}</div>
+                        <div class="p-5 flex space-x-4 items-center">
                             <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
-                            <div class="plant-card-details flex-1 min-w-0">
+                            <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
 
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
@@ -3608,46 +3401,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     .empty { color: #64748b; font-style: italic; }
     footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 9pt; }
     @media print { .no-print { display: none; } }
-
-        /* Keep Add Plant and Growth Journal fully reachable on short screens. */
-        #plant-modal, #journal-modal {
-            box-sizing: border-box !important;
-            align-items: flex-start !important;
-            justify-content: center !important;
-            padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
-            overflow-x: hidden !important;
-            overflow-y: auto !important;
-        }
-        #plant-modal > div, #journal-modal > div {
-            flex: 0 0 auto !important;
-            max-height: none !important;
-            margin-top: 12px !important;
-            margin-bottom: 12px !important;
-        }
-        #plant-modal #plant-form, #journal-modal > div > div:not(#journal-header) {
-            min-height: 0 !important;
-        }
-        /* Keep the sage wave delicate; remove any heavy grey divider beneath it. */
-        #plant-modal > div > .absolute.top-3.right-3,
-        #journal-modal #journal-header {
-            border-bottom: 0 !important;
-            box-shadow: none !important;
-        }
-        #plant-modal > div > .absolute.top-3.right-3::after,
-        #journal-modal #journal-header::after {
-            height: 2px !important;
-            background-size: 100% 2px !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 2' preserveAspectRatio='none'%3E%3Cpath d='M2 1 C80 0.3 120 1.7 205 0.8 S350 0.4 430 1.2 S580 1.7 665 0.7 S820 0.5 998 1' fill='none' stroke='%23b8c9b9' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E") !important;
-        }
-        @media (max-height: 760px) {
-            #plant-modal, #journal-modal {
-                align-items: flex-start !important;
-            }
-            #plant-modal > div, #journal-modal > div {
-                margin-top: 4px !important;
-                margin-bottom: 4px !important;
-            }
-        }
 </style></head><body>
 <header><div class="brand">FloraScan · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
 <section class="details">
@@ -4089,3 +3842,4 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     </script>
 </body>
 </html>
+
