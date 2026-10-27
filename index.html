@@ -1345,11 +1345,12 @@ textarea {
         /* Subtle beans illustration watermark across every app view. */
         #global-beans-watermark {
             position: fixed;
-            right: 18px;
-            bottom: 18px;
-            width: 150px;
-            height: 150px;
+            right: 2vw;
+            bottom: 2vh;
+            width: min(42vw, 560px);
+            height: min(72vh, 720px);
             object-fit: contain;
+            object-position: right bottom;
             opacity: 0.10;
             pointer-events: none;
             user-select: none;
@@ -1373,11 +1374,12 @@ textarea {
         }
         @media (max-width: 600px) {
             #global-beans-watermark {
-                width: 100px;
-                height: 100px;
-                right: 10px;
-                bottom: 10px;
-                opacity: 0.08;
+                width: 46vw;
+                height: 52vh;
+                max-height: 460px;
+                right: 1vw;
+                bottom: 1vh;
+                opacity: 0.09;
             }
         }
 
