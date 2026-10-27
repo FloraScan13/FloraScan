@@ -104,12 +104,7 @@
         }
 
         @media (max-width: 480px) {
-            body.scroll-nav-collapsed #main-navigation-tabs { display: none !important; }
-        body.scroll-nav-collapsed #header-nav-menu-button { display: inline-flex !important; }
-        #header-nav-dropdown button:hover { background: #e4eadf !important; }
-        #header-nav-dropdown:not(.hidden) { display: block !important; }
-
-        #main-navigation-tabs {
+            #main-navigation-tabs {
                 display: flex;
                 gap: 4px;
                 padding: 4px;
@@ -1258,9 +1253,6 @@ textarea {
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button type="button" id="header-nav-menu-button" aria-label="Open navigation menu" aria-expanded="false" class="hidden bg-white/15 text-white hover:bg-white/25 p-2.5 rounded-xl shadow transition items-center justify-center" style="width:42px;height:42px" onclick="toggleHeaderNavMenu()">
-                    <span class="flex flex-col justify-center gap-[4px] w-[18px]" aria-hidden="true"><span class="block h-[2px] w-full rounded bg-current"></span><span class="block h-[2px] w-full rounded bg-current"></span><span class="block h-[2px] w-full rounded bg-current"></span></span>
-                </button>
                 <button onclick="switchTab('settings')" id="header-settings-button" class="bg-white/15 text-white hover:bg-white/25 px-3.5 py-2 rounded-xl text-sm font-semibold shadow transition flex items-center justify-center" aria-label="Settings" title="Settings">
                     <i class="fa-solid fa-sliders"></i>
                 </button>
@@ -3744,56 +3736,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
     }
-
-    // Collapse the main navigation into a header hamburger once the page is scrolled.
-    (function setupScrollNavigationMenu() {
-        const main = document.querySelector('main');
-        const nav = document.getElementById('main-navigation-tabs');
-        const header = document.getElementById('app-header');
-        const menuButton = document.getElementById('header-nav-menu-button');
-        if (!main || !nav || !header || !menuButton) return;
-
-        const menu = document.createElement('div');
-        menu.id = 'header-nav-dropdown';
-        menu.className = 'hidden';
-        menu.style.cssText = 'position:absolute;right:16px;top:calc(100% + 6px);min-width:190px;padding:8px;background:#fffef9;border:1px solid #d7dfd0;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:60;';
-        menu.innerHTML = `
-            <button type="button" data-nav-action="plants" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left font-semibold" style="color:#294b34"><i class="fa-solid fa-seedling"></i><span>Plants</span></button>
-            <button type="button" data-nav-action="scanner" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left font-semibold" style="color:#294b34"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" style="width:18px;height:18px;object-fit:contain"><span>NFC Scan</span></button>
-            <button type="button" data-nav-action="add-plant" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left font-semibold" style="color:#294b34"><i class="fa-solid fa-plus"></i><span>Add Plant</span></button>
-        `;
-        header.style.position = 'sticky';
-        header.appendChild(menu);
-
-        function updateScrollState() {
-            const scrolled = main.scrollTop > 35 || window.scrollY > 35;
-            document.body.classList.toggle('scroll-nav-collapsed', scrolled);
-            if (!scrolled) closeMenu();
-        }
-        function closeMenu() {
-            menu.classList.add('hidden');
-            menuButton.setAttribute('aria-expanded', 'false');
-        }
-        window.toggleHeaderNavMenu = function() {
-            const opening = menu.classList.contains('hidden');
-            menu.classList.toggle('hidden', !opening);
-            menuButton.setAttribute('aria-expanded', String(opening));
-        };
-        menu.addEventListener('click', function(event) {
-            const button = event.target.closest('[data-nav-action]');
-            if (!button) return;
-            closeMenu();
-            const action = button.dataset.navAction;
-            if (action === 'add-plant') openAddPlantModal();
-            else switchTab(action);
-        });
-        document.addEventListener('click', function(event) {
-            if (!menu.contains(event.target) && !menuButton.contains(event.target)) closeMenu();
-        });
-        main.addEventListener('scroll', updateScrollState, { passive: true });
-        window.addEventListener('scroll', updateScrollState, { passive: true });
-        updateScrollState();
-    })();
 
     // 4. Handle clicks reliably
     document.addEventListener('click', (e) => {
