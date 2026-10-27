@@ -275,12 +275,24 @@ textarea {
             background: #f7f6ef !important;
             padding-top: 12px !important;
             margin-top: 0 !important;
-            box-shadow: 0 6px 10px rgba(38, 63, 46, .04) !important;
+            box-shadow: none !important;
             border-bottom: 0 !important;
             border-radius: 0 !important;
             padding: 12px 0 22px !important;
             margin-bottom: 12px !important;
             gap: 10px !important;
+        }
+        #main-navigation-tabs::before {
+            content: "" !important;
+            position: absolute !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            left: calc(50% - 50vw) !important;
+            width: 100vw !important;
+            background: #f7f6ef !important;
+            z-index: -1 !important;
+            pointer-events: none !important;
+            box-shadow: 0 6px 10px rgba(38, 63, 46, .04) !important;
         }
         /* A fine, hand-drawn sage pencil line beneath the main navigation. */
         #main-navigation-tabs::after {
