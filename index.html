@@ -1366,11 +1366,15 @@ textarea {
             z-index: 1;
         }
 
-        /* Preserve fixed positioning for overlays and dialogs. */
+        /* Dialogs must sit above the sticky header and navigation. */
+        #plant-modal,
+        #journal-modal,
+        #delete-modal,
+        #location-detail-editor-modal,
         [role="dialog"],
         .modal,
         #global-beans-watermark ~ .fixed {
-            z-index: 50;
+            z-index: 100 !important;
         }
         @media (max-width: 600px) {
             #global-beans-watermark {
