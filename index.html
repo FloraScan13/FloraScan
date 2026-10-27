@@ -1336,7 +1336,7 @@ textarea {
         }
 
     
-        /* Keep the oversized plant-icon watermark visible in compact list view too. */
+           /* In list view, keep the watermark to the right of the text and scale it up. */
         body.plant-list-view #plants-grid .plant-card-content {
             position: relative !important;
             isolation: isolate !important;
@@ -1345,17 +1345,17 @@ textarea {
         }
         body.plant-list-view #plants-grid .plant-card-watermark {
             position: absolute !important;
-            top: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
+            top: -18% !important;
+            right: -3% !important;
+            bottom: -18% !important;
             left: auto !important;
-            width: 38% !important;
-            height: 100% !important;
+            width: 52% !important;
+            height: 136% !important;
             transform: none !important;
             display: flex !important;
             align-items: center !important;
             justify-content: flex-end !important;
-            opacity: .09 !important;
+            opacity: .12 !important;
             pointer-events: none !important;
             z-index: 0 !important;
         }
@@ -1372,11 +1372,19 @@ textarea {
             position: relative !important;
             z-index: 1 !important;
         }
+        body.plant-list-view #plants-grid .plant-card-details {
+            padding-right: 22% !important;
+        }
         @media (max-width: 480px) {
             body.plant-list-view #plants-grid .plant-card-watermark {
-                width: 34% !important;
-                height: 100% !important;
-                right: 0 !important;
+                width: 48% !important;
+                height: 130% !important;
+                top: -15% !important;
+                bottom: -15% !important;
+                right: -2% !important;
+            }
+            body.plant-list-view #plants-grid .plant-card-details {
+                padding-right: 16% !important;
             }
         }
 
