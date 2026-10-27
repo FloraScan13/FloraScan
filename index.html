@@ -547,6 +547,11 @@ textarea {
         #journal-modal #nutrient-library-section input[type="checkbox"] {
             accent-color: #c6537b !important;
         }
+        #journal-modal #add-selected-nutrients-button,
+        #journal-modal #add-selected-nutrients-button span,
+        #journal-modal #add-selected-nutrients-button i {
+            color: #ffffff !important;
+        }
         #journal-modal #nutrient-library-section button {
             background-color: #c6537b !important;
             border-color: #c6537b !important;
@@ -1561,9 +1566,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 </div>
                             </div>
                             <div class="flex justify-end pt-1">
-                                <button type="button" onclick="applyNutrientSelection()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1 rounded-lg text-[11px] font-semibold transition flex items-center space-x-1">
-                                    <i class="fa-solid fa-plus text-[10px]"></i>
-                                    <span>Add Selected Nutrients to Log</span>
+                                <button id="add-selected-nutrients-button" type="button" onclick="applyNutrientSelection()" style="color:#ffffff !important;" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1 rounded-lg text-[11px] font-semibold transition flex items-center space-x-1">
+                                    <i class="fa-solid fa-plus text-[10px]" style="color:#ffffff !important;"></i>
+                                    <span style="color:#ffffff !important;">Add Selected Nutrients to Log</span>
                                 </button>
                             </div>
                         </div>
