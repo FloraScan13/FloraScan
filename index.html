@@ -1502,6 +1502,9 @@ textarea {
                                 <i class="fa-solid fa-user-plus"></i>
                                 <span>Register Account</span>
                             </button>
+                            <button type="button" onclick="handleSupabasePasswordReset()" class="text-emerald-700 hover:text-emerald-900 underline text-xs font-semibold px-2 py-2">
+                                Forgot password?
+                            </button>
                         </div>
                     </div>
 
@@ -2173,6 +2176,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 // Listen for auth state changes
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                    if (event === 'PASSWORD_RECOVERY') setTimeout(() => completeSupabasePasswordRecovery(), 0);
                     if (session && session.user) {
                         currentUser = session.user;
                         updateAuthUI(true, currentUser.email);
@@ -2247,6 +2251,32 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
+        async function handleSupabasePasswordReset() {
+            if (!supabaseClient) { alert('Please connect your Supabase credentials first.'); return; }
+            const emailInput = document.getElementById('auth-email');
+            const email = emailInput ? emailInput.value.trim() : '';
+            if (!email) { alert('Enter your account email address first.'); if (emailInput) emailInput.focus(); return; }
+            const redirectTo = window.location.origin + window.location.pathname + '?password-recovery=1';
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+            if (error) { console.error('Password reset request failed:', error); alert('Could not send the reset email: ' + error.message + '. Check Supabase Auth URL Configuration and email settings.'); return; }
+            alert('If an account exists for that email, Supabase will send a password-reset link. Check your inbox and spam folder.');
+        }
+
+        async function completeSupabasePasswordRecovery() {
+            if (!supabaseClient || !window.location.search.includes('password-recovery=1')) return;
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+            if (sessionError || !session) return;
+            const newPassword = window.prompt('Enter a new password (at least 6 characters):');
+            if (newPassword === null) return;
+            if (newPassword.length < 6) { alert('Please choose a password with at least 6 characters, then open the reset link again.'); return; }
+            const confirmation = window.prompt('Enter the new password again to confirm:');
+            if (confirmation === null) return;
+            if (newPassword !== confirmation) { alert('The passwords did not match. Please open the reset link again and try once more.'); return; }
+            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+            if (error) { alert('Could not update the password: ' + error.message); return; }
+            window.history.replaceState({}, document.title, window.location.pathname);
+            alert('Password updated. You can now sign in with your new password.');
+        }
         async function handleSupabaseSignUp() {
             if (!supabaseClient) { alert("Please connect your Supabase credentials first!"); return; }
             const email = document.getElementById('auth-email').value;
