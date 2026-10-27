@@ -87,10 +87,6 @@
         .location-group-count { flex-shrink: 0; white-space: nowrap; }
         .location-group-actions { display: flex; align-items: center; gap: 5px; flex: 0 0 auto; margin-left: auto; }
         .location-group-details { overflow-wrap: anywhere; }
-        .location-group-content[hidden] { display: none !important; }
-        .location-group-toggle { border: 0; background: transparent; padding: 0; cursor: pointer; }
-        .location-group-toggle:focus-visible { outline: 2px solid #7186bb; outline-offset: 3px; border-radius: 6px; }
-
         @media (max-width: 420px) {
             .location-group { padding: 10px; }
             .location-group-toolbar { gap: 6px; }
@@ -296,7 +292,7 @@ textarea {
             background: #f7f6ef !important;
             z-index: -1 !important;
             pointer-events: none !important;
-            box-shadow: none !important;
+            box-shadow: 0 6px 10px rgba(38, 63, 46, .04) !important;
         }
         /* A fine, hand-drawn sage pencil line beneath the main navigation. */
         #main-navigation-tabs::after {
@@ -959,10 +955,8 @@ textarea {
             border-color: #e1e1d5 !important;
         }
         #plant-modal > div > div:first-child {
-            background: #fffef9 !important;
-            border: 0 !important;
-            border-bottom: 0 !important;
-            box-shadow: none !important;
+            background: #f8f8f1 !important;
+            border-color: #e1e1d5 !important;
         }
         #plant-form {
             background: #fffef9 !important;
@@ -1188,15 +1182,11 @@ textarea {
         #plant-modal > div {
             position: relative !important;
         }
-        /* Keep the Add Plant fields below the dedicated close-button / wavy header strip. */
-        #plant-modal #plant-form {
-            padding-top: 3.5rem !important;
-        }
         #plant-modal > div > .absolute.top-3.right-3 {
             top: 0 !important;
             left: 0 !important;
             right: 0 !important;
-            height: 34px !important;
+            height: 28px !important;
             padding: 0 10px !important;
             display: flex !important;
             align-items: center !important;
@@ -1262,9 +1252,7 @@ textarea {
             z-index: 1 !important;
         }
         #plant-modal #plant-form {
-            padding-top: 64px !important;
-            border-top: 0 !important;
-            margin-top: 0 !important;
+            padding-top: 36px !important;
         }
 
 
@@ -3078,36 +3066,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return `
                     <section class="location-group col-span-full min-w-0 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4 shadow-sm">
                         <div class="location-group-toolbar flex items-center justify-between gap-2 mb-3">
-                            <button type="button" onclick="toggleLocationSection(this)" class="location-group-toggle location-group-heading min-w-0 flex flex-1 items-center gap-2 text-left" aria-expanded="true">
-                                <i class="fa-solid fa-chevron-down location-collapse-icon text-xs transition-transform" aria-hidden="true"></i>
+                            <div class="location-group-heading min-w-0 flex flex-1 items-center gap-2">
                                 <h3 class="text-base sm:text-lg font-bold text-emerald-800 dark:text-emerald-300 min-w-0 break-words">${escapeHtml(location)}</h3>
                                 <span class="location-group-count flex-shrink-0 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">(${cards.length} ${cards.length === 1 ? 'plant' : 'plants'})</span>
-                            </button>
+                            </div>
                             <div class="location-group-actions flex flex-shrink-0 items-center gap-1.5">
                                 <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" class="location-icon-button h-9 w-9 min-h-0 p-0 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200" aria-label="${locationDetailsVisibility[location] === false ? 'Show location details' : 'Hide location details'}" title="${locationDetailsVisibility[location] === false ? 'Show details' : 'Hide details'}"><i class="fa-regular ${locationDetailsVisibility[location] === false ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
                                 <button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="location-icon-button h-9 w-9 min-h-0 p-0 flex items-center justify-center rounded-lg border border-emerald-200 dark:border-slate-600 hover:bg-emerald-50 dark:hover:bg-slate-800 text-emerald-800 dark:text-emerald-300" aria-label="${locationDetails[location] ? 'Edit location details' : 'Add location details'}" title="${locationDetails[location] ? 'Edit details' : 'Add details'}"><i class="fa-solid fa-pen-to-square"></i></button>
                             </div>
                         </div>
-                        <div class="location-group-content">
                         ${locationDetails[location] && locationDetailsVisibility[location] !== false ? `<div class="location-group-details mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">${escapeHtml(String(locationDetails[location]).replace(/\\n/g, '\n'))}</div>` : ''}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">${cards.map(plant => cardMarkup(plant, location)).join('')}</div>
-                        </div>
                     </section>`;
             }).join('');
-        }
-
-        function toggleLocationSection(button) {
-            const section = button.closest('.location-group');
-            if (!section) return;
-            const content = section.querySelector('.location-group-content');
-            if (!content) return;
-            const willCollapse = !content.hidden;
-            content.hidden = willCollapse;
-            button.setAttribute('aria-expanded', String(!willCollapse));
-            const icon = button.querySelector('.location-collapse-icon');
-            if (icon) icon.classList.toggle('rotate-180', !willCollapse);
-            const toolbar = button.closest('.location-group-toolbar');
-            if (toolbar) toolbar.classList.toggle('mb-3', !willCollapse);
         }
 
         function openAddPlantModal() {
@@ -3516,60 +3487,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     .empty { color: #64748b; font-style: italic; }
     footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 9pt; }
     @media print { .no-print { display: none; } }
-
-        /* Final, scoped override: keep Add Plant above the sticky site header/navigation. */
-        #plant-modal {
-            position: fixed !important;
-            inset: 0 !important;
-            z-index: 99999 !important;
-            isolation: isolate !important;
-        }
-        #plant-modal > div {
-            position: relative !important;
-            z-index: 100000 !important;
-            overflow: hidden !important;
-        }
-        #plant-modal #plant-form {
-            position: relative !important;
-            z-index: 1 !important;
-            padding-top: 76px !important;
-            border: 0 !important;
-            border-top: 0 !important;
-            box-shadow: none !important;
-        }
-        #plant-modal > div > .absolute.top-3.right-3 {
-            z-index: 5 !important;
-            height: 38px !important;
-            border: 0 !important;
-            border-bottom: 0 !important;
-            box-shadow: none !important;
-            background: #fffef9 !important;
-        }
-        #plant-modal > div > .absolute.top-3.right-3::before {
-            content: none !important;
-            display: none !important;
-            border: 0 !important;
-            box-shadow: none !important;
-        }
-        #plant-modal > div > .absolute.top-3.right-3::after {
-            height: 6px !important;
-            border: 0 !important;
-            box-shadow: none !important;
-            z-index: 1 !important;
-        }
-        #plant-modal > div > div:first-child {
-            border: 0 !important;
-            border-bottom: 0 !important;
-            box-shadow: none !important;
-        }
-        #main-navigation-tabs {
-            box-shadow: none !important;
-            border-bottom: 0 !important;
-        }
-        #main-navigation-tabs::before {
-            box-shadow: none !important;
-            border: 0 !important;
-        }
 </style></head><body>
 <header><div class="brand">FloraScan · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
 <section class="details">
