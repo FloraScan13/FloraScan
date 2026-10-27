@@ -563,6 +563,23 @@ textarea {
             outline: none !important;
             box-shadow: none !important;
         }
+        /* Keep the primary nutrient action solid pink; the .rounded-lg rule below is more specific than a plain button selector. */
+        #journal-modal #nutrient-library-section button.bg-emerald-700 {
+            background-color: #c6537b !important;
+            border-color: #c6537b !important;
+            color: #fff8fa !important;
+        }
+        #journal-modal #nutrient-library-section button.bg-emerald-700:hover {
+            background-color: #a63d65 !important;
+            border-color: #a63d65 !important;
+        }
+        #journal-modal #nutrient-library-section button.bg-emerald-700:active,
+        #journal-modal #nutrient-library-section button.bg-emerald-700:focus {
+            background-color: #c6537b !important;
+            border-color: #c6537b !important;
+            color: #fff8fa !important;
+            box-shadow: none !important;
+        }
         #journal-modal #nutrient-library-section .text-emerald-600,
         #journal-modal #nutrient-library-section .text-emerald-700,
         #journal-modal #nutrient-library-section .text-emerald-800 {
