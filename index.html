@@ -2730,11 +2730,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             const filtered = plants.filter(p => {
                 if (selectedLocation && (p.location || '') !== selectedLocation) return false;
-                const colorName = getCommonColorName(p.hex).toLowerCase();
                 return p.name.toLowerCase().includes(query) ||
                        (p.variety && p.variety.toLowerCase().includes(query)) ||
-                       (p.notes && p.notes.toLowerCase().includes(query)) ||
-                       colorName.includes(query);
+                       (p.notes && p.notes.toLowerCase().includes(query));
             });
 
             if (filtered.length === 0) {
@@ -2745,7 +2743,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             emptyEl.classList.add('hidden');
 
             const cardMarkup = (p, groupLocation) => {
-                const colorName = getCommonColorName(p.hex);
                 const svgMarkup = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
                 // Use the actual rendered group heading as the key, so every card in a group gets the same details.
                 const plantLocation = (groupLocation || p.location || '').trim();
@@ -2774,10 +2771,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                         <div class="px-5 py-2.5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700/50 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <div class="flex items-center space-x-2"><span>Date Sown: <strong class="text-slate-700 dark:text-slate-300 font-semibold">${escapeHtml(p.date || 'Not set')}</strong></span></div>
-                            <div class="inline-flex items-center space-x-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
-                                <div class="w-3 h-3 rounded-full border border-slate-300 shadow-sm" style="background-color: ${escapeHtml(p.hex || '#ffffff')};"></div>
-                                <span class="text-[11px] font-semibold text-slate-700 dark:text-slate-300">${escapeHtml(colorName)}</span>
-                            </div>
+
                         </div>
                     </div>`;
             };
@@ -3151,7 +3145,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const iconContainer = document.getElementById('journal-icon-container');
             iconContainer.innerHTML = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
 
-            toggleNutrientLibraryView();
+            // Open the journal even if an optional nutrient UI control is unavailable.
+            try { toggleNutrientLibraryView(); } catch (error) { console.warn('Nutrient controls could not be refreshed:', error); }
             renderJournalLogs(p);
             document.getElementById('journal-modal').classList.remove('hidden');
         }
