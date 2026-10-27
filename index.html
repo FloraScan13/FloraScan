@@ -1097,31 +1097,28 @@ textarea {
 
 
 
-        /* Keep the Plant Journal close-control header to a slim divider line. */
+        /* Match the Plant Journal's top strip, wavy line and close-button placement to Add Plant. */
         #journal-modal #journal-header {
             position: relative !important;
             min-height: 0 !important;
-            height: 38px !important;
-            padding: 0 10px 10px !important;
+            height: 28px !important;
+            padding: 0 10px !important;
             border-bottom: 0 !important;
             background: #fffef9 !important;
         }
-        /* Reuse the fine, hand-drawn sage pencil line below both modal headers. */
-        #journal-modal #journal-header::after,
-        #plant-modal > div::before {
+        #journal-modal #journal-header::after {
             content: "" !important;
             position: absolute !important;
-            left: 24px !important;
-            right: 24px !important;
+            left: 14px !important;
+            right: 14px !important;
+            bottom: 0 !important;
             height: 6px !important;
             pointer-events: none !important;
             background-repeat: no-repeat !important;
             background-position: center !important;
             background-size: 100% 6px !important;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
-        }
-        #journal-modal #journal-header::after {
-            bottom: 0 !important;
+            z-index: 1 !important;
         }
         /* Use the same fine sage pencil divider for the two sections in the Growth Journal. */
         #journal-modal #journal-header ~ div > div.border-t.border-slate-200,
@@ -1219,14 +1216,19 @@ textarea {
         #journal-modal #journal-header button {
             width: 24px !important;
             height: 24px !important;
+            min-height: 24px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
             padding: 0 !important;
             line-height: 1 !important;
             border-radius: 9999px !important;
+            position: relative !important;
+            z-index: 2 !important;
             background: #7f93c7 !important;
             color: #ffffff !important;
+            border: 0 !important;
+            box-shadow: 0 0 0 5px #fffef9 !important;
             transition: background-color .2s ease !important;
         }
         #journal-modal #journal-header button:hover {
