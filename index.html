@@ -1353,7 +1353,23 @@ textarea {
             opacity: 0.10;
             pointer-events: none;
             user-select: none;
+            z-index: 0;
+        }
+
+        /* Keep app content and its cards above the page watermark. */
+        #app-header,
+        main,
+        footer,
+        #global-beans-watermark ~ * {
+            position: relative;
             z-index: 1;
+        }
+
+        /* Preserve fixed positioning for overlays and dialogs. */
+        [role="dialog"],
+        .modal,
+        #global-beans-watermark ~ .fixed {
+            z-index: 50;
         }
         @media (max-width: 600px) {
             #global-beans-watermark {
