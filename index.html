@@ -1336,30 +1336,33 @@ textarea {
         }
 
     
-           /* In list view, keep the watermark to the right of the text and scale it up. */
+           /* List view: large, clearly visible plant watermark on the right side. */
         body.plant-list-view #plants-grid .plant-card-content {
             position: relative !important;
             isolation: isolate !important;
             overflow: hidden !important;
             background: #fffef9 !important;
+            min-height: 150px !important;
+            padding-right: 1rem !important;
         }
         body.plant-list-view #plants-grid .plant-card-watermark {
             position: absolute !important;
-            top: -18% !important;
-            right: -3% !important;
-            bottom: -18% !important;
+            top: 50% !important;
+            right: 0 !important;
             left: auto !important;
-            width: 52% !important;
-            height: 136% !important;
-            transform: none !important;
+            bottom: auto !important;
+            width: 58% !important;
+            height: 190% !important;
+            transform: translateY(-50%) !important;
             display: flex !important;
             align-items: center !important;
             justify-content: flex-end !important;
-            opacity: .12 !important;
+            opacity: .16 !important;
             pointer-events: none !important;
             z-index: 0 !important;
         }
         body.plant-list-view #plants-grid .plant-card-watermark svg {
+            display: block !important;
             width: 100% !important;
             height: 100% !important;
             max-width: none !important;
@@ -1367,24 +1370,27 @@ textarea {
             object-fit: contain !important;
             object-position: right center !important;
         }
-        body.plant-list-view #plants-grid .plant-card-content > .crop-badge-container,
+        body.plant-list-view #plants-grid .plant-card-content > .crop-badge-container {
+            position: relative !important;
+            z-index: 2 !important;
+            flex-shrink: 0 !important;
+        }
         body.plant-list-view #plants-grid .plant-card-content > .plant-card-details {
             position: relative !important;
             z-index: 1 !important;
-        }
-        body.plant-list-view #plants-grid .plant-card-details {
-            padding-right: 22% !important;
+            flex: 1 1 45% !important;
+            min-width: 0 !important;
+            padding-right: 0 !important;
         }
         @media (max-width: 480px) {
-            body.plant-list-view #plants-grid .plant-card-watermark {
-                width: 48% !important;
-                height: 130% !important;
-                top: -15% !important;
-                bottom: -15% !important;
-                right: -2% !important;
+            body.plant-list-view #plants-grid .plant-card-content {
+                min-height: 130px !important;
             }
-            body.plant-list-view #plants-grid .plant-card-details {
-                padding-right: 16% !important;
+            body.plant-list-view #plants-grid .plant-card-watermark {
+                width: 58% !important;
+                height: 170% !important;
+                right: -3% !important;
+                opacity: .14 !important;
             }
         }
 
