@@ -1163,44 +1163,14 @@ textarea {
             </div>
         </div>
 
-        <!-- TAB 2: LIVE CAMERA TAG SCANNER -->
+        <!-- TAB 2: NFC PLANT TAG SCANNER -->
         <div id="view-scanner" class="hidden space-y-6">
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
-                <h2 class="text-lg font-bold mb-1 flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-camera text-emerald-600"></i>
-                    <span>Scan Garden Tag Color</span>
-                </h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Point your camera at a physical colored garden plant tag. Flora Scan detects the color swatch and instantly brings up the matching plant profile and growth logs.</p>
-                
-                <div class="relative max-w-md mx-auto aspect-video bg-black rounded-2xl overflow-hidden shadow-inner mb-4">
-                    <video id="match-video" class="w-full h-full object-cover" playsinline autoplay muted></video>
-                    <canvas id="match-canvas" class="hidden"></canvas>
-                    <div class="absolute inset-0 border-2 border-white/40 rounded-2xl pointer-events-none flex items-center justify-center">
-                        <div class="w-12 h-12 border-2 border-emerald-400 rounded-full animate-pulse"></div>
-                    </div>
-                </div>
-
-                <div class="flex justify-center gap-3">
-                    <button id="match-cam-btn" onclick="toggleMatchCamera()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition flex items-center space-x-2">
-                        <i class="fa-solid fa-video"></i>
-                        <span id="match-cam-btn-text">Start Camera</span>
-                    </button>
-                    <button id="scan-tag-btn" onclick="triggerColorMatch()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition flex items-center space-x-2">
-                        <i class="fa-solid fa-camera"></i>
-                        <span>Scan Tag</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Match Result Card -->
-            <div id="match-result-card" class="hidden bg-white dark:bg-slate-800 p-6 rounded-2xl border border-emerald-500 shadow-md">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/50 px-3 py-1 rounded-full">Tag Color Recognized</span>
-                    </div>
-                    <div id="match-color-swatch" class="w-7 h-7 rounded-full border-2 border-white shadow-md"></div>
-                </div>
-                <div id="match-result-content"></div>
+                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e4eadf] text-[#294b34]"><i class="fa-solid fa-wifi text-2xl"></i></div>
+                <h2 class="text-lg font-bold mb-1">Tap an NFC Plant Tag</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Start NFC scanning, then hold your phone close to a plant’s NFC tag to open its growth journal.</p>
+                <button id="nfc-scan-btn" onclick="startNfcScan()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow transition inline-flex items-center justify-center gap-2"><i class="fa-solid fa-wifi"></i><span>Start NFC Scan</span></button>
+                <p id="nfc-scan-status" role="status" aria-live="polite" class="mt-4 text-sm text-slate-500">NFC scanning is stopped.</p>
             </div>
         </div>
 
@@ -1398,36 +1368,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <p class="text-[11px] text-slate-400 mt-1.5"><span id="selected-icon-name-display" class="font-semibold text-emerald-600 dark:text-emerald-400">Cucumber / Gherkin</span></p>
                 </div>
 
-                <!-- Tag Color Camera Capture Section -->
                 <div class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
-                            <i class="fa-solid fa-camera text-emerald-600"></i>
-                            <span>Tag Color Assignment</span>
-                        </label>
-                        <div class="flex items-center space-x-2">
-                            <div id="form-color-badge" class="w-5 h-5 rounded-full border-2 border-white shadow-sm" style="background-color: #16a34a;"></div>
-                            <span id="form-scanned-color-name" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Forest Green</span>
-                        </div>
-                    </div>
-                    
-                    <div class="relative aspect-video bg-black rounded-lg overflow-hidden shadow-inner">
-                        <video id="form-video" class="w-full h-full object-cover" playsinline autoplay muted></video>
-                        <canvas id="form-canvas" class="hidden"></canvas>
-                        <div class="absolute inset-0 border-2 border-white/30 rounded-lg pointer-events-none flex items-center justify-center">
-                            <div class="w-8 h-8 border-2 border-amber-400 rounded-full animate-pulse"></div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between gap-2">
-                        <button type="button" id="form-cam-toggle" onclick="toggleFormCamera()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-lg text-xs font-semibold transition">
-                            Start Camera Feed
-                        </button>
-                        <button type="button" onclick="captureFormColor()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center space-x-1.5">
-                            <i class="fa-solid fa-camera"></i>
-                            <span>Scan Tag</span>
-                        </button>
-                    </div>
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"><i class="fa-solid fa-wifi text-emerald-600"></i><span>Plant NFC Tag</span></div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Save the plant first, then reopen its profile to write its ID to a blank NFC tag.</p>
                     <input type="hidden" id="form-color-hex" value="#16a34a">
+                    <button type="button" onclick="writePlantNfcTag()" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 text-sm font-semibold"><i class="fa-solid fa-wifi mr-2"></i>Write NFC Tag</button>
+                    <p id="plant-nfc-status" class="text-xs text-slate-500" role="status">Save this plant first, then reopen it to write its NFC tag.</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2434,9 +2380,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (activeView) activeView.classList.remove('hidden');
             setActiveNavigationTab(tabId);
 
-            if (tabId === 'scanner') startMatchCamera();
-            else stopMatchCamera();
-            if (tabId !== 'plants') stopFormCamera();
         }
 
         function escapeHtml(value) {
@@ -2838,11 +2781,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             const initialHex = '#16a34a';
             document.getElementById('form-color-hex').value = initialHex;
-            document.getElementById('form-color-badge').style.backgroundColor = initialHex;
-            document.getElementById('form-scanned-color-name').textContent = getCommonColorName(initialHex);
 
             document.getElementById('plant-modal').classList.remove('hidden');
-            startFormCamera();
         }
 
         function openEditPlantModal(id) {
@@ -2856,64 +2796,67 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-medium').value = p.medium || '';
             renderPlantLocationControls(p.location || '');
             document.getElementById('plant-notes').value = p.notes || '';
-            document.getElementById('form-color-hex').value = p.hex;
-            document.getElementById('form-color-badge').style.backgroundColor = p.hex;
-            document.getElementById('form-scanned-color-name').textContent = getCommonColorName(p.hex);
+            document.getElementById('form-color-hex').value = p.hex || '#16a34a';
             
             renderIconPickerGrid(p.iconKey || 'cucumber');
 
             document.getElementById('plant-modal').classList.remove('hidden');
-            startFormCamera();
         }
 
         function closePlantModal() {
             document.getElementById('plant-modal').classList.add('hidden');
-            stopFormCamera();
             setActiveNavigationTab('plants');
         }
 
-        async function startFormCamera() {
-            const video = document.getElementById('form-video');
+
+
+
+
+        function setNfcStatus(message, isError = false) {
+            const el = document.getElementById('nfc-scan-status');
+            if (el) { el.textContent = message; el.className = 'mt-4 text-sm ' + (isError ? 'text-rose-700' : 'text-slate-500'); }
+            const formStatus = document.getElementById('plant-nfc-status');
+            if (formStatus) { formStatus.textContent = message; formStatus.className = 'text-xs ' + (isError ? 'text-rose-700' : 'text-slate-500'); }
+        }
+        function nfcSupportMessage() {
+            if (!window.isSecureContext) return 'NFC requires an HTTPS secure connection.';
+            if (!('NDEFReader' in window)) return 'NFC is not supported in this browser. Use a compatible Android phone with Chrome and NFC enabled.';
+            return '';
+        }
+        async function startNfcScan() {
+            const unsupported = nfcSupportMessage();
+            if (unsupported) { setNfcStatus(unsupported, true); return; }
             try {
-                activeFormStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                video.srcObject = activeFormStream;
-                document.getElementById('form-cam-toggle').textContent = 'Stop Camera Feed';
-            } catch (err) {
-                document.getElementById('form-cam-toggle').textContent = 'Camera Unavailable';
-            }
+                const reader = new NDEFReader();
+                await reader.scan();
+                setNfcStatus('Ready — hold your phone close to a FloraScan NFC plant tag.');
+                reader.onreadingerror = () => setNfcStatus('Could not read this tag. Hold the phone closer and try again.', true);
+                reader.onreading = event => {
+                    let value = '';
+                    for (const record of event.message.records) {
+                        if (record.recordType === 'text') { try { value = new TextDecoder(record.encoding || 'utf-8').decode(record.data); } catch (_) {} }
+                        if (value) break;
+                    }
+                    const match = value.match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
+                    if (!match) { setNfcStatus('This tag is not linked to a FloraScan plant. Open that plant and write its NFC tag first.', true); return; }
+                    const plant = plants.find(p => String(p.id) === match[1]);
+                    if (!plant) { setNfcStatus('No saved plant matches this NFC tag on this device/account.', true); return; }
+                    setNfcStatus('Plant found: ' + plant.name);
+                    openJournalModal(plant.id);
+                };
+            } catch (err) { setNfcStatus(err && err.name === 'NotAllowedError' ? 'NFC permission was not granted.' : 'Could not start NFC scanning. Check NFC is enabled and try again.', true); }
         }
-
-        function stopFormCamera() {
-            if (activeFormStream) {
-                activeFormStream.getTracks().forEach(track => track.stop());
-                activeFormStream = null;
-            }
-            const video = document.getElementById('form-video');
-            if (video) video.srcObject = null;
-            document.getElementById('form-cam-toggle').textContent = 'Start Camera Feed';
-        }
-
-        function toggleFormCamera() {
-            if (activeFormStream) stopFormCamera();
-            else startFormCamera();
-        }
-
-        function captureFormColor() {
-            const video = document.getElementById('form-video');
-            const canvas = document.getElementById('form-canvas');
-            if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
-
-            canvas.width = video.videoWidth || 320;
-            canvas.height = video.videoHeight || 240;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            const pixelData = ctx.getImageData(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1).data;
-            const hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
-
-            document.getElementById('form-color-hex').value = hex;
-            document.getElementById('form-color-badge').style.backgroundColor = hex;
-            document.getElementById('form-scanned-color-name').textContent = getCommonColorName(hex);
+        async function writePlantNfcTag() {
+            const id = document.getElementById('edit-plant-id').value;
+            const plant = plants.find(p => String(p.id) === String(id));
+            if (!plant) { setNfcStatus('Save the plant first, then reopen Edit Plant Profile to write its tag.', true); return; }
+            const unsupported = nfcSupportMessage();
+            if (unsupported) { setNfcStatus(unsupported, true); return; }
+            try {
+                const writer = new NDEFReader();
+                await writer.write({ records: [{ recordType: 'text', data: 'FLORASCAN:' + plant.id }] });
+                setNfcStatus('NFC tag successfully linked to ' + plant.name + '.');
+            } catch (err) { setNfcStatus(err && err.name === 'NotAllowedError' ? 'NFC permission was not granted.' : 'Could not write this tag. Hold a writable NFC tag close to the phone and try again.', true); }
         }
 
         async function handlePlantSubmit(e) {
@@ -2951,80 +2894,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             switchTab('plants');
         }
 
-        async function startMatchCamera() {
-            const video = document.getElementById('match-video');
-            try {
-                activeMatchStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                video.srcObject = activeMatchStream;
-                document.getElementById('match-cam-btn-text').textContent = 'Stop Camera';
-            } catch (err) {
-                document.getElementById('match-cam-btn-text').textContent = 'Camera Unavailable';
-            }
-        }
 
-        function stopMatchCamera() {
-            if (activeMatchStream) {
-                activeMatchStream.getTracks().forEach(track => track.stop());
-                activeMatchStream = null;
-            }
-            const video = document.getElementById('match-video');
-            if (video) video.srcObject = null;
-            document.getElementById('match-cam-btn-text').textContent = 'Start Camera';
-        }
 
-        function toggleMatchCamera() {
-            if (activeMatchStream) stopMatchCamera();
-            else startMatchCamera();
-        }
 
-        function triggerColorMatch() {
-            const video = document.getElementById('match-video');
-            const canvas = document.getElementById('match-canvas');
-            if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
-
-            canvas.width = video.videoWidth || 320;
-            canvas.height = video.videoHeight || 240;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            const pixelData = ctx.getImageData(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1).data;
-            const scannedHex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
-            const scannedColorName = getCommonColorName(scannedHex);
-
-            document.getElementById('match-color-swatch').style.backgroundColor = scannedHex;
-
-            const matchedPlants = plants.filter(p => getCommonColorName(p.hex) === scannedColorName);
-            const card = document.getElementById('match-result-card');
-            const content = document.getElementById('match-result-content');
-
-            if (matchedPlants.length > 0) {
-                content.innerHTML = `
-                    <div class="space-y-3">
-                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Matching Plants with Tag Color <b>${scannedColorName}</b>:</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            ${matchedPlants.map(p => `
-                                <div onclick="openJournalModal('${p.id}')" class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center space-x-3 cursor-pointer hover:border-emerald-500 transition">
-                                    <div class="w-10 h-10 rounded-lg crop-badge-container p-1 flex items-center justify-center flex-shrink-0">${MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber}</div>
-                                    <div class="min-w-0">
-                                        <h5 class="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">${p.name}</h5>
-                                        <p class="text-[11px] text-emerald-600 dark:text-emerald-400 truncate">${p.variety || 'Standard Variety'}</p>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            } else {
-                content.innerHTML = `
-                    <div class="text-center py-4 text-slate-500">
-                        <p class="text-xs font-medium">Scanned Color: <b class="text-slate-800 dark:text-slate-200">${scannedColorName}</b></p>
-                        <p class="text-xs mt-1">No plants currently matched with this tag color.</p>
-                    </div>
-                `;
-            }
-
-            card.classList.remove('hidden');
-        }
 
         function toggleNutrientLibraryView() {
             const logType = document.getElementById('log-type').value;
