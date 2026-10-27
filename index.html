@@ -2868,15 +2868,38 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!('NDEFReader' in window)) return 'NFC is not supported in this browser. Use a compatible Android phone with Chrome and NFC enabled.';
             return '';
         }
+        let activeNfcScanController = null;
+
+        async function stopNfcScan() {
+            if (activeNfcScanController) {
+                activeNfcScanController.abort();
+                activeNfcScanController = null;
+            }
+            const button = document.getElementById('nfc-scan-btn');
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = '<i class="fa-solid fa-wifi"></i><span>Start NFC Scan</span>';
+            }
+        }
+
         async function startNfcScan() {
             const unsupported = nfcSupportMessage();
             if (unsupported) { setNfcStatus(unsupported, true); return; }
+            await stopNfcScan();
+            const controller = new AbortController();
+            activeNfcScanController = controller;
+            const button = document.getElementById('nfc-scan-btn');
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '<i class="fa-solid fa-wifi"></i><span>Scanning…</span>';
+            }
             try {
                 const reader = new NDEFReader();
-                await reader.scan();
+                await reader.scan({ signal: controller.signal });
                 setNfcStatus('Ready — hold your phone close to a FloraScan NFC plant tag.');
                 reader.onreadingerror = () => setNfcStatus('Could not read this tag. Hold the phone closer and try again.', true);
-                reader.onreading = event => {
+                reader.onreading = async event => {
+                    if (controller.signal.aborted) return;
                     let value = '';
                     for (const record of event.message.records) {
                         if (record.recordType === 'text') { try { value = new TextDecoder(record.encoding || 'utf-8').decode(record.data); } catch (_) {} }
@@ -2887,14 +2910,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const plant = plants.find(p => String(p.id) === match[1]);
                     if (!plant) { setNfcStatus('No saved plant matches this NFC tag on this device/account.', true); return; }
 
-                    // Stop listening as soon as a valid plant tag is read, so the reader does not keep firing.
-                    if (typeof reader.abort === 'function') reader.abort().catch(() => {});
-                    reader.onreading = null;
-                    reader.onreadingerror = null;
-                    setNfcStatus('Plant found: ' + plant.name);
+                    // AbortController.signal is the Web NFC-supported way to stop a scan.
+                    await stopNfcScan();
+                    setNfcStatus('Plant found: ' + plant.name + ' — NFC scanning stopped.');
                     openJournalModal(plant.id);
                 };
-            } catch (err) { setNfcStatus(err && err.name === 'NotAllowedError' ? 'NFC permission was not granted.' : 'Could not start NFC scanning. Check NFC is enabled and try again.', true); }
+            } catch (err) {
+                if (err && err.name === 'AbortError') return;
+                setNfcStatus(err && err.name === 'NotAllowedError' ? 'NFC permission was not granted.' : 'Could not start NFC scanning. Check NFC is enabled and try again.', true);
+                await stopNfcScan();
+            }
         }
         async function writePlantNfcTag() {
             const id = document.getElementById('edit-plant-id').value;
