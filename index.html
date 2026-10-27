@@ -1388,6 +1388,76 @@ textarea {
             }
         }
 
+
+        /* Keep Add Plant and Growth Journal fully usable on short/mobile viewports. */
+        #plant-modal,
+        #journal-modal {
+            align-items: flex-start !important;
+            justify-content: center !important;
+            padding-top: max(0.5rem, env(safe-area-inset-top, 0px)) !important;
+            padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
+            padding-left: max(0.5rem, env(safe-area-inset-left, 0px)) !important;
+            padding-right: max(0.5rem, env(safe-area-inset-right, 0px)) !important;
+            box-sizing: border-box !important;
+        }
+        #plant-modal > div,
+        #journal-modal > div {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1rem) !important;
+            max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1rem) !important;
+            min-height: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+        }
+        #plant-modal #plant-form {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        #journal-modal #journal-header {
+            flex: 0 0 28px !important;
+        }
+        #journal-modal #journal-header + div {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        /* The wavy divider is the only line under each modal's close-button strip. */
+        #plant-modal > div > .absolute.top-3.right-3,
+        #journal-modal #journal-header {
+            border-bottom: 0 !important;
+            box-shadow: none !important;
+        }
+        #plant-modal > div > .absolute.top-3.right-3::before,
+        #plant-modal > div > .absolute.top-3.right-3::after,
+        #journal-modal #journal-header::before,
+        #journal-modal #journal-header::after {
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+        @media (min-width: 641px) {
+            #plant-modal,
+            #journal-modal {
+                align-items: center !important;
+            }
+            #plant-modal > div { max-width: 32rem !important; }
+            #journal-modal > div { max-width: 42rem !important; }
+        }
+
 </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 </head>
