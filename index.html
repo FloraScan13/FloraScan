@@ -944,10 +944,18 @@ textarea {
         }
         #icon-picker-grid button:hover,
         #icon-picker-grid button[aria-pressed="true"],
-        #icon-picker-grid button.selected {
+        #icon-picker-grid button.selected,
+        #icon-picker-grid button.ring-2.ring-emerald-500,
+        #icon-picker-grid button:has(.crop-badge-container) {
             background: #e4eadf !important;
-            border-color: #9db397 !important;
+            border-color: #294b34 !important;
             color: #294b34 !important;
+        }
+        /* The chosen crop in Add Plant uses a forest-green selection ring, not bright emerald. */
+        #icon-picker-grid button.ring-2,
+        #icon-picker-grid button[aria-pressed="true"] {
+            --tw-ring-color: #294b34 !important;
+            box-shadow: 0 0 0 2px #294b34 !important;
         }
         #selected-icon-name-display,
         #form-scanned-color-name {
