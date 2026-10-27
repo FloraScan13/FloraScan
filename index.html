@@ -3130,7 +3130,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-variety').textContent = p.variety || 'Standard Variety';
             document.getElementById('journal-date').textContent = p.date || 'Not specified';
             document.getElementById('journal-medium').textContent = p.medium || 'Not specified';
-            document.getElementById('journal-color-name').textContent = getCommonColorName(p.hex);
             document.getElementById('journal-initial-notes').textContent = p.notes ? `"${p.notes}"` : '';
 
             const plantLocation = (p.location || '').trim();
