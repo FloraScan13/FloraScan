@@ -1591,6 +1591,23 @@ textarea {
                                 <i class="fa-solid fa-user-plus"></i>
                                 <span>Register Account</span>
                             </button>
+                            <button onclick="handleSupabasePasswordReset()" class="text-emerald-700 dark:text-emerald-300 hover:underline px-2 py-2 text-xs font-semibold">
+                                Forgot password?
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Password recovery form, shown after opening a valid reset email -->
+                    <div id="auth-password-recovery" class="hidden p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-slate-900/70 space-y-3">
+                        <h5 class="text-sm font-bold text-slate-800 dark:text-slate-100">Set a new password</h5>
+                        <p class="text-xs text-slate-600 dark:text-slate-300">Enter your new password below. Use at least 6 characters.</p>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="auth-new-password">New password</label>
+                        <input type="password" id="auth-new-password" autocomplete="new-password" minlength="6" placeholder="Enter a new password" class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="auth-confirm-password">Confirm new password</label>
+                        <input type="password" id="auth-confirm-password" autocomplete="new-password" minlength="6" placeholder="Enter it again" class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="handleSupabaseSetNewPassword()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Save new password</button>
+                            <button onclick="document.getElementById('auth-password-recovery').classList.add('hidden')" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300">Cancel</button>
                         </div>
                     </div>
 
@@ -2262,6 +2279,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 // Listen for auth state changes
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                    if (event === 'PASSWORD_RECOVERY') {
+                        document.getElementById('auth-password-recovery')?.classList.remove('hidden');
+                        document.getElementById('auth-new-password')?.focus();
+                        return;
+                    }
                     if (session && session.user) {
                         currentUser = session.user;
                         updateAuthUI(true, currentUser.email);
@@ -2334,6 +2356,30 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             else {
                 alert("Sign In Successful!");
             }
+        }
+
+        async function handleSupabasePasswordReset() {
+            if (!supabaseClient) { alert("Please connect your Supabase credentials first!"); return; }
+            const email = document.getElementById('auth-email').value.trim();
+            if (!email) { alert("Enter your email address first."); document.getElementById('auth-email').focus(); return; }
+            const redirectTo = 'https://florascan13.github.io/FloraScan/';
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+            if (error) alert("Password reset request failed: " + error.message);
+            else alert("If an account exists for that email, Supabase will send a password reset link. Open the newest email to continue.");
+        }
+
+        async function handleSupabaseSetNewPassword() {
+            if (!supabaseClient) { alert("Please connect your Supabase credentials first!"); return; }
+            const password = document.getElementById('auth-new-password').value;
+            const confirmation = document.getElementById('auth-confirm-password').value;
+            if (!password || password.length < 6) { alert("Please enter a password with at least 6 characters."); return; }
+            if (password !== confirmation) { alert("The passwords do not match."); return; }
+            const { error } = await supabaseClient.auth.updateUser({ password });
+            if (error) { alert("Could not update password: " + error.message); return; }
+            document.getElementById('auth-password-recovery').classList.add('hidden');
+            document.getElementById('auth-new-password').value = '';
+            document.getElementById('auth-confirm-password').value = '';
+            alert("Your password has been updated. You can now sign in with your new password.");
         }
 
         async function handleSupabaseSignUp() {
