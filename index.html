@@ -1644,18 +1644,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         // Clean, consistent Garden Fresh line-art icons.
         // Real crop photographs served from Wikimedia Commons. Individual file licences and attribution are available on each linked Commons file page.
         const MONOCHROME_VEG_SVGS = {
-            cucumber: `<img src="./assets/plants/assets%3Aplants%3Acucumber.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
-            tomato: `<img src="./assets/plants/assets%3Aplants%3Atomato.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
-            pepper: `<img src="./assets/plants/assets%3Aplants%3Apepper.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
-            carrot: `<img src="./assets/plants/assets%3Aplants%3Acarrot.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
-            greens: `<img src="./assets/plants/assets%3Aplants%3Agreens.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
-            onion: `<img src="./assets/plants/assets%3Aplants%3Aonion.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
-            fig: `<svg viewBox="0 0 100 100" class="w-full h-full" aria-hidden="true"><g fill="white" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M50 27c-4-8-1-15 6-20 2 9 1 15-6 20Z"/><path d="M48 25C32 16 19 28 22 46c2 17 13 37 28 42 15-5 26-25 28-42 3-18-10-30-26-21Z"/><path d="M50 27c-9 14-13 30-10 48m10-48c9 14 13 30 10 48M31 38c-1 13 5 27 13 35m25-35c1 13-5 27-13 35M39 33l2 3m18-3-2 3m-20 13 3 3m20-3-3 3m-13 9 3 3m8-3-3 3" fill="none"/></g></svg>`,
-            berries: `<svg viewBox="0 0 100 100" class="w-full h-full" aria-hidden="true"><g fill="white" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M50 24c-8-8-18-4-20 3-11-3-20 7-17 18 2 10 12 20 21 27 5 7 11 13 16 17 5-4 11-10 16-17 9-7 19-17 21-27 3-11-6-21-17-18-2-7-12-11-20-3Z"/><path d="M50 24 40 12l-2 13-13-3 9 11-14 1 18 5m12-15 10-12 2 13 13-3-9 11 14 1-18 5" fill="none"/><g fill="none"><path d="M31 42l3 3m-2 9 3 3m7-8 3 3m-1 12 3 3m9-15 3 3m-1 12 3 3m8-20 3 3m-1 10 3 3M48 38l2 3m-7 10 2 3m12-2 2 3"/></g></g></svg>`,
-            eggplant: `<svg viewBox="0 0 100 100" class="w-full h-full" aria-hidden="true"><g fill="white" stroke="black" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M29 24c-9-2-14-8-13-15 8 4 12 7 14 13 8-8 18-10 28-5 18 9 20 31 8 49-8 12-22 23-34 19-14-4-17-20-12-34 3-9 7-19 9-27Z"/><path d="M30 24 19 17l6 14-11 2 15 2m2-11c8 9 12 24 8 39m6-42c8 14 10 29 3 44m7-39c6 12 6 22 0 33" fill="none"/><path d="M28 22c-2-8 1-13 8-16 1 7-1 12-8 16Z"/></g></svg>`,
-            corn: `<svg viewBox="0 0 100 100" class="w-full h-full" aria-hidden="true"><g fill="white" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M35 17c7-8 23-8 30 0 9 15 8 42-1 59-6 12-22 12-28 0-9-17-10-44-1-59Z"/><path d="M35 25C22 32 17 54 29 78l11 10c-6-19-6-39-5-63ZM65 25c13 7 18 29 6 53L60 88c6-19 6-39 5-63Z"/><path d="M42 24v49m8-52v55m8-52v49M39 32l24 2M38 42l25 2M38 52l25 2M40 62l21 2M43 72l15 2" fill="none"/></g></svg>`,
-            beans: `<svg viewBox="0 0 100 100" class="w-full h-full" aria-hidden="true"><g fill="white" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 31c15-20 38-20 55-1 13 15 9 31-5 35-18 5-39-6-50-20-4-5-4-10 0-14Z"/><path d="M21 32c13-13 34-12 48 4 10 11 7 21-3 24-15 3-33-7-43-18-3-4-4-7-2-10Z" fill="none"/><ellipse cx="34" cy="36" rx="5" ry="7"/><ellipse cx="48" cy="45" rx="5" ry="7"/><ellipse cx="61" cy="53" rx="5" ry="7"/><path d="M32 32l4 4m10 5 4 4m9 4 4 4M25 26l-5-7m54 11 7-4" fill="none"/></g></svg>`,
-            sprouts: `<svg viewBox="0 0 100 100" class="w-full h-full" aria-hidden="true"><g fill="white" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M50 86V43m0 18C32 61 21 47 25 32c14 0 25 10 25 29Zm0-15c1-18 13-29 27-24 1 15-10 25-27 27Z"/><path d="M50 86c-10-12-22-14-32-8 6 12 18 16 32 8Zm0 0c10-12 22-14 32-8-6 12-18 16-32 8Z"/><path d="M50 48 36 37m14 15 15-17M50 71 31 80m19-9 19 9M50 58v22" fill="none"/></g></svg>`
+            cucumber: `<img src="./assets/assets%3Aplants%3Acucumber.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            tomato: `<img src="./assets/assets%3Aplants%3Atomato.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            pepper: `<img src="./assets/assets%3Aplants%3Apepper.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            carrot: `<img src="./assets/assets%3Aplants%3Acarrot.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            greens: `<img src="./assets/assets%3Aplants%3Agreens.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            onion: `<img src="./assets/assets%3Aplants%3Aonion.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            fig: `<img src="./assets/assets%3Aplants%3Afruit.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            berries: `<img src="./assets/assets%3Aplants%3Aberries.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            eggplant: `<img src="./assets/assets%3Aplants%3Aeggplant.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            corn: `<img src="./assets/assets%3Aplants%3Acorn.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            beans: `<img src="./assets/assets%3Aplants%3Abeans.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            sprouts: `<img src="./assets/assets%3Aplants%3Asprouts.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`
         };;
 
         const CROP_ICON_LIBRARY = [
