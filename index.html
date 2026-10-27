@@ -1519,9 +1519,14 @@ textarea {
                                 <p class="text-[10px] text-emerald-600 dark:text-emerald-400">Authenticated Cloud Session Active</p>
                             </div>
                         </div>
-                        <button onclick="handleSupabaseSignOut()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                            Sign Out
-                        </button>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="handleSupabaseChangePassword()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                                Change Password
+                            </button>
+                            <button onclick="handleSupabaseSignOut()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                                Sign Out
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -2249,6 +2254,28 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             else {
                 alert("Sign In Successful!");
             }
+        }
+
+        async function handleSupabaseChangePassword() {
+            if (!supabaseClient) { alert('Supabase is not connected.'); return; }
+            const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+            if (sessionError || !session || !session.user) {
+                alert('Your session is no longer active. Please sign in again before changing your password.');
+                return;
+            }
+            const newPassword = window.prompt('Enter a new password (at least 6 characters):');
+            if (newPassword === null) return;
+            if (newPassword.length < 6) { alert('Please choose a password with at least 6 characters.'); return; }
+            const confirmation = window.prompt('Enter the new password again to confirm:');
+            if (confirmation === null) return;
+            if (newPassword !== confirmation) { alert('The passwords did not match. Please try again.'); return; }
+            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+            if (error) {
+                console.error('Password change failed:', error);
+                alert('Could not change the password: ' + error.message);
+                return;
+            }
+            alert('Password changed successfully. Your plant journal and cloud records have not been deleted.');
         }
 
         async function handleSupabasePasswordReset() {
