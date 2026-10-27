@@ -3538,6 +3538,46 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     .empty { color: #64748b; font-style: italic; }
     footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 9pt; }
     @media print { .no-print { display: none; } }
+
+        /* Keep Add Plant and Growth Journal fully reachable on short screens. */
+        #plant-modal, #journal-modal {
+            box-sizing: border-box !important;
+            align-items: flex-start !important;
+            justify-content: center !important;
+            padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+        }
+        #plant-modal > div, #journal-modal > div {
+            flex: 0 0 auto !important;
+            max-height: none !important;
+            margin-top: 12px !important;
+            margin-bottom: 12px !important;
+        }
+        #plant-modal #plant-form, #journal-modal > div > div:not(#journal-header) {
+            min-height: 0 !important;
+        }
+        /* Keep the sage wave delicate; remove any heavy grey divider beneath it. */
+        #plant-modal > div > .absolute.top-3.right-3,
+        #journal-modal #journal-header {
+            border-bottom: 0 !important;
+            box-shadow: none !important;
+        }
+        #plant-modal > div > .absolute.top-3.right-3::after,
+        #journal-modal #journal-header::after {
+            height: 2px !important;
+            background-size: 100% 2px !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 2' preserveAspectRatio='none'%3E%3Cpath d='M2 1 C80 0.3 120 1.7 205 0.8 S350 0.4 430 1.2 S580 1.7 665 0.7 S820 0.5 998 1' fill='none' stroke='%23b8c9b9' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+        }
+        @media (max-height: 760px) {
+            #plant-modal, #journal-modal {
+                align-items: flex-start !important;
+            }
+            #plant-modal > div, #journal-modal > div {
+                margin-top: 4px !important;
+                margin-bottom: 4px !important;
+            }
+        }
 </style></head><body>
 <header><div class="brand">FloraScan · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
 <section class="details">
