@@ -3516,6 +3516,60 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     .empty { color: #64748b; font-style: italic; }
     footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 9pt; }
     @media print { .no-print { display: none; } }
+
+        /* Final, scoped override: keep Add Plant above the sticky site header/navigation. */
+        #plant-modal {
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 99999 !important;
+            isolation: isolate !important;
+        }
+        #plant-modal > div {
+            position: relative !important;
+            z-index: 100000 !important;
+            overflow: hidden !important;
+        }
+        #plant-modal #plant-form {
+            position: relative !important;
+            z-index: 1 !important;
+            padding-top: 76px !important;
+            border: 0 !important;
+            border-top: 0 !important;
+            box-shadow: none !important;
+        }
+        #plant-modal > div > .absolute.top-3.right-3 {
+            z-index: 5 !important;
+            height: 38px !important;
+            border: 0 !important;
+            border-bottom: 0 !important;
+            box-shadow: none !important;
+            background: #fffef9 !important;
+        }
+        #plant-modal > div > .absolute.top-3.right-3::before {
+            content: none !important;
+            display: none !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+        #plant-modal > div > .absolute.top-3.right-3::after {
+            height: 6px !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            z-index: 1 !important;
+        }
+        #plant-modal > div > div:first-child {
+            border: 0 !important;
+            border-bottom: 0 !important;
+            box-shadow: none !important;
+        }
+        #main-navigation-tabs {
+            box-shadow: none !important;
+            border-bottom: 0 !important;
+        }
+        #main-navigation-tabs::before {
+            box-shadow: none !important;
+            border: 0 !important;
+        }
 </style></head><body>
 <header><div class="brand">FloraScan · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
 <section class="details">
