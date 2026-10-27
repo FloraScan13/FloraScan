@@ -547,6 +547,21 @@ textarea {
         #journal-modal #nutrient-library-section input[type="checkbox"] {
             accent-color: #c6537b !important;
         }
+        /* Highlight selected nutrient products in the FloraScan pink palette. */
+        #journal-modal #nutrient-product-list label:has(input[type="checkbox"]:checked) {
+            background-color: #fff0f4 !important;
+            border-radius: 6px;
+        }
+        #journal-modal #nutrient-product-list label:has(input[type="checkbox"]:checked) > div {
+            color: #81334f !important;
+        }
+        #journal-modal #nutrient-product-list label:has(input[type="checkbox"]:checked) .font-semibold {
+            color: #a63d65 !important;
+        }
+        #journal-modal #nutrient-product-list > div:has(input[type="checkbox"]:checked) {
+            background-color: #fff0f4 !important;
+            border-color: #e8a7bd !important;
+        }
         #journal-modal #add-selected-nutrients-button,
         #journal-modal #add-selected-nutrients-button span,
         #journal-modal #add-selected-nutrients-button i {
