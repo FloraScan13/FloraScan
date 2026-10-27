@@ -1348,12 +1348,13 @@ textarea {
             top: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
-            width: 48% !important;
+            left: auto !important;
+            width: 38% !important;
             height: 100% !important;
             transform: none !important;
             display: flex !important;
             align-items: center !important;
-            justify-content: center !important;
+            justify-content: flex-end !important;
             opacity: .09 !important;
             pointer-events: none !important;
             z-index: 0 !important;
@@ -1363,6 +1364,8 @@ textarea {
             height: 100% !important;
             max-width: none !important;
             max-height: none !important;
+            object-fit: contain !important;
+            object-position: right center !important;
         }
         body.plant-list-view #plants-grid .plant-card-content > .crop-badge-container,
         body.plant-list-view #plants-grid .plant-card-content > .plant-card-details {
@@ -1371,7 +1374,7 @@ textarea {
         }
         @media (max-width: 480px) {
             body.plant-list-view #plants-grid .plant-card-watermark {
-                width: 44% !important;
+                width: 34% !important;
                 height: 100% !important;
                 right: 0 !important;
             }
