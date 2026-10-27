@@ -1204,13 +1204,14 @@ textarea {
             <div id="plants-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 
             <!-- Empty State -->
-            <div id="plants-empty" class="hidden text-center py-16 px-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-2xl">
-                    <i class="fa-solid fa-leaf"></i>
+            <div id="plants-empty" class="hidden text-center py-16 px-4 rounded-2xl border border-dashed border-pink-200 dark:border-pink-900/70 bg-gradient-to-br from-pink-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-800 dark:to-pink-950/30 shadow-sm">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl border border-pink-100 dark:border-pink-900/70 bg-pink-100 dark:bg-pink-950/60 flex items-center justify-center text-pink-600 dark:text-pink-300 text-2xl shadow-sm">
+                    <i class="fa-solid fa-seedling"></i>
                 </div>
-                <h3 class="text-lg font-semibold mb-1">No plants added yet</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">Start by adding your first plant, choosing a crop icon, and logging growth entries.</p>
-                <button onclick="openAddPlantModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition">
+                <h3 class="text-lg font-semibold mb-1 text-pink-950 dark:text-pink-100">No plants added yet</h3>
+                <p class="text-sm text-pink-700/80 dark:text-pink-200/75 mb-6 max-w-sm mx-auto">This location is ready to grow. Add your first plant here to start tracking its progress.</p>
+                <button onclick="openAddPlantModal()" class="inline-flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm hover:shadow transition">
+                    <i class="fa-solid fa-plus"></i>
                     Add Your First Plant
                 </button>
             </div>
