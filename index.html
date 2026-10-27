@@ -2910,9 +2910,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const plant = plants.find(p => String(p.id) === match[1]);
                     if (!plant) { setNfcStatus('No saved plant matches this NFC tag on this device/account.', true); return; }
 
-                    // AbortController.signal is the Web NFC-supported way to stop a scan.
-                    await stopNfcScan();
-                    setNfcStatus('Plant found: ' + plant.name + ' — NFC scanning stopped.');
+                    // Stop the active reader immediately on the first valid plant tag.
+                    const scanButton = document.getElementById('nfc-scan-btn');
+                    const completedController = activeNfcScanController;
+                    activeNfcScanController = null;
+                    if (completedController) completedController.abort();
+                    reader.onreading = null;
+                    reader.onreadingerror = null;
+                    if (scanButton) {
+                        scanButton.disabled = false;
+                        scanButton.innerHTML = '<i class="fa-solid fa-wifi"></i><span>Start NFC Scan</span>';
+                    }
+                    setNfcStatus('Plant found: ' + plant.name + ' — scan stopped. Tap Start NFC Scan to scan another plant.');
                     openJournalModal(plant.id);
                 };
             } catch (err) {
