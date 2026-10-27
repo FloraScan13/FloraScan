@@ -1156,7 +1156,7 @@ textarea {
                 <span>Plants</span>
             </button>
             <button onclick="switchTab('scanner')" id="tab-scanner" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
-                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-nfc-symbol"></i>
                 <span>NFC Scan</span>
             </button>
             <button onclick="openAddPlantModal()" id="tab-add-plant" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
@@ -1211,10 +1211,10 @@ textarea {
         <!-- TAB 2: NFC PLANT TAG SCANNER -->
         <div id="view-scanner" class="hidden space-y-6">
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
-                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e4eadf] text-[#294b34]"><i class="fa-solid fa-wifi text-2xl"></i></div>
+                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e4eadf] text-[#294b34]"><i class="fa-solid fa-nfc-symbol text-2xl"></i></div>
                 <h2 class="text-lg font-bold mb-1">Tap an NFC Plant Tag</h2>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Start NFC scanning, then hold your phone close to a plant’s NFC tag to open its growth journal.</p>
-                <button id="nfc-scan-btn" onclick="startNfcScan()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow transition inline-flex items-center justify-center gap-2"><i class="fa-solid fa-wifi"></i><span>Start NFC Scan</span></button>
+                <button id="nfc-scan-btn" onclick="startNfcScan()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow transition inline-flex items-center justify-center gap-2"><i class="fa-solid fa-nfc-symbol"></i><span>Start NFC Scan</span></button>
                 <p id="nfc-scan-status" role="status" aria-live="polite" class="mt-4 text-sm text-slate-500">NFC scanning is stopped.</p>
             </div>
         </div>
@@ -1414,10 +1414,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 </div>
 
                 <div class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
-                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"><i class="fa-solid fa-wifi text-emerald-600"></i><span>Plant NFC Tag</span></div>
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"><i class="fa-solid fa-nfc-symbol text-emerald-600"></i><span>Plant NFC Tag</span></div>
                     <p class="text-xs text-slate-500 dark:text-slate-400">Save the plant first, then reopen its profile to write its ID to a blank NFC tag.</p>
                     <input type="hidden" id="form-color-hex" value="#16a34a">
-                    <button type="button" onclick="writePlantNfcTag()" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 text-sm font-semibold"><i class="fa-solid fa-wifi mr-2"></i>Write NFC Tag</button>
+                    <button type="button" onclick="writePlantNfcTag()" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 text-sm font-semibold"><i class="fa-solid fa-nfc-symbol mr-2"></i>Write NFC Tag</button>
                     <p id="plant-nfc-status" class="text-xs text-slate-500" role="status">Save this plant first, then reopen it to write its NFC tag.</p>
                 </div>
 
@@ -2878,7 +2878,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const button = document.getElementById('nfc-scan-btn');
             if (button) {
                 button.disabled = false;
-                button.innerHTML = '<i class="fa-solid fa-wifi"></i><span>Start NFC Scan</span>';
+                button.innerHTML = '<i class="fa-solid fa-nfc-symbol"></i><span>Start NFC Scan</span>';
             }
         }
 
@@ -2891,7 +2891,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const button = document.getElementById('nfc-scan-btn');
             if (button) {
                 button.disabled = true;
-                button.innerHTML = '<i class="fa-solid fa-wifi"></i><span>Scanning…</span>';
+                button.innerHTML = '<i class="fa-solid fa-nfc-symbol"></i><span>Scanning…</span>';
             }
             try {
                 const reader = new NDEFReader();
@@ -2919,7 +2919,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     reader.onreadingerror = null;
                     if (scanButton) {
                         scanButton.disabled = false;
-                        scanButton.innerHTML = '<i class="fa-solid fa-wifi"></i><span>Start NFC Scan</span>';
+                        scanButton.innerHTML = '<i class="fa-solid fa-nfc-symbol"></i><span>Start NFC Scan</span>';
                     }
                     setNfcStatus('Plant found: ' + plant.name + ' — scan stopped. Tap Start NFC Scan to scan another plant.');
                     openJournalModal(plant.id);
