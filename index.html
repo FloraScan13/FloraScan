@@ -266,8 +266,16 @@ textarea {
             letter-spacing: .015em;
         }
         main { max-width: 1200px !important; padding-top: 28px !important; }
+        /* Keep the navigation and its hand-drawn underline attached to the sticky site header. */
+        #app-header { z-index: 50 !important; }
         #main-navigation-tabs {
-            position: relative !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 49 !important;
+            background: #f7f6ef !important;
+            padding-top: 10px !important;
+            margin-top: 0 !important;
+            
             background: transparent !important;
             border-bottom: 0 !important;
             border-radius: 0 !important;
