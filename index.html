@@ -3078,6 +3078,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="location-group-heading min-w-0 flex flex-1 items-center gap-2">
                                 <h3 class="text-base sm:text-lg font-bold text-emerald-800 dark:text-emerald-300 min-w-0 break-words">${escapeHtml(location)}</h3>
                                 <span class="location-group-count flex-shrink-0 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">(${cards.length} ${cards.length === 1 ? 'plant' : 'plants'})</span>
+                                ${location === 'Grow Tent' && locationDetailsVisibility[location] !== false ? '<span id="govee-inline-readings" class="text-xs text-slate-600 whitespace-nowrap"> · Loading sensor…</span>' : ''}
                             </div>
                             <div class="location-group-actions flex flex-shrink-0 items-center gap-1.5">
                                 <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" class="location-icon-button h-9 w-9 min-h-0 p-0 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200" aria-label="${locationDetailsVisibility[location] === false ? 'Show location details' : 'Hide location details'}" title="${locationDetailsVisibility[location] === false ? 'Show details' : 'Hide details'}"><i class="fa-regular ${locationDetailsVisibility[location] === false ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
@@ -3085,7 +3086,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                         </div>
                         ${locationDetails[location] && locationDetailsVisibility[location] !== false ? `<div class="location-group-details mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">${escapeHtml(String(locationDetails[location]).replace(/\\n/g, '\n'))}</div>` : ''}
-                        ${location === 'Grow Tent' && locationDetailsVisibility[location] !== false ? '<div id="govee-sensor-panel" class="mb-3 rounded-xl border p-3" style="background-color: #FFF0F4; border-color: #E7A8BD;"><p class="text-xs text-slate-700">Loading Govee readings…</p></div>' : ''}
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">${cards.map(plant => cardMarkup(plant, location)).join('')}</div>
                     </section>`;
             }).join('');
@@ -3098,7 +3099,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let goveeReadingRequest = null;
 
         async function loadGoveeReading(force = false) {
-            const panel = document.getElementById('govee-sensor-panel');
+            const panel = document.getElementById('govee-inline-readings');
             if (!panel) return;
             if (!force && goveeReadingCache && Date.now() - goveeReadingFetchedAt < 3 * 60 * 1000) { showGoveeReading(goveeReadingCache); return; }
             if (!supabaseClient || !currentUser) { panel.innerHTML = '<p class="text-xs text-slate-500">Sign in to your Sugar Bush cloud account to view live Govee readings.</p>'; return; }
@@ -3134,9 +3135,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const t = typeof data.temperature === 'number' ? data.temperature.toFixed(1) + ' °C' : '—';
             const h = typeof data.humidity === 'number' ? data.humidity.toFixed(1) + ' %' : '—';
             const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'just now';
-            panel.innerHTML = '<div class="flex items-center justify-between gap-2 mb-2"><p class="text-sm font-semibold text-[#80344F]"><i class="fa-solid fa-temperature-half mr-1"></i> Govee hygrometer</p><button type="button" onclick="loadGoveeReading(true)" class="text-xs font-semibold text-[#8E4961]"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button></div>' +
-                '<div class="flex items-center gap-3"><div class="flex-1 min-w-0 flex items-center justify-between gap-2 rounded-lg bg-white/70 px-3 py-2"><span class="text-[11px] text-slate-500">Temperature</span><span class="text-base font-bold text-slate-800 whitespace-nowrap">' + t + '</span></div>' +
-                '<div class="flex-1 min-w-0 flex items-center justify-between gap-2 rounded-lg bg-white/70 px-3 py-2"><span class="text-[11px] text-slate-500">Humidity</span><span class="text-base font-bold text-slate-800 whitespace-nowrap">' + h + '</span></div></div><p class="text-[10px] text-slate-500 mt-2">Checked at ' + escapeHtml(updated) + '</p>';
+            panel.textContent = ' · ' + t + ' · ' + h;
         }
         function openAddPlantModal() {
             setActiveNavigationTab('add-plant');
