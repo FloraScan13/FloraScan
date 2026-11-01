@@ -1321,6 +1321,20 @@ textarea {
             background: #f7f6f0 !important;
         }
 
+    
+        /* Apply the requested cream to the actual page canvas, not to plant cards. */
+        html:root,
+        html:root body,
+        html:root body > main,
+        html:root body > main > #view-plants,
+        html:root body > main > #view-scanner,
+        html:root body > main > #view-settings {
+            background-color: #f7f6f0 !important;
+            background-image: none !important;
+        }
+        html:root body { min-height: 100%; }
+        html:root body > main { min-height: calc(100vh - 90px); }
+
     </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 </head>
