@@ -3745,6 +3745,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('watering-can-capacity').value = '';
             document.getElementById('watering-can-fill').value = '';
             toggleWateringCanFields();
+            closeJournalModal();
         }
 
         async function deleteJournalLog(plantId, logId) {
