@@ -3496,6 +3496,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     .empty { color: #64748b; font-style: italic; }
     footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 9pt; }
     @media print { .no-print { display: none; } }
+
+        /* Final override: keep every location-area surface in Grid view the same sage green as List view. */
+        #plants-grid section.location-group,
+        #plants-grid .location-group-details,
+        #plants-grid .location-details {
+            background-color: #f0f2e9 !important;
+            background-image: none !important;
+        }
 </style></head><body>
 <header><div class="brand">Sugar Bush · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
 <section class="details">
