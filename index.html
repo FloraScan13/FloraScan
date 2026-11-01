@@ -2999,10 +2999,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${escapeHtml(p.name)}</h4>
                                 <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate">${escapeHtml(p.variety || 'Standard Variety')}</p>
                             </div>
-                            <div class="flex items-center space-x-1 flex-shrink-0">
-                                <button onclick="event.stopPropagation(); openEditPlantModal('${p.id}')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg transition" title="Edit Plant"><i class="fa-solid fa-pen text-xs"></i></button>
-                                <button onclick="event.stopPropagation(); promptDeletePlant('${p.id}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg transition" title="Delete Plant"><i class="fa-solid fa-trash text-xs"></i></button>
-                            </div>
+                            <details class="relative flex-shrink-0" onclick="event.stopPropagation()">
+                                <summary class="list-none cursor-pointer p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-300 hover:bg-slate-200/70 dark:hover:bg-slate-700 rounded-lg transition" aria-label="Plant actions" title="Plant actions" onclick="event.stopPropagation()"><i class="fa-solid fa-ellipsis-vertical"></i></summary>
+                                <div class="absolute right-0 top-full mt-1 z-30 min-w-[140px] rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-xl p-1.5 flex flex-col">
+                                    <button type="button" onclick="event.stopPropagation(); this.closest('details').open = false; openEditPlantModal('${p.id}')" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 rounded-lg"><i class="fa-solid fa-pen w-4 text-emerald-600"></i>Edit</button>
+                                    <button type="button" onclick="event.stopPropagation(); this.closest('details').open = false; promptDeletePlant('${p.id}')" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"><i class="fa-solid fa-trash w-4"></i>Delete</button>
+                                </div>
+                            </details>
                         </div>
                         <div class="p-5 flex space-x-4 items-center">
                             <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
