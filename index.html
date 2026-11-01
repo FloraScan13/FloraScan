@@ -3938,7 +3938,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     document.head.appendChild(style);
 
     // 2. Load saved preference
-    let currentView = localStorage.getItem('plant_view_mode') || 'grid';
+    // Default to Plant Card List View on the first load after this update.
+    // After that, keep whichever view the user chooses.
+    if (localStorage.getItem('plant_view_default_list_applied') !== '1') {
+        localStorage.setItem('plant_view_mode', 'list');
+        localStorage.setItem('plant_view_default_list_applied', '1');
+    }
+    let currentView = localStorage.getItem('plant_view_mode') || 'list';
     if (currentView === 'list') {
         document.body.classList.add('plant-list-view');
     }
