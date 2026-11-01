@@ -3112,8 +3112,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             })();
             try { await goveeReadingRequest; } catch (error) {
                 console.error('Govee sensor request failed:', error);
+                let detail = error.message || 'Please try again.';
+                // Supabase wraps non-2xx Edge Function responses; read its response body for the real cause.
+                try {
+                    if (error.context && typeof error.context.clone === 'function') {
+                        const responseBody = await error.context.clone().json();
+                        if (responseBody && responseBody.error) {
+                            detail = responseBody.error + (responseBody.details ? ': ' + JSON.stringify(responseBody.details) : '');
+                        } else if (responseBody) {
+                            detail = JSON.stringify(responseBody);
+                        }
+                    }
+                } catch (_) {}
                 const currentPanel = document.getElementById('govee-sensor-panel');
-                if (currentPanel) currentPanel.innerHTML = '<p class="text-xs text-rose-700">Could not load Govee readings: ' + escapeHtml(error.message || 'Please try again.') + '</p>';
+                if (currentPanel) currentPanel.innerHTML = '<p class="text-xs text-rose-700">Govee connection: ' + escapeHtml(detail) + '</p>';
             } finally { goveeReadingRequest = null; }
         }
 
