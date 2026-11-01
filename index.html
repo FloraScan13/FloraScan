@@ -3078,7 +3078,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="location-group-heading min-w-0 flex flex-1 items-center gap-2">
                                 <h3 class="text-base sm:text-lg font-bold text-emerald-800 dark:text-emerald-300 min-w-0 break-words">${escapeHtml(location)}</h3>
                                 <span class="location-group-count flex-shrink-0 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">(${cards.length} ${cards.length === 1 ? 'plant' : 'plants'})</span>
-                                ${location === 'Grow Tent' && locationDetailsVisibility[location] !== false ? '<span id="govee-inline-readings" class="text-xs text-slate-600 whitespace-nowrap"> · Loading sensor…</span>' : ''}
+                                ${location === 'Grow Tent' && locationDetailsVisibility[location] !== false ? '<span id="govee-inline-readings" class="text-xs text-slate-600 whitespace-nowrap">Loading sensor…</span>' : ''}
                             </div>
                             <div class="location-group-actions flex flex-shrink-0 items-center gap-1.5">
                                 <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" class="location-icon-button h-9 w-9 min-h-0 p-0 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200" aria-label="${locationDetailsVisibility[location] === false ? 'Show location details' : 'Hide location details'}" title="${locationDetailsVisibility[location] === false ? 'Show details' : 'Hide details'}"><i class="fa-regular ${locationDetailsVisibility[location] === false ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
@@ -3135,7 +3135,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const t = typeof data.temperature === 'number' ? data.temperature.toFixed(1) + ' °C' : '—';
             const h = typeof data.humidity === 'number' ? data.humidity.toFixed(1) + ' %' : '—';
             const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'just now';
-            panel.textContent = ' · ' + t + ' · ' + h;
+            panel.textContent = t + '   ' + h;
         }
         function openAddPlantModal() {
             setActiveNavigationTab('add-plant');
