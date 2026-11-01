@@ -3773,15 +3773,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         /* HIDE unnecessary sections (Header buttons, Body notes/logs, Footer date sown) */
-        body.plant-list-view #plantsContainer > div > div:nth-child(1) > div:last-child,
+        body.plant-list-view #plantsContainer > div > div:nth-child(1) > div:last-child:not(details),
         body.plant-list-view #plantsContainer > div > div:nth-child(2) p,
         body.plant-list-view #plantsContainer > div > div:nth-child(2) span,
         body.plant-list-view #plantsContainer > div > div:nth-child(3) > div:first-child,
-        body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(1) > div:last-child,
+        body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(1) > div:last-child:not(details),
         body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(2) p,
         body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(2) span,
         body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(3) > div:first-child,
-        body.plant-list-view main .grid > div > div:nth-child(1) > div:last-child,
+        body.plant-list-view main .grid > div > div:nth-child(1) > div:last-child:not(details),
         body.plant-list-view main .grid > div > div:nth-child(2) p,
         body.plant-list-view main .grid > div > div:nth-child(2) span,
         body.plant-list-view main .grid > div > div:nth-child(3) > div:first-child {
