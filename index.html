@@ -3764,6 +3764,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             gap: 0.75rem !important;
         }
 
+        /* Let the three-dot dropdown escape the plant row instead of being clipped. */
+        body.plant-list-view #plants-grid .location-group .grid > div {
+            overflow: visible !important;
+            position: relative !important;
+        }
+        body.plant-list-view #plants-grid .location-group .grid > div:has(details[open]) {
+            z-index: 9999 !important;
+        }
+        body.plant-list-view #plants-grid .location-group .grid > div details[open] {
+            position: relative !important;
+            z-index: 10000 !important;
+        }
+        body.plant-list-view #plants-grid .location-group .grid > div details[open] > div {
+            z-index: 10001 !important;
+        }
+
         /* Dark mode support for list rows */
         .dark body.plant-list-view #plantsContainer > div,
         .dark body.plant-list-view [id*="plantsContainer"] > div,
