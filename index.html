@@ -3014,6 +3014,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             renderLocationDetailEditorRows();
         }
 
+        // Close an open plant actions (three-dot) menu when the user clicks elsewhere.
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('#plants-grid details')) return;
+            document.querySelectorAll('#plants-grid details[open]').forEach(menu => {
+                menu.open = false;
+            });
+        });
+
         function renderPlants() {
             const query = document.getElementById('plant-search').value.toLowerCase();
             const container = document.getElementById('plants-grid');
