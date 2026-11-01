@@ -3956,6 +3956,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
             color: black !important;
         }
+
+        /* Remove the extra outer box around each location group; let spacing and a quiet divider do the separating. */
+        #plants-grid .location-group,
+        body.plant-list-view #plants-grid .location-group {
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            padding: 12px 0 18px !important;
+            margin: 0 !important;
+        }
+        #plants-grid .location-group-toolbar {
+            padding: 0 0 10px !important;
+            margin: 0 0 14px !important;
+            border-bottom: 1px solid #e2e8dc !important;
+        }
     `;
     document.head.appendChild(style);
 
