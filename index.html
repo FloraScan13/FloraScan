@@ -3004,10 +3004,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <button onclick="event.stopPropagation(); promptDeletePlant('${p.id}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg transition" title="Delete Plant"><i class="fa-solid fa-trash text-xs"></i></button>
                             </div>
                         </div>
-                        <div class="relative isolate p-5 flex space-x-4 items-center min-h-[112px]">
-                            <div class="absolute right-2 top-1/2 -translate-y-1/2 w-36 h-36 flex items-center justify-center opacity-[0.12] pointer-events-none select-none z-0" aria-hidden="true">${svgMarkup}</div>
+                        <div class="p-5 flex space-x-4 items-center">
                             <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
-                            <div class="flex-1 min-w-0 pr-10">
+                            <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
 
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
