@@ -3085,7 +3085,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                         </div>
                         ${locationDetails[location] && locationDetailsVisibility[location] !== false ? `<div class="location-group-details mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">${escapeHtml(String(locationDetails[location]).replace(/\\n/g, '\n'))}</div>` : ''}
-                        ${location === 'Grow Tent' ? '<div id="govee-sensor-panel" class="mb-3 rounded-xl border p-3" style="background: linear-gradient(to bottom right, #FDF2F8, #FFFFFF, #FFF1F2); border-color: #FBCFE8;"><p class="text-xs text-slate-700">Loading Govee readings…</p></div>' : ''}
+                        ${location === 'Grow Tent' ? '<div id="govee-sensor-panel" class="mb-3 rounded-xl border p-3" style="background-color: #FFF0F4; border-color: #E7A8BD;"><p class="text-xs text-slate-700">Loading Govee readings…</p></div>' : ''}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">${cards.map(plant => cardMarkup(plant, location)).join('')}</div>
                     </section>`;
             }).join('');
@@ -3134,7 +3134,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const t = typeof data.temperature === 'number' ? data.temperature.toFixed(1) + ' °C' : '—';
             const h = typeof data.humidity === 'number' ? data.humidity.toFixed(1) + ' %' : '—';
             const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'just now';
-            panel.innerHTML = '<div class="flex items-center justify-between gap-2 mb-2"><p class="text-sm font-semibold text-emerald-900"><i class="fa-solid fa-temperature-half mr-1"></i> Govee hygrometer</p><button type="button" onclick="loadGoveeReading(true)" class="text-xs font-semibold text-emerald-700"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button></div>' +
+            panel.innerHTML = '<div class="flex items-center justify-between gap-2 mb-2"><p class="text-sm font-semibold text-[#80344F]"><i class="fa-solid fa-temperature-half mr-1"></i> Govee hygrometer</p><button type="button" onclick="loadGoveeReading(true)" class="text-xs font-semibold text-[#8E4961]"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button></div>' +
                 '<div class="grid grid-cols-2 gap-3"><div class="rounded-lg bg-white/70 px-3 py-2"><p class="text-[11px] text-slate-500">Temperature</p><p class="text-lg font-bold text-slate-800">' + t + '</p></div>' +
                 '<div class="rounded-lg bg-white/70 px-3 py-2"><p class="text-[11px] text-slate-500">Humidity</p><p class="text-lg font-bold text-slate-800">' + h + '</p></div></div><p class="text-[10px] text-slate-500 mt-2">Checked at ' + escapeHtml(updated) + '</p>';
         }
