@@ -5,14 +5,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flora Scan - Plant Tag & Growth Journal</title>
+    <title>Sugar Bush - Plant Tag & Growth Journal</title>
     <link rel="icon" type="image/svg+xml" href="./leaf-icon-v2.svg">
     <link rel="apple-touch-icon" href="./leaf-icon-v2.svg">
     <link rel="manifest" href="./manifest.webmanifest">
     <meta name="theme-color" content="#294b34">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="FloraScan">
+    <meta name="apple-mobile-web-app-title" content="Sugar Bush">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -164,7 +164,7 @@
 
 
         
-/* FloraScan mobile usability improvements */
+/* Sugar Bush mobile usability improvements */
 button,
 input,
 select,
@@ -220,7 +220,7 @@ textarea {
 
         
 
-        /* FloraScan editorial redesign: calm Garden Organic-inspired palette, no decorative leaf background. */
+        /* Sugar Bush editorial redesign: calm Garden Organic-inspired palette, no decorative leaf background. */
         :root { color-scheme: light; }
         body {
             background: #f7f6ef !important;
@@ -388,7 +388,7 @@ textarea {
         }
 
 
-        /* Extend the FloraScan visual system across cards, scanner, journal, add-plant and settings. */
+        /* Extend the Sugar Bush visual system across cards, scanner, journal, add-plant and settings. */
         #main-navigation-tabs button {
             color: #526653 !important;
             background: transparent !important;
@@ -598,7 +598,7 @@ textarea {
         #journal-modal #nutrient-library-section input[type="checkbox"] {
             accent-color: #c6537b !important;
         }
-        /* Highlight selected nutrient products in the FloraScan pink palette. */
+        /* Highlight selected nutrient products in the Sugar Bush pink palette. */
         #journal-modal #nutrient-product-list label:has(input[type="checkbox"]:checked) {
             background-color: #fff0f4 !important;
             border-radius: 6px;
@@ -656,7 +656,7 @@ textarea {
         #journal-modal #nutrient-library-section .text-emerald-800 {
             color: #a63d65 !important;
         }
-        /* Growth Journal: replace the blue/slate watering section and icon accents with FloraScan pink. */
+        /* Growth Journal: replace the blue/slate watering section and icon accents with Sugar Bush pink. */
         #journal-modal #tank-volume-section {
             background: #fff0f4 !important;
             border-color: #e8a7bd !important;
@@ -694,7 +694,7 @@ textarea {
         #journal-modal #journal-location-setup-details {
             color: #81334f !important;
         }
-        /* Setup Details popup: soft rose surfaces with FloraScan pink actions. */
+        /* Setup Details popup: soft rose surfaces with Sugar Bush pink actions. */
         #location-detail-editor-modal > section {
             background: #fffdfb !important;
             color: #294333 !important;
@@ -920,7 +920,7 @@ textarea {
             box-shadow: none !important;
         }
         /* Garden Organic-inspired pink accent for the plant journal's location setup details. */
-        /* Match Growth Journal entry icon and photo file picker to the FloraScan sage/forest palette. */
+        /* Match Growth Journal entry icon and photo file picker to the Sugar Bush sage/forest palette. */
         #journal-modal .fa-pen-to-square {
             color: #c6537b !important;
         }
@@ -950,7 +950,7 @@ textarea {
             font-weight: 600 !important;
             cursor: pointer !important;
         }
-        /* Harmonize the complete Add Plant form with FloraScan's cream, sage and forest-green theme. */
+        /* Harmonize the complete Add Plant form with Sugar Bush's cream, sage and forest-green theme. */
         #plant-modal > div {
             background: #fffef9 !important;
             border-color: #e1e1d5 !important;
@@ -1315,7 +1315,7 @@ textarea {
                 </div>
                 <div>
                     <div class="flex items-center space-x-2">
-                        <h1 class="text-lg font-bold leading-tight">Flora Scan</h1>
+                        <h1 class="text-lg font-bold leading-tight">Sugar Bush</h1>
                         <!-- Supabase Cloud Sync Status Badge -->
                         <span id="cloud-sync-badge" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-500/30 text-amber-100 border border-amber-300/40 flex items-center space-x-1" title="Storage Status">
                             <i id="cloud-sync-icon" class="fa-solid fa-hard-drive"></i>
@@ -1470,7 +1470,7 @@ textarea {
                         </div>
                     </div>
                     <div class="flex items-center justify-between pt-1">
-                        <p class="text-[11px] text-slate-400">If unconfigured, Flora Scan seamlessly operates using local storage.</p>
+                        <p class="text-[11px] text-slate-400">If unconfigured, Sugar Bush seamlessly operates using local storage.</p>
                         <button onclick="saveSupabaseCredentials()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition">
                             Connect Supabase
                         </button>
@@ -2516,7 +2516,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         };
 
         function applyAppearance() {
-            // FloraScan uses a fixed Garden Fresh palette and light appearance.
+            // Sugar Bush uses a fixed Garden Fresh palette and light appearance.
             // Ignore any older saved theme preferences so users cannot override the app colours.
             appSettings.theme = 'light';
             appSettings.accentColor = 'green';
@@ -2533,7 +2533,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const usernameInput = document.getElementById('setting-username');
             if (usernameInput) usernameInput.value = appSettings.username;
 
-            // Keep the built-in FloraScan leaf logo; custom logo uploads/URLs are not offered in Settings.
+            // Keep the built-in Sugar Bush leaf logo; custom logo uploads/URLs are not offered in Settings.
             const logoImg = document.getElementById('header-logo-img');
             const logoIcon = document.getElementById('header-logo-icon');
             if (logoImg) {
@@ -3133,7 +3133,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             try {
                 const reader = new NDEFReader();
                 await reader.scan({ signal: controller.signal });
-                setNfcStatus('Ready — hold your phone close to a FloraScan NFC plant tag.');
+                setNfcStatus('Ready — hold your phone close to a Sugar Bush NFC plant tag.');
                 reader.onreadingerror = () => setNfcStatus('Could not read this tag. Hold the phone closer and try again.', true);
                 reader.onreading = async event => {
                     if (controller.signal.aborted) return;
@@ -3143,7 +3143,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         if (value) break;
                     }
                     const match = value.match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
-                    if (!match) { setNfcStatus('This tag is not linked to a FloraScan plant. Open that plant and write its NFC tag first.', true); return; }
+                    if (!match) { setNfcStatus('This tag is not linked to a Sugar Bush plant. Open that plant and write its NFC tag first.', true); return; }
                     const plant = plants.find(p => String(p.id) === match[1]);
                     if (!plant) { setNfcStatus('No saved plant matches this NFC tag on this device/account.', true); return; }
 
@@ -3422,7 +3422,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             const printWindow = window.open('', '_blank');
             if (!printWindow) {
-                alert('Your browser blocked the PDF window. Please allow pop-ups for FloraScan and try again.');
+                alert('Your browser blocked the PDF window. Please allow pop-ups for Sugar Bush and try again.');
                 return;
             }
 
@@ -3459,7 +3459,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 9pt; }
     @media print { .no-print { display: none; } }
 </style></head><body>
-<header><div class="brand">FloraScan · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
+<header><div class="brand">Sugar Bush · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
 <section class="details">
 <div><div class="detail-label">Planting date</div><div class="detail-value">${date}</div></div>
 <div><div class="detail-label">Growing medium</div><div class="detail-value">${medium}</div></div>
@@ -3467,7 +3467,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 </section>
 <h2>Plant notes</h2><p class="notes">${notes.replace(/\n/g, '<br>')}</p>
 <h2>Growth journal</h2>${entriesHTML}
-<footer>Exported from FloraScan on ${generated}.</footer>
+<footer>Exported from Sugar Bush on ${generated}.</footer>
 <div class="no-print" style="margin-top:24px"><button onclick="window.print()" style="background:#15803d;color:white;border:0;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer">Print / Save as PDF</button> <button onclick="window.close()" style="padding:10px 16px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer">Close</button><p style="color:#64748b;font-size:12px">In the print dialog, choose “Save as PDF” as the destination to download your journal.</p></div>
 <script>window.addEventListener('load', () => setTimeout(() => window.print(), 350));<\/script>
 </body></html>`);
@@ -3699,7 +3699,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
 // ==========================================
-// Precision Mobile List View Toggle for Flora Scan
+// Precision Mobile List View Toggle for Sugar Bush
 // ==========================================
 
 (function() {
