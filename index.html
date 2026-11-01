@@ -3149,7 +3149,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const t = typeof data.temperature === 'number' ? data.temperature.toFixed(1) + ' °C' : '—';
             const h = typeof data.humidity === 'number' ? data.humidity.toFixed(1) + ' %' : '—';
             const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'just now';
-            panel.textContent = t + '   ' + h;
+            panel.textContent = t + '     ' + h;
         }
         function openAddPlantModal() {
             setActiveNavigationTab('add-plant');
