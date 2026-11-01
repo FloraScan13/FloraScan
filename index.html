@@ -3087,7 +3087,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             container.innerHTML = orderedLocations.map(location => {
                 const cards = groups.get(location);
                 return `
-                    <section class="location-group col-span-full min-w-0 mb-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4 shadow-sm" style="background-color: #f0f2e9 !important; background-image: none !important;">
+                    <section class="location-group col-span-full min-w-0 mb-3 p-3 sm:p-4" style="background-color: #f7f6f0 !important; background-image: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;">
                         <div class="location-group-toolbar flex items-center justify-between gap-2 mb-3">
                             <div class="location-group-heading min-w-0 flex flex-1 items-center gap-2">
                                 <h3 class="text-base sm:text-lg font-bold text-emerald-800 dark:text-emerald-300 min-w-0 break-words">${escapeHtml(location)}</h3>
