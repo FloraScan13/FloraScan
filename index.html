@@ -345,6 +345,13 @@ textarea {
         #plantViewToggle { background: #e8eade !important; border-radius: 13px !important; }
         #plantViewToggle button { border-radius: 10px !important; min-height: 40px !important; }
         #plants-grid { gap: 20px !important; }
+        /* Keep plant action menus visible above neighbouring cards in both layouts. */
+        #plants-grid > div { overflow: visible !important; }
+        .plant-card { overflow: visible !important; }
+        .plant-card:has(details[open]) { z-index: 60 !important; }
+        #plants-grid > div:has(.plant-card details[open]) { z-index: 60 !important; }
+        .plant-card > div:first-child { border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
+        .plant-card > div:last-child { border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; }
         #plants-grid > div {
             background: #fffef9 !important;
             border: 1px solid #e1e1d5 !important;
@@ -2993,7 +3000,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const savedDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
                 const sharedLocationDetails = String(locationDetails[plantLocation] || savedDetails[plantLocation] || '');
                 return `
-                    <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition overflow-hidden flex flex-col cursor-pointer">
+                    <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="plant-card relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition flex flex-col cursor-pointer">
                         <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
                             <div class="min-w-0 pr-2">
                                 <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${escapeHtml(p.name)}</h4>
