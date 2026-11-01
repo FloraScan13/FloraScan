@@ -1,7 +1,7 @@
 {
-  "name": "FloraScan - Plant Journal",
-  "short_name": "FloraScan",
-  "description": "Track your plants and growth journals with FloraScan.",
+  "name": "Sugar Bush - Plant Journal",
+  "short_name": "Sugar Bush",
+  "description": "Track your plants and growth journals with Sugar Bush.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
