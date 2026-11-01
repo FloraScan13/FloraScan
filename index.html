@@ -3125,13 +3125,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         }
                     }
                 } catch (_) {}
-                const currentPanel = document.getElementById('govee-sensor-panel');
+                const currentPanel = document.getElementById('govee-inline-readings');
                 if (currentPanel) currentPanel.innerHTML = '<p class="text-xs text-rose-700">Govee connection: ' + escapeHtml(detail) + '</p>';
             } finally { goveeReadingRequest = null; }
         }
 
         function showGoveeReading(data) {
-            const panel = document.getElementById('govee-sensor-panel'); if (!panel) return;
+            const panel = document.getElementById('govee-inline-readings'); if (!panel) return;
             const t = typeof data.temperature === 'number' ? data.temperature.toFixed(1) + ' °C' : '—';
             const h = typeof data.humidity === 'number' ? data.humidity.toFixed(1) + ' %' : '—';
             const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'just now';
