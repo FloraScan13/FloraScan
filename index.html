@@ -2993,7 +2993,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const savedDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
                 const sharedLocationDetails = String(locationDetails[plantLocation] || savedDetails[plantLocation] || '');
                 return `
-                    <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition overflow-hidden flex flex-col cursor-pointer">
+                    <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="plant-card relative isolate bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition overflow-hidden flex flex-col cursor-pointer">
                         <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
                             <div class="min-w-0 pr-2">
                                 <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${escapeHtml(p.name)}</h4>
@@ -3004,9 +3004,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <button onclick="event.stopPropagation(); promptDeletePlant('${p.id}')" class="p-1.5 text-slate-400 hover:text-red-600 rounded-lg transition" title="Delete Plant"><i class="fa-solid fa-trash text-xs"></i></button>
                             </div>
                         </div>
-                        <div class="p-5 flex space-x-4 items-center">
-                            <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
-                            <div class="flex-1 min-w-0">
+                        <div class="relative p-5 flex space-x-4 items-center min-h-[112px]">
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center opacity-[0.13] pointer-events-none select-none" aria-hidden="true">${svgMarkup}</div>
+                            <div class="relative z-10 flex-1 min-w-0 pl-20">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
 
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
