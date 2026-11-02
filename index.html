@@ -1425,15 +1425,15 @@ textarea {
             #plant-modal,
             #journal-modal {
                 align-items: center !important;
-                /* Balance the top margin with the gap above the fixed bottom menu. */
-                padding: 14px 12px calc(96px + env(safe-area-inset-bottom, 0px)) !important;
-                scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+                /* Keep the modal's breathing room balanced while reducing it by half. */
+                padding: 7px 12px calc(48px + env(safe-area-inset-bottom, 0px)) !important;
+                scroll-padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
             }
             #plant-modal > div,
             #journal-modal > div {
-                margin-top: 8px !important;
-                margin-bottom: 8px !important;
-                max-height: calc(100dvh - 126px - env(safe-area-inset-bottom, 0px)) !important;
+                margin-top: 4px !important;
+                margin-bottom: 4px !important;
+                max-height: calc(100dvh - 63px - env(safe-area-inset-bottom, 0px)) !important;
             }
             #main-navigation-tabs {
                 position: fixed !important;
