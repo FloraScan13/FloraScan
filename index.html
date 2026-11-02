@@ -1555,7 +1555,10 @@ textarea {
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Password</label>
-                                <input type="password" id="auth-password" placeholder="••••••••" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                <div class="relative">
+                                    <input type="password" id="auth-password" autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2 pr-16 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                    <button type="button" onclick="toggleCloudPasswordVisibility()" id="toggle-cloud-password" class="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-900" aria-label="Show password">Show</button>
+                                </div>
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1">
@@ -2315,6 +2318,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (loggedOutSec) loggedOutSec.classList.remove('hidden');
                 if (loggedInSec) loggedInSec.classList.add('hidden');
             }
+        }
+
+        function toggleCloudPasswordVisibility() {
+            const input = document.getElementById('auth-password');
+            const button = document.getElementById('toggle-cloud-password');
+            if (!input || !button) return;
+            const reveal = input.type === 'password';
+            input.type = reveal ? 'text' : 'password';
+            button.textContent = reveal ? 'Hide' : 'Show';
+            button.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
         }
 
         async function handleSupabaseLogin() {
