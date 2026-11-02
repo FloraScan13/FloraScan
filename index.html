@@ -448,6 +448,29 @@ textarea {
             box-shadow: none !important;
             font-weight: 500 !important;
         }
+
+        /* Desktop active navigation uses the Sugar Bush pink brand treatment. */
+        @media (min-width: 769px) {
+            #main-navigation-tabs button[aria-current="page"] {
+                background: #c6537b !important;
+                color: #fff !important;
+                border-color: #c6537b !important;
+                box-shadow: 0 2px 7px rgba(198, 83, 123, .22) !important;
+                font-weight: 600 !important;
+            }
+            #main-navigation-tabs button[aria-current="page"] i {
+                color: #fff !important;
+            }
+            #main-navigation-tabs button[aria-current="page"] img {
+                filter: brightness(0) invert(1) !important;
+            }
+            #main-navigation-tabs button[aria-current="page"]:hover {
+                background: #a63d65 !important;
+                border-color: #a63d65 !important;
+                color: #fff !important;
+            }
+        }
+
         /* Plant cards: fully carry through the warm, botanical card treatment. */
         #plants-grid .location-group {
             background: #f0f2e9 !important;
