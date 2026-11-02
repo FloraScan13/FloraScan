@@ -1421,6 +1421,19 @@ textarea {
             main {
                 padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)) !important;
             }
+            /* Keep modal cards comfortably clear of the fixed bottom navigation. */
+            #plant-modal,
+            #journal-modal {
+                align-items: center !important;
+                padding: 14px 12px calc(112px + env(safe-area-inset-bottom, 0px)) !important;
+                scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+            }
+            #plant-modal > div,
+            #journal-modal > div {
+                margin-top: 8px !important;
+                margin-bottom: 8px !important;
+                max-height: calc(100dvh - 142px - env(safe-area-inset-bottom, 0px)) !important;
+            }
             #main-navigation-tabs {
                 position: fixed !important;
                 top: auto !important;
