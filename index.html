@@ -1624,21 +1624,9 @@ textarea {
             </div>
         </div>
 
-        <!-- TAB 2: NFC PLANT TAG SCANNER -->
-        <div id="view-scanner" class="hidden space-y-6">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
-                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e4eadf] text-[#294b34]"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-8 h-8 object-contain inline-flex items-center justify-center" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /></div>
-                <h2 class="text-lg font-bold mb-1">Tap an NFC Plant Tag</h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">Start NFC scanning, then hold your phone close to a plant’s NFC tag to open its growth journal.</p>
-                <button id="nfc-scan-btn" onclick="startNfcScan()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow transition inline-flex items-center justify-center gap-2"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-5 h-5 object-contain inline-flex items-center justify-center" style="filter: brightness(0) invert(1);" /><span>Start NFC Scan</span></button>
-                <p id="nfc-scan-status" role="status" aria-live="polite" class="mt-4 text-sm text-slate-500">NFC scanning is stopped.</p>
-            </div>
-        </div>
-
         <!-- Full-screen NFC tap overlay, shown only while a scan is active. -->
         <div id="nfc-tap-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="nfc-overlay-title">
             <div class="nfc-overlay-content">
-                
                 <div class="nfc-tap-animation" aria-hidden="true">
                     <span class="nfc-wave nfc-wave-one"></span>
                     <span class="nfc-wave nfc-wave-two"></span>
@@ -1647,7 +1635,7 @@ textarea {
                 </div>
                 <h2 id="nfc-overlay-title">Ready to scan</h2>
                 <p class="nfc-overlay-instruction">Hold the back of your phone close to the plant’s NFC tag.</p>
-                <p class="nfc-overlay-hint"><i class="fa-solid fa-circle-dot"></i> Listening for a tag…</p>
+                <p id="nfc-overlay-status" class="nfc-overlay-hint" role="status" aria-live="polite"><i class="fa-solid fa-circle-dot"></i> Listening for a tag…</p>
                 <button type="button" class="nfc-overlay-stop" onclick="stopNfcScan()">Stop scanning</button>
             </div>
         </div>
@@ -2915,14 +2903,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function switchTab(tabId) {
-            ['plants', 'scanner', 'settings'].forEach(t => {
+            if (tabId === 'scanner') {
+                startNfcScan();
+                return;
+            }
+            ['plants', 'settings'].forEach(t => {
                 const view = document.getElementById(`view-${t}`);
                 if (view) view.classList.add('hidden');
             });
             const activeView = document.getElementById(`view-${tabId}`);
             if (activeView) activeView.classList.remove('hidden');
             setActiveNavigationTab(tabId);
-
         }
 
         function escapeHtml(value) {
@@ -3431,8 +3422,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
 
         function setNfcStatus(message, isError = false) {
-            const el = document.getElementById('nfc-scan-status');
-            if (el) { el.textContent = message; el.className = 'mt-4 text-sm ' + (isError ? 'text-rose-700' : 'text-slate-500'); }
+            const el = document.getElementById('nfc-overlay-status');
+            if (el) {
+                el.textContent = message;
+                el.style.color = isError ? '#a63d65' : '#c6537b';
+            }
             const formStatus = document.getElementById('plant-nfc-status');
             if (formStatus) { formStatus.textContent = message; formStatus.className = 'text-xs ' + (isError ? 'text-rose-700' : 'text-slate-500'); }
         }
@@ -3469,7 +3463,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function startNfcScan() {
             const unsupported = nfcSupportMessage();
             if (unsupported) { setNfcStatus(unsupported, true); return; }
-            await stopNfcScan();
+            // Abort any previous reader synchronously so the browser's NFC permission
+            // request remains within the original navigation tap gesture.
+            stopNfcScan();
+            setActiveNavigationTab('scanner');
             const controller = new AbortController();
             activeNfcScanController = controller;
             const button = document.getElementById('nfc-scan-btn');
