@@ -4030,6 +4030,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             box-shadow: none !important;
         }
     `;
+    style.innerHTML += `
+        /* Screenshot-targeted fix: the white rounded rectangles are the plant tiles, not the location wrapper. */
+        #plants-grid .location-group .grid > div,
+        #plants-grid .location-group .grid > div.plant-card,
+        #plants-grid .location-group .plant-card,
+        body.plant-list-view #plants-grid .location-group .grid > div,
+        body.plant-list-view #plants-grid .location-group .grid > div > div:first-child,
+        body.plant-list-view #plants-grid .location-group .grid > div > div:last-child {
+            background: transparent !important;
+            background-color: transparent !important;
+            background-image: none !important;
+        }
+    `;
     document.head.appendChild(style);
 
     // 2. Load saved preference
