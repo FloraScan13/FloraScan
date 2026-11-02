@@ -1507,8 +1507,7 @@ textarea {
         .nfc-wave-two { animation-delay: .8s; }
         .nfc-wave-three { animation-delay: 1.6s; }
         .nfc-tap-icon { width: 112px; height: 112px; display: grid; place-items: center; position: relative; border-radius: 32px; background: #c6537b; color: white; box-shadow: 0 12px 32px rgba(198, 83, 123, .25); }
-        .nfc-tap-icon .fa-mobile-screen-button { font-size: 54px; }
-        .nfc-tap-icon .fa-wifi { position: absolute; font-size: 22px; right: -7px; top: 19px; transform: rotate(90deg); }
+        .nfc-tap-icon img { display: block; width: 76px; height: 76px; object-fit: contain; filter: brightness(0) invert(1); }
         #nfc-overlay-title { font-size: 27px; font-weight: 750; margin-bottom: 10px; }
         .nfc-overlay-instruction { max-width: 320px; margin: 0 auto; color: #526653; font-size: 16px; line-height: 1.6; }
         .nfc-overlay-hint { margin: 26px 0 34px; color: #c6537b; font-size: 13px; font-weight: 650; }
@@ -1644,7 +1643,7 @@ textarea {
                     <span class="nfc-wave nfc-wave-one"></span>
                     <span class="nfc-wave nfc-wave-two"></span>
                     <span class="nfc-wave nfc-wave-three"></span>
-                    <div class="nfc-tap-icon"><i class="fa-solid fa-mobile-screen-button"></i><i class="fa-solid fa-wifi"></i></div>
+                    <div class="nfc-tap-icon"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC" /></div>
                 </div>
                 <h2 id="nfc-overlay-title">Ready to scan</h2>
                 <p class="nfc-overlay-instruction">Hold the back of your phone close to the plant’s NFC tag.</p>
