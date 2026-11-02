@@ -3503,7 +3503,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         scanButton.disabled = false;
                         scanButton.innerHTML = '<img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-5 h-5 object-contain inline-flex items-center justify-center" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /><span>Start NFC Scan</span>';
                     }
-                    setNfcStatus('Plant found: ' + plant.name + ' — scan stopped. Tap Start NFC Scan to scan another plant.');
+                    hideNfcTapOverlay();
+                    setNfcStatus('Plant found: ' + plant.name + ' — opening its growth journal.');
                     openJournalModal(plant.id);
                 };
             } catch (err) {
