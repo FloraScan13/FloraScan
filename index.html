@@ -3397,6 +3397,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function openEditPlantModal(id) {
             const p = plants.find(item => item.id === id);
             if (!p) return;
+            setActiveNavigationTab('plants');
             document.getElementById('modal-title').textContent = 'Edit Plant Profile';
             document.getElementById('edit-plant-id').value = p.id;
             document.getElementById('plant-name').value = p.name;
@@ -3449,6 +3450,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function stopNfcScan() {
             hideNfcTapOverlay();
+            setActiveNavigationTab('plants');
             if (activeNfcScanController) {
                 activeNfcScanController.abort();
                 activeNfcScanController = null;
@@ -3462,7 +3464,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function startNfcScan() {
             const unsupported = nfcSupportMessage();
-            if (unsupported) { setNfcStatus(unsupported, true); return; }
+            if (unsupported) { setNfcStatus(unsupported, true); setActiveNavigationTab('plants'); return; }
             // Abort any previous reader synchronously so the browser's NFC permission
             // request remains within the original navigation tap gesture.
             stopNfcScan();
@@ -3708,6 +3710,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function openJournalModal(id) {
             const p = plants.find(item => item.id === id);
             if (!p) return;
+            setActiveNavigationTab('plants');
 
             document.getElementById('log-plant-id').value = p.id;
             document.getElementById('journal-name').textContent = p.name;
@@ -3830,6 +3833,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function closeJournalModal() {
             document.getElementById('journal-modal').classList.add('hidden');
+            setActiveNavigationTab('plants');
         }
 
         let journalSelectedFiles = [];
