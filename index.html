@@ -1392,7 +1392,83 @@ textarea {
             background-color: transparent !important;
             background-image: none !important;
         }
-    </style>
+    
+        /* Touch navigation: dock the existing three primary actions within thumb reach. */
+        @media (max-width: 768px) {
+            main {
+                padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+            #main-navigation-tabs {
+                position: fixed !important;
+                top: auto !important;
+                bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+                left: 12px !important;
+                right: 12px !important;
+                width: auto !important;
+                z-index: 1000 !important;
+                display: flex !important;
+                align-items: stretch !important;
+                gap: 6px !important;
+                margin: 0 !important;
+                padding: 7px !important;
+                border: 1px solid rgba(218, 211, 195, .85) !important;
+                border-radius: 20px !important;
+                background: rgba(247, 246, 240, .94) !important;
+                box-shadow: 0 5px 22px rgba(48, 55, 42, .18) !important;
+                -webkit-backdrop-filter: blur(14px);
+                backdrop-filter: blur(14px);
+            }
+            #main-navigation-tabs::before,
+            #main-navigation-tabs::after {
+                display: none !important;
+                content: none !important;
+            }
+            #main-navigation-tabs button {
+                flex: 1 1 0% !important;
+                min-width: 0 !important;
+                min-height: 58px !important;
+                padding: 8px 5px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 5px !important;
+                border: 1px solid transparent !important;
+                border-radius: 14px !important;
+                background: transparent !important;
+                color: #526653 !important;
+                font-size: 11px !important;
+                line-height: 1.15 !important;
+                box-shadow: none !important;
+                white-space: nowrap !important;
+            }
+            #main-navigation-tabs button i,
+            #main-navigation-tabs button img {
+                display: block !important;
+                width: 20px !important;
+                height: 20px !important;
+                flex: 0 0 20px !important;
+                font-size: 19px !important;
+                object-fit: contain !important;
+            }
+            #main-navigation-tabs button[aria-current="page"] {
+                background: #c6537b !important;
+                border-color: #c6537b !important;
+                color: #fff !important;
+                box-shadow: 0 2px 7px rgba(198, 83, 123, .25) !important;
+            }
+            #main-navigation-tabs button[aria-current="page"] img {
+                filter: brightness(0) invert(1) !important;
+            }
+            #main-navigation-tabs button:hover {
+                background: rgba(198, 83, 123, .09) !important;
+            }
+            #main-navigation-tabs button[aria-current="page"]:hover {
+                background: #a63d65 !important;
+            }
+        }
+
+</style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 <style>
 /* Make the plant location group card transparent so the page watermark/background shows through. */
