@@ -1341,7 +1341,7 @@ textarea {
         html:root body > main { min-height: calc(100vh - 90px); }
 
 
-        /* Subtle beans watermark on the main page canvas. */
+        /* Beans watermark: keep it above the page canvas but below all page content. */
         body > main {
             position: relative;
             isolation: isolate;
@@ -1349,14 +1349,21 @@ textarea {
         body > main::after {
             content: "";
             position: fixed;
-            right: 20px;
+            right: 22px;
             bottom: 18px;
-            width: min(28vw, 260px);
-            aspect-ratio: 1;
-            background: url("./assets/assets%3Aplants%3Abeans.svg") no-repeat center / contain;
-            opacity: 0.13;
+            width: min(30vw, 280px);
+            height: min(30vw, 280px);
+            background-image: url("./assets/assets%3Aplants%3Abeans.svg");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.22;
             pointer-events: none;
-            z-index: -1;
+            z-index: 1;
+        }
+        body > main > * {
+            position: relative;
+            z-index: 2;
         }
     </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
