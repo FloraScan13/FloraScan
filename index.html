@@ -4019,6 +4019,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             background-size: 100% 6px !important;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
         }
+
+        /* Final override: location group wrapper stays see-through in both grid and list modes. */
+        #plants-grid .location-group,
+        body.plant-list-view #plants-grid .location-group {
+            background: transparent !important;
+            background-color: transparent !important;
+            background-image: none !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+        }
     `;
     document.head.appendChild(style);
 
