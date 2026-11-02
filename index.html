@@ -1483,6 +1483,11 @@ textarea {
             #main-navigation-tabs button[aria-current="page"] img {
                 filter: brightness(0) invert(1) !important;
             }
+            /* Touch browsers can retain :hover after tapping NFC; never tint an inactive tab. */
+            #main-navigation-tabs button[aria-current="false"]:hover {
+                background: transparent !important;
+                color: #526653 !important;
+            }
             #main-navigation-tabs button:hover {
                 background: rgba(198, 83, 123, .09) !important;
             }
