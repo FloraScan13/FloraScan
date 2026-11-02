@@ -1340,6 +1340,24 @@ textarea {
         html:root body { min-height: 100%; }
         html:root body > main { min-height: calc(100vh - 90px); }
 
+
+        /* Subtle beans watermark on the main page canvas. */
+        body > main {
+            position: relative;
+            isolation: isolate;
+        }
+        body > main::after {
+            content: "";
+            position: fixed;
+            right: 20px;
+            bottom: 18px;
+            width: min(28vw, 260px);
+            aspect-ratio: 1;
+            background: url("./assets/assets%3Aplants%3Abeans.svg") no-repeat center / contain;
+            opacity: 0.13;
+            pointer-events: none;
+            z-index: -1;
+        }
     </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 </head>
