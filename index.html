@@ -1395,20 +1395,6 @@ textarea {
         html:root body > main { min-height: calc(100vh - 90px); }
 
 
-        /* Reliable watermark on the main canvas itself (not a pseudo-element behind opaque layers). */
-        html:root body > main {
-            background-image: url("./assets/beans-watermark.svg") !important;
-            background-repeat: no-repeat !important;
-            background-position: right 18px bottom 18px !important;
-            background-size: min(30vw, 260px) auto !important;
-            background-attachment: fixed !important;
-        }
-        /* Enlarge the watermark on phones only; keep tablet/desktop sizing unchanged. */
-        @media (max-width: 600px) {
-            html:root body > main {
-                background-size: min(70vw, 360px) auto !important;
-            }
-        }
         html:root body > main > #view-plants,
         html:root body > main > #view-scanner,
         html:root body > main > #view-settings {
