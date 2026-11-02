@@ -1341,29 +1341,19 @@ textarea {
         html:root body > main { min-height: calc(100vh - 90px); }
 
 
-        /* Beans watermark: keep it above the page canvas but below all page content. */
-        body > main {
-            position: relative;
-            isolation: isolate;
+        /* Reliable watermark on the main canvas itself (not a pseudo-element behind opaque layers). */
+        html:root body > main {
+            background-image: url("./assets/assets%3Aplants%3Abeans.svg") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 18px bottom 18px !important;
+            background-size: min(30vw, 260px) auto !important;
+            background-attachment: fixed !important;
         }
-        body > main::after {
-            content: "";
-            position: fixed;
-            right: 22px;
-            bottom: 18px;
-            width: min(30vw, 280px);
-            height: min(30vw, 280px);
-            background-image: url("./assets/assets%3Aplants%3Abeans.svg");
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain;
-            opacity: 0.22;
-            pointer-events: none;
-            z-index: 1;
-        }
-        body > main > * {
-            position: relative;
-            z-index: 2;
+        html:root body > main > #view-plants,
+        html:root body > main > #view-scanner,
+        html:root body > main > #view-settings {
+            background-color: transparent !important;
+            background-image: none !important;
         }
     </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
