@@ -3833,7 +3833,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function closeJournalModal() {
             document.getElementById('journal-modal').classList.add('hidden');
-            setActiveNavigationTab('plants');
+            // Return to the Plants view as well as resetting its navigation highlight.
+            // This keeps the selected tab in sync after a journal opened by an NFC scan.
+            switchTab('plants');
         }
 
         let journalSelectedFiles = [];
