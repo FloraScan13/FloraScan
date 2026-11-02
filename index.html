@@ -1349,6 +1349,12 @@ textarea {
             background-size: min(30vw, 260px) auto !important;
             background-attachment: fixed !important;
         }
+        /* Enlarge the watermark on phones only; keep tablet/desktop sizing unchanged. */
+        @media (max-width: 600px) {
+            html:root body > main {
+                background-size: min(70vw, 360px) auto !important;
+            }
+        }
         html:root body > main > #view-plants,
         html:root body > main > #view-scanner,
         html:root body > main > #view-settings {
