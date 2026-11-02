@@ -4042,6 +4042,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             background-color: transparent !important;
             background-image: none !important;
         }
+        /* List view: give the complete plant card and its header/body/footer panels the page cream. */
+        body.plant-list-view #plants-grid .location-group .plant-card,
+        body.plant-list-view #plants-grid .location-group .plant-card > div:not(.crop-badge-container) {
+            background: #f7f6f0 !important;
+            background-color: #f7f6f0 !important;
+            background-image: none !important;
+        }
     `;
     document.head.appendChild(style);
 
