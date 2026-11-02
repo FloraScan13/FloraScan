@@ -150,64 +150,6 @@
             #main-navigation-tabs button i { font-size: 14px; }
         }
 
-        /* Thumb-friendly bottom navigation on touch-sized screens. */
-        @media (max-width: 768px) {
-            body { padding-bottom: calc(82px + env(safe-area-inset-bottom)) !important; }
-            main { padding-bottom: calc(104px + env(safe-area-inset-bottom)) !important; }
-            #main-navigation-tabs {
-                position: fixed !important;
-                left: 12px !important;
-                right: 12px !important;
-                bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-                top: auto !important;
-                z-index: 1000 !important;
-                display: flex !important;
-                gap: 4px !important;
-                margin: 0 !important;
-                padding: 7px !important;
-                border: 1px solid #e2dfd4 !important;
-                border-radius: 20px !important;
-                background: rgba(255,253,248,.96) !important;
-                box-shadow: 0 8px 28px rgba(41,67,51,.16) !important;
-                backdrop-filter: blur(14px);
-                -webkit-backdrop-filter: blur(14px);
-            }
-            #main-navigation-tabs button {
-                display: flex !important;
-                flex: 1 1 0 !important;
-                min-width: 0 !important;
-                min-height: 58px !important;
-                padding: 7px 3px !important;
-                flex-direction: column !important;
-                justify-content: center !important;
-                align-items: center !important;
-                gap: 4px !important;
-                border-radius: 13px !important;
-                font-size: 10px !important;
-                line-height: 1.1 !important;
-                white-space: nowrap !important;
-            }
-            #main-navigation-tabs button i,
-            #main-navigation-tabs button img {
-                width: 19px !important;
-                height: 19px !important;
-                font-size: 18px !important;
-                flex: 0 0 auto !important;
-            }
-            #main-navigation-tabs button[aria-current="page"] {
-                background: #c6537b !important;
-                border-color: #c6537b !important;
-                color: #ffffff !important;
-                box-shadow: 0 2px 7px rgba(166,61,101,.2) !important;
-            }
-            #main-navigation-tabs button[aria-current="page"] img {
-                filter: brightness(0) invert(1) !important;
-            }
-            #main-navigation-tabs button[aria-current="false"] {
-                color: #526653 !important;
-            }
-            #header-settings-button { display: none !important; }
-        }
         .autocomplete-dropdown {
             max-height: 220px;
             overflow-y: auto;
@@ -1508,10 +1450,6 @@ textarea {
             <button onclick="openAddPlantModal()" id="tab-add-plant" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
                 <i class="fa-solid fa-plus"></i>
                 <span>Add Plant</span>
-            </button>
-            <button onclick="switchTab('settings')" id="tab-settings" aria-current="false" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
-                <i class="fa-solid fa-sliders"></i>
-                <span>Settings</span>
             </button>
         </div>
 
@@ -2820,7 +2758,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function setActiveNavigationTab(tabId) {
-            ['plants', 'scanner', 'add-plant', 'settings'].forEach(t => {
+            ['plants', 'scanner', 'add-plant'].forEach(t => {
                 const tab = document.getElementById(`tab-${t}`);
                 if (!tab) return;
                 tab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900";
