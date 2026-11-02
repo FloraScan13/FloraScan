@@ -337,6 +337,26 @@ textarea {
         }
         #view-plants { gap: 20px !important; }
         #view-plants > .flex:first-child { margin-top: 6px; }
+        #plant-location-tabs {
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        #plant-location-tabs::-webkit-scrollbar { display: none; }
+        #plant-location-tabs .location-filter-tab {
+            background: #f1f0e8;
+            color: #526653;
+            border: 1px solid #e0e2d6;
+            white-space: nowrap;
+        }
+        #plant-location-tabs .location-filter-tab:hover {
+            background: #e8eade;
+        }
+        #plant-location-tabs .location-filter-tab.is-active {
+            background: #c6537b;
+            border-color: #c6537b;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(166,61,101,.16);
+        }
         #plant-search, #plant-location-filter {
             background-color: #fffef9 !important;
             border-color: #d9ddcf !important;
@@ -1441,9 +1461,10 @@ textarea {
                     <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
                 </div>
                 <div class="flex items-center gap-3 sm:w-auto">
-                    <div class="flex-1 sm:w-56 sm:flex-none min-w-0">
-                        <label for="plant-location-filter" class="sr-only">Filter by location</label>
-                        <select id="plant-location-filter" onchange="renderPlants()" class="w-full px-3 py-2 rounded-lg bg-transparent dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/70 text-sm shadow-none">
+                    <div class="w-full min-w-0 sm:flex-1">
+                        <label class="sr-only" id="plant-location-tabs-label">Filter plants by location</label>
+                        <div id="plant-location-tabs" role="group" aria-labelledby="plant-location-tabs-label" class="flex w-full min-w-0 items-center gap-2 overflow-x-auto py-1"></div>
+                        <select id="plant-location-filter" onchange="renderPlants()" class="hidden" aria-hidden="true" tabindex="-1">
                             <option value="">All locations</option>
                         </select>
                     </div>
@@ -2767,6 +2788,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }[char]));
         }
 
+        function setPlantLocationFilter(location) {
+            const filterSelect = document.getElementById('plant-location-filter');
+            if (!filterSelect) return;
+            filterSelect.value = plantLocations.includes(location) ? location : '';
+            renderPlantLocationControls();
+            renderPlants();
+        }
+
         function renderPlantLocationControls(selectedLocation = '') {
             const plantSelect = document.getElementById('plant-location');
             const filterSelect = document.getElementById('plant-location-filter');
@@ -2784,6 +2813,21 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     '<option value="' + escapeHtml(location) + '">' + escapeHtml(location) + '</option>'
                 ).join('');
                 filterSelect.value = plantLocations.includes(currentFilter) ? currentFilter : '';
+            }
+            const locationTabs = document.getElementById('plant-location-tabs');
+            if (locationTabs) {
+                const activeLocation = filterSelect ? filterSelect.value : '';
+                const tabClass = 'location-filter-tab inline-flex flex-shrink-0 items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors';
+                locationTabs.innerHTML = [
+                    { value: '', label: 'All' },
+                    ...plantLocations.map(location => ({ value: location, label: location }))
+                ].map(item => {
+                    const active = item.value === activeLocation;
+                    return '<button type="button" class="' + tabClass + (active ? ' is-active' : '') +
+                        '" aria-pressed="' + (active ? 'true' : 'false') +
+                        '" onclick="setPlantLocationFilter(this.dataset.location)" data-location="' + escapeHtml(item.value) + '">' +
+                        escapeHtml(item.label) + '</button>';
+                }).join('');
             }
             if (settingsList) {
                 settingsList.innerHTML = plantLocations.map((location, index) => `
