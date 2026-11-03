@@ -3265,6 +3265,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     dirty: false, userId: currentUser.id, deletedPlantIds: [], deletedLogIds: [],
                     profileDirty: false, locationsDirty: false, syncedAt: new Date().toISOString()
                 });
+                // Pull records created on other devices after this device's pending work is safely uploaded.
+                await fetchPlantsFromCloudOrLocal();
+                await fetchPlantLocationsFromCloudOrLocal();
+                renderPlantLocationControls();
+                renderPlants();
                 updateSyncBadge('cloud', 'Cloud Synced');
                 return true;
             } catch (error) {
