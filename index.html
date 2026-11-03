@@ -704,14 +704,22 @@ textarea {
         }
         #plants-grid .location-group-count { color: #718071 !important; }
         #plants-grid .location-icon-button {
-            background: #fffef9 !important;
-            border-color: #d9ddcf !important;
-            color: #426047 !important;
-            border-radius: 11px !important;
+            background: transparent !important;
+            border-color: #e2e8f0 !important;
+            color: #334155 !important;
+            border-radius: 8px !important;
+            transition: background-color .18s ease, border-color .18s ease, color .18s ease;
         }
         #plants-grid .location-icon-button:hover {
-            background: #e4eadf !important;
-            border-color: #cbd7c5 !important;
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+        }
+        .dark #plants-grid .location-icon-button {
+            border-color: #475569 !important;
+            color: #e2e8f0 !important;
+        }
+        .dark #plants-grid .location-icon-button:hover {
+            background: #1e293b !important;
         }
         #plants-grid .location-details {
             color: #526653 !important;
