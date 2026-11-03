@@ -1800,11 +1800,15 @@ textarea {
             flex: 0 0 auto !important;
             min-width: max-content !important;
         }
+        /* Grid view: two cards per row on phones; list view remains one full-width row. */
         #view-plants #plants-grid .location-group-plants {
             display: grid !important;
-            grid-template-columns: minmax(0, 1fr) !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             gap: 10px !important;
             width: 100% !important;
+        }
+        #view-plants #plants-grid .location-group-plants.is-list-view {
+            grid-template-columns: minmax(0, 1fr) !important;
         }
         #view-plants #plants-grid .plant-card {
             display: flex !important;
