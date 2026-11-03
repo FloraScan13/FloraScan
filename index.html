@@ -482,10 +482,23 @@ textarea {
         #plantViewToggle { background: #e8eade !important; border-radius: 13px !important; }
         #plantViewToggle button { border-radius: 10px !important; min-height: 40px !important; }
         #plants-grid { gap: 20px !important; }
-        .location-view-toggle { background: #fcecf1; border: 1px solid rgba(196,85,124,.2); }
-        .location-view-button { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; color: #8F5368; background: transparent; font-size: 13px; }
-        .location-view-button.is-active { background: #C4557C; color: #fff; box-shadow: 0 1px 4px rgba(166,61,101,.2); }
+        .location-view-toggle { background: transparent; border: 0; padding: 0; }
+        .location-view-button {
+            width: 36px; height: 36px; min-height: 36px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border: 1px solid #e2e8f0; border-radius: 8px;
+            color: #334155; background: transparent; font-size: 13px;
+            transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+        }
+        .location-view-button:hover { background: #f8fafc; }
+        .location-view-button.is-active {
+            background: #C4557C; border-color: #C4557C;
+            color: #fff; box-shadow: 0 1px 4px rgba(166,61,101,.2);
+        }
         .location-view-button:focus-visible { outline: 2px solid #C4557C; outline-offset: 2px; }
+        .dark .location-view-button { border-color: #475569; color: #e2e8f0; }
+        .dark .location-view-button:hover { background: #1e293b; }
+        .dark .location-view-button.is-active { background: #C4557C; border-color: #C4557C; color: #fff; }
         /* Restore the original compact horizontal plant-row appearance in each location's list view. */
         .location-group-plants.is-list-view { grid-template-columns: minmax(0,1fr) !important; gap: .5rem !important; }
         .location-group-plants.is-list-view .plant-card {
