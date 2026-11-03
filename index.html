@@ -578,6 +578,60 @@ textarea {
             #main-navigation-tabs { gap: 4px !important; }
             #main-navigation-tabs button { padding: 10px 6px !important; }
             #plants-grid { gap: 12px !important; }
+
+            /* Keep every location section and plant card inside the phone viewport. */
+            #view-plants, #view-plants > *, #view-plants .max-w-\[1400px\],
+            #plants-grid, #plants-grid > *, #plants-grid .location-group,
+            #plants-grid .location-group-plants, #plants-grid .plant-card {
+                box-sizing: border-box !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+            }
+            #plants-grid .location-group {
+                padding: 10px 0 16px !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+            #plants-grid .location-group-plants {
+                min-width: 0 !important;
+                grid-template-columns: minmax(0, 1fr) !important;
+            }
+            #plants-grid .location-group-plants .plant-card {
+                min-width: 0 !important;
+                max-width: 100% !important;
+            }
+            #plants-grid .location-group-toolbar {
+                width: 100% !important;
+                min-width: 0 !important;
+                gap: 6px !important;
+            }
+            #plants-grid .location-group-heading {
+                min-width: 0 !important;
+                overflow-wrap: anywhere !important;
+            }
+            #plants-grid .location-group-actions {
+                flex: 0 0 auto !important;
+            }
+            #plants-grid .location-group-details {
+                width: 100% !important;
+                min-width: 0 !important;
+                overflow-wrap: anywhere !important;
+            }
+            #plants-grid .location-group-plants.is-list-view .plant-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-wrap: anywhere !important;
+            }
+            #plants-grid .location-group-plants.is-list-view .plant-card > div:first-child {
+                flex: 1 1 0% !important;
+                width: auto !important;
+            }
+            #plants-grid .location-group-plants.is-list-view .plant-card h4,
+            #plants-grid .location-group-plants.is-list-view .plant-card p {
+                min-width: 0 !important;
+                overflow-wrap: anywhere !important;
+            }
         }
 
 
