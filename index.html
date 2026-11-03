@@ -2826,6 +2826,55 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let activeFormStream = null;
         let activeMatchStream = null;
 
+        // Persist a small sync journal so offline edits and deletions survive reloads.
+        const floraNativeSetItem = Storage.prototype.setItem;
+        function readPendingSync() {
+            try {
+                return JSON.parse(localStorage.getItem('flora_pending_sync') || '{}') || {};
+            } catch (_) {
+                return {};
+            }
+        }
+        function writePendingSync(queue) {
+            floraNativeSetItem.call(localStorage, 'flora_pending_sync', JSON.stringify(queue));
+        }
+        function markPendingCloudSync() {
+            const queue = readPendingSync();
+            queue.dirty = true;
+            queue.userId = currentUser ? currentUser.id : (queue.userId || null);
+            queue.updatedAt = new Date().toISOString();
+            queue.deletedPlantIds = Array.isArray(queue.deletedPlantIds) ? queue.deletedPlantIds : [];
+            queue.deletedLogIds = Array.isArray(queue.deletedLogIds) ? queue.deletedLogIds : [];
+            writePendingSync(queue);
+            if (!navigator.onLine) updateSyncBadge('local', 'Offline · Changes Queued');
+        }
+        function queueCloudDeletion(kind, id) {
+            if (!id) return;
+            const queue = readPendingSync();
+            const key = kind === 'plant' ? 'deletedPlantIds' : 'deletedLogIds';
+            queue[key] = [...new Set([...(Array.isArray(queue[key]) ? queue[key] : []), id])];
+            queue.dirty = true;
+            queue.userId = currentUser ? currentUser.id : (queue.userId || null);
+            queue.updatedAt = new Date().toISOString();
+            writePendingSync(queue);
+        }
+
+        // Local writes become durable pending work; successful cloud sync clears the journal.
+        const floraTrackedKeys = new Set([
+            'flora_plants',
+            'flora_plant_locations',
+            'flora_plant_location_details',
+            'flora_plant_location_details_visibility'
+        ]);
+        Storage.prototype.setItem = function(key, value) {
+            floraNativeSetItem.call(this, key, value);
+            if (this === localStorage && floraTrackedKeys.has(String(key))) markPendingCloudSync();
+        };
+
+        window.addEventListener('online', () => {
+            setTimeout(() => syncPendingOfflineChanges(), 500);
+        });
+
         window.addEventListener('DOMContentLoaded', async () => {
             showMobileWelcomeScreen();
             applyAppearance();
@@ -2926,6 +2975,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     await fetchPlantLocationsFromCloudOrLocal();
                     renderPlantLocationControls();
                     renderPlants();
+                    await syncPendingOfflineChanges();
                 } else {
                     currentUser = null;
                     updateAuthUI(false);
@@ -2944,6 +2994,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         await fetchPlantLocationsFromCloudOrLocal();
                         renderPlantLocationControls();
                         renderPlants();
+                        await syncPendingOfflineChanges();
                     } else {
                         currentUser = null;
                         updateAuthUI(false);
@@ -3242,6 +3293,104 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (error) throw error;
             } catch (err) {
                 console.error("Failed to sync log to cloud:", err);
+            }
+        }
+
+        async function syncPendingOfflineChanges() {
+            if (!navigator.onLine || !supabaseClient || !currentUser) return false;
+            const queue = readPendingSync();
+            if (!queue.dirty && !(queue.deletedPlantIds || []).length && !(queue.deletedLogIds || []).length) return true;
+            if (queue.userId && queue.userId !== currentUser.id) {
+                updateSyncBadge('local', 'Pending Changes · Sign In to Original Account');
+                return false;
+            }
+            if (window.floraOfflineSyncRunning) return false;
+            window.floraOfflineSyncRunning = true;
+            updateSyncBadge('local', 'Syncing Offline Changes…');
+            try {
+                // Upload the current local plant snapshot and every journal entry.
+                for (const plant of plants) {
+                    const { error: plantError } = await supabaseClient.from('plants').upsert({
+                        id: plant.id,
+                        user_id: currentUser.id,
+                        name: plant.name,
+                        variety: plant.variety,
+                        icon_key: plant.iconKey,
+                        hex: plant.hex,
+                        date: plant.date,
+                        medium: plant.medium,
+                        notes: plant.notes,
+                        location: plant.location || ''
+                    });
+                    if (plantError) throw plantError;
+
+                    for (const log of (plant.logs || [])) {
+                        let photoPaths = Array.isArray(log.photoPaths) ? [...log.photoPaths] : [];
+                        const photoData = Array.isArray(log.photos) ? log.photos : [];
+                        for (let index = photoPaths.length; index < photoData.length; index++) {
+                            const photo = photoData[index];
+                            if (typeof photo === 'string' && photo.startsWith('data:')) {
+                                const path = await uploadJournalPhoto(photo, plant.id, log.id, index);
+                                photoPaths[index] = path;
+                            }
+                        }
+                        const { error: logError } = await supabaseClient.from('plant_logs').upsert({
+                            id: log.id,
+                            plant_id: plant.id,
+                            user_id: currentUser.id,
+                            date: log.date,
+                            type: log.type,
+                            text: log.text,
+                            photos: photoPaths
+                        });
+                        if (logError) throw logError;
+                        if (photoPaths.length) log.photoPaths = photoPaths;
+                    }
+                }
+
+                // Replay removals after upserts so deleted records cannot be resurrected.
+                for (const logId of (queue.deletedLogIds || [])) {
+                    const { data: oldLog, error: oldLogError } = await supabaseClient
+                        .from('plant_logs').select('photos').eq('id', logId).eq('user_id', currentUser.id).maybeSingle();
+                    if (oldLogError) throw oldLogError;
+                    await deleteJournalPhotoFiles(oldLog && oldLog.photos ? oldLog.photos : []);
+                    const { error } = await supabaseClient.from('plant_logs').delete().eq('id', logId).eq('user_id', currentUser.id);
+                    if (error) throw error;
+                }
+                for (const plantId of (queue.deletedPlantIds || [])) {
+                    const { data: oldLogs, error: oldLogsError } = await supabaseClient
+                        .from('plant_logs').select('photos').eq('plant_id', plantId).eq('user_id', currentUser.id);
+                    if (oldLogsError) throw oldLogsError;
+                    await deleteJournalPhotoFiles((oldLogs || []).flatMap(log => Array.isArray(log.photos) ? log.photos : []));
+                    const { error: logsError } = await supabaseClient.from('plant_logs').delete().eq('plant_id', plantId).eq('user_id', currentUser.id);
+                    if (logsError) throw logsError;
+                    const { error: plantError } = await supabaseClient.from('plants').delete().eq('id', plantId).eq('user_id', currentUser.id);
+                    if (plantError) throw plantError;
+                }
+
+                const { error: locationsError } = await supabaseClient.from('user_plant_locations').upsert({
+                    user_id: currentUser.id,
+                    locations: { names: plantLocations, details: locationDetails, detailsVisibility: locationDetailsVisibility },
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id' });
+                if (locationsError) throw locationsError;
+
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                const latestQueue = readPendingSync();
+                if (latestQueue.userId && latestQueue.userId !== currentUser.id) throw new Error('The signed-in account changed during sync.');
+                writePendingSync({ dirty: false, userId: currentUser.id, deletedPlantIds: [], deletedLogIds: [], syncedAt: new Date().toISOString() });
+                updateSyncBadge('cloud', 'Cloud Synced');
+                return true;
+            } catch (err) {
+                console.error('Offline changes could not be fully synced:', err);
+                const latestQueue = readPendingSync();
+                latestQueue.dirty = true;
+                latestQueue.userId = currentUser.id;
+                writePendingSync(latestQueue);
+                updateSyncBadge('local', 'Offline Changes Waiting to Sync');
+                return false;
+            } finally {
+                window.floraOfflineSyncRunning = false;
             }
         }
 
@@ -4664,6 +4813,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             p.logs = p.logs.filter((l, idx) => (l.id ? l.id !== logId : idx.toString() !== logId));
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             const cloudDeleteResult = await deleteLogFromCloud(logId);
+            if (cloudDeleteResult !== true) queueCloudDeletion('log', logId);
             if (cloudDeleteResult === false) {
                 alert("The journal entry was removed on this device, but cloud cleanup failed. The cloud entry and/or photos may still be present. Please try again after checking your connection.");
             }
@@ -4692,6 +4842,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             plants = plants.filter(p => p.id !== delId);
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             const cloudDeleteResult = await deletePlantFromCloud(delId);
+            if (cloudDeleteResult !== true) queueCloudDeletion('plant', delId);
             if (cloudDeleteResult === false) {
                 alert("The plant was removed on this device, but cloud cleanup failed. Its cloud records and/or photos may still be present. Please try again after checking your connection.");
             }
