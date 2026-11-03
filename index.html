@@ -36,6 +36,9 @@
             }
         }
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase JS Client SDK -->
@@ -1768,6 +1771,12 @@ textarea {
         @keyframes nfc-blink { 50% { opacity: .3; } }
         @media (prefers-reduced-motion: reduce) { .nfc-wave, .nfc-overlay-hint i { animation: none; } }
 
+
+        /* Use Quicksand for the Sugar Bush wordmark in the app header. */
+        #app-header h1 {
+            font-family: 'Quicksand', sans-serif !important;
+            font-weight: 700 !important;
+        }
 </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 <style>
