@@ -86,8 +86,16 @@
                 color: #f4b4c9;
                 font-size: 29px;
             }
-            #mobile-welcome-screen .welcome-greeting {
+            #mobile-welcome-screen .welcome-title {
                 margin: 0;
+                font-size: clamp(25px, 7vw, 34px);
+                font-weight: 650;
+                letter-spacing: -.035em;
+                line-height: 1.2;
+                color: #fffef9;
+            }
+            #mobile-welcome-screen .welcome-greeting {
+                margin: 12px 0 0;
                 font-size: clamp(25px, 7vw, 34px);
                 font-weight: 650;
                 letter-spacing: -.035em;
@@ -1987,8 +1995,8 @@ textarea {
     <div id="mobile-welcome-screen" role="status" aria-live="polite">
         <div>
             <div class="welcome-mark"><i class="fa-solid fa-leaf" aria-hidden="true"></i></div>
-            <p class="welcome-greeting">Welcome to Sugar Bush</p>
-            <p id="mobile-welcome-greeting" class="welcome-handle" style="margin-top:12px">Good morning</p>
+            <h1 class="welcome-title">Welcome to Sugar Bush</h1>
+            <p id="mobile-welcome-greeting" class="welcome-greeting">Good morning</p>
             <p id="mobile-welcome-handle" class="welcome-handle">@kitchengardener</p>
             <p class="welcome-caption">Your growing journal</p>
         </div>
