@@ -2964,6 +2964,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             if (!badge || !icon || !label) return;
 
+            if (!navigator.onLine) {
+                mode = 'local';
+                text = 'Offline · Local Storage';
+            }
             label.textContent = text;
             if (mode === 'cloud') {
                 badge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/30 text-emerald-100 border border-emerald-300/40 flex items-center space-x-1";
