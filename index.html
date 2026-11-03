@@ -1726,6 +1726,11 @@ textarea {
         }
 
 
+        /* NFC Scan is a mobile-only navigation option. */
+        @media (min-width: 768px) {
+            #tab-scanner { display: none !important; }
+        }
+
         /* Full-screen NFC tap experience. */
         #nfc-tap-overlay {
             position: fixed; inset: 0; z-index: 3000; display: flex;
