@@ -3172,9 +3172,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function fetchPlantsFromCloudOrLocal() {
             const pending = readPendingSync();
-            if (pending.dirty && (!pending.userId || pending.userId === currentUser?.id)) {
+            if (pending.dirty) {
                 plants = JSON.parse(localStorage.getItem('flora_plants') || '[]');
-                return; // Preserve this device's unsynced edits until they reach the original account.
+                if (pending.userId && currentUser && pending.userId !== currentUser.id) {
+                    updateSyncBadge('local', 'Pending Changes · Original Account Required');
+                }
+                return; // Never replace queued local edits with another account's cloud snapshot.
             }
             if (supabaseClient && currentUser) {
                 try {
@@ -3667,7 +3670,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function fetchPlantLocationsFromCloudOrLocal() {
             const pending = readPendingSync();
-            if (pending.dirty && (!pending.userId || pending.userId === currentUser?.id)) return;
+            if (pending.dirty) return; // Keep locally edited locations until the pending queue reaches its account.
             if (!supabaseClient || !currentUser) return;
             try {
                 const { data, error } = await supabaseClient
