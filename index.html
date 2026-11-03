@@ -4212,9 +4212,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function showOutdoorWeather(data) {
             const temperature = data.temperature.toFixed(1) + ' °C';
             const humidity = Math.round(data.humidity) + ' %';
-            const updated = data.time ? new Date(data.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
             document.querySelectorAll('[id^="outdoor-weather-"]').forEach(panel => {
-                panel.textContent = temperature + '  ' + humidity + (updated ? '  ' + updated : '');
+                panel.textContent = temperature + '  ' + humidity;
                 panel.title = 'Local outdoor weather from your device location';
             });
         }
