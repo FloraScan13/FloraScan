@@ -2841,7 +2841,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function markPendingCloudSync() {
             const queue = readPendingSync();
             queue.dirty = true;
-            queue.userId = currentUser ? currentUser.id : (queue.userId || null);
+            queue.userId = currentUser ? currentUser.id : (queue.userId || localStorage.getItem('flora_last_user_id') || null);
             queue.updatedAt = new Date().toISOString();
             queue.deletedPlantIds = Array.isArray(queue.deletedPlantIds) ? queue.deletedPlantIds : [];
             queue.deletedLogIds = Array.isArray(queue.deletedLogIds) ? queue.deletedLogIds : [];
@@ -2868,7 +2868,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         ]);
         Storage.prototype.setItem = function(key, value) {
             floraNativeSetItem.call(this, key, value);
-            if (this === localStorage && floraTrackedKeys.has(String(key))) markPendingCloudSync();
+            if (this === localStorage && !navigator.onLine && floraTrackedKeys.has(String(key))) markPendingCloudSync();
         };
 
         window.addEventListener('online', () => {
@@ -2968,6 +2968,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session && session.user) {
                     currentUser = session.user;
+                    localStorage.setItem('flora_last_user_id', currentUser.id);
                     updateAuthUI(true, currentUser.email);
                     updateSyncBadge('cloud', 'Cloud Synced');
                     await loadBrandingSettingsFromCloud();
@@ -2987,6 +2988,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (event === 'PASSWORD_RECOVERY') setTimeout(() => completeSupabasePasswordRecovery(), 0);
                     if (session && session.user) {
                         currentUser = session.user;
+                        localStorage.setItem('flora_last_user_id', currentUser.id);
                         updateAuthUI(true, currentUser.email);
                         updateSyncBadge('cloud', 'Cloud Synced');
                         await loadBrandingSettingsFromCloud();
@@ -3169,6 +3171,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function fetchPlantsFromCloudOrLocal() {
+            const pending = readPendingSync();
+            if (pending.dirty && (!pending.userId || pending.userId === currentUser?.id)) {
+                plants = JSON.parse(localStorage.getItem('flora_plants') || '[]');
+                return; // Preserve this device's unsynced edits until they reach the original account.
+            }
             if (supabaseClient && currentUser) {
                 try {
                     const { data: dbPlants, error: plantErr } = await supabaseClient
@@ -3659,6 +3666,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function fetchPlantLocationsFromCloudOrLocal() {
+            const pending = readPendingSync();
+            if (pending.dirty && (!pending.userId || pending.userId === currentUser?.id)) return;
             if (!supabaseClient || !currentUser) return;
             try {
                 const { data, error } = await supabaseClient
