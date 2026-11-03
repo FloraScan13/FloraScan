@@ -1830,8 +1830,8 @@ textarea {
                     </div>
 
                     <!-- Logged In View -->
-                    <div id="auth-logged-in" class="hidden p-4 rounded-xl bg-emerald-50 dark:bg-slate-900/80 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
+                    <div id="auth-logged-in" class="hidden p-4 rounded-xl bg-emerald-50 dark:bg-slate-900/80 border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center space-x-3 min-w-0">
                             <div class="w-9 h-9 rounded-full bg-[#f9dce6] text-[#a63d65] flex items-center justify-center font-bold">
                                 <i class="fa-solid fa-user"></i>
                             </div>
@@ -1840,7 +1840,7 @@ textarea {
                                 <p class="text-[10px] text-emerald-600 dark:text-emerald-400">Authenticated Cloud Session Active</p>
                             </div>
                         </div>
-                        <div class="flex flex-nowrap items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2 pl-12 sm:pl-0">
                             <button onclick="handleSupabaseChangePassword()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap">
                                 Change Password
                             </button>
