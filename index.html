@@ -4,12 +4,13 @@
 <html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Sugar Bush - Plant Tag & Growth Journal</title>
     <link rel="icon" type="image/svg+xml" href="./leaf-icon-v2.svg">
     <link rel="apple-touch-icon" href="./leaf-icon-v2.svg">
     <link rel="manifest" href="./manifest.webmanifest">
     <meta name="theme-color" content="#294b34">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Sugar Bush">
@@ -40,6 +41,12 @@
     <!-- Supabase JS Client SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* Match the browser's first painted frame and PWA launch surface on mobile. */
+        html, body { background-color: #294b34; }
+        @media (max-width: 768px) {
+            body { min-height: 100%; }
+        }
+
         /* Mobile welcome screen shown while the app restores its plant data. */
         #mobile-welcome-screen {
             display: none;
