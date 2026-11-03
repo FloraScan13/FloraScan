@@ -3568,7 +3568,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function stopNfcScan() {
             hideNfcTapOverlay();
-            setActiveNavigationTab('plants');
+            // Stop scanning and switch the actual content view, not just the tab highlight.
+            switchTab('plants');
             if (activeNfcScanController) {
                 activeNfcScanController.abort();
                 activeNfcScanController = null;
