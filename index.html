@@ -2902,7 +2902,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function setActiveNavigationTab(tabId) {
-            ['plants', 'scanner', 'add-plant'].forEach(t => {
+            ['plants', 'scanner', 'add-plant', 'settings'].forEach(t => {
                 const tab = document.getElementById(`tab-${t}`);
                 if (!tab) return;
                 tab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900";
