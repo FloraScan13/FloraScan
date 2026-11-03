@@ -4144,6 +4144,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }).join('');
             if (orderedLocations.includes('Grow Tent')) loadGoveeReading();
             if (orderedLocations.some(location => locationTypes[location] === 'outdoor')) loadOutdoorWeather();
+            createWeeklyOutdoorWeatherLogs();
         }
 
         // Current outdoor conditions from Open-Meteo using the device's browser location.
@@ -4216,6 +4217,94 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 panel.textContent = temperature + '  ' + humidity;
                 panel.title = 'Local outdoor weather from your device location';
             });
+        }
+
+        function getFloraISOWeekKey(date = new Date()) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            const week = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return d.getUTCFullYear() + '-W' + String(week).padStart(2, '0');
+        }
+
+        let weeklyOutdoorSummaryRequest = null;
+        async function createWeeklyOutdoorWeatherLogs() {
+            const outdoorLocations = [...new Set(plantLocations.filter(location => locationTypes[location] === 'outdoor'))];
+            const outdoorPlants = plants.filter(plant => outdoorLocations.includes((plant.location || '').trim()));
+            if (!outdoorPlants.length) return;
+            const weekKey = getFloraISOWeekKey();
+            const accountKey = currentUser?.id || 'local';
+            const doneKey = 'flora_weekly_weather_done_' + accountKey + '_' + weekKey;
+            if (localStorage.getItem(doneKey) === '1' || weeklyOutdoorSummaryRequest) return;
+            weeklyOutdoorSummaryRequest = (async () => {
+                try {
+                    if (!outdoorWeatherCoordinates) {
+                        if (!navigator.geolocation) throw new Error('Device location is unavailable');
+                        outdoorWeatherCoordinates = await new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(
+                                position => resolve({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
+                                reject,
+                                { enableHighAccuracy: false, timeout: 12000, maximumAge: 10 * 60 * 1000 }
+                            );
+                        });
+                    }
+                    const { latitude, longitude } = outdoorWeatherCoordinates;
+                    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(latitude) +
+                        '&longitude=' + encodeURIComponent(longitude) +
+                        '&hourly=temperature_2m,relative_humidity_2m&past_days=7&forecast_days=1&temperature_unit=celsius&timezone=auto';
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Historical weather service unavailable');
+                    const data = await response.json();
+                    const times = data.hourly?.time || [];
+                    const temperatures = data.hourly?.temperature_2m || [];
+                    const humidities = data.hourly?.relative_humidity_2m || [];
+                    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                    const samples = [];
+                    times.forEach((time, index) => {
+                        const timestamp = new Date(time).getTime();
+                        const temperature = temperatures[index];
+                        const humidity = humidities[index];
+                        if (Number.isFinite(timestamp) && timestamp >= cutoff && timestamp <= Date.now() &&
+                            typeof temperature === 'number' && Number.isFinite(temperature) &&
+                            typeof humidity === 'number' && Number.isFinite(humidity)) {
+                            samples.push({ timestamp, temperature, humidity });
+                        }
+                    });
+                    if (!samples.length) throw new Error('No hourly weather history was returned for the last seven days.');
+                    const highestTemperature = Math.max(...samples.map(sample => sample.temperature));
+                    const lowestTemperature = Math.min(...samples.map(sample => sample.temperature));
+                    const highestHumidity = Math.max(...samples.map(sample => sample.humidity));
+                    const lowestHumidity = Math.min(...samples.map(sample => sample.humidity));
+                    const startDate = new Date(Math.min(...samples.map(sample => sample.timestamp))).toLocaleDateString();
+                    const endDate = new Date(Math.max(...samples.map(sample => sample.timestamp))).toLocaleDateString();
+                    const summary = 'Outdoor weather for the last 7 days (' + startDate + ' – ' + endDate + '): ' +
+                        'Temperature high ' + highestTemperature.toFixed(1) + ' °C, low ' + lowestTemperature.toFixed(1) + ' °C. ' +
+                        'Humidity high ' + Math.round(highestHumidity) + '%, low ' + Math.round(lowestHumidity) + '%.';
+                    const createdAt = new Date().toISOString().slice(0, 10);
+                    const newLogs = [];
+                    outdoorPlants.forEach(plant => {
+                        if (!Array.isArray(plant.logs)) plant.logs = [];
+                        const locationKey = (plant.location || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                        const logId = 'weather-week-' + weekKey + '-' + locationKey + '-' + plant.id;
+                        if (plant.logs.some(log => log.id === logId)) return;
+                        const log = { id: logId, date: createdAt, type: 'Weekly Weather Summary', text: summary };
+                        plant.logs.unshift(log);
+                        newLogs.push({ plantId: plant.id, log });
+                    });
+                    localStorage.setItem('flora_plants', JSON.stringify(plants));
+                    if (newLogs.length && supabaseClient && currentUser) {
+                        markFloraSyncPending();
+                        for (const item of newLogs) await syncLogToCloud(item.plantId, item.log);
+                    }
+                    localStorage.setItem(doneKey, '1');
+                    if (newLogs.length) renderPlants();
+                } catch (error) {
+                    console.warn('Could not create weekly outdoor weather journal entries:', error);
+                } finally {
+                    weeklyOutdoorSummaryRequest = null;
+                }
+            })();
+            return weeklyOutdoorSummaryRequest;
         }
 
         // Govee H5179 live readings for the Grow Tent location.
