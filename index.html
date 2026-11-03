@@ -3842,7 +3842,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         .from('user_plant_locations')
                         .upsert({
                             user_id: currentUser.id,
-                            locations: { names: plantLocations.length ? plantLocations : [...DEFAULT_PLANT_LOCATIONS], types: locationTypes, details: locationDetails, detailsVisibility: locationDetailsVisibility },
+                            locations: {
+                                names: plantLocations.length ? plantLocations : [...DEFAULT_PLANT_LOCATIONS],
+                                types: locationTypes,
+                                details: locationDetails,
+                                detailsVisibility: locationDetailsVisibility,
+                                postcodes: locationPostcodes,
+                                coordinates: locationCoordinates
+                            },
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'user_id' });
                     if (saveError) throw saveError;
