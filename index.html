@@ -3738,7 +3738,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (!Array.isArray(data.locations) && data.locations.detailsVisibility && typeof data.locations.detailsVisibility === 'object') {
                         locationDetailsVisibility = data.locations.detailsVisibility;
                         localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
-            markFloraSyncPending('locations');
                     }
                 } else {
                     // First sign-in for this account: preserve this device's configured list and seed the cloud.
@@ -3833,6 +3832,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function toggleLocationDetailsVisibility(location) {
             locationDetailsVisibility[location] = locationDetailsVisibility[location] === false;
             localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
+            markFloraSyncPending('locations');
             renderPlants();
             if (supabaseClient && currentUser) {
                 const saved = await savePlantLocationsToCloud();
