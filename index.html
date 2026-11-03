@@ -3017,6 +3017,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function switchTab(tabId) {
+            // Dismiss the Add Plant modal whenever the user navigates to another tab.
+            const plantModal = document.getElementById('plant-modal');
+            if (plantModal) plantModal.classList.add('hidden');
+
             if (tabId === 'scanner') {
                 startNfcScan();
                 return;
