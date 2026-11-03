@@ -2843,17 +2843,42 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         let mobileWelcomeShownAt = 0;
 
+        function updateMobileWelcomeGreeting() {
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+            const greetingDisplay = document.getElementById('mobile-welcome-greeting');
+            if (greetingDisplay) greetingDisplay.textContent = greeting + ', ' + (appSettings.username || '@kitchengardener') + '!';
+        }
+
         function showMobileWelcomeScreen() {
             const screen = document.getElementById('mobile-welcome-screen');
             if (!screen || window.matchMedia('(min-width: 769px)').matches) return;
-            const hour = new Date().getHours();
-            const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-            const handle = appSettings.username || '@kitchengardener';
-            const greetingDisplay = document.getElementById('mobile-welcome-greeting');
-            const handleDisplay = document.getElementById('mobile-welcome-handle');
-            if (greetingDisplay) greetingDisplay.textContent = greeting + ', ' + handle + '!';
+            updateMobileWelcomeGreeting();
             mobileWelcomeShownAt = Date.now();
             screen.classList.remove('is-hidden');
+        }
+
+        async function loadBrandingSettingsFromCloud() {
+            if (!supabaseClient || !currentUser) return;
+            const { data, error } = await supabaseClient.auth.getUser();
+            if (error) {
+                console.error('Could not load cloud username:', error);
+                return;
+            }
+            currentUser = data.user || currentUser;
+            const cloudUsername = currentUser.user_metadata && currentUser.user_metadata.username;
+            if (typeof cloudUsername === 'string' && cloudUsername.trim()) {
+                appSettings.username = cloudUsername.trim();
+                localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+                applyBranding();
+                updateMobileWelcomeGreeting();
+            } else {
+                // First sign-in for this account: seed its cloud profile from this device's setting.
+                const { error: saveError } = await supabaseClient.auth.updateUser({
+                    data: { username: appSettings.username || '@kitchengardener' }
+                });
+                if (saveError) console.error('Could not initialise cloud username:', saveError);
+            }
         }
 
         function hideMobileWelcomeScreen() {
@@ -2896,6 +2921,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     currentUser = session.user;
                     updateAuthUI(true, currentUser.email);
                     updateSyncBadge('cloud', 'Cloud Synced');
+                    await loadBrandingSettingsFromCloud();
                     await fetchPlantsFromCloudOrLocal();
                     await fetchPlantLocationsFromCloudOrLocal();
                     renderPlantLocationControls();
@@ -2913,6 +2939,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         currentUser = session.user;
                         updateAuthUI(true, currentUser.email);
                         updateSyncBadge('cloud', 'Cloud Synced');
+                        await loadBrandingSettingsFromCloud();
                         await fetchPlantsFromCloudOrLocal();
                         await fetchPlantLocationsFromCloudOrLocal();
                         renderPlantLocationControls();
@@ -3270,10 +3297,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (logoIcon) logoIcon.classList.remove('hidden');
         }
 
-        function saveBrandingSettings() {
-            appSettings.username = document.getElementById('setting-username').value || '@kitchengardener';
+        async function saveBrandingSettings() {
+            appSettings.username = document.getElementById('setting-username').value.trim() || '@kitchengardener';
             localStorage.setItem('flora_settings', JSON.stringify(appSettings));
             applyBranding();
+            if (supabaseClient && currentUser) {
+                const { error } = await supabaseClient.auth.updateUser({
+                    data: { username: appSettings.username }
+                });
+                if (error) {
+                    console.error('Could not sync username to cloud:', error);
+                    alert('Your username was saved on this device, but could not be synced across devices: ' + error.message);
+                    return;
+                }
+                currentUser = (await supabaseClient.auth.getUser()).data.user || currentUser;
+                updateMobileWelcomeGreeting();
+            }
         }
 
         function renderIconPickerGrid(selectedKey = 'cucumber') {
