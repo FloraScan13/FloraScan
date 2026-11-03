@@ -328,6 +328,10 @@ textarea {
         #header-logo-container { width: clamp(124px, 17vw, 168px) !important; height: clamp(82px, 11.2vw, 112px) !important; max-width: 44vw; margin-left: 0 !important; margin-inline-start: 0 !important; background: transparent !important; border: 0 !important; outline: 0 !important; box-shadow: none !important; border-radius: 0 !important; box-sizing: border-box; flex-shrink: 0; }
         @media (max-width: 380px) { #app-header > div { padding-left: 12px !important; padding-right: 12px !important; } }
         #header-logo-img { width: 100% !important; height: 100% !important; object-fit: contain !important; display: block; }
+        @media (max-width: 640px) {
+            /* Align the visible mark (not the SVG's transparent viewBox space) with the content button. */
+            #header-logo-container { transform: translateX(-91px) !important; }
+        }
         /* Pink cloud-sync status badge to complement the journal's rose accent. */
         #cloud-sync-badge {
             background: rgba(198, 83, 123, .22) !important;
