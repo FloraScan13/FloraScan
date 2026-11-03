@@ -4203,7 +4203,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }).join('');
             if (orderedLocations.includes('Grow Tent')) loadGoveeReading();
             if (orderedLocations.some(location => locationTypes[location] === 'outdoor')) loadOutdoorWeather();
-            createWeeklyOutdoorWeatherLogs();
         }
 
         // Current outdoor conditions from Open-Meteo using the device's browser location.
