@@ -4741,14 +4741,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             let photoPaths = [];
             try {
                 photos = await Promise.all(photoFiles.map(compressJournalPhoto));
-                if (photos.length && supabaseClient && currentUser) {
+                if (photos.length && supabaseClient && currentUser && navigator.onLine) {
                     const logId = 'log_' + Date.now();
                     photoPaths = await Promise.all(photos.map((photo, index) => uploadJournalPhoto(photo, plantId, logId, index)));
                     photos = await Promise.all(photoPaths.map(createJournalPhotoUrl));
                     if (photos.some(photo => !photo)) throw new Error('Could not prepare uploaded photo previews.');
                     window.pendingJournalLogId = logId;
+                } else if (photos.length && supabaseClient && currentUser && !navigator.onLine) {
+                    alert('Your photos will be saved on this device and queued for cloud upload when you reconnect.');
                 } else if (photos.length) {
-                    alert('These photos will be saved on this device only. To sync them across devices, connect and sign in to Supabase and apply the journal photo storage setup.');
+                    alert('These photos will be saved on this device only. Sign in to your Sugar Bush account to sync them across devices.');
                 }
             } catch (error) {
                 console.error('Journal photo upload failed:', error);
