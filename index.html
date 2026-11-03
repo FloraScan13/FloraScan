@@ -4309,22 +4309,21 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             background-image: none !important;
         }
 
-        /* Match plant-card and location-control hover states to inactive location pills. */
-        #plants-grid .plant-card details summary:hover,
-        #plants-grid .plant-card details summary:focus-visible,
-        #plants-grid .location-group-actions .location-icon-button:hover,
-        #plants-grid .location-group-actions .location-view-button:not(.is-active):hover {
-            background: #e8eade !important;
-            background-color: #e8eade !important;
+        /* Exact hover colour for plant menu, eye, grid and list controls: RGB(232, 234, 223). */
+        #plants-grid .plant-card details > summary:is(:hover, :focus-visible),
+        #plants-grid .location-group-actions button.location-icon-button:hover,
+        #plants-grid .location-group-actions button.location-view-button:not(.is-active):hover {
+            background: rgb(232, 234, 223) !important;
+            background-color: rgb(232, 234, 223) !important;
             background-image: none !important;
-            border-color: #e0e2d6 !important;
+            border-color: rgb(232, 234, 223) !important;
             color: #526653 !important;
             box-shadow: none !important;
+            outline-color: transparent !important;
         }
-        #plants-grid .plant-card details summary:hover *,
-        #plants-grid .plant-card details summary:focus-visible *,
-        #plants-grid .location-group-actions .location-icon-button:hover *,
-        #plants-grid .location-group-actions .location-view-button:not(.is-active):hover * {
+        #plants-grid .plant-card details > summary:is(:hover, :focus-visible) *,
+        #plants-grid .location-group-actions button.location-icon-button:hover *,
+        #plants-grid .location-group-actions button.location-view-button:not(.is-active):hover * {
             color: #526653 !important;
         }
 
