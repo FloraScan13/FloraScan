@@ -2862,6 +2862,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         // Local writes become durable pending work; successful cloud sync clears the journal.
         const floraTrackedKeys = new Set([
             'flora_plants',
+            'flora_settings',
             'flora_plant_locations',
             'flora_plant_location_details',
             'flora_plant_location_details_visibility'
@@ -3376,6 +3377,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (logsError) throw logsError;
                     const { error: plantError } = await supabaseClient.from('plants').delete().eq('id', plantId).eq('user_id', currentUser.id);
                     if (plantError) throw plantError;
+                }
+
+                const localSettings = JSON.parse(localStorage.getItem('flora_settings') || '{}');
+                if (typeof localSettings.username === 'string' && localSettings.username.trim()) {
+                    const { error: profileError } = await supabaseClient.auth.updateUser({
+                        data: { username: localSettings.username.trim() }
+                    });
+                    if (profileError) throw profileError;
                 }
 
                 const { error: locationsError } = await supabaseClient.from('user_plant_locations').upsert({
