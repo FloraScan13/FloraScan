@@ -1732,6 +1732,11 @@ textarea {
         }
 
 
+        /* Hide the entire NFC tag section on desktop only. */
+        @media (min-width: 768px) {
+            #plant-nfc-section { display: none !important; }
+        }
+
         /* NFC Scan is a mobile-only navigation option. */
         @media (min-width: 768px) {
             #tab-scanner { display: none !important; }
@@ -2266,7 +2271,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <p class="text-[11px] text-slate-400 mt-1.5"><span id="selected-icon-name-display" class="font-semibold text-emerald-600 dark:text-emerald-400">Cucumber / Gherkin</span></p>
                 </div>
 
-                <div class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+                <div id="plant-nfc-section" class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
                     <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-4 h-4 object-contain inline-flex items-center justify-center" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /><span>Plant NFC Tag</span></div>
                     <p class="text-xs text-slate-500 dark:text-slate-400">Save the plant first, then reopen its profile to write its ID to a blank NFC tag.</p>
                     <input type="hidden" id="form-color-hex" value="#16a34a">
