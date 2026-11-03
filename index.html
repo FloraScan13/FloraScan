@@ -2927,13 +2927,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session && session.user) {
                     currentUser = session.user;
+                    localStorage.setItem('flora_last_user_id', currentUser.id);
                     updateAuthUI(true, currentUser.email);
-                    updateSyncBadge('cloud', 'Cloud Synced');
+                    updateSyncBadge('cloud', 'Cloud Connected');
                     await loadBrandingSettingsFromCloud();
                     await fetchPlantsFromCloudOrLocal();
                     await fetchPlantLocationsFromCloudOrLocal();
                     renderPlantLocationControls();
                     renderPlants();
+                    await syncPendingFloraChanges();
                 } else {
                     currentUser = null;
                     updateAuthUI(false);
@@ -2945,13 +2947,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (event === 'PASSWORD_RECOVERY') setTimeout(() => completeSupabasePasswordRecovery(), 0);
                     if (session && session.user) {
                         currentUser = session.user;
+                        localStorage.setItem('flora_last_user_id', currentUser.id);
                         updateAuthUI(true, currentUser.email);
-                        updateSyncBadge('cloud', 'Cloud Synced');
+                        updateSyncBadge('cloud', 'Cloud Connected');
                         await loadBrandingSettingsFromCloud();
                         await fetchPlantsFromCloudOrLocal();
                         await fetchPlantLocationsFromCloudOrLocal();
                         renderPlantLocationControls();
                         renderPlants();
+                        await syncPendingFloraChanges();
                     } else {
                         currentUser = null;
                         updateAuthUI(false);
@@ -3135,7 +3139,176 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return path;
         }
 
+        // Durable local-first sync queue. Only successful cloud operations clear queued work.
+        function getFloraSyncQueue() {
+            try { return JSON.parse(localStorage.getItem('flora_pending_sync') || '{}') || {}; }
+            catch (_) { return {}; }
+        }
+
+        function saveFloraSyncQueue(queue) {
+            localStorage.setItem('flora_pending_sync', JSON.stringify(queue));
+        }
+
+        function markFloraSyncPending(kind = 'data', deletedId = null) {
+            const queue = getFloraSyncQueue();
+            queue.dirty = true;
+            queue.userId = currentUser?.id || queue.userId || localStorage.getItem('flora_last_user_id') || null;
+            queue.updatedAt = new Date().toISOString();
+            queue.deletedPlantIds = Array.isArray(queue.deletedPlantIds) ? queue.deletedPlantIds : [];
+            queue.deletedLogIds = Array.isArray(queue.deletedLogIds) ? queue.deletedLogIds : [];
+            if (kind === 'plant-delete' && deletedId) queue.deletedPlantIds = [...new Set([...queue.deletedPlantIds, deletedId])];
+            if (kind === 'log-delete' && deletedId) queue.deletedLogIds = [...new Set([...queue.deletedLogIds, deletedId])];
+            if (kind === 'profile') queue.profileDirty = true;
+            if (kind === 'locations') queue.locationsDirty = true;
+            saveFloraSyncQueue(queue);
+            if (!navigator.onLine) updateSyncBadge('local', 'Offline · Changes Queued');
+        }
+
+        async function syncPendingFloraChanges() {
+            if (!navigator.onLine || !supabaseClient || !currentUser) return false;
+            if (window.floraSyncInProgress) return false;
+            let queue = getFloraSyncQueue();
+            if (!queue.dirty && !queue.profileDirty && !queue.locationsDirty &&
+                !(queue.deletedPlantIds || []).length && !(queue.deletedLogIds || []).length) return true;
+            if (queue.userId && queue.userId !== currentUser.id) {
+                updateSyncBadge('local', 'Pending Changes · Original Account Required');
+                return false;
+            }
+
+            window.floraSyncInProgress = true;
+            updateSyncBadge('local', 'Syncing Offline Changes…');
+            try {
+                const localPlants = JSON.parse(localStorage.getItem('flora_plants') || '[]');
+                const deletedLogs = Array.isArray(queue.deletedLogIds) ? queue.deletedLogIds : [];
+                const deletedPlants = Array.isArray(queue.deletedPlantIds) ? queue.deletedPlantIds : [];
+
+                // Upload current plant records and journal entries. Data-URL photos are uploaded first.
+                for (const plant of localPlants) {
+                    if (deletedPlants.includes(plant.id)) continue;
+                    const { error: plantError } = await supabaseClient.from('plants').upsert({
+                        id: plant.id, user_id: currentUser.id, name: plant.name, variety: plant.variety,
+                        icon_key: plant.iconKey, hex: plant.hex, date: plant.date, medium: plant.medium,
+                        notes: plant.notes, location: plant.location || ''
+                    });
+                    if (plantError) throw plantError;
+
+                    for (const log of (plant.logs || [])) {
+                        if (deletedLogs.includes(log.id)) continue;
+                        let photoPaths = Array.isArray(log.photoPaths) ? [...log.photoPaths] : [];
+                        const photos = Array.isArray(log.photos) ? log.photos : [];
+                        for (let index = 0; index < photos.length; index++) {
+                            const photo = photos[index];
+                            if (typeof photo === 'string' && photo.startsWith('data:')) {
+                                photoPaths[index] = await uploadJournalPhoto(photo, plant.id, log.id, index);
+                            }
+                        }
+                        const { error: logError } = await supabaseClient.from('plant_logs').upsert({
+                            id: log.id, plant_id: plant.id, user_id: currentUser.id,
+                            date: log.date, type: log.type, text: log.text, photos: photoPaths
+                        });
+                        if (logError) throw logError;
+                        log.photoPaths = photoPaths;
+                        if (photoPaths.length) {
+                            log.photos = await Promise.all(photoPaths.map(createJournalPhotoUrl));
+                            log.photos = log.photos.filter(Boolean);
+                        }
+                    }
+                }
+
+                // Replay tombstones after upserts so removed records are not recreated.
+                for (const logId of deletedLogs) {
+                    const { data: oldLog, error: oldLogReadError } = await supabaseClient
+                        .from('plant_logs').select('photos').eq('id', logId).eq('user_id', currentUser.id).maybeSingle();
+                    if (oldLogReadError) throw oldLogReadError;
+                    await deleteJournalPhotoFiles(oldLog?.photos || []);
+                    const { error } = await supabaseClient.from('plant_logs').delete().eq('id', logId).eq('user_id', currentUser.id);
+                    if (error) throw error;
+                }
+                for (const plantId of deletedPlants) {
+                    const { data: oldLogs, error: oldLogsReadError } = await supabaseClient
+                        .from('plant_logs').select('photos').eq('plant_id', plantId).eq('user_id', currentUser.id);
+                    if (oldLogsReadError) throw oldLogsReadError;
+                    await deleteJournalPhotoFiles((oldLogs || []).flatMap(log => log.photos || []));
+                    const { error: logsError } = await supabaseClient.from('plant_logs').delete().eq('plant_id', plantId).eq('user_id', currentUser.id);
+                    if (logsError) throw logsError;
+                    const { error: plantError } = await supabaseClient.from('plants').delete().eq('id', plantId).eq('user_id', currentUser.id);
+                    if (plantError) throw plantError;
+                }
+
+                queue = getFloraSyncQueue();
+                if (queue.userId && queue.userId !== currentUser.id) throw new Error('The signed-in account changed during sync.');
+
+                if (queue.locationsDirty) {
+                    const { error } = await supabaseClient.from('user_plant_locations').upsert({
+                        user_id: currentUser.id,
+                        locations: {
+                            names: plantLocations,
+                            details: locationDetails,
+                            detailsVisibility: locationDetailsVisibility
+                        },
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id' });
+                    if (error) throw error;
+                }
+
+                if (queue.profileDirty) {
+                    const settings = JSON.parse(localStorage.getItem('flora_settings') || '{}');
+                    if (settings.username) {
+                        const { error } = await supabaseClient.auth.updateUser({ data: { username: settings.username } });
+                        if (error) throw error;
+                        currentUser = (await supabaseClient.auth.getUser()).data.user || currentUser;
+                    }
+                }
+
+                localStorage.setItem('flora_plants', JSON.stringify(localPlants));
+                saveFloraSyncQueue({
+                    dirty: false, userId: currentUser.id, deletedPlantIds: [], deletedLogIds: [],
+                    profileDirty: false, locationsDirty: false, syncedAt: new Date().toISOString()
+                });
+                updateSyncBadge('cloud', 'Cloud Synced');
+                return true;
+            } catch (error) {
+                console.error('Sugar Bush sync is still pending:', error);
+                queue = getFloraSyncQueue();
+                queue.dirty = true;
+                queue.userId = currentUser.id;
+                queue.lastError = error.message || String(error);
+                saveFloraSyncQueue(queue);
+                updateSyncBadge('local', 'Sync Pending · Retry When Online');
+                return false;
+            } finally {
+                window.floraSyncInProgress = false;
+            }
+        }
+
+        window.addEventListener('online', () => {
+            setTimeout(() => syncPendingFloraChanges(), 800);
+        });
+
+        window.addEventListener('offline', () => {
+            const queue = getFloraSyncQueue();
+            updateSyncBadge('local', queue.dirty ? 'Offline · Changes Queued' : 'Offline · Local Only');
+        });
+
+        window.addEventListener('focus', async () => {
+            if (!navigator.onLine || !supabaseClient || !currentUser) return;
+            const queue = getFloraSyncQueue();
+            if (queue.dirty || queue.profileDirty || queue.locationsDirty) {
+                await syncPendingFloraChanges();
+            } else {
+                await fetchPlantsFromCloudOrLocal();
+                await fetchPlantLocationsFromCloudOrLocal();
+                renderPlantLocationControls();
+                renderPlants();
+            }
+        });
+
         async function fetchPlantsFromCloudOrLocal() {
+            const pending = getFloraSyncQueue();
+            if (pending.dirty || pending.profileDirty || pending.locationsDirty) {
+                plants = JSON.parse(localStorage.getItem('flora_plants') || '[]');
+                return;
+            }
             if (supabaseClient && currentUser) {
                 try {
                     const { data: dbPlants, error: plantErr } = await supabaseClient
@@ -3178,7 +3351,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function syncPlantToCloud(plant) {
-            if (!supabaseClient || !currentUser) return false;
+            if (!supabaseClient || !currentUser || !navigator.onLine) {
+                markFloraSyncPending();
+                return false;
+            }
             try {
                 const { error } = await supabaseClient.from('plants').upsert({
                     id: plant.id,
@@ -3195,6 +3371,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (error) {
                     console.error("Failed to sync plant to cloud:", error);
                     updateSyncBadge('local', 'Cloud Save Failed');
+                    markFloraSyncPending();
                     alert("Your plant was saved on this device, but cloud sync failed: " + error.message + ". Check that the plants table has a location column and that your Supabase policies allow updates.");
                     return false;
                 }
@@ -3203,6 +3380,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             } catch (err) {
                 console.error("Failed to sync plant to cloud:", err);
                 updateSyncBadge('local', 'Cloud Save Failed');
+                markFloraSyncPending();
                 alert("Your plant was saved on this device, but cloud sync failed. Check your connection and Supabase database settings.");
                 return false;
             }
@@ -3246,7 +3424,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function syncLogToCloud(plantId, log) {
-            if (!supabaseClient || !currentUser) return;
+            if (!supabaseClient || !currentUser || !navigator.onLine) {
+                markFloraSyncPending();
+                return false;
+            }
             try {
                 const { error } = await supabaseClient.from('plant_logs').upsert({
                     id: log.id,
@@ -3260,7 +3441,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (error) throw error;
             } catch (err) {
                 console.error("Failed to sync log to cloud:", err);
+                markFloraSyncPending();
+                return false;
             }
+            return true;
         }
 
         async function deleteLogFromCloud(logId) {
@@ -3322,6 +3506,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function saveBrandingSettings() {
             appSettings.username = document.getElementById('setting-username').value.trim() || '@kitchengardener';
             localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            markFloraSyncPending('profile');
             applyBranding();
             let savedToCloud = false;
             if (supabaseClient && currentUser) {
@@ -3528,6 +3713,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function fetchPlantLocationsFromCloudOrLocal() {
+            const pending = getFloraSyncQueue();
+            if (pending.locationsDirty || pending.dirty) return;
             if (!supabaseClient || !currentUser) return;
             try {
                 const { data, error } = await supabaseClient
@@ -3551,6 +3738,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (!Array.isArray(data.locations) && data.locations.detailsVisibility && typeof data.locations.detailsVisibility === 'object') {
                         locationDetailsVisibility = data.locations.detailsVisibility;
                         localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
+            markFloraSyncPending('locations');
                     }
                 } else {
                     // First sign-in for this account: preserve this device's configured list and seed the cloud.
@@ -3593,6 +3781,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function persistPlantLocations() {
             localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
             localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
+            markFloraSyncPending('locations');
             renderPlantLocationControls();
             renderPlants();
             if (supabaseClient && currentUser) {
@@ -3752,6 +3941,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (details.length) locationDetails[location] = details.join('\n');
             else delete locationDetails[location];
             localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
+            markFloraSyncPending('locations');
             const modal = document.getElementById('location-detail-editor-modal');
             if (modal) modal.remove();
             editingLocationDetailsName = '';
@@ -4142,6 +4332,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
+            markFloraSyncPending();
             await syncPlantToCloud(plantData);
 
             renderPlants();
@@ -4550,19 +4741,27 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             let photoPaths = [];
             try {
                 photos = await Promise.all(photoFiles.map(compressJournalPhoto));
-                if (photos.length && supabaseClient && currentUser) {
+                if (photos.length && supabaseClient && currentUser && navigator.onLine) {
                     const logId = 'log_' + Date.now();
                     photoPaths = await Promise.all(photos.map((photo, index) => uploadJournalPhoto(photo, plantId, logId, index)));
                     photos = await Promise.all(photoPaths.map(createJournalPhotoUrl));
                     if (photos.some(photo => !photo)) throw new Error('Could not prepare uploaded photo previews.');
                     window.pendingJournalLogId = logId;
+                } else if (photos.length && supabaseClient && currentUser && !navigator.onLine) {
+                    // Keep compressed data URLs locally; syncPendingFloraChanges uploads them after reconnect.
+                    markFloraSyncPending();
                 } else if (photos.length) {
-                    alert('These photos will be saved on this device only. To sync them across devices, connect and sign in to Supabase and apply the journal photo storage setup.');
+                    alert('These photos will be saved on this device only. Sign in to your Sugar Bush account to sync them across devices.');
                 }
             } catch (error) {
-                console.error('Journal photo upload failed:', error);
-                alert('Could not upload journal photos. Check your Supabase connection and photo storage setup, then try again. No journal entry was saved.');
-                return;
+                console.error('Journal photo upload failed; retaining local photo data for retry:', error);
+                if (!navigator.onLine && supabaseClient && currentUser) {
+                    photoPaths = [];
+                    markFloraSyncPending();
+                } else {
+                    alert('Could not upload journal photos. Check your Supabase connection and photo storage setup, then try again. No journal entry was saved.');
+                    return;
+                }
             }
             let text = document.getElementById('log-text').value;
 
@@ -4601,6 +4800,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             p.logs.unshift(newLog);
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
+            markFloraSyncPending();
             if (type === 'Medium') await syncPlantToCloud(p);
             await syncLogToCloud(plantId, newLog);
 
@@ -4630,6 +4830,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             p.logs = p.logs.filter((l, idx) => (l.id ? l.id !== logId : idx.toString() !== logId));
             localStorage.setItem('flora_plants', JSON.stringify(plants));
+            markFloraSyncPending('log-delete', logId);
             const cloudDeleteResult = await deleteLogFromCloud(logId);
             if (cloudDeleteResult === false) {
                 alert("The journal entry was removed on this device, but cloud cleanup failed. The cloud entry and/or photos may still be present. Please try again after checking your connection.");
@@ -4658,6 +4859,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const delId = pendingDeleteId;
             plants = plants.filter(p => p.id !== delId);
             localStorage.setItem('flora_plants', JSON.stringify(plants));
+            markFloraSyncPending('plant-delete', delId);
             const cloudDeleteResult = await deletePlantFromCloud(delId);
             if (cloudDeleteResult === false) {
                 alert("The plant was removed on this device, but cloud cleanup failed. Its cloud records and/or photos may still be present. Please try again after checking your connection.");
