@@ -6,8 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Sugar Bush - Plant Tag & Growth Journal</title>
-    <link rel="icon" type="image/svg+xml" href="./leaf-icon-v2.svg">
-    <link rel="apple-touch-icon" href="./leaf-icon-v2.svg">
+    <link rel="icon" type="image/jpeg" href="./assets/SugarBushLogo.jpeg">
+    <link rel="apple-touch-icon" href="./assets/SugarBushLogo.jpeg">
     <link rel="manifest" href="./manifest.webmanifest">
     <meta name="theme-color" content="#294b34">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1996,9 +1996,9 @@ textarea {
     <header id="app-header" class="bg-emerald-700 text-white shadow-md sticky top-0 z-30 transition-colors duration-300">
         <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center space-x-3">
-                <div id="header-logo-container" class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl overflow-hidden shadow-inner flex-shrink-0">
-                    <i id="header-logo-icon" class="fa-solid fa-leaf" style="color:#f2a6c1"></i>
-                    <img id="header-logo-img" class="w-full h-full object-cover hidden" alt="Logo">
+                <div id="header-logo-container" class="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-inner flex-shrink-0">
+                    <img id="header-logo-img" src="./assets/SugarBushLogo.jpeg" class="w-full h-full object-contain" alt="Sugar Bush logo">
+                    <i id="header-logo-icon" class="fa-solid fa-leaf hidden" style="color:#f2a6c1"></i>
                 </div>
                 <div>
                     <h1 class="text-lg font-bold leading-tight">Sugar Bush</h1>
@@ -3251,14 +3251,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const usernameInput = document.getElementById('setting-username');
             if (usernameInput) usernameInput.value = appSettings.username;
 
-            // Keep the built-in Sugar Bush leaf logo; custom logo uploads/URLs are not offered in Settings.
+            // Use the Sugar Bush monogram and protea logo uploaded to the assets folder.
             const logoImg = document.getElementById('header-logo-img');
             const logoIcon = document.getElementById('header-logo-icon');
             if (logoImg) {
-                logoImg.removeAttribute('src');
-                logoImg.classList.add('hidden');
+                logoImg.src = './assets/SugarBushLogo.jpeg';
+                logoImg.classList.remove('hidden');
             }
-            if (logoIcon) logoIcon.classList.remove('hidden');
+            if (logoIcon) logoIcon.classList.add('hidden');
         }
 
         function saveBrandingSettings() {
