@@ -1748,6 +1748,57 @@ textarea {
     box-shadow: none !important;
 }
 </style>
+<style id="mobile-plant-toolbar-layout">
+    @media screen and (max-width: 640px) {
+        #plants-toolbar {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            flex-wrap: nowrap !important;
+            gap: 8px !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        #plants-search-control {
+            flex: 0 0 48px !important;
+            width: 48px !important;
+            min-width: 48px !important;
+            gap: 0 !important;
+        }
+        #plants-location-control {
+            flex: 1 1 0% !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            margin: 0 !important;
+        }
+        #plants-location-control > div {
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        #plant-location-tabs {
+            width: 100% !important;
+            min-width: 0 !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+        }
+        #plants-toolbar.search-open {
+            flex-wrap: wrap !important;
+        }
+        #plants-toolbar.search-open #plants-search-control {
+            flex: 1 1 100% !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        #plants-toolbar.search-open #plant-search-wrap {
+            flex: 1 1 0% !important;
+            min-width: 0 !important;
+        }
+        #plants-toolbar.search-open #plants-location-control {
+            flex: 1 1 100% !important;
+            width: 100% !important;
+        }
+    }
+</style>
 <style id="mobile-plant-width-fix">
     @media screen and (max-width: 640px) {
         html, body {
@@ -1932,8 +1983,8 @@ textarea {
 
         <!-- TAB 1: MY PLANTS -->
         <div id="view-plants" class="space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div class="flex items-center gap-2 flex-1 min-w-0">
+            <div id="plants-toolbar" class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div id="plants-search-control" class="flex items-center gap-2 flex-1 min-w-0">
                     <button type="button" id="plant-search-toggle" onclick="togglePlantSearch()" aria-label="Open plant search" aria-expanded="false" aria-controls="plant-search-wrap" title="Search plants">
                         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     </button>
@@ -1941,7 +1992,7 @@ textarea {
                         <input type="text" id="plant-search" oninput="renderPlants()" onkeydown="if(event.key === 'Escape') togglePlantSearch(false)" placeholder="Search plants by name, variety, or notes..." aria-label="Search plants by name, variety, or notes" class="w-full px-4 py-2.5 rounded-xl border text-sm">
                     </div>
                 </div>
-                <div class="flex items-center gap-3 sm:w-auto">
+                <div id="plants-location-control" class="flex items-center gap-3 sm:w-auto min-w-0">
                     <div class="w-full min-w-0 sm:flex-1">
                         <label class="sr-only" id="plant-location-tabs-label">Filter plants by location</label>
                         <div id="plant-location-tabs" role="group" aria-labelledby="plant-location-tabs-label" class="flex w-full min-w-0 items-center gap-2 overflow-x-auto py-1"></div>
@@ -3628,6 +3679,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 : searchWrap.classList.contains('hidden');
 
             searchWrap.classList.toggle('hidden', !shouldOpen);
+            const toolbar = document.getElementById('plants-toolbar');
+            if (toolbar) toolbar.classList.toggle('search-open', shouldOpen);
             toggle.setAttribute('aria-expanded', String(shouldOpen));
             toggle.setAttribute('aria-label', shouldOpen ? 'Close plant search' : 'Open plant search');
             toggle.setAttribute('title', shouldOpen ? 'Close search' : 'Search plants');
