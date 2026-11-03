@@ -1581,9 +1581,15 @@ textarea {
             box-shadow: 0 0 0 5px #fffef9 !important;
             transition: background-color .2s ease !important;
         }
-        #journal-modal #journal-header button:hover {
-            background: #7186bb !important;
+        #journal-modal #journal-header button:hover,
+        #journal-modal #journal-header button:active,
+        #journal-modal #journal-header button:focus,
+        #journal-modal #journal-header button:focus-visible {
+            background: #B0466C !important;
+            background-color: #B0466C !important;
             color: #ffffff !important;
+            box-shadow: none !important;
+            outline: none !important;
         }
 
     
