@@ -4905,6 +4905,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             renderJournalPhotoPreviews();
             document.getElementById('log-growth-medium').value = '';
             document.getElementById('log-type').value = 'Growth';
+            ['weekly-temp-high', 'weekly-temp-low', 'weekly-humidity-high', 'weekly-humidity-low'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
             document.getElementById('log-growth-stage').value = '';
             toggleNutrientLibraryView();
             document.getElementById('tank-volume-amount').value = '';
