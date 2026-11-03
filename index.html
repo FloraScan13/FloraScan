@@ -40,6 +40,67 @@
     <!-- Supabase JS Client SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* Mobile welcome screen shown while the app restores its plant data. */
+        #mobile-welcome-screen {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            #mobile-welcome-screen {
+                position: fixed;
+                inset: 0;
+                z-index: 2000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 28px;
+                background: #294b34;
+                color: #fffef9;
+                text-align: center;
+                opacity: 1;
+                visibility: visible;
+                transition: opacity .28s ease, visibility .28s ease;
+            }
+            #mobile-welcome-screen.is-hidden {
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+            }
+            #mobile-welcome-screen .welcome-mark {
+                display: flex;
+                width: 66px;
+                height: 66px;
+                margin: 0 auto 22px;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid rgba(255,255,255,.25);
+                border-radius: 22px;
+                background: rgba(255,255,255,.12);
+                color: #f4b4c9;
+                font-size: 29px;
+            }
+            #mobile-welcome-screen .welcome-greeting {
+                margin: 0;
+                font-size: clamp(25px, 7vw, 34px);
+                font-weight: 650;
+                letter-spacing: -.035em;
+                line-height: 1.2;
+            }
+            #mobile-welcome-screen .welcome-handle {
+                margin: 12px 0 0;
+                color: #f4c6d5;
+                font-size: 15px;
+                font-weight: 500;
+                letter-spacing: .02em;
+            }
+            #mobile-welcome-screen .welcome-caption {
+                margin: 26px 0 0;
+                color: #e0e9df;
+                font-size: 12px;
+                letter-spacing: .12em;
+                text-transform: uppercase;
+            }
+        }
+
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -1547,6 +1608,15 @@ textarea {
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
 
+    <div id="mobile-welcome-screen" role="status" aria-live="polite">
+        <div>
+            <div class="welcome-mark"><i class="fa-solid fa-leaf" aria-hidden="true"></i></div>
+            <p id="mobile-welcome-greeting" class="welcome-greeting">Welcome to Sugar Bush</p>
+            <p id="mobile-welcome-handle" class="welcome-handle">@kitchengardener</p>
+            <p class="welcome-caption">Your growing journal</p>
+        </div>
+    </div>
+
     <!-- Fixed Header -->
     <header id="app-header" class="bg-emerald-700 text-white shadow-md sticky top-0 z-30 transition-colors duration-300">
         <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
@@ -2382,6 +2452,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let activeMatchStream = null;
 
         window.addEventListener('DOMContentLoaded', async () => {
+            showMobileWelcomeScreen();
             applyAppearance();
             applyBranding();
             renderIconPickerGrid();
@@ -2392,7 +2463,26 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             setupAutocomplete();
             const logDateInput = document.getElementById('log-date');
             if (logDateInput) logDateInput.valueAsDate = new Date();
+            hideMobileWelcomeScreen();
         });
+
+        function showMobileWelcomeScreen() {
+            const screen = document.getElementById('mobile-welcome-screen');
+            if (!screen || window.matchMedia('(min-width: 769px)').matches) return;
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+            const handle = appSettings.username || '@kitchengardener';
+            const greetingDisplay = document.getElementById('mobile-welcome-greeting');
+            const handleDisplay = document.getElementById('mobile-welcome-handle');
+            if (greetingDisplay) greetingDisplay.textContent = greeting;
+            if (handleDisplay) handleDisplay.textContent = handle;
+            screen.classList.remove('is-hidden');
+        }
+
+        function hideMobileWelcomeScreen() {
+            const screen = document.getElementById('mobile-welcome-screen');
+            if (screen) screen.classList.add('is-hidden');
+        }
 
         // Initialize Supabase Client
         function initSupabaseClient() {
