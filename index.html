@@ -2809,6 +2809,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         let supabaseClient = null;
         let currentUser = null;
+        let plantLocationsRealtimeChannel = null;
+        let plantLocationsRefreshListenersInstalled = false;
 
         let plants = JSON.parse(localStorage.getItem('flora_plants')) || [
             {
@@ -2907,6 +2909,49 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             window.setTimeout(() => screen.classList.add('is-hidden'), remaining);
         }
 
+        // Keep growing-location settings live across every signed-in device.
+        async function refreshPlantLocationsFromCloud() {
+            if (!supabaseClient || !currentUser || !navigator.onLine) return;
+            if (getFloraSyncQueue().locationsDirty) return;
+            await fetchPlantLocationsFromCloudOrLocal();
+            renderPlantLocationControls();
+            renderPlants();
+        }
+
+        function subscribeToPlantLocationChanges() {
+            if (!supabaseClient || !currentUser) return;
+            if (plantLocationsRealtimeChannel) {
+                supabaseClient.removeChannel(plantLocationsRealtimeChannel);
+                plantLocationsRealtimeChannel = null;
+            }
+            const subscribedUserId = currentUser.id;
+            plantLocationsRealtimeChannel = supabaseClient
+                .channel('plant-locations-' + subscribedUserId)
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'user_plant_locations',
+                    filter: 'user_id=eq.' + subscribedUserId
+                }, async () => {
+                    if (!currentUser || currentUser.id !== subscribedUserId) return;
+                    await refreshPlantLocationsFromCloud();
+                })
+                .subscribe((status) => {
+                    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                        console.warn('Growing-location live sync connection:', status);
+                    }
+                });
+
+            if (!plantLocationsRefreshListenersInstalled) {
+                plantLocationsRefreshListenersInstalled = true;
+                window.addEventListener('focus', refreshPlantLocationsFromCloud);
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') refreshPlantLocationsFromCloud();
+                });
+                window.addEventListener('online', refreshPlantLocationsFromCloud);
+            }
+        }
+
         // Initialize Supabase Client
         function initSupabaseClient() {
             const url = appSettings.supabaseUrl || '';
@@ -2936,6 +2981,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session && session.user) {
                     currentUser = session.user;
+                    subscribeToPlantLocationChanges();
                     localStorage.setItem('flora_last_user_id', currentUser.id);
                     updateAuthUI(true, currentUser.email);
                     updateSyncBadge('cloud', 'Cloud Connected');
@@ -3252,8 +3298,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         user_id: currentUser.id,
                         locations: {
                             names: plantLocations,
+                            types: locationTypes,
                             details: locationDetails,
-                            detailsVisibility: locationDetailsVisibility
+                            detailsVisibility: locationDetailsVisibility,
+                            postcodes: locationPostcodes,
+                            coordinates: locationCoordinates
                         },
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
@@ -3737,7 +3786,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function fetchPlantLocationsFromCloudOrLocal() {
             const pending = getFloraSyncQueue();
-            if (pending.locationsDirty || pending.dirty) return;
+            if (pending.locationsDirty) return;
             if (!supabaseClient || !currentUser) return;
             try {
                 const { data, error } = await supabaseClient
@@ -3750,7 +3799,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (data && data.locations) {
                     // Accept the original string-array format and the newer format that includes per-location details.
                     const cloudNames = Array.isArray(data.locations) ? data.locations : data.locations.names;
-                    if (Array.isArray(cloudNames) && cloudNames.length) {
+                    if (Array.isArray(cloudNames)) {
                         plantLocations = [...new Set(cloudNames.map(v => String(v).trim()).filter(Boolean))];
                         localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
                     }
@@ -3803,6 +3852,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
                 if (error) throw error;
+                const queue = getFloraSyncQueue();
+                queue.locationsDirty = false;
+                saveFloraSyncQueue(queue);
                 return true;
             } catch (err) {
                 console.error('Failed to save growing locations to cloud:', err);
