@@ -2804,6 +2804,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let locationTypes = JSON.parse(localStorage.getItem('flora_plant_location_types') || 'null') || { ...DEFAULT_LOCATION_TYPES };
         let locationDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
         let locationDetailsVisibility = JSON.parse(localStorage.getItem('flora_plant_location_details_visibility') || '{}') || {};
+        let locationPostcodes = JSON.parse(localStorage.getItem('flora_plant_location_postcodes') || '{}') || {};
+        let locationCoordinates = JSON.parse(localStorage.getItem('flora_plant_location_coordinates') || '{}') || {};
 
         let supabaseClient = null;
         let currentUser = null;
@@ -3716,10 +3718,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             if (settingsList) {
                 settingsList.innerHTML = plantLocations.map((location, index) => `
-                    <div class="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
-                        <span class="min-w-0 flex-1 break-words text-sm font-medium text-slate-800 dark:text-slate-100">${escapeHtml(location)}</span>
-                        <select aria-label="Type for ${escapeHtml(location)}" onchange="setPlantLocationType(this.dataset.location, this.value)" data-location="${escapeHtml(location)}" class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs"><option value="indoor" ${locationTypes[location] !== 'outdoor' ? 'selected' : ''}>Indoor</option><option value="outdoor" ${locationTypes[location] === 'outdoor' ? 'selected' : ''}>Outdoor</option></select>
-                        <button type="button" onclick="removePlantLocation(${index})" class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/40 dark:hover:text-red-300" aria-label="Delete ${escapeHtml(location)}" title="Delete location"><i class="fa-solid fa-xmark"></i></button>
+                    <div class="flex flex-col gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
+                        <div class="flex items-center gap-3">
+                            <span class="min-w-0 flex-1 break-words text-sm font-medium text-slate-800 dark:text-slate-100">${escapeHtml(location)}</span>
+                            <select aria-label="Type for ${escapeHtml(location)}" onchange="setPlantLocationType(this.dataset.location, this.value)" data-location="${escapeHtml(location)}" class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs"><option value="indoor" ${locationTypes[location] !== 'outdoor' ? 'selected' : ''}>Indoor</option><option value="outdoor" ${locationTypes[location] === 'outdoor' ? 'selected' : ''}>Outdoor</option></select>
+                            <button type="button" onclick="removePlantLocation(${index})" class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/40 dark:hover:text-red-300" aria-label="Delete location" title="Delete location"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        ${locationTypes[location] === 'outdoor' ? `
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300">Postcode for local weather
+                                <input type="text" value="${escapeHtml(locationPostcodes[location] || '')}" maxlength="12" autocomplete="postal-code" placeholder="e.g. WR14 2XX" data-location="${escapeHtml(location)}" onchange="saveOutdoorLocationPostcode(this.dataset.location, this.value)" class="mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm" />
+                            </label>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">${locationCoordinates[location] ? 'Postcode saved · coordinates ready for scheduled weather' : 'Enter a UK postcode to set the weather location.'}</p>
+                        ` : '' }
                     </div>
                 `).join('');
             }
@@ -3756,6 +3766,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         locationDetailsVisibility = data.locations.detailsVisibility;
                         localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
                     }
+                    if (!Array.isArray(data.locations) && data.locations.postcodes && typeof data.locations.postcodes === 'object') {
+                        locationPostcodes = data.locations.postcodes;
+                        localStorage.setItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
+                    }
+                    if (!Array.isArray(data.locations) && data.locations.coordinates && typeof data.locations.coordinates === 'object') {
+                        locationCoordinates = data.locations.coordinates;
+                        localStorage.setItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
+                    }
                 } else {
                     // First sign-in for this account: preserve this device's configured list and seed the cloud.
                     const { error: saveError } = await supabaseClient
@@ -3781,7 +3799,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     .from('user_plant_locations')
                     .upsert({
                         user_id: currentUser.id,
-                        locations: { names: plantLocations, types: locationTypes, details: locationDetails, detailsVisibility: locationDetailsVisibility },
+                        locations: { names: plantLocations, types: locationTypes, details: locationDetails, detailsVisibility: locationDetailsVisibility, postcodes: locationPostcodes, coordinates: locationCoordinates },
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
                 if (error) throw error;
@@ -3798,6 +3816,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
             localStorage.setItem('flora_plant_location_types', JSON.stringify(locationTypes));
             localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
+            localStorage.setItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
+            localStorage.setItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
             markFloraSyncPending('locations');
             renderPlantLocationControls();
             renderPlants();
@@ -3832,6 +3852,43 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             input.focus();
         }
 
+        async function saveOutdoorLocationPostcode(location, rawPostcode) {
+            if (!plantLocations.includes(location) || locationTypes[location] !== 'outdoor') return;
+            const postcode = String(rawPostcode || '').trim().toUpperCase().replace(/\\s+/g, ' ');
+            if (!postcode) {
+                delete locationPostcodes[location];
+                delete locationCoordinates[location];
+                localStorage.setItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
+                localStorage.setItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
+                await savePlantLocationsToCloud();
+                renderPlantLocationControls();
+                return;
+            }
+            const ukPostcodePattern = /^(GIR 0AA|[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2})$/i;
+            if (!ukPostcodePattern.test(postcode)) {
+                alert('Please enter a valid UK postcode, for example WR14 2XX.');
+                renderPlantLocationControls();
+                return;
+            }
+            try {
+                const response = await fetch('https://api.postcodes.io/postcodes/' + encodeURIComponent(postcode));
+                const result = await response.json();
+                if (!response.ok || result.status !== 200 || !result.result) throw new Error('Postcode not found');
+                locationPostcodes[location] = result.result.postcode;
+                locationCoordinates[location] = { latitude: result.result.latitude, longitude: result.result.longitude };
+                localStorage.setItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
+                localStorage.setItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
+                markFloraSyncPending('locations');
+                const saved = await savePlantLocationsToCloud();
+                updateSyncBadge(saved ? 'cloud' : 'local', saved ? 'Cloud Synced' : 'Saved Locally');
+                renderPlantLocationControls();
+            } catch (error) {
+                console.error('Could not resolve outdoor postcode:', error);
+                alert('That postcode could not be looked up. Check it and try again.');
+                renderPlantLocationControls();
+            }
+        }
+
         async function setPlantLocationType(location, type) {
             if (!plantLocations.includes(location)) return;
             locationTypes[location] = type === 'outdoor' ? 'outdoor' : 'indoor';
@@ -3855,6 +3912,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             plants = plants.map(plant => plant.location === removed ? { ...plant, location: moveTo } : plant);
             delete locationDetails[removed];
             delete locationTypes[removed];
+            delete locationPostcodes[removed];
+            delete locationCoordinates[removed];
             localStorage.setItem('flora_plant_location_types', JSON.stringify(locationTypes));
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             plantLocations = next;
