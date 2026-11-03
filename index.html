@@ -453,13 +453,14 @@ textarea {
             background: #fff4f7;
             transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
         }
-        #plant-search-toggle:hover, #plant-search-toggle[aria-expanded="true"] {
+        #plant-search-toggle:hover, #plant-search-toggle:active, #plant-search-toggle[aria-expanded="true"] {
             background: #fcecf1;
-            box-shadow: 0 0 0 3px rgba(196,85,124,.10);
+            box-shadow: none !important;
+            outline: none !important;
         }
-        #plant-search-toggle:focus-visible {
-            outline: 2px solid #C4557C;
-            outline-offset: 2px;
+        #plant-search-toggle:focus, #plant-search-toggle:focus-visible {
+            outline: none !important;
+            box-shadow: none !important;
         }
         #plant-search-wrap {
             min-width: 0;
