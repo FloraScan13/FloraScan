@@ -481,6 +481,20 @@ textarea {
         #plantViewToggle { background: #e8eade !important; border-radius: 13px !important; }
         #plantViewToggle button { border-radius: 10px !important; min-height: 40px !important; }
         #plants-grid { gap: 20px !important; }
+        .location-view-toggle { background: #fcecf1; border: 1px solid rgba(196,85,124,.2); }
+        .location-view-button { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; color: #8F5368; background: transparent; font-size: 13px; }
+        .location-view-button.is-active { background: #C4557C; color: #fff; box-shadow: 0 1px 4px rgba(166,61,101,.2); }
+        .location-view-button:focus-visible { outline: 2px solid #C4557C; outline-offset: 2px; }
+        .location-group-plants.is-list-view { grid-template-columns: minmax(0,1fr) !important; }
+        .location-group-plants.is-list-view .plant-card { display: grid !important; grid-template-columns: minmax(0,.9fr) minmax(0,1.5fr) !important; align-items: stretch; flex-direction: row !important; }
+        .location-group-plants.is-list-view .plant-card > div:first-child { min-width: 0; padding: 12px !important; border-bottom: 0 !important; border-right: 1px solid #e1e1d5; }
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) { min-width: 0; padding: 12px !important; gap: 10px !important; }
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) .crop-badge-container { width: 48px !important; height: 48px !important; flex: 0 0 48px; }
+        .location-group-plants.is-list-view .plant-card > div:last-child { display: none !important; }
+        @media (max-width: 420px) {
+            .location-group-plants.is-list-view .plant-card { grid-template-columns: minmax(0,1fr) minmax(0,1.15fr) !important; }
+            .location-group-plants.is-list-view .plant-card > div:first-child, .location-group-plants.is-list-view .plant-card > div:nth-child(2) { padding: 9px !important; }
+        }
         /* Keep plant action menus visible above neighbouring cards in both layouts. */
         #plants-grid > div { overflow: visible !important; }
         .plant-card { overflow: visible !important; }
@@ -1716,17 +1730,6 @@ textarea {
                         <select id="plant-location-filter" onchange="renderPlants()" class="hidden" aria-hidden="true" tabindex="-1">
                             <option value="">All locations</option>
                         </select>
-                    </div>
-                    <!-- View Toggle -->
-                    <div id="plantViewToggle" class="flex shrink-0 items-center gap-1 bg-transparent p-0 rounded-lg">
-        <button id="gridViewBtn" onclick="setPlantView('grid')" class="p-2 rounded-lg text-gray-500" title="Grid View">
-            <!-- Grid Icon SVG -->
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-        </button>
-        <button id="listViewBtn" onclick="setPlantView('list')" class="p-1.5 rounded-md text-gray-600" title="List View">
-            <!-- List Icon SVG -->
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
                     </div>
                 </div>
             </div>
@@ -3494,6 +3497,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             container.innerHTML = orderedLocations.map(location => {
                 const cards = groups.get(location);
+                const activeGrid = getLocationPlantView(location) === 'grid';
                 return `
                     <section class="location-group col-span-full min-w-0 mb-3 p-3 sm:p-4" style="background-color: transparent !important; background-image: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;">
                         <div class="location-group-toolbar flex items-center justify-between gap-2 mb-3">
@@ -3503,13 +3507,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 ${location === 'Grow Tent' && locationDetailsVisibility[location] !== false ? '<span id="govee-inline-readings" class="text-xs text-slate-600 whitespace-nowrap">Loading sensor…</span>' : ''}
                             </div>
                             <div class="location-group-actions flex flex-shrink-0 items-center gap-1.5">
+                                <div class="location-view-toggle inline-flex items-center gap-0.5 rounded-xl p-0.5" role="group" aria-label="${escapeHtml(location)} plant view">
+                                    <button type="button" onclick="setLocationPlantView(this.dataset.location, 'grid')" data-location="${escapeHtml(location)}" aria-label="Grid view for ${escapeHtml(location)}" aria-pressed="${activeGrid ? 'true' : 'false'}" title="Grid view" class="location-view-button ${activeGrid ? 'is-active' : ''}"><i class="fa-solid fa-grip" aria-hidden="true"></i></button>
+                                    <button type="button" onclick="setLocationPlantView(this.dataset.location, 'list')" data-location="${escapeHtml(location)}" aria-label="List view for ${escapeHtml(location)}" aria-pressed="${!activeGrid ? 'true' : 'false'}" title="List view" class="location-view-button ${!activeGrid ? 'is-active' : ''}"><i class="fa-solid fa-list" aria-hidden="true"></i></button>
+                                </div>
                                 <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" class="location-icon-button h-9 w-9 min-h-0 p-0 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200" aria-label="${locationDetailsVisibility[location] === false ? 'Show location details' : 'Hide location details'}" title="${locationDetailsVisibility[location] === false ? 'Show details' : 'Hide details'}"><i class="fa-regular ${locationDetailsVisibility[location] === false ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
 
                             </div>
                         </div>
                         ${locationDetails[location] && locationDetailsVisibility[location] !== false ? `<div class="location-group-details mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300"><div class="whitespace-pre-line">${escapeHtml(String(locationDetails[location]).replace(/\\n/g, '\n'))}</div><div class="flex justify-end mt-2"><button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold" style="background:#c6537b;color:#ffffff;border:1px solid #c6537b" onmouseover="this.style.backgroundColor='#a63d65';this.style.color='#ffffff'" onmouseout="this.style.backgroundColor='#c6537b';this.style.color='#ffffff'" aria-label="Edit location details" title="Edit details"><i class="fa-solid fa-pen-to-square"></i><span>Edit details</span></button></div></div>` : (!locationDetails[location] ? `<div class="mb-3"><button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 dark:border-slate-600 px-3 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-slate-800"><i class="fa-solid fa-pen-to-square"></i><span>Add details</span></button></div>` : '')}
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">${cards.map(plant => cardMarkup(plant, location)).join('')}</div>
+                        <div class="location-group-plants grid grid-cols-1 ${activeGrid ? 'md:grid-cols-2' : 'is-list-view'} gap-3 sm:gap-4">${cards.map(plant => cardMarkup(plant, location)).join('')}</div>
                     </section>`;
             }).join('');
             if (orderedLocations.includes('Grow Tent')) loadGoveeReading();
@@ -4248,306 +4256,25 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             closeJournalModal();
         }
 
-// ==========================================
-// Precision Mobile List View Toggle for Sugar Bush
-// ==========================================
+// Each location stores its own grid/list preference on this device.
+        const plantLocationViewModes = (() => {
+            try {
+                const saved = JSON.parse(localStorage.getItem('flora_location_view_modes') || '{}');
+                return saved && typeof saved === 'object' ? saved : {};
+            } catch (_) { return {}; }
+        })();
 
-(function() {
-    // 1. Inject precision CSS rules to transform cards into clean horizontal list rows
-    const style = document.createElement('style');
-    style.innerHTML = `
-        body.plant-list-view #plantsContainer,
-        body.plant-list-view [id*="plantsContainer"],
-        body.plant-list-view main .grid {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 0.5rem !important;
-            grid-template-columns: none !important;
+        function getLocationPlantView(location) {
+            return plantLocationViewModes[location] === 'list' ? 'list' : 'grid';
         }
 
-        /* Botanical list rows: keep the outer card cream and the inner plant badge softly sage. */
-        body.plant-list-view #plants-grid .location-group {
-            background: #f0f2e8 !important;
-            border-color: #dfe3d5 !important;
-            border-radius: 18px !important;
+        function setLocationPlantView(location, view) {
+            if (!location || !['grid', 'list'].includes(view)) return;
+            plantLocationViewModes[location] = view;
+            localStorage.setItem('flora_location_view_modes', JSON.stringify(plantLocationViewModes));
+            renderPlants();
         }
-        body.plant-list-view #plants-grid .location-group .grid > div,
-        body.plant-list-view #plants-grid .location-group .grid > div > div:first-child,
-        body.plant-list-view #plants-grid .location-group .grid > div > div:last-child {
-            background: #fffef9 !important;
-            border-color: #e1e1d5 !important;
-        }
-        body.plant-list-view #plants-grid .location-group .grid > div {
-            border-radius: 15px !important;
-            overflow: hidden !important;
-            box-shadow: 0 2px 8px rgba(40,65,43,.045) !important;
-        }
-        body.plant-list-view #plants-grid .crop-badge-container {
-            background: #eaf0e4 !important;
-            border: 1px solid #dce5d6 !important;
-            border-radius: 13px !important;
-            box-shadow: none !important;
-        }
-        /* Transform the entire card into a sleek single-line row */
-        body.plant-list-view #plantsContainer > div,
-        body.plant-list-view [id*="plantsContainer"] > div,
-        body.plant-list-view main .grid > div {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            padding: 0.5rem 0.75rem !important;
-            background-color: #ffffff !important;
-            border: 1px solid #e5e7eb !important;
-            border-radius: 0.5rem !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
-            gap: 0.75rem !important;
-        }
-
-        /* Let the three-dot dropdown escape the plant row instead of being clipped. */
-        body.plant-list-view #plants-grid .location-group .grid > div {
-            overflow: visible !important;
-            position: relative !important;
-        }
-        body.plant-list-view #plants-grid .location-group .grid > div:has(details[open]) {
-            z-index: 9999 !important;
-        }
-        body.plant-list-view #plants-grid .location-group .grid > div details[open] {
-            position: relative !important;
-            z-index: 10000 !important;
-        }
-        body.plant-list-view #plants-grid .location-group .grid > div details[open] > div {
-            z-index: 10001 !important;
-        }
-
-        /* Dark mode support for list rows */
-        .dark body.plant-list-view #plantsContainer > div,
-        .dark body.plant-list-view [id*="plantsContainer"] > div,
-        .dark body.plant-list-view main .grid > div {
-            background-color: #1e293b !important;
-            border-color: #334155 !important;
-        }
-
-        /* HIDE unnecessary sections (Header buttons, Body notes/logs, Footer date sown) */
-        body.plant-list-view #plantsContainer > div > div:nth-child(1) > div:last-child:not(details),
-        body.plant-list-view #plantsContainer > div > div:nth-child(2) p,
-        body.plant-list-view #plantsContainer > div > div:nth-child(2) span,
-        body.plant-list-view #plantsContainer > div > div:nth-child(3) > div:first-child,
-        body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(1) > div:last-child:not(details),
-        body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(2) p,
-        body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(2) span,
-        body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(3) > div:first-child,
-        body.plant-list-view main .grid > div > div:nth-child(1) > div:last-child:not(details),
-        body.plant-list-view main .grid > div > div:nth-child(2) p,
-        body.plant-list-view main .grid > div > div:nth-child(2) span,
-        body.plant-list-view main .grid > div > div:nth-child(3) > div:first-child {
-            display: none !important;
-        }
-
-        /* Reconfigure Header (Name & Variety) to sit inline */
-        body.plant-list-view #plantsContainer > div > div:nth-child(1),
-        body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(1),
-        body.plant-list-view main .grid > div > div:nth-child(1) {
-            border: none !important;
-            background: transparent !important;
-            padding: 0 !important;
-            flex: 1 !important;
-            min-width: 0 !important;
-        }
-
-        /* Reconfigure Body (Artwork Thumbnail) */
-        body.plant-list-view #plantsContainer > div > div:nth-child(2),
-        body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(2),
-        body.plant-list-view main .grid > div > div:nth-child(2) {
-            padding: 0 !important;
-            order: -1 !important; /* Move thumbnail to the far left */
-            flex-shrink: 0 !important;
-            cursor: pointer;
-        }
-
-        /* Shrink artwork container into a neat thumbnail */
-        body.plant-list-view #plantsContainer div.w-16.h-16,
-        body.plant-list-view [id*="plantsContainer"] div.w-16.h-16,
-        body.plant-list-view main .grid div.w-16.h-16 {
-            width: 2.5rem !important;
-            height: 2.5rem !important;
-            border-radius: 0.375rem !important;
-            padding: 0.25rem !important;
-        }
-
-        /* Reconfigure Footer (Color Tag Badge) */
-        body.plant-list-view #plantsContainer > div > div:nth-child(3),
-        body.plant-list-view [id*="plantsContainer"] > div > div:nth-child(3),
-        body.plant-list-view main .grid > div > div:nth-child(3) {
-            border: none !important;
-            background: transparent !important;
-            padding: 0 !important;
-            flex-shrink: 0 !important;
-        }
-
-        .plant-view-toggle-btn.active {
-            background-color: white !important;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-            color: black !important;
-        }
-
-        /* Match the main location card surface to the page background. */
-        #plants-grid .location-group,
-        body.plant-list-view #plants-grid .location-group {
-            background: #f7f6f0 !important;
-            border: 0 !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            padding: 12px 0 18px !important;
-            margin: 0 !important;
-        }
-        #plants-grid .location-group-toolbar {
-            position: relative !important;
-            padding: 0 0 14px !important;
-            margin: 0 0 14px !important;
-            border-bottom: 0 !important;
-        }
-        #plants-grid .location-group-toolbar::after {
-            content: "" !important;
-            position: absolute !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            height: 6px !important;
-            pointer-events: none !important;
-            background-repeat: no-repeat !important;
-            background-position: center !important;
-            background-size: 100% 6px !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
-        }
-
-        /* Final override: location group wrapper stays see-through in both grid and list modes. */
-        #plants-grid .location-group,
-        body.plant-list-view #plants-grid .location-group {
-            background: transparent !important;
-            background-color: transparent !important;
-            background-image: none !important;
-            border-color: transparent !important;
-            box-shadow: none !important;
-        }
-    `;
-    style.innerHTML += `
-        /* Screenshot-targeted fix: the white rounded rectangles are the plant tiles, not the location wrapper. */
-        #plants-grid .location-group .grid > div,
-        #plants-grid .location-group .grid > div.plant-card,
-        #plants-grid .location-group .plant-card,
-        body.plant-list-view #plants-grid .location-group .grid > div,
-        body.plant-list-view #plants-grid .location-group .grid > div > div:first-child,
-        body.plant-list-view #plants-grid .location-group .grid > div > div:last-child {
-            background: transparent !important;
-            background-color: transparent !important;
-            background-image: none !important;
-        }
-        /* List view: give the complete plant card and its header/body/footer panels the page cream. */
-        body.plant-list-view #plants-grid .location-group .plant-card,
-        body.plant-list-view #plants-grid .location-group .plant-card > div:not(.crop-badge-container) {
-            background: rgb(248, 248, 242) !important;
-            background-color: rgb(248, 248, 242) !important;
-            background-image: none !important;
-        }
-        /* Ensure the actual list-row card paints an opaque surface above the page watermark. */
-        body.plant-list-view #plants-grid .plant-card,
-        body.plant-list-view #plants-grid > div,
-        body.plant-list-view #plants-grid article,
-        body.plant-list-view #plantsContainer > div,
-        body.plant-list-view [id*="plantsContainer"] > div {
-            background: rgb(248, 248, 242) !important;
-            background-color: rgb(248, 248, 242) !important;
-            background-image: none !important;
-            opacity: 1 !important;
-            mix-blend-mode: normal !important;
-            isolation: isolate !important;
-            position: relative !important;
-            z-index: 2 !important;
-        }
-        body.plant-list-view #plants-grid .plant-card > div,
-        body.plant-list-view #plantsContainer > div > div,
-        body.plant-list-view [id*="plantsContainer"] > div > div {
-            background-color: rgb(248, 248, 242) !important;
-            background-image: none !important;
-            opacity: 1 !important;
-            mix-blend-mode: normal !important;
-        }
-    `;
-    document.head.appendChild(style);
-
-    // 2. Load saved preference
-    // Default to Plant Card List View on the first load after this update.
-    // After that, keep whichever view the user chooses.
-    if (localStorage.getItem('plant_view_default_list_applied') !== '1') {
-        localStorage.setItem('plant_view_mode', 'list');
-        localStorage.setItem('plant_view_default_list_applied', '1');
-    }
-    let currentView = localStorage.getItem('plant_view_mode') || 'list';
-    if (currentView === 'list') {
-        document.body.classList.add('plant-list-view');
-    }
-
-    // 3. Auto-inject buttons next to the "My Plants" heading
-    function injectButtonsIfNeeded() {
-        if (document.getElementById('gridViewBtn') && document.getElementById('listViewBtn')) return;
-
-        const headings = Array.from(document.querySelectorAll('h1, h2, h3'));
-        const myPlantsHeading = headings.find(h => h.textContent && h.textContent.trim().toLowerCase() === 'my plants');
-        
-        if (myPlantsHeading) {
-            const headerWrapper = myPlantsHeading.parentElement;
-            headerWrapper.style.display = 'flex';
-            headerWrapper.style.justifyContent = 'space-between';
-            headerWrapper.style.alignItems = 'center';
-
-            const toggleDiv = document.createElement('div');
-            toggleDiv.className = 'flex items-center gap-1 bg-gray-100 p-1 rounded-lg';
-            toggleDiv.innerHTML = `
-                <button id="gridViewBtn" class="plant-view-toggle-btn p-1.5 rounded-md text-gray-500 hover:text-black transition-colors ${currentView === 'grid' ? 'active' : ''}" title="Grid View">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                </button>
-                <button id="listViewBtn" class="plant-view-toggle-btn p-1.5 rounded-md text-gray-500 hover:text-black transition-colors ${currentView === 'list' ? 'active' : ''}" title="List View">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-            `;
-            headerWrapper.appendChild(toggleDiv);
-
-            // Assign id to the plant container
-            const section = headerWrapper.closest('div').parentElement;
-            if (section) {
-                const gridCandidate = section.querySelector('.grid') || section.querySelector('div:not(:first-child)');
-                if (gridCandidate) gridCandidate.id = 'plantsContainer';
-            }
-        }
-    }
-
-    // 4. Handle clicks reliably
-    document.addEventListener('click', (e) => {
-        const btn = e.target.closest('#gridViewBtn, #listViewBtn');
-        if (!btn) return;
-
-        const gridBtn = document.getElementById('gridViewBtn');
-        const listBtn = document.getElementById('listViewBtn');
-
-        if (btn.id === 'gridViewBtn') {
-            currentView = 'grid';
-            localStorage.setItem('plant_view_mode', 'grid');
-            document.body.classList.remove('plant-list-view');
-            if (gridBtn) gridBtn.classList.add('active');
-            if (listBtn) listBtn.classList.remove('active');
-        } else if (btn.id === 'listViewBtn') {
-            currentView = 'list';
-            localStorage.setItem('plant_view_mode', 'list');
-            document.body.classList.add('plant-list-view');
-            if (listBtn) listBtn.classList.add('active');
-            if (gridBtn) gridBtn.classList.remove('active');
-        }
-    });
-
-    window.addEventListener('DOMContentLoaded', injectButtonsIfNeeded);
-    setTimeout(injectButtonsIfNeeded, 800);
-})();
+;
       
 
         
