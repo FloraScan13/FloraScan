@@ -2964,10 +2964,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             if (!badge || !icon || !label) return;
 
-            if (!navigator.onLine) {
-                mode = 'local';
-                text = 'Offline · Local Storage';
-            }
             label.textContent = text;
             if (mode === 'cloud') {
                 badge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/30 text-emerald-100 border border-emerald-300/40 flex items-center space-x-1";
@@ -4410,57 +4406,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 <footer>Exported from Sugar Bush on ${generated}.</footer>
 <div class="no-print" style="margin-top:24px"><button onclick="window.print()" style="background:#15803d;color:white;border:0;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer">Print / Save as PDF</button> <button onclick="window.close()" style="padding:10px 16px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer">Close</button><p style="color:#64748b;font-size:12px">In the print dialog, choose “Save as PDF” as the destination to download your journal.</p></div>
 <script>window.addEventListener('load', () => setTimeout(() => window.print(), 350));<\/script>
-
-    <style>
-        #flora-offline-banner {
-            display: none;
-            position: fixed;
-            z-index: 3000;
-            top: max(10px, env(safe-area-inset-top));
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 24px);
-            max-width: 520px;
-            padding: 10px 14px;
-            border: 1px solid #f5d58b;
-            border-radius: 14px;
-            background: #fff7df;
-            color: #725018;
-            box-shadow: 0 8px 24px rgba(0,0,0,.12);
-            font: 600 12px/1.45 system-ui, sans-serif;
-            text-align: center;
-        }
-        #flora-offline-banner.is-visible { display: block; }
-    </style>
-    <div id="flora-offline-banner" role="status" aria-live="polite">
-        You’re offline. Your changes are saved on this device; cloud sync will be available when you reconnect.
-    </div>
-    <script>
-        (() => {
-            const banner = document.getElementById('flora-offline-banner');
-            const updateConnectionStatus = () => {
-                const offline = !navigator.onLine;
-                if (banner) banner.classList.toggle('is-visible', offline);
-                if (typeof updateSyncBadge === 'function') {
-                    if (offline) updateSyncBadge('local', 'Offline · Local Storage');
-                    else if (typeof currentUser !== 'undefined' && currentUser) updateSyncBadge('cloud', 'Online · Cloud Connected');
-                    else updateSyncBadge('local', 'Online · Local Storage');
-                }
-            };
-            window.addEventListener('online', updateConnectionStatus);
-            window.addEventListener('offline', updateConnectionStatus);
-            updateConnectionStatus();
-
-            if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./service-worker.js')
-                        .then(() => console.info('Sugar Bush offline support is ready.'))
-                        .catch(error => console.warn('Offline support could not be registered:', error));
-                });
-            }
-        })();
-    </script>
-
 </body></html>`);
             printWindow.document.close();
         }
