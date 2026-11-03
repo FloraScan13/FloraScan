@@ -3002,6 +3002,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (event === 'PASSWORD_RECOVERY') setTimeout(() => completeSupabasePasswordRecovery(), 0);
                     if (session && session.user) {
                         currentUser = session.user;
+                        subscribeToPlantLocationChanges();
                         localStorage.setItem('flora_last_user_id', currentUser.id);
                         updateAuthUI(true, currentUser.email);
                         updateSyncBadge('cloud', 'Cloud Connected');
@@ -3013,6 +3014,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         await syncPendingFloraChanges();
                     } else {
                         currentUser = null;
+                        if (plantLocationsRealtimeChannel) {
+                            supabaseClient.removeChannel(plantLocationsRealtimeChannel);
+                            plantLocationsRealtimeChannel = null;
+                        }
                         updateAuthUI(false);
                         updateSyncBadge('cloud', 'Supabase Ready (Sign In)');
                     }
@@ -3797,6 +3802,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (error) throw error;
 
                 if (data && data.locations) {
+                    // Older cloud records may not yet contain every location setting. Preserve this device's
+                    // existing values for missing fields, then backfill the complete record to the account.
+                    const needsLocationSettingsBackfill = !Array.isArray(data.locations) &&
+                        (!data.locations.types || !data.locations.postcodes || !data.locations.coordinates);
                     // Accept the original string-array format and the newer format that includes per-location details.
                     const cloudNames = Array.isArray(data.locations) ? data.locations : data.locations.names;
                     if (Array.isArray(cloudNames)) {
@@ -3822,6 +3831,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (!Array.isArray(data.locations) && data.locations.coordinates && typeof data.locations.coordinates === 'object') {
                         locationCoordinates = data.locations.coordinates;
                         localStorage.setItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
+                    }
+                    if (needsLocationSettingsBackfill) {
+                        const backfilled = await savePlantLocationsToCloud();
+                        if (!backfilled) throw new Error('Could not backfill all growing-location settings to the cloud.');
                     }
                 } else {
                     // First sign-in for this account: preserve this device's configured list and seed the cloud.
