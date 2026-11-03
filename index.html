@@ -10,6 +10,14 @@
     <link rel="icon" type="image/svg+xml" href="./leaf-icon-v2.svg">
     <link rel="apple-touch-icon" href="./leaf-icon-v2.svg">
     <link rel="manifest" href="./manifest.webmanifest">
+    <script>
+        // Start offline preparation immediately; the service worker caches the app shell in the background.
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(registration => registration.update())
+                .catch(error => console.warn('Sugar Bush offline preparation could not start:', error));
+        }
+    </script>
     <meta name="theme-color" content="#294b34">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
