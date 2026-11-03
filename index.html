@@ -2868,6 +2868,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function loadBrandingSettingsFromCloud() {
             if (!supabaseClient || !currentUser) return;
+            // Keep a locally edited username until its queued cloud update succeeds.
+            if (getFloraSyncQueue().profileDirty) return;
             const { data, error } = await supabaseClient.auth.getUser();
             if (error) {
                 console.error('Could not load cloud username:', error);
