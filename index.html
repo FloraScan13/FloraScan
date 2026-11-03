@@ -1996,8 +1996,7 @@ textarea {
         <div>
             <div class="welcome-mark"><i class="fa-solid fa-leaf" aria-hidden="true"></i></div>
             <h1 class="welcome-title">Welcome to Sugar Bush</h1>
-            <p id="mobile-welcome-greeting" class="welcome-greeting">Good morning</p>
-            <p id="mobile-welcome-handle" class="welcome-handle">@kitchengardener</p>
+            <p id="mobile-welcome-greeting" class="welcome-greeting">Good morning, @kitchengardener!</p>
             <p class="welcome-caption">Your growing journal</p>
         </div>
     </div>
@@ -2851,8 +2850,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const handle = appSettings.username || '@kitchengardener';
             const greetingDisplay = document.getElementById('mobile-welcome-greeting');
             const handleDisplay = document.getElementById('mobile-welcome-handle');
-            if (greetingDisplay) greetingDisplay.textContent = greeting;
-            if (handleDisplay) handleDisplay.textContent = handle;
+            if (greetingDisplay) greetingDisplay.textContent = greeting + ', ' + handle + '!';
             mobileWelcomeShownAt = Date.now();
             screen.classList.remove('is-hidden');
         }
