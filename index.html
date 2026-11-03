@@ -3301,18 +3301,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             appSettings.username = document.getElementById('setting-username').value.trim() || '@kitchengardener';
             localStorage.setItem('flora_settings', JSON.stringify(appSettings));
             applyBranding();
+            let savedToCloud = false;
             if (supabaseClient && currentUser) {
                 const { error } = await supabaseClient.auth.updateUser({
                     data: { username: appSettings.username }
                 });
                 if (error) {
                     console.error('Could not sync username to cloud:', error);
-                    alert('Your username was saved on this device, but could not be synced across devices: ' + error.message);
+                    alert('Your profile preferences were saved on this device, but could not be synced across devices: ' + error.message);
                     return;
                 }
                 currentUser = (await supabaseClient.auth.getUser()).data.user || currentUser;
-                updateMobileWelcomeGreeting();
+                savedToCloud = true;
             }
+            updateMobileWelcomeGreeting();
+            alert(savedToCloud
+                ? 'Profile preferences saved and synced across your devices.'
+                : 'Profile preferences saved on this device. Sign in to your Sugar Bush account to sync them across devices.');
         }
 
         function renderIconPickerGrid(selectedKey = 'cucumber') {
