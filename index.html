@@ -4309,6 +4309,26 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             background-image: none !important;
         }
 
+        /* Match hover feedback on plant controls to inactive location pills. */
+        #plants-grid .plant-card details > summary:hover,
+        #plants-grid .plant-card details > summary:focus-visible,
+        #plants-grid .location-icon-button:hover,
+        #plants-grid .location-view-button:not(.is-active):hover {
+            background: #e8eade !important;
+            background-color: #e8eade !important;
+            border-color: #e0e2d6 !important;
+            color: #526653 !important;
+        }
+        .dark #plants-grid .plant-card details > summary:hover,
+        .dark #plants-grid .plant-card details > summary:focus-visible,
+        .dark #plants-grid .location-icon-button:hover,
+        .dark #plants-grid .location-view-button:not(.is-active):hover {
+            background: #e8eade !important;
+            background-color: #e8eade !important;
+            border-color: #e0e2d6 !important;
+            color: #526653 !important;
+        }
+
         /* Force the Plant Journal close control to keep its pink rollover state. */
         #journal-modal #journal-header button[aria-label="Close journal"]:hover,
         #journal-modal #journal-header button[aria-label="Close journal"]:active,
