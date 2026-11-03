@@ -1960,6 +1960,25 @@ textarea {
             overflow-wrap: anywhere !important;
         }
     }
+
+    /* Plant controls use the exact requested hover colour: RGB(232, 234, 223). */
+    #view-plants #plants-grid .plant-card details > summary:hover,
+    #view-plants #plants-grid .plant-card details > summary:focus-visible,
+    #view-plants #plants-grid .location-icon-button:hover,
+    #view-plants #plants-grid .location-view-button:hover {
+        background: rgb(232, 234, 223) !important;
+        background-color: rgb(232, 234, 223) !important;
+        background-image: none !important;
+        border-color: rgb(232, 234, 223) !important;
+        color: #526653 !important;
+        box-shadow: none !important;
+    }
+    #view-plants #plants-grid .plant-card details > summary:hover *,
+    #view-plants #plants-grid .plant-card details > summary:focus-visible *,
+    #view-plants #plants-grid .location-icon-button:hover *,
+    #view-plants #plants-grid .location-view-button:hover * {
+        color: #526653 !important;
+    }
 </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
@@ -4307,24 +4326,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         #plants-grid .location-details {
             background-color: #f0f2e9 !important;
             background-image: none !important;
-        }
-
-        /* Exact hover colour for plant menu, eye, grid and list controls: RGB(232, 234, 223). */
-        #plants-grid .plant-card details > summary:is(:hover, :focus-visible),
-        #plants-grid .location-group-actions button.location-icon-button:hover,
-        #plants-grid .location-group-actions button.location-view-button:not(.is-active):hover {
-            background: rgb(232, 234, 223) !important;
-            background-color: rgb(232, 234, 223) !important;
-            background-image: none !important;
-            border-color: rgb(232, 234, 223) !important;
-            color: #526653 !important;
-            box-shadow: none !important;
-            outline-color: transparent !important;
-        }
-        #plants-grid .plant-card details > summary:is(:hover, :focus-visible) *,
-        #plants-grid .location-group-actions button.location-icon-button:hover *,
-        #plants-grid .location-group-actions button.location-view-button:not(.is-active):hover * {
-            color: #526653 !important;
         }
 
         /* Force the Plant Journal close control to keep its pink rollover state. */
