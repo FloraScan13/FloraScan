@@ -4303,6 +4303,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             background-color: #f0f2e9 !important;
             background-image: none !important;
         }
+
+        /* Force the Plant Journal close control to keep its pink rollover state. */
+        #journal-modal #journal-header button[aria-label="Close journal"]:hover,
+        #journal-modal #journal-header button[aria-label="Close journal"]:active,
+        #journal-modal #journal-header button[aria-label="Close journal"]:focus,
+        #journal-modal #journal-header button[aria-label="Close journal"]:focus-visible {
+            background: #B0466C !important;
+            background-color: #B0466C !important;
+            background-image: none !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
 </style></head><body>
 <header><div class="brand">Sugar Bush · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
 <section class="details">
