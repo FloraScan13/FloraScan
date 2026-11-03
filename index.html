@@ -445,8 +445,38 @@ textarea {
         }
         #plant-search:focus, #plant-location-filter:focus {
             outline: none !important;
-            border-color: #6f8a6b !important;
-            box-shadow: 0 0 0 3px rgba(111,138,107,.15) !important;
+            border-color: #C4557C !important;
+            box-shadow: 0 0 0 3px rgba(196,85,124,.16) !important;
+        }
+        #plant-search-toggle {
+            width: 48px;
+            height: 48px;
+            flex: 0 0 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(196,85,124,.24);
+            border-radius: 14px;
+            color: #C4557C;
+            background: #fff4f7;
+            transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+        }
+        #plant-search-toggle:hover, #plant-search-toggle[aria-expanded="true"] {
+            background: #fcecf1;
+            box-shadow: 0 0 0 3px rgba(196,85,124,.10);
+        }
+        #plant-search-toggle:focus-visible {
+            outline: 2px solid #C4557C;
+            outline-offset: 2px;
+        }
+        #plant-search-wrap {
+            min-width: 0;
+            flex: 1 1 auto;
+            animation: plantSearchReveal .18s ease-out;
+        }
+        @keyframes plantSearchReveal {
+            from { opacity: 0; transform: translateX(-6px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         #plantViewToggle { background: #e8eade !important; border-radius: 13px !important; }
         #plantViewToggle button { border-radius: 10px !important; min-height: 40px !important; }
@@ -1671,9 +1701,13 @@ textarea {
         <!-- TAB 1: MY PLANTS -->
         <div id="view-plants" class="space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div class="relative flex-1 min-w-0">
-                    <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="plant-search" oninput="renderPlants()" placeholder="Search plants by name, variety, or notes..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <button type="button" id="plant-search-toggle" onclick="togglePlantSearch()" aria-label="Open plant search" aria-expanded="false" aria-controls="plant-search-wrap" title="Search plants">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    </button>
+                    <div id="plant-search-wrap" class="relative flex-1 min-w-0 hidden">
+                        <input type="text" id="plant-search" oninput="renderPlants()" onkeydown="if(event.key === 'Escape') togglePlantSearch(false)" placeholder="Search plants by name, variety, or notes..." aria-label="Search plants by name, variety, or notes" class="w-full px-4 py-2.5 rounded-xl border text-sm">
+                    </div>
                 </div>
                 <div class="flex items-center gap-3 sm:w-auto">
                     <div class="w-full min-w-0 sm:flex-1">
@@ -3361,6 +3395,32 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 menu.open = false;
             });
         });
+
+        function togglePlantSearch(forceOpen) {
+            const searchWrap = document.getElementById('plant-search-wrap');
+            const searchInput = document.getElementById('plant-search');
+            const toggle = document.getElementById('plant-search-toggle');
+            if (!searchWrap || !searchInput || !toggle) return;
+
+            const shouldOpen = typeof forceOpen === 'boolean'
+                ? forceOpen
+                : searchWrap.classList.contains('hidden');
+
+            searchWrap.classList.toggle('hidden', !shouldOpen);
+            toggle.setAttribute('aria-expanded', String(shouldOpen));
+            toggle.setAttribute('aria-label', shouldOpen ? 'Close plant search' : 'Open plant search');
+            toggle.setAttribute('title', shouldOpen ? 'Close search' : 'Search plants');
+            toggle.innerHTML = shouldOpen
+                ? '<i class="fa-solid fa-xmark" aria-hidden="true"></i>'
+                : '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>';
+
+            if (shouldOpen) {
+                searchInput.focus();
+            } else if (searchInput.value) {
+                searchInput.value = '';
+                renderPlants();
+            }
+        }
 
         function renderPlants() {
             const query = document.getElementById('plant-search').value.toLowerCase();
