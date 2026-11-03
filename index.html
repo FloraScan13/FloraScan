@@ -2466,6 +2466,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             hideMobileWelcomeScreen();
         });
 
+        let mobileWelcomeShownAt = 0;
+
         function showMobileWelcomeScreen() {
             const screen = document.getElementById('mobile-welcome-screen');
             if (!screen || window.matchMedia('(min-width: 769px)').matches) return;
@@ -2476,12 +2478,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const handleDisplay = document.getElementById('mobile-welcome-handle');
             if (greetingDisplay) greetingDisplay.textContent = greeting;
             if (handleDisplay) handleDisplay.textContent = handle;
+            mobileWelcomeShownAt = Date.now();
             screen.classList.remove('is-hidden');
         }
 
         function hideMobileWelcomeScreen() {
             const screen = document.getElementById('mobile-welcome-screen');
-            if (screen) screen.classList.add('is-hidden');
+            if (!screen) return;
+            // Keep the welcome visible long enough to be noticed even when cached data loads instantly.
+            const minimumDisplayMs = 1800;
+            const remaining = Math.max(0, minimumDisplayMs - (Date.now() - mobileWelcomeShownAt));
+            window.setTimeout(() => screen.classList.add('is-hidden'), remaining);
         }
 
         // Initialize Supabase Client
