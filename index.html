@@ -2093,8 +2093,11 @@ textarea {
         box-shadow: 0 20px 55px rgba(90, 43, 60, .22) !important;
     }
     #feedback-modal > div > div:first-child {
-        background: #fff0f4 !important;
-        border-color: #e8a7bd !important;
+        background: transparent !important;
+        border-color: transparent !important;
+    }
+    #feedback-modal h2 i {
+        color: #a63d65 !important;
     }
     #feedback-modal h2,
     #feedback-modal label {
@@ -2444,7 +2447,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         <div class="relative bg-white max-w-lg w-full max-h-[90dvh] rounded-2xl shadow-xl overflow-y-auto my-auto">
             <div class="px-5 py-4 flex items-center justify-between border-b border-slate-200">
                 <div>
-                    <h2 class="font-bold text-lg text-[#294b34]">Feedback &amp; comments</h2>
+                    <h2 class="font-bold text-lg text-[#294b34] flex items-center gap-2"><i class="fa-regular fa-comments" aria-hidden="true"></i> Feedback &amp; comments</h2>
                     <p class="text-xs text-slate-500 mt-1">Have a suggestion or spotted something that needs fixing? Send a message.</p>
                 </div>
                 <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#e4eadf] hover:bg-[#d8e4d2] text-[#31583b] transition" aria-label="Close feedback">
