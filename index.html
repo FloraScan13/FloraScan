@@ -4819,7 +4819,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }).filter(item => item.product);
             if (!selectedProducts.length) return;
             const logTextarea = document.getElementById('log-text');
-            const currentText = logTextarea.value.replace(/\\\\n/g, '\n').trim();
+            const currentText = logTextarea.value.split(String.fromCharCode(92) + 'n').join('\n').trim();
             const hasFeedSection = /Fed with:/i.test(currentText);
             const nutrientLines = selectedProducts.map(item => '• ' + item.product.name + ' (' + item.amount + ')');
             const brandBlock = brandName + ':\n' + nutrientLines.join('\n');
