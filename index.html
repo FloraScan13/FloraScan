@@ -4061,11 +4061,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             markFloraSyncPending();
             const synced = await syncPlantToCloud(plant);
-            renderPlants();
             const openJournal = document.getElementById('journal-modal');
-            if (openJournal && !openJournal.classList.contains('hidden')) {
-                const activePlantId = document.getElementById('log-plant-id')?.value;
-                if (String(activePlantId) === String(plantId)) renderJournalLogs(plant);
+            const journalWasOpen = openJournal && !openJournal.classList.contains('hidden');
+            const activePlantId = document.getElementById('log-plant-id')?.value;
+            renderPlants();
+            // Re-rendering the plant cards must not dismiss the journal the user is working in.
+            if (journalWasOpen && String(activePlantId) === String(plantId)) {
+                openJournal.classList.remove('hidden');
+                document.getElementById('journal-name').textContent = plant.name;
+                document.getElementById('journal-variety').textContent = plant.variety || 'Standard Variety';
+                document.getElementById('journal-date').textContent = plant.date || 'Not specified';
+                document.getElementById('journal-medium').textContent = plant.medium || 'Not specified';
+                const locationSelect = document.getElementById('journal-plant-location');
+                if (locationSelect) locationSelect.value = plant.location || '';
+                renderJournalLogs(plant);
             }
             if (supabaseClient && currentUser && navigator.onLine && synced === false) {
                 alert('The location change and journal entry were saved on this device. Cloud sync will retry when available.');
