@@ -2026,16 +2026,16 @@ textarea {
 </style>
 <style id="mobile-sticky-plants-toolbar">
     @media screen and (max-width: 640px) {
-        /* Keep plant search and location pills visible beneath the sticky app tabs. */
+        /* The header sits outside the scrolling main area, so dock filters at its top edge. */
         #plants-toolbar {
             position: sticky !important;
-            top: 82px !important;
+            top: 0 !important;
             z-index: 48 !important;
-            padding: 8px 0 10px !important;
-            margin-top: -8px !important;
+            padding: 0 0 6px !important;
+            margin-top: -16px !important;
             margin-bottom: 0 !important;
             background: #f7f6f0 !important;
-            box-shadow: 0 8px 10px -10px rgba(35, 59, 39, .35) !important;
+            box-shadow: 0 8px 10px -10px rgba(35, 59, 39, .25) !important;
         }
         #plants-toolbar::before {
             content: "" !important;
@@ -2057,17 +2057,15 @@ textarea {
 </style>
 <style id="mobile-sticky-toolbar-gap-fix">
     @media screen and (max-width: 640px) {
-        /* Dock the plant filters directly against the bottom of the sticky tabs. */
         #main-navigation-tabs {
             padding-top: 8px !important;
             padding-bottom: 8px !important;
             margin-bottom: 0 !important;
         }
         #plants-toolbar {
-            top: 68px !important;
+            top: 0 !important;
             padding-top: 0 !important;
-            padding-bottom: 6px !important;
-            margin-top: 0 !important;
+            margin-top: -16px !important;
         }
     }
 </style>
