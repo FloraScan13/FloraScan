@@ -2385,10 +2385,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
                     <h4 class="text-sm font-bold mb-3 flex items-center space-x-2">
                         <i class="fa-solid fa-pen-to-square text-emerald-600"></i>
-                        <span>Add Growth Log Entry</span>
+                        <span id="journal-log-form-heading">Add Growth Log Entry</span>
                     </h4>
                     <form onsubmit="handleJournalLogSubmit(event)" class="space-y-3">
                         <input type="hidden" id="log-plant-id">
+                        <input type="hidden" id="log-edit-id">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                             <select id="log-type" onchange="toggleNutrientLibraryView()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
@@ -2509,7 +2510,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div id="journal-photo-preview" class="flex flex-wrap gap-2"></div>
                         </div>
                         <div class="flex justify-end">
-                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
+                            <div class="flex items-center gap-2">
+                                <button type="button" id="cancel-log-edit" onclick="cancelJournalLogEdit()" class="hidden px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-xs font-semibold">Cancel edit</button>
+                                <button type="submit" id="journal-log-submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -4824,6 +4828,29 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 };
             }).filter(item => item.product);
 
+            const plantForEdit = plants.find(item => String(item.id) === String(plantId));
+            if (editingJournalLogId) {
+                if (!plantForEdit || !Array.isArray(plantForEdit.logs)) return;
+                const existingLog = plantForEdit.logs.find(log => String(log.id) === String(editingJournalLogId));
+                if (!existingLog) {
+                    alert('Could not find this journal entry. Please close and reopen the plant journal.');
+                    cancelJournalLogEdit();
+                    return;
+                }
+                existingLog.date = date;
+                existingLog.type = type;
+                existingLog.growthStage = growthStage;
+                existingLog.text = document.getElementById('log-text').value;
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                markFloraSyncPending();
+                const synced = await syncLogToCloud(plantId, existingLog);
+                if (!synced && supabaseClient && currentUser) updateSyncBadge('local', 'Saved Locally · Sync Pending');
+                renderJournalLogs(plantForEdit);
+                renderPlants();
+                cancelJournalLogEdit();
+                return;
+            }
+
             const tankVol = document.getElementById('tank-volume-amount').value;
             const tankUnit = document.getElementById('tank-volume-unit').value;
             const wateringCanSummary = getWateringCanSummary();
@@ -4993,6 +5020,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         let journalSelectedFiles = [];
+        let editingJournalLogId = null;
         let journalPreviewUrls = [];
 
         function addJournalPhotoFiles(inputId) {
@@ -5064,20 +5092,74 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return;
             }
 
-            container.innerHTML = p.logs.map((log, idx) => `
-                <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-start">
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2">
-                            <span class="font-bold text-slate-700 dark:text-slate-300">${log.type || 'Growth'}</span>
+            container.innerHTML = p.logs.map((log, idx) => {
+                const entryId = String(log.id || idx);
+                return `
+                <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-start gap-3">
+                    <div class="min-w-0 flex-1 space-y-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="font-bold text-slate-700 dark:text-slate-300">${escapeHtml(log.type || 'Growth')}</span>
                             ${log.growthStage ? '<span class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">' + escapeHtml(log.growthStage) + '</span>' : ''}
-                            <span class="text-[10px] text-slate-400">• ${log.date}</span>
+                            <span class="text-[10px] text-slate-400">• ${escapeHtml(log.date || '')}</span>
                         </div>
-                        <p class="text-slate-600 dark:text-slate-400">${log.text}</p>
-                        ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a>').join('') + '</div>' : ''}
+                        <p class="text-slate-600 dark:text-slate-400 whitespace-pre-wrap">${escapeHtml(log.text || '')}</p>
+                        ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<a href="' + escapeHtml(photo) + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + escapeHtml(photo) + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a>').join('') + '</div>' : ''}
                     </div>
-                    <button onclick="deleteJournalLog('${p.id}', '${log.id || idx}')" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-            `).join('');
+                    <div class="flex flex-shrink-0 items-center gap-1">
+                        <button type="button" onclick="editJournalLog('${escapeHtml(p.id)}', '${escapeHtml(entryId)}')" class="text-slate-500 hover:text-emerald-600 p-1.5" aria-label="Edit growth log" title="Edit log"><i class="fa-solid fa-pen"></i></button>
+                        <button type="button" onclick="deleteJournalLog('${escapeHtml(p.id)}', '${escapeHtml(entryId)}')" class="text-slate-400 hover:text-red-500 p-1.5" aria-label="Delete growth log" title="Delete log"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function editJournalLog(plantId, logId) {
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            if (!plant || !Array.isArray(plant.logs)) return;
+            let log = plant.logs.find(item => String(item.id) === String(logId));
+            if (!log && /^\\d+$/.test(String(logId))) {
+                const index = Number(logId);
+                log = plant.logs[index];
+                if (log && !log.id) log.id = 'log_' + Date.now() + '_' + index;
+            }
+            if (!log) return;
+            editingJournalLogId = String(log.id);
+            document.getElementById('log-edit-id').value = editingJournalLogId;
+            document.getElementById('log-plant-id').value = plant.id;
+            document.getElementById('log-date').value = log.date || new Date().toISOString().slice(0, 10);
+            document.getElementById('log-type').value = log.type || 'Growth';
+            document.getElementById('log-growth-stage').value = log.growthStage || '';
+            document.getElementById('log-text').value = log.text || '';
+            document.getElementById('journal-log-form-heading').textContent = 'Edit Growth Log Entry';
+            document.getElementById('journal-log-submit').textContent = 'Save Changes';
+            document.getElementById('cancel-log-edit').classList.remove('hidden');
+            toggleNutrientLibraryView();
+            document.getElementById('log-date').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('log-date').focus({ preventScroll: true });
+        }
+
+        function cancelJournalLogEdit() {
+            editingJournalLogId = null;
+            const editId = document.getElementById('log-edit-id');
+            if (editId) editId.value = '';
+            const heading = document.getElementById('journal-log-form-heading');
+            const submit = document.getElementById('journal-log-submit');
+            const cancel = document.getElementById('cancel-log-edit');
+            if (heading) heading.textContent = 'Add Growth Log Entry';
+            if (submit) submit.textContent = 'Add Log Entry';
+            if (cancel) cancel.classList.add('hidden');
+            const form = document.querySelector('#journal-modal form[onsubmit="handleJournalLogSubmit(event)"]');
+            if (form) form.reset();
+            const preview = document.getElementById('journal-photo-preview');
+            if (preview) preview.innerHTML = '';
+            journalSelectedFiles = [];
+            const photoInput = document.getElementById('journal-photo-input');
+            const cameraInput = document.getElementById('journal-camera-input');
+            if (photoInput) photoInput.value = '';
+            if (cameraInput) cameraInput.value = '';
+            const count = document.getElementById('journal-photo-count');
+            if (count) count.textContent = '0 of 4 photos selected';
+            toggleNutrientLibraryView();
         }
 
         async function handleJournalLogSubmit(e) {
@@ -5086,7 +5168,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const date = document.getElementById('log-date').value;
             const type = document.getElementById('log-type').value;
             const growthStage = document.getElementById('log-growth-stage').value;
-            if (!growthStage) {
+            if (!growthStage && !editingJournalLogId) {
                 alert('Please select a growth stage: Seedling, Vegetative or Flowering.');
                 document.getElementById('log-growth-stage').focus();
                 return;
