@@ -2209,6 +2209,18 @@ textarea {
     }
 </style>
 </head>
+<style id="mobile-feedback-footer-alignment">
+    @media screen and (max-width: 640px) {
+        /* Match the plant-card group inset so the feedback button shares its left edge. */
+        #app-feedback-footer {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+            margin-left: 0 !important;
+            margin-right: auto !important;
+            box-sizing: border-box !important;
+        }
+    }
+</style>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
 
     <div id="mobile-welcome-screen" role="status" aria-live="polite">
