@@ -2208,19 +2208,19 @@ textarea {
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
     }
 </style>
-</head>
 <style id="mobile-feedback-footer-alignment">
     @media screen and (max-width: 640px) {
-        /* Match the plant-card group inset so the feedback button shares its left edge. */
+        /* The main container already supplies the 16px inset; remove the footer's extra inset. */
         #app-feedback-footer {
-            padding-left: 12px !important;
-            padding-right: 12px !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
             margin-left: 0 !important;
             margin-right: auto !important;
             box-sizing: border-box !important;
         }
     }
 </style>
+</head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
 
     <div id="mobile-welcome-screen" role="status" aria-live="polite">
