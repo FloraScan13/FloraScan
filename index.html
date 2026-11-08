@@ -5058,15 +5058,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return formatted;
         }
 
-        function renderJournalLogs(p) {'))
-                .join('|');
-            if (!brandPattern) return escapedText;
-            return escapedText.replace(
-                new RegExp('(^|\\n)(' + brandPattern + '):(?=\\n|$)', 'g'),
-                '$1<strong>$2:</strong>'
-            );
-        }
-
         function renderJournalLogs(p) {
             const container = document.getElementById('journal-logs-container');
             if (!p.logs || p.logs.length === 0) {
