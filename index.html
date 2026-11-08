@@ -4818,38 +4818,36 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const unitInput = document.getElementById(`dose-unit-${idx}`);
                 const customAmount = valInput ? valInput.value.trim() : '';
                 const customUnit = unitInput ? unitInput.value : 'ml';
-
                 return {
                     product: brandObj.products[idx],
                     amount: customAmount ? `${customAmount} ${customUnit}` : brandObj.products[idx].dosage
                 };
             }).filter(item => item.product);
-
             if (!selectedProducts.length) return;
+
+            const logTextarea = document.getElementById('log-text');
+            const currentText = logTextarea.value.trim();
+            const hasFeedSection = /Fed with:/i.test(currentText);
+            const hasOlderBrandFeed = /Fed with\\s+[^:\\n]+:/i.test(currentText);
+            const nutrientLines = selectedProducts.map(item => `• ${item.product.name} (${item.amount})`);
+            const brandBlock = `${brandName}:\\n${nutrientLines.join('\\n')}`;
+
+            if (hasFeedSection || hasOlderBrandFeed) {
+                logTextarea.value = currentText + '\\n' + brandBlock;
+                return;
+            }
 
             const tankVol = document.getElementById('tank-volume-amount').value.trim();
             const tankUnit = document.getElementById('tank-volume-unit').value;
             const wateringCanSummary = getWateringCanSummary();
             if (wateringCanSummary === null) return;
 
-            const logTextarea = document.getElementById('log-text');
-            const currentText = logTextarea.value.trim();
-            const nutrientLines = selectedProducts.map(item => `• ${item.product.name} (${item.amount})`);
-            const hasNutrientSection = /(?:^|\\n)Fed with:\\s*(?:\\n|$)/i.test(currentText);
-            const hasLegacyNutrientEntry = /Fed with\\s+[^:\\n]+:\\s*/i.test(currentText);
-
-            if (hasNutrientSection) {
-                logTextarea.value = currentText + '\\n' + `${brandName}:\\n` + nutrientLines.join('\\n');
-            } else if (hasLegacyNutrientEntry) {
-                logTextarea.value = currentText + `\\n${brandName}:\\n` + nutrientLines.join('\\n');
-            } else {
-                const headerParts = [];
-                if (wateringCanSummary) headerParts.push(wateringCanSummary + '.');
-                if (tankVol) headerParts.push(`Filled tank with ${tankVol} ${tankUnit} water.`);
-                headerParts.push('Fed with:');
-                const prefix = currentText ? currentText + '\\n' : '';
-                logTextarea.value = prefix + headerParts.join(' ') + `\\n${brandName}:\\n` + nutrientLines.join('\\n');
-            }
+            const headerParts = [];
+            if (wateringCanSummary) headerParts.push(wateringCanSummary + '.');
+            if (tankVol) headerParts.push(`Filled tank with ${tankVol} ${tankUnit} water.`);
+            headerParts.push('Fed with:');
+            const prefix = currentText ? currentText + '\\n' : '';
+            logTextarea.value = prefix + headerParts.join(' ') + '\\n' + brandBlock;
         }
 
         function openJournalModal(id) {
