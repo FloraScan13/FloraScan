@@ -2390,7 +2390,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <form onsubmit="handleJournalLogSubmit(event)" class="space-y-3">
                         <input type="hidden" id="log-plant-id">
                         <input type="hidden" id="log-edit-id">
-                        <div id="journal-edit-actions" class="hidden flex items-center justify-between rounded-lg bg-amber-50 border border-amber-200 px-3 py-2"><span class="text-xs font-semibold text-amber-800">Editing an existing entry</span><button type="button" onclick="cancelJournalLogEdit()" class="text-xs font-semibold text-amber-800 underline">Cancel edit</button></div>
+                        <div id="journal-edit-actions" class="hidden flex items-center justify-between rounded-lg px-3 py-2" style="background:#fce7ef;border:1px solid #edb5c9;"><span class="text-xs font-semibold" style="color:#963b5e;">Editing an existing entry</span><button type="button" onclick="cancelJournalLogEdit()" class="text-xs font-semibold underline" style="color:#963b5e;">Cancel edit</button></div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                             <select id="log-type" onchange="toggleNutrientLibraryView()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
