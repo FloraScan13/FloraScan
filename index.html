@@ -1998,6 +1998,69 @@ textarea {
         color: #526653 !important;
     }
 </style>
+
+<style id="flora-dark-mode-overrides">
+    html.dark body,
+    html.dark body > main,
+    html.dark #view-plants,
+    html.dark #view-scanner,
+    html.dark #view-settings,
+    html.dark #main-navigation-tabs {
+        background-color: #17231c !important;
+        color: #e5eee6 !important;
+    }
+    html.dark #app-header,
+    html.dark #main-navigation-tabs button[aria-current="page"] {
+        background-color: #202f25 !important;
+        color: #e5eee6 !important;
+        border-color: #35483a !important;
+    }
+    html.dark #view-settings > div,
+    html.dark #view-settings #supabase-auth-panel,
+    html.dark #view-settings #setting-plant-locations-list > div,
+    html.dark #view-plants .plant-card,
+    html.dark #view-scanner > div,
+    html.dark #view-settings .bg-white,
+    html.dark #view-settings [class~="dark:bg-slate-800"] {
+        background-color: #243329 !important;
+        color: #e5eee6 !important;
+        border-color: #405344 !important;
+        box-shadow: 0 3px 12px rgba(0,0,0,.16) !important;
+    }
+    html.dark #view-settings h3,
+    html.dark #view-settings h4,
+    html.dark #view-settings p,
+    html.dark #view-settings label,
+    html.dark #view-plants h2,
+    html.dark #view-plants h3,
+    html.dark #view-plants p,
+    html.dark #view-scanner h2,
+    html.dark #view-scanner p {
+        color: #d5e2d7 !important;
+    }
+    html.dark input,
+    html.dark select,
+    html.dark textarea,
+    html.dark #view-settings input,
+    html.dark #view-settings select,
+    html.dark #view-settings textarea {
+        background-color: #17231c !important;
+        color: #edf4ee !important;
+        border-color: #526657 !important;
+    }
+    html.dark #main-navigation-tabs button {
+        color: #c2d1c4 !important;
+    }
+    html.dark #main-navigation-tabs button:hover,
+    html.dark #main-navigation-tabs button[aria-current="page"] {
+        background-color: #344a38 !important;
+        color: #f1f6f1 !important;
+    }
+    html.dark #view-plants #plants-grid section.location-group,
+    html.dark #view-plants #plants-grid .location-group {
+        background-color: transparent !important;
+    }
+</style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
 
@@ -2125,6 +2188,21 @@ textarea {
                         Save Profile Preferences
                     </button>
                 </div>
+            </div>
+
+            <!-- Appearance Settings -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                <h3 class="text-base font-bold flex items-center space-x-2">
+                    <i class="fa-solid fa-moon text-emerald-600"></i>
+                    <span>Appearance</span>
+                </h3>
+                <label for="setting-dark-mode" class="flex items-center justify-between gap-4 cursor-pointer">
+                    <span>
+                        <span class="block text-sm font-semibold">Dark mode</span>
+                        <span class="block text-xs text-slate-500 dark:text-slate-400">Use a darker colour scheme throughout the app.</span>
+                    </span>
+                    <input id="setting-dark-mode" type="checkbox" role="switch" class="h-5 w-5 accent-emerald-700" onchange="setDarkMode(this.checked)">
+                </label>
             </div>
 
             <!-- Growing Locations Settings -->
@@ -3557,14 +3635,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         };
 
         function applyAppearance() {
-            // Sugar Bush uses a fixed Garden Fresh palette and light appearance.
-            // Ignore any older saved theme preferences so users cannot override the app colours.
-            appSettings.theme = 'light';
-            appSettings.accentColor = 'green';
-            appSettings.appearancePreset = 'garden';
-            document.documentElement.classList.remove('dark');
+            const darkModeEnabled = appSettings.theme === 'dark';
+            document.documentElement.classList.toggle('dark', darkModeEnabled);
             document.body.dataset.accent = 'green';
-            document.body.dataset.theme = 'light';
+            document.body.dataset.theme = darkModeEnabled ? 'dark' : 'light';
+            const toggle = document.getElementById('setting-dark-mode');
+            if (toggle) toggle.checked = darkModeEnabled;
+        }
+
+        function setDarkMode(enabled) {
+            appSettings.theme = enabled ? 'dark' : 'light';
+            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            applyAppearance();
         }
 
         function applyBranding() {
