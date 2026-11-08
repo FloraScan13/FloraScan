@@ -2357,19 +2357,27 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <h2 class="font-semibold text-sm">Feedback &amp; comments</h2>
             </div>
             <p class="text-xs text-slate-600 mb-3">Have a suggestion or spotted something that needs fixing? Send a message.</p>
-            <textarea id="app-feedback-message" rows="3" class="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800" placeholder="Write your feedback or comments..."></textarea>
-            <button type="button" onclick="sendAppFeedback()" class="mt-3 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800 transition flex items-center justify-center gap-2">
-                <i class="fa-regular fa-paper-plane" aria-hidden="true"></i>
-                <span>Send feedback</span>
-            </button>
+            <form id="app-feedback-form" onsubmit="sendAppFeedback(event)">
+                <textarea id="app-feedback-message" rows="3" class="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800" placeholder="Write your feedback or comments..."></textarea>
+                <button type="submit" class="mt-3 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800 transition flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-paper-plane" aria-hidden="true"></i>
+                    <span>Submit feedback</span>
+                </button>
+            </form>
         </div>
     </footer>
     <script>
-        function sendAppFeedback() {
+        function sendAppFeedback(event) {
+            if (event) event.preventDefault();
             const field = document.getElementById('app-feedback-message');
             const message = field ? field.value.trim() : '';
+            if (!message) {
+                alert('Please enter your feedback before submitting.');
+                if (field) field.focus();
+                return;
+            }
             const subject = encodeURIComponent('Sugar Bush app feedback');
-            const body = encodeURIComponent(message || 'I would like to share feedback about the Sugar Bush app.');
+            const body = encodeURIComponent(message);
             window.location.href = 'mailto:markriches.mail@gmail.com?subject=' + subject + '&body=' + body;
         }
     </script>
