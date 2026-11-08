@@ -2000,65 +2000,171 @@ textarea {
 </style>
 
 <style id="flora-dark-mode-overrides">
+    /* A cohesive, low-glare forest palette for the whole app. */
+    html.dark { color-scheme: dark; }
     html.dark body,
     html.dark body > main,
     html.dark #view-plants,
     html.dark #view-scanner,
     html.dark #view-settings,
     html.dark #main-navigation-tabs {
-        background-color: #17231c !important;
-        color: #e5eee6 !important;
+        background: #151f19 !important;
+        background-color: #151f19 !important;
+        color: #e5ede6 !important;
     }
-    html.dark #app-header,
+    html.dark #app-header {
+        background: #1d3024 !important;
+        color: #f0f5ef !important;
+        box-shadow: 0 2px 14px rgba(0,0,0,.28) !important;
+    }
+    html.dark #app-header::after {
+        background-image: none !important;
+        background-color: #1d3024 !important;
+    }
+    html.dark #main-navigation-tabs {
+        border-color: #34463a !important;
+    }
+    html.dark #main-navigation-tabs button {
+        color: #b9cabb !important;
+        background: transparent !important;
+        border-color: transparent !important;
+    }
+    html.dark #main-navigation-tabs button:hover,
     html.dark #main-navigation-tabs button[aria-current="page"] {
-        background-color: #202f25 !important;
-        color: #e5eee6 !important;
-        border-color: #35483a !important;
+        background: #2b4031 !important;
+        color: #f0f6f0 !important;
+        border-color: #405746 !important;
     }
+
+    /* Panels, plant cards, location groups and dialogs. */
     html.dark #view-settings > div,
     html.dark #view-settings #supabase-auth-panel,
     html.dark #view-settings #setting-plant-locations-list > div,
     html.dark #view-plants .plant-card,
+    html.dark #view-plants #plants-empty,
     html.dark #view-scanner > div,
+    html.dark #plant-modal > div,
+    html.dark #location-detail-editor-modal > div,
     html.dark #view-settings .bg-white,
-    html.dark #view-settings [class~="dark:bg-slate-800"] {
-        background-color: #243329 !important;
-        color: #e5eee6 !important;
-        border-color: #405344 !important;
-        box-shadow: 0 3px 12px rgba(0,0,0,.16) !important;
-    }
-    html.dark #view-settings h3,
-    html.dark #view-settings h4,
-    html.dark #view-settings p,
-    html.dark #view-settings label,
-    html.dark #view-plants h2,
-    html.dark #view-plants h3,
-    html.dark #view-plants p,
-    html.dark #view-scanner h2,
-    html.dark #view-scanner p {
-        color: #d5e2d7 !important;
-    }
-    html.dark input,
-    html.dark select,
-    html.dark textarea,
-    html.dark #view-settings input,
-    html.dark #view-settings select,
-    html.dark #view-settings textarea {
-        background-color: #17231c !important;
-        color: #edf4ee !important;
-        border-color: #526657 !important;
-    }
-    html.dark #main-navigation-tabs button {
-        color: #c2d1c4 !important;
-    }
-    html.dark #main-navigation-tabs button:hover,
-    html.dark #main-navigation-tabs button[aria-current="page"] {
-        background-color: #344a38 !important;
-        color: #f1f6f1 !important;
+    html.dark #view-settings [class~="dark:bg-slate-800"],
+    html.dark .bg-white,
+    html.dark .bg-slate-50,
+    html.dark .bg-slate-100,
+    html.dark .bg-emerald-50 {
+        background: #202e25 !important;
+        background-color: #202e25 !important;
+        color: #e3ece4 !important;
+        border-color: #394d3e !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,.18) !important;
     }
     html.dark #view-plants #plants-grid section.location-group,
     html.dark #view-plants #plants-grid .location-group {
+        background: transparent !important;
         background-color: transparent !important;
+        box-shadow: none !important;
+    }
+    html.dark .border-slate-200,
+    html.dark .border-slate-300,
+    html.dark .border-emerald-100,
+    html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+        border-color: #394d3e !important;
+    }
+
+    /* Text hierarchy and muted supporting copy. */
+    html.dark body,
+    html.dark #view-plants,
+    html.dark #view-scanner,
+    html.dark #view-settings,
+    html.dark #view-plants h1,
+    html.dark #view-plants h2,
+    html.dark #view-plants h3,
+    html.dark #view-plants h4,
+    html.dark #view-plants .plant-card,
+    html.dark #view-scanner h2,
+    html.dark #view-settings h3,
+    html.dark #view-settings h4,
+    html.dark #view-settings .text-slate-800,
+    html.dark #view-settings .text-slate-900,
+    html.dark #view-plants .text-slate-800,
+    html.dark #view-plants .text-slate-900 {
+        color: #e5ede6 !important;
+    }
+    html.dark p,
+    html.dark label,
+    html.dark .text-slate-500,
+    html.dark .text-slate-600,
+    html.dark .text-slate-400,
+    html.dark #view-settings p,
+    html.dark #view-settings label {
+        color: #b2c2b5 !important;
+    }
+    html.dark a { color: #a9c99f !important; }
+    html.dark .text-emerald-600,
+    html.dark .text-emerald-700 { color: #a9c99f !important; }
+
+    /* Inputs and selection controls. */
+    html.dark input:not([type="checkbox"]):not([type="radio"]),
+    html.dark select,
+    html.dark textarea {
+        background: #17231b !important;
+        background-color: #17231b !important;
+        color: #edf4ee !important;
+        border-color: #4a6050 !important;
+    }
+    html.dark input::placeholder,
+    html.dark textarea::placeholder { color: #829487 !important; }
+    html.dark input:focus,
+    html.dark select:focus,
+    html.dark textarea:focus {
+        border-color: #8eae86 !important;
+        box-shadow: 0 0 0 3px rgba(142,174,134,.18) !important;
+    }
+    html.dark input[type="checkbox"],
+    html.dark input[type="radio"] { accent-color: #8eae86 !important; }
+
+    /* Buttons retain clear hierarchy without harsh white surfaces. */
+    html.dark button.bg-emerald-600,
+    html.dark button[class~="bg-emerald-600"],
+    html.dark .bg-emerald-600 {
+        background: #527b58 !important;
+        background-color: #527b58 !important;
+        color: #ffffff !important;
+        border-color: #668b6a !important;
+    }
+    html.dark button.bg-emerald-600:hover,
+    html.dark button[class~="bg-emerald-600"]:hover {
+        background: #628b67 !important;
+    }
+    html.dark button.bg-slate-800,
+    html.dark button[class~="bg-slate-800"],
+    html.dark button.bg-slate-100,
+    html.dark button[class~="bg-slate-100"] {
+        background: #304236 !important;
+        color: #e5ede6 !important;
+        border-color: #4a6050 !important;
+    }
+    html.dark button:disabled { opacity: .55; }
+
+    /* Journals, tables, badges and secondary surfaces. */
+    html.dark table,
+    html.dark th,
+    html.dark td,
+    html.dark .bg-slate-50,
+    html.dark .bg-slate-100 {
+        border-color: #394d3e !important;
+    }
+    html.dark .bg-amber-50,
+    html.dark .bg-yellow-50 { background: #393321 !important; color: #f0dfad !important; }
+    html.dark .bg-red-50,
+    html.dark .bg-rose-50 { background: #3b2929 !important; color: #f0c4c4 !important; }
+    html.dark .bg-pink-50 { background: #3b2933 !important; color: #f0c7d8 !important; }
+    html.dark .shadow,
+    html.dark .shadow-sm,
+    html.dark .shadow-md { box-shadow: 0 4px 16px rgba(0,0,0,.2) !important; }
+
+    html.dark #mobile-welcome-screen {
+        background: #151f19 !important;
+        color: #e5ede6 !important;
     }
 </style>
 </head>
