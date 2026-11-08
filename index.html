@@ -5050,9 +5050,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function formatGrowthLogText(text) {
-            const escapedText = escapeHtml(String(text || '').replace(/\\n/g, '\n'));
-            const brandPattern = NUTRIENT_BRANDS_LIBRARY
-                .map(item => item.brand.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\        function renderJournalLogs(p) {'))
+            let formatted = escapeHtml(String(text || '').replace(/\\n/g, '\n'));
+            NUTRIENT_BRANDS_LIBRARY.forEach(item => {
+                const escapedBrand = escapeHtml(item.brand);
+                formatted = formatted.split(escapedBrand + ':').join('<strong>' + escapedBrand + ':</strong>');
+            });
+            return formatted;
+        }
+
+        function renderJournalLogs(p) {'))
                 .join('|');
             if (!brandPattern) return escapedText;
             return escapedText.replace(
