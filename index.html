@@ -2122,8 +2122,11 @@ textarea {
         background: #a63d65 !important;
     }
     #feedback-modal button[aria-label="Close feedback"] {
-        background: #fce4ec !important;
-        color: #81334f !important;
+        background: #e4eadf !important;
+        color: #31583b !important;
+    }
+    #feedback-modal button[aria-label="Close feedback"]:hover {
+        background: #d8e4d2 !important;
     }
 </style>
 </head>
@@ -2424,7 +2427,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <h2 class="font-bold text-lg text-[#294b34]">Feedback &amp; comments</h2>
                     <p class="text-xs text-slate-500 mt-1">Have a suggestion or spotted something that needs fixing? Send a message.</p>
                 </div>
-                <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center" aria-label="Close feedback">
+                <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#e4eadf] hover:bg-[#d8e4d2] text-[#31583b] transition" aria-label="Close feedback">
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                 </button>
             </div>
