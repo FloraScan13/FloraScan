@@ -4082,10 +4082,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (settingsList) {
                 settingsList.innerHTML = plantLocations.map((location, index) => `
                     <div class="flex flex-col gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
-                        <div class="flex items-center gap-3">
-                            <span class="min-w-0 flex-1 break-words text-sm font-medium text-slate-800 dark:text-slate-100">${escapeHtml(location)}</span>
-                            <select aria-label="Type for ${escapeHtml(location)}" onchange="setPlantLocationType(this.dataset.location, this.value)" data-location="${escapeHtml(location)}" class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs"><option value="indoor" ${locationTypes[location] !== 'outdoor' ? 'selected' : ''}>Indoor</option><option value="outdoor" ${locationTypes[location] === 'outdoor' ? 'selected' : ''}>Outdoor</option></select>
-                            <button type="button" onclick="removePlantLocation(${index})" class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/40 dark:hover:text-red-300" aria-label="Delete location" title="Delete location"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <input type="text" maxlength="80" value="${escapeHtml(location)}" aria-label="Location name" data-location="${escapeHtml(location)}" onchange="renamePlantLocation(this.dataset.location, this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" class="min-w-0 flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium" />
+                            <div class="flex items-center gap-2">
+                                <select aria-label="Type for ${escapeHtml(location)}" onchange="setPlantLocationType(this.dataset.location, this.value)" data-location="${escapeHtml(location)}" class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs"><option value="indoor" ${locationTypes[location] !== 'outdoor' ? 'selected' : ''}>Indoor</option><option value="outdoor" ${locationTypes[location] === 'outdoor' ? 'selected' : ''}>Outdoor</option></select>
+                                <button type="button" onclick="removePlantLocation(${index})" class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/40 dark:hover:text-red-300" aria-label="Delete location" title="Delete location"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
                         </div>
                         ${locationTypes[location] === 'outdoor' ? `
                             <div>
@@ -4296,6 +4298,34 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const saved = await savePlantLocationsToCloud();
             if (saved) updateSyncBadge('cloud', 'Cloud Synced');
             else updateSyncBadge('local', 'Saved Locally');
+        }
+
+        async function renamePlantLocation(oldName, rawName) {
+            if (!plantLocations.includes(oldName)) return;
+            const newName = String(rawName || '').trim().slice(0, 80);
+            if (!newName) {
+                renderPlantLocationControls();
+                return;
+            }
+            if (newName === oldName) return;
+            if (plantLocations.some(location => location.toLowerCase() === newName.toLowerCase())) {
+                alert('That location name is already in use.');
+                renderPlantLocationControls();
+                return;
+            }
+            const renameKey = object => {
+                if (!object || typeof object !== 'object' || Array.isArray(object)) return object;
+                if (Object.prototype.hasOwnProperty.call(object, oldName)) {
+                    object[newName] = object[oldName];
+                    delete object[oldName];
+                }
+                return object;
+            };
+            plantLocations = plantLocations.map(location => location === oldName ? newName : location);
+            [locationTypes, locationDetails, locationDetailsVisibility, locationPostcodes, locationCoordinates, locationPostcodeLocks, plantLocationViewModes].forEach(renameKey);
+            plants = plants.map(plant => plant.location === oldName ? { ...plant, location: newName } : plant);
+            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            await persistPlantLocations();
         }
 
         async function removePlantLocation(index) {
