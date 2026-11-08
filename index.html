@@ -2854,6 +2854,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             renderPlantLocationControls();
             initSupabaseClient();
             await fetchPlantsFromCloudOrLocal();
+
+            // Reset the Plants screen presentation on every app load.
+            // Keep saved location details themselves; only hide their display by default.
+            locationDetailsVisibility = Object.fromEntries(plantLocations.map(location => [location, false]));
+            localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
+
+            // Start every growing location in List view on each refresh.
+            plantLocations.forEach(location => { plantLocationViewModes[location] = 'list'; });
+            localStorage.setItem('flora_location_view_modes', JSON.stringify(plantLocationViewModes));
+
             renderPlants();
             setupAutocomplete();
             const logDateInput = document.getElementById('log-date');
