@@ -2350,25 +2350,57 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         <!-- Feedback footer -->
     <footer id="app-feedback-footer" class="w-full max-w-4xl mx-auto px-4 pb-5 pt-3">
-        <div class="rounded-2xl border border-[#d7dfd0] bg-white p-4 shadow-sm">
-            <div class="flex items-center gap-2 mb-2 text-[#294b34]">
+        <button type="button" onclick="openFeedbackModal()" class="w-full rounded-2xl border border-[#d7dfd0] bg-white px-4 py-3 shadow-sm flex items-center justify-between gap-3 text-left hover:bg-[#f4f7f1] transition">
+            <span class="flex items-center gap-2 text-[#294b34] font-semibold text-sm">
                 <i class="fa-regular fa-comments" aria-hidden="true"></i>
-                <h2 class="font-semibold text-sm">Feedback &amp; comments</h2>
+                Feedback &amp; comments
+            </span>
+            <span class="text-xs text-[#527b58] font-semibold">Tap to open <i class="fa-solid fa-chevron-right ml-1" aria-hidden="true"></i></span>
+        </button>
+    </footer>
+
+    <!-- MODAL: FEEDBACK & COMMENTS -->
+    <div id="feedback-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" onclick="if(event.target===this) closeFeedbackModal()">
+        <div class="relative bg-white max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-auto">
+            <div class="px-5 py-4 flex items-center justify-between border-b border-slate-200">
+                <div>
+                    <h2 class="font-bold text-lg text-[#294b34]">Feedback &amp; comments</h2>
+                    <p class="text-xs text-slate-500 mt-1">We'd love to hear your suggestions.</p>
+                </div>
+                <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center" aria-label="Close feedback">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
             </div>
-            <p class="text-xs text-slate-600 mb-3">Have a suggestion or spotted something that needs fixing? Send a message.</p>
-            <form id="app-feedback-form" onsubmit="sendAppFeedback(event)">
-                <textarea id="app-feedback-message" rows="3" class="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800" placeholder="Write your feedback or comments..."></textarea>
+            <form id="app-feedback-form" onsubmit="sendAppFeedback(event)" class="p-5">
+                <label for="app-feedback-message" class="block text-sm font-semibold text-slate-700 mb-2">Your feedback</label>
+                <textarea id="app-feedback-message" rows="5" class="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800" placeholder="Write your feedback or comments..." required></textarea>
                 <button type="submit" class="mt-3 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800 transition flex items-center justify-center gap-2">
                     <i class="fa-regular fa-paper-plane" aria-hidden="true"></i>
                     <span>Submit feedback</span>
                 </button>
             </form>
         </div>
-    </footer>
+    </div>
     </main>
 
 
     <script>
+        function openFeedbackModal() {
+            const modal = document.getElementById('feedback-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+                const field = document.getElementById('app-feedback-message');
+                if (field) setTimeout(() => field.focus(), 100);
+            }
+        }
+
+        function closeFeedbackModal() {
+            const modal = document.getElementById('feedback-modal');
+            if (modal) modal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
         function sendAppFeedback(event) {
             if (event) event.preventDefault();
             const field = document.getElementById('app-feedback-message');
