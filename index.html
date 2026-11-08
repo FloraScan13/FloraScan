@@ -2024,6 +2024,37 @@ textarea {
         }
     }
 </style>
+<style id="mobile-sticky-plants-toolbar">
+    @media screen and (max-width: 640px) {
+        /* Keep plant search and location pills visible beneath the sticky app tabs. */
+        #plants-toolbar {
+            position: sticky !important;
+            top: 82px !important;
+            z-index: 48 !important;
+            padding: 8px 0 10px !important;
+            margin-top: -8px !important;
+            margin-bottom: 0 !important;
+            background: #f7f6f0 !important;
+            box-shadow: 0 8px 10px -10px rgba(35, 59, 39, .35) !important;
+        }
+        #plants-toolbar::before {
+            content: "" !important;
+            position: absolute !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            left: calc(50% - 50vw) !important;
+            width: 100vw !important;
+            background: #f7f6f0 !important;
+            z-index: -1 !important;
+            pointer-events: none !important;
+        }
+        #plant-location-tabs {
+            position: relative !important;
+            z-index: 1 !important;
+            background: #f7f6f0 !important;
+        }
+    }
+</style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
 
