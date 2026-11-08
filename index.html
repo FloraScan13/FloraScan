@@ -2124,18 +2124,41 @@ textarea {
     #feedback-modal button[type="submit"]:hover {
         background: #a63d65 !important;
     }
-    #feedback-modal button[aria-label="Close feedback"] {
-        position: absolute !important;
-        top: 0 !important;
-        right: 0 !important;
-        width: 50px !important;
-        height: 68px !important;
-        border-radius: 0 0 0 18px !important;
-        background: #c6537b !important;
+    #feedback-modal > div > .absolute.top-3.right-3 button[aria-label="Close feedback"] {
+        width: 24px !important;
+        height: 34px !important;
+        min-width: 24px !important;
+        max-width: 24px !important;
+        min-height: 34px !important;
+        max-height: 34px !important;
+        flex: 0 0 24px !important;
+        box-sizing: border-box !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+        border-radius: 0 0 8px 8px !important;
+        background-clip: padding-box !important;
+        appearance: none !important;
+        position: relative !important;
+        z-index: 2 !important;
+        align-self: flex-start !important;
+        background: rgb(196, 85, 124) !important;
+        background-color: rgb(196, 85, 124) !important;
         color: #ffffff !important;
+        border: 0 !important;
+        box-shadow: 0 0 0 5px #fffef9 !important;
+        transition: background-color .2s ease !important;
     }
-    #feedback-modal button[aria-label="Close feedback"]:hover { background: #a63d65 !important; }
-    #feedback-modal button[aria-label="Close feedback"] i { font-size: 25px !important; font-weight: 700 !important; }
+    #feedback-modal > div > .absolute.top-3.right-3 button[aria-label="Close feedback"]:hover,
+    #feedback-modal > div > .absolute.top-3.right-3 button[aria-label="Close feedback"]:active,
+    #feedback-modal > div > .absolute.top-3.right-3 button[aria-label="Close feedback"]:focus,
+    #feedback-modal > div > .absolute.top-3.right-3 button[aria-label="Close feedback"]:focus-visible {
+        background: #B0466C !important;
+        background-color: #B0466C !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
 </style>
 <style id="feedback-wavy-divider">
     #feedback-modal > div > div:first-child {
@@ -2450,14 +2473,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     <!-- MODAL: FEEDBACK & COMMENTS -->
     <div id="feedback-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" onclick="if(event.target===this) closeFeedbackModal()">
         <div class="relative bg-white max-w-lg w-full max-h-[90dvh] rounded-2xl shadow-xl overflow-y-auto my-auto">
+            <div class="absolute top-3 right-3 z-10">
+                <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 flex items-center justify-center rounded-full" aria-label="Close feedback"><i class="fa-solid fa-xmark"></i></button>
+            </div>
             <div class="px-5 py-4 flex items-center justify-between border-b border-slate-200">
                 <div>
                     <h2 class="font-bold text-lg text-[#294b34] flex items-center gap-2"><i class="fa-regular fa-comments" aria-hidden="true"></i> Feedback &amp; comments</h2>
                     <p class="text-xs text-slate-500 mt-1">Have a suggestion or spotted something that needs fixing? Send a message.</p>
                 </div>
-                <button type="button" onclick="closeFeedbackModal()" class="absolute top-0 right-0 z-10 w-13 h-16 flex items-center justify-center rounded-bl-2xl rounded-br-2xl bg-[#c6537b] hover:bg-[#a63d65] text-white transition" aria-label="Close feedback">
-                    <i class="fa-solid fa-xmark text-2xl font-bold" aria-hidden="true"></i>
-                </button>
             </div>
             <form id="app-feedback-form" onsubmit="sendAppFeedback(event)" class="p-5">
                 <textarea id="app-feedback-message" rows="5" class="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800" placeholder="Write your feedback or comments..." required></textarea>
