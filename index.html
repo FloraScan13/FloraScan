@@ -2385,10 +2385,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
                     <h4 class="text-sm font-bold mb-3 flex items-center space-x-2">
                         <i class="fa-solid fa-pen-to-square text-emerald-600"></i>
-                        <span>Add Growth Log Entry</span>
+                        <span id="journal-log-form-title">Add Growth Log Entry</span>
                     </h4>
                     <form onsubmit="handleJournalLogSubmit(event)" class="space-y-3">
                         <input type="hidden" id="log-plant-id">
+                        <input type="hidden" id="log-edit-id">
+                        <div id="journal-edit-actions" class="hidden flex items-center justify-between rounded-lg bg-amber-50 border border-amber-200 px-3 py-2"><span class="text-xs font-semibold text-amber-800">Editing an existing entry</span><button type="button" onclick="cancelJournalLogEdit()" class="text-xs font-semibold text-amber-800 underline">Cancel edit</button></div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                             <select id="log-type" onchange="toggleNutrientLibraryView()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
@@ -5075,9 +5077,43 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         <p class="text-slate-600 dark:text-slate-400">${log.text}</p>
                         ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a>').join('') + '</div>' : ''}
                     </div>
-                    <button onclick="deleteJournalLog('${p.id}', '${log.id || idx}')" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button>
+                    <div class="flex items-center gap-2 flex-shrink-0"><button type="button" onclick="editJournalLog('${p.id}', '${log.id || idx}')" aria-label="Edit growth log" title="Edit entry" class="text-emerald-700 hover:text-emerald-900 p-1"><i class="fa-solid fa-pen"></i></button><button type="button" onclick="deleteJournalLog('${p.id}', '${log.id || idx}')" aria-label="Delete growth log" title="Delete entry" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button></div>
                 </div>
             `).join('');
+        }
+
+        function editJournalLog(plantId, logId) {
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            if (!plant || !Array.isArray(plant.logs)) return;
+            const log = plant.logs.find((entry, index) => String(entry.id || index) === String(logId));
+            if (!log) return;
+            document.getElementById('log-plant-id').value = plant.id;
+            document.getElementById('log-edit-id').value = log.id || String(plant.logs.indexOf(log));
+            document.getElementById('log-date').value = log.date || '';
+            document.getElementById('log-type').value = log.type || 'Growth';
+            document.getElementById('log-growth-stage').value = log.growthStage || '';
+            document.getElementById('log-text').value = log.text || '';
+            document.getElementById('log-growth-medium').value = '';
+            document.getElementById('journal-log-form-title').textContent = 'Edit Growth Log Entry';
+            document.getElementById('journal-edit-actions').classList.remove('hidden');
+            toggleNutrientLibraryView();
+            document.getElementById('log-date').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function cancelJournalLogEdit() {
+            document.getElementById('log-edit-id').value = '';
+            document.getElementById('journal-log-form-title').textContent = 'Add Growth Log Entry';
+            document.getElementById('journal-edit-actions').classList.add('hidden');
+            document.getElementById('log-date').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('log-type').value = 'Growth';
+            document.getElementById('log-growth-stage').value = '';
+            document.getElementById('log-text').value = '';
+            document.getElementById('log-growth-medium').value = '';
+            document.getElementById('journal-photo-input').value = '';
+            document.getElementById('journal-camera-input').value = '';
+            journalSelectedFiles = [];
+            renderJournalPhotoPreviews();
+            toggleNutrientLibraryView();
         }
 
         async function handleJournalLogSubmit(e) {
@@ -5086,6 +5122,35 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const date = document.getElementById('log-date').value;
             const type = document.getElementById('log-type').value;
             const growthStage = document.getElementById('log-growth-stage').value;
+            const editId = document.getElementById('log-edit-id').value;
+            if (editId) {
+                if (!growthStage) {
+                    alert('Please select a growth stage: Seedling, Vegetative or Flowering.');
+                    document.getElementById('log-growth-stage').focus();
+                    return;
+                }
+                const plant = plants.find(item => String(item.id) === String(plantId));
+                if (!plant || !Array.isArray(plant.logs)) return;
+                const existingLog = plant.logs.find((entry, index) => String(entry.id || index) === String(editId));
+                if (!existingLog) {
+                    alert('Could not find that growth log. Please close and reopen the journal, then try again.');
+                    return;
+                }
+                existingLog.date = date;
+                existingLog.type = type;
+                existingLog.growthStage = growthStage;
+                existingLog.text = document.getElementById('log-text').value;
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                markFloraSyncPending();
+                const synced = await syncLogToCloud(plantId, existingLog);
+                renderJournalLogs(plant);
+                renderPlants();
+                cancelJournalLogEdit();
+                if (supabaseClient && currentUser && navigator.onLine && synced === false) {
+                    alert('The entry was updated on this device, but cloud sync failed. It will retry when sync is available.');
+                }
+                return;
+            }
             if (!growthStage) {
                 alert('Please select a growth stage: Seedling, Vegetative or Flowering.');
                 document.getElementById('log-growth-stage').focus();
