@@ -2073,61 +2073,15 @@ textarea {
     }
 </style>
 <style id="feedback-pink-theme">
-    /* Feedback launcher and modal use the Sugar Bush rose palette. */
+    /* Match the feedback launcher to the Add Plant modal's sage-green controls. */
     #app-feedback-footer > button {
-        background: #fff0f4 !important;
-        border-color: #e8a7bd !important;
-        color: #81334f !important;
-    }
-    #app-feedback-footer > button:hover {
-        background: #fce4ec !important;
-    }
-    #app-feedback-footer > button span,
-    #app-feedback-footer > button i {
-        color: #a63d65 !important;
-    }
-    #feedback-modal > div {
-        background: #fffdfb !important;
-        border: 1px solid #e8a7bd !important;
-        color: #81334f !important;
-        box-shadow: 0 20px 55px rgba(90, 43, 60, .22) !important;
-    }
-    #feedback-modal > div > div:first-child {
-        background: #fff0f4 !important;
-        border-color: #e8a7bd !important;
-    }
-    #feedback-modal h2,
-    #feedback-modal label {
-        color: #81334f !important;
-    }
-    #feedback-modal p,
-    #feedback-modal .text-slate-500 {
-        color: #a66a80 !important;
-    }
-    #feedback-modal textarea {
-        background: #fff8fa !important;
-        border-color: #e8a7bd !important;
-        color: #633047 !important;
-    }
-    #feedback-modal textarea:focus {
-        border-color: #c6537b !important;
-        outline: 2px solid rgba(198, 83, 123, .18) !important;
-    }
-    #feedback-modal button[type="submit"] {
-        background: #c6537b !important;
-        border-color: #c6537b !important;
-        color: #fff8fa !important;
-    }
-    #feedback-modal button[type="submit"]:hover {
-        background: #a63d65 !important;
-    }
-    #feedback-modal button[aria-label="Close feedback"] {
         background: #e4eadf !important;
+        border-color: #d8e4d2 !important;
         color: #31583b !important;
     }
-    #feedback-modal button[aria-label="Close feedback"]:hover {
-        background: #d8e4d2 !important;
-    }
+    #app-feedback-footer > button:hover { background: #d8e4d2 !important; }
+    #app-feedback-footer > button span,
+    #app-feedback-footer > button i { color: #31583b !important; }
 </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
@@ -2420,21 +2374,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     </main>
 
     <!-- MODAL: FEEDBACK & COMMENTS -->
-    <div id="feedback-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" onclick="if(event.target===this) closeFeedbackModal()">
-        <div class="relative bg-white max-w-lg w-full max-h-[90dvh] rounded-2xl shadow-xl overflow-y-auto my-auto">
-            <div class="px-5 py-4 flex items-center justify-between border-b border-slate-200">
-                <div>
-                    <h2 class="font-bold text-lg text-[#294b34]">Feedback &amp; comments</h2>
-                    <p class="text-xs text-slate-500 mt-1">Have a suggestion or spotted something that needs fixing? Send a message.</p>
-                </div>
-                <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#e4eadf] hover:bg-[#d8e4d2] text-[#31583b] transition" aria-label="Close feedback">
-                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                </button>
+    <div id="feedback-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto" onclick="if(event.target===this) closeFeedbackModal()">
+        <div class="relative bg-white dark:bg-slate-800 max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-8">
+            <div class="absolute top-3 right-3 z-10">
+                <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#e4eadf] hover:bg-[#d8e4d2] text-[#31583b] transition" aria-label="Close feedback"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="app-feedback-form" onsubmit="sendAppFeedback(event)" class="p-5">
-                <label for="app-feedback-message" class="block text-sm font-semibold text-slate-700 mb-2">Your feedback</label>
-                <textarea id="app-feedback-message" rows="5" class="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800" placeholder="Write your feedback or comments..." required></textarea>
-                <button type="submit" class="mt-3 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800 transition flex items-center justify-center gap-2">
+            <form id="app-feedback-form" onsubmit="sendAppFeedback(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 pr-12">Feedback &amp; comments</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-300">Have a suggestion or spotted something that needs fixing? Send a message.</p>
+                <div>
+                    <label for="app-feedback-message" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Your feedback</label>
+                    <textarea id="app-feedback-message" rows="5" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="Write your feedback or comments..." required></textarea>
+                </div>
+                <button type="submit" class="w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800 transition flex items-center justify-center gap-2">
                     <i class="fa-regular fa-paper-plane" aria-hidden="true"></i>
                     <span>Submit feedback</span>
                 </button>
