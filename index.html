@@ -5139,6 +5139,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function cancelJournalLogEdit() {
+            const activePlantId = document.getElementById('log-plant-id')?.value || '';
             editingJournalLogId = null;
             const editId = document.getElementById('log-edit-id');
             if (editId) editId.value = '';
@@ -5150,6 +5151,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (cancel) cancel.classList.add('hidden');
             const form = document.querySelector('#journal-modal form[onsubmit="handleJournalLogSubmit(event)"]');
             if (form) form.reset();
+            const plantIdInput = document.getElementById('log-plant-id');
+            if (plantIdInput) plantIdInput.value = activePlantId;
             const preview = document.getElementById('journal-photo-preview');
             if (preview) preview.innerHTML = '';
             journalSelectedFiles = [];
