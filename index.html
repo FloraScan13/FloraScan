@@ -2125,12 +2125,17 @@ textarea {
         background: #a63d65 !important;
     }
     #feedback-modal button[aria-label="Close feedback"] {
-        background: #e4eadf !important;
-        color: #31583b !important;
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
+        width: 50px !important;
+        height: 68px !important;
+        border-radius: 0 0 0 18px !important;
+        background: #c6537b !important;
+        color: #ffffff !important;
     }
-    #feedback-modal button[aria-label="Close feedback"]:hover {
-        background: #d8e4d2 !important;
-    }
+    #feedback-modal button[aria-label="Close feedback"]:hover { background: #a63d65 !important; }
+    #feedback-modal button[aria-label="Close feedback"] i { font-size: 25px !important; font-weight: 700 !important; }
 </style>
 <style id="feedback-wavy-divider">
     #feedback-modal > div > div:first-child {
@@ -2450,8 +2455,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <h2 class="font-bold text-lg text-[#294b34] flex items-center gap-2"><i class="fa-regular fa-comments" aria-hidden="true"></i> Feedback &amp; comments</h2>
                     <p class="text-xs text-slate-500 mt-1">Have a suggestion or spotted something that needs fixing? Send a message.</p>
                 </div>
-                <button type="button" onclick="closeFeedbackModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#e4eadf] hover:bg-[#d8e4d2] text-[#31583b] transition" aria-label="Close feedback">
-                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                <button type="button" onclick="closeFeedbackModal()" class="absolute top-0 right-0 z-10 w-13 h-16 flex items-center justify-center rounded-bl-2xl rounded-br-2xl bg-[#c6537b] hover:bg-[#a63d65] text-white transition" aria-label="Close feedback">
+                    <i class="fa-solid fa-xmark text-2xl font-bold" aria-hidden="true"></i>
                 </button>
             </div>
             <form id="app-feedback-form" onsubmit="sendAppFeedback(event)" class="p-5">
