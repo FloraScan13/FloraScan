@@ -5049,6 +5049,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             });
         }
 
+        function formatGrowthLogText(text) {
+            const escapedText = escapeHtml(String(text || '').replace(/\\n/g, '\n'));
+            const brandPattern = NUTRIENT_BRANDS_LIBRARY
+                .map(item => item.brand.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\        function renderJournalLogs(p) {'))
+                .join('|');
+            if (!brandPattern) return escapedText;
+            return escapedText.replace(
+                new RegExp('(^|\\n)(' + brandPattern + '):(?=\\n|$)', 'g'),
+                '$1<strong>$2:</strong>'
+            );
+        }
+
         function renderJournalLogs(p) {
             const container = document.getElementById('journal-logs-container');
             if (!p.logs || p.logs.length === 0) {
@@ -5064,7 +5076,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             ${log.growthStage ? '<span class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">' + escapeHtml(log.growthStage) + '</span>' : ''}
                             <span class="text-[10px] text-slate-400">• ${log.date}</span>
                         </div>
-                        <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${escapeHtml(String(log.text || '').replace(/\\n/g, '\n'))}</p>
+                        <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${formatGrowthLogText(log.text)}</p>
                         ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a>').join('') + '</div>' : ''}
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0"><button type="button" onclick="editJournalLog('${p.id}', '${log.id || idx}')" aria-label="Edit growth log" title="Edit entry" class="text-emerald-700 hover:text-emerald-900 p-1"><i class="fa-solid fa-pen"></i></button><button type="button" onclick="deleteJournalLog('${p.id}', '${log.id || idx}')" aria-label="Delete growth log" title="Delete entry" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button></div>
