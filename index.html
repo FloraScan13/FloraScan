@@ -5068,6 +5068,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 logs: []
             };
 
+            let initialMediumLog = null;
             if (editId) {
                 const idx = plants.findIndex(p => p.id === editId);
                 if (idx !== -1) {
@@ -5075,12 +5076,25 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     plants[idx] = plantData;
                 }
             } else {
+                // Record the medium chosen during plant creation as the first journal entry.
+                const initialMedium = String(plantData.medium || '').trim();
+                if (initialMedium) {
+                    const localToday = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                    initialMediumLog = {
+                        id: 'log_' + Date.now(),
+                        date: plantData.date || localToday,
+                        type: 'Medium',
+                        text: 'Initial growing medium / setup: ' + initialMedium
+                    };
+                    plantData.logs.unshift(initialMediumLog);
+                }
                 plants.unshift(plantData);
             }
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             markFloraSyncPending();
             await syncPlantToCloud(plantData);
+            if (initialMediumLog) await syncLogToCloud(plantData.id, initialMediumLog);
 
             renderPlants();
             closePlantModal();
