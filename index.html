@@ -4099,6 +4099,30 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         });
 
+        function closeJournalLocationMenuIfOutside(event) {
+            const control = document.getElementById('journal-plant-location-control');
+            const menu = document.getElementById('journal-plant-location-menu');
+            const button = document.getElementById('journal-plant-location');
+            if (!control || !menu || menu.classList.contains('hidden')) return;
+            if (control.contains(event.target)) return;
+
+            menu.classList.add('hidden');
+            if (button) button.setAttribute('aria-expanded', 'false');
+
+            const label = document.getElementById('journal-plant-location-label');
+            if (button && button.dataset.placeholderDismissEnabled === 'true' && label && label.textContent.trim() === 'Choose location') {
+                label.textContent = '';
+                button.dataset.placeholderDismissEnabled = 'false';
+            }
+        }
+
+        // Capture on window so the menu closes even if a modal or inner panel
+        // stops propagation later in the event cycle.
+        window.addEventListener('pointerdown', closeJournalLocationMenuIfOutside, true);
+        window.addEventListener('mousedown', closeJournalLocationMenuIfOutside, true);
+        window.addEventListener('touchstart', closeJournalLocationMenuIfOutside, true);
+        window.addEventListener('click', closeJournalLocationMenuIfOutside, true);
+
         function selectJournalLocation(location) {
             const menu = document.getElementById('journal-plant-location-menu');
             const button = document.getElementById('journal-plant-location');
