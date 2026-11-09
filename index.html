@@ -4056,7 +4056,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const button = document.getElementById('journal-plant-location');
             const menu = document.getElementById('journal-plant-location-menu');
             if (!button || !menu || button.disabled) return;
-            const opening = menu.classList.contains('hidden');
+            const opening = menu.style.display !== 'block';
             const label = document.getElementById('journal-plant-location-label');
             if (opening && label && !label.textContent.trim()) {
                 label.textContent = 'Choose location';
@@ -4064,6 +4064,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 label.classList.add('text-slate-900', 'dark:text-slate-100');
                 label.style.setProperty('color', '#294b34', 'important');
             }
+            menu.style.setProperty('display', opening ? 'block' : 'none', 'important');
             menu.classList.toggle('hidden', !opening);
             button.setAttribute('aria-expanded', opening ? 'true' : 'false');
             if (opening) button.dataset.placeholderDismissEnabled = 'true';
@@ -4077,6 +4078,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const button = document.getElementById('journal-plant-location');
             if (!control || !menu || menu.classList.contains('hidden') || control.contains(event.target)) return;
             menu.classList.add('hidden');
+            menu.style.setProperty('display', 'none', 'important');
             if (button) button.setAttribute('aria-expanded', 'false');
         }, true);
 
@@ -4102,8 +4104,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (control.contains(event.target)) return;
 
             menu.classList.add('hidden');
+            menu.style.setProperty('display', 'none', 'important');
             if (button) button.setAttribute('aria-expanded', 'false');
-
         }
 
         // Capture on window so the menu closes even if a modal or inner panel
