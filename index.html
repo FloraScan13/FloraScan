@@ -2700,7 +2700,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="flex flex-wrap gap-2"><button type="button" onclick="duplicatePlantJournal(document.getElementById('log-plant-id').value)" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm" title="Create a new journal using this plant's details"><i class="fa-solid fa-copy mr-1"></i> Duplicate Plant</button><button onclick="downloadPlantJournalPDF(document.getElementById('log-plant-id').value)" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm" title="Export this plant journal as a PDF"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button></div>
                             <div class="mt-3 flex flex-wrap items-center gap-2">
                                 <button type="button" onclick="rewriteJournalPlantNfcTag()" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 text-xs font-semibold"><i class="fa-solid fa-wifi mr-1"></i> Rewrite NFC Tag</button>
-                                <span id="journal-nfc-status" class="text-xs text-slate-500" role="status">Write or update this plant's NFC tag while its journal is open.</span>
+                                <span id="journal-nfc-status" class="text-xs text-slate-500" role="status"></span>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400">
