@@ -5239,9 +5239,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const idx = plants.findIndex(p => p.id === editId);
                 if (idx !== -1) {
                     plantData.logs = plants[idx].logs || [];
+                    plantData.remainingSeeds = Math.max(0, Number(plants[idx].remainingSeeds) || (plants[idx].quantityType === 'seeds' ? Number(plants[idx].quantity) || 0 : 0));
                     plants[idx] = plantData;
                 }
             } else {
+                if (plantData.quantityType === 'seeds') plantData.remainingSeeds = plantData.quantity;
                 // Record the starting quantity as a Growth journal entry when the plant is created.
                 const localToday = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
                 const quantityLabels = { plants: 'Plants', seeds: 'Seeds sown', cuttings: 'Cuttings' };
