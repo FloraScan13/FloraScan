@@ -5293,17 +5293,61 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return;
             }
 
+            const duplicateId = 'plant_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            const originalLogs = Array.isArray(original.logs) ? original.logs : [];
+            const copiedLogs = [];
+
+            try {
+                for (const [logIndex, originalLog] of originalLogs.entries()) {
+                    const copiedLogId = 'log_' + Date.now() + '_' + logIndex + '_' + Math.random().toString(36).slice(2, 7);
+                    const copiedLog = { ...originalLog, id: copiedLogId };
+
+                    // Give copied journal photos their own Storage paths so either journal
+                    // can be edited or deleted without affecting the other.
+                    const originalPhotoPaths = Array.isArray(originalLog.photoPaths) ? originalLog.photoPaths : [];
+                    const copiedPhotoPaths = [];
+                    if (originalPhotoPaths.length && supabaseClient && currentUser && navigator.onLine) {
+                        for (let photoIndex = 0; photoIndex < originalPhotoPaths.length; photoIndex++) {
+                            const sourcePath = originalPhotoPaths[photoIndex];
+                            if (!sourcePath) continue;
+                            const destinationPath = currentUser.id + '/' + duplicateId + '/' + copiedLogId + '/' + photoIndex + '.jpg';
+                            const { error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).copy(sourcePath, destinationPath);
+                            if (error) throw error;
+                            copiedPhotoPaths[photoIndex] = destinationPath;
+                        }
+                    } else if (originalPhotoPaths.length) {
+                        // Keep existing photo references locally while offline; cloud sync can
+                        // upload data-URL photos when available.
+                        copiedLog.photos = Array.isArray(originalLog.photos) ? [...originalLog.photos] : [];
+                    }
+
+                    if (originalPhotoPaths.length && supabaseClient && currentUser && navigator.onLine) {
+                        copiedLog.photoPaths = copiedPhotoPaths;
+                        copiedLog.photos = (await Promise.all(copiedPhotoPaths.map(path => path ? createJournalPhotoUrl(path) : Promise.resolve('')))).filter(Boolean);
+                    } else if (Array.isArray(originalLog.photos)) {
+                        copiedLog.photos = [...originalLog.photos];
+                        copiedLog.photoPaths = [];
+                    }
+                    copiedLogs.push(copiedLog);
+                }
+            } catch (error) {
+                console.error('Could not copy all journal entries and photos:', error);
+                alert('The journal could not be duplicated because one or more photos could not be copied. The original journal has not been changed. Please try again.');
+                return;
+            }
+
             const duplicate = {
                 ...original,
-                id: 'plant_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+                id: duplicateId,
                 name: String(original.name || 'Plant') + ' (duplicate)',
-                logs: []
+                logs: copiedLogs
             };
 
             plants.unshift(duplicate);
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             markFloraSyncPending();
             await syncPlantToCloud(duplicate);
+            for (const log of copiedLogs) await syncLogToCloud(duplicate.id, log);
             renderPlants();
             openJournalModal(duplicate.id);
         }
