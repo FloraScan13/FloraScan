@@ -6059,14 +6059,35 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return ml.toFixed(1).replace(/\.?0+$/, '') + ' ml';
         }
 
+        function getJournalCumulativeRainfall(plant) {
+            if (!plant || !plant.location || locationTypes[plant.location] !== 'outdoor') return null;
+            const weeklyTotals = new Map();
+            const pattern = /Rainfall for (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2}): ([\d.]+) mm total/;
+            (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
+                if (log.type !== 'Weather') return;
+                const match = String(log.text || '').match(pattern);
+                if (match && Number.isFinite(Number(match[3]))) {
+                    weeklyTotals.set(match[1] + '|' + match[2], { start: match[1], amount: Number(match[3]) });
+                }
+            });
+            if (!weeklyTotals.size) return null;
+            const weeks = Array.from(weeklyTotals.values());
+            return {
+                mm: weeks.reduce((sum, week) => sum + week.amount, 0),
+                since: weeks.reduce((earliest, week) => week.start < earliest ? week.start : earliest, weeks[0].start)
+            };
+        }
+
         function renderJournalLogs(p) {
             const container = document.getElementById('journal-logs-container');
             const usage = getJournalUsageTotals(p);
+            const rainfall = getJournalCumulativeRainfall(p);
             const usageSummary = `
                 <div class="grid grid-cols-2 gap-2 mb-3">
                     <div class="rounded-xl border border-[#e8a7bd] dark:border-rose-900 bg-[#fff0f4] dark:bg-rose-950/30 p-3">
                         <div class="text-[10px] uppercase tracking-wide font-bold text-rose-700 dark:text-rose-300">Total water used</div>
                         <div class="text-lg font-bold text-rose-900 dark:text-rose-100">${formatJournalVolume(usage.waterMl)}</div>
+                        ${rainfall ? '<div class="mt-2 pt-2 border-t border-rose-200 dark:border-rose-900"><div class="text-[10px] uppercase tracking-wide font-bold text-rose-700 dark:text-rose-300">Cumulative rainfall</div><div class="text-sm font-bold text-rose-900 dark:text-rose-100">' + rainfall.mm.toFixed(1) + ' mm (' + (rainfall.mm / 25.4).toFixed(2) + ' in)</div><div class="text-[10px] text-rose-700 dark:text-rose-300">Since ' + escapeHtml(rainfall.since) + '</div></div>' : ''}
                     </div>
                     <div class="rounded-xl border border-[#e8a7bd] dark:border-rose-900 bg-[#fff0f4] dark:bg-rose-950/30 p-3">
                         <div class="text-[10px] uppercase tracking-wide font-bold text-rose-700 dark:text-rose-300 mb-1">Nutrients used</div>
