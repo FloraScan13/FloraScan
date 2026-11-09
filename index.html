@@ -5299,6 +5299,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-plant-id').value = p.id;
             const journalLocationButton = document.getElementById('journal-plant-location');
             if (journalLocationButton) {
+                // Reset the outside-click dismissal state every time a journal opens,
+                // so clicks that opened the journal cannot immediately clear the prompt.
+                journalLocationButton.dataset.placeholderDismissEnabled = 'false';
                 const locationMenu = document.getElementById('journal-plant-location-menu');
                 const locationLabel = document.getElementById('journal-plant-location-label');
                 if (locationLabel) {
