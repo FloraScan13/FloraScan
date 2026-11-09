@@ -6064,15 +6064,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const usage = getJournalUsageTotals(p);
             const usageSummary = `
                 <div class="grid grid-cols-2 gap-2 mb-3">
-                    <div class="rounded-xl border border-sky-200 dark:border-sky-900 bg-sky-50 dark:bg-sky-950/30 p-3">
-                        <div class="text-[10px] uppercase tracking-wide font-bold text-sky-700 dark:text-sky-300">Total water used</div>
-                        <div class="text-lg font-bold text-sky-900 dark:text-sky-100">${formatJournalVolume(usage.waterMl)}</div>
+                    <div class="rounded-xl border border-[#e8a7bd] dark:border-rose-900 bg-[#fff0f4] dark:bg-rose-950/30 p-3">
+                        <div class="text-[10px] uppercase tracking-wide font-bold text-rose-700 dark:text-rose-300">Total water used</div>
+                        <div class="text-lg font-bold text-rose-900 dark:text-rose-100">${formatJournalVolume(usage.waterMl)}</div>
                     </div>
-                    <div class="rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/30 p-3">
-                        <div class="text-[10px] uppercase tracking-wide font-bold text-emerald-700 dark:text-emerald-300 mb-1">Nutrients used</div>
+                    <div class="rounded-xl border border-[#e8a7bd] dark:border-rose-900 bg-[#fff0f4] dark:bg-rose-950/30 p-3">
+                        <div class="text-[10px] uppercase tracking-wide font-bold text-rose-700 dark:text-rose-300 mb-1">Nutrients used</div>
                         ${Object.keys(usage.nutrientTotals).length
-                            ? '<div class="space-y-1">' + Object.entries(usage.nutrientTotals).sort((a, b) => a[0].localeCompare(b[0])).map(([name, amount]) => '<div class="flex justify-between items-start gap-2 text-xs"><span class="text-emerald-900 dark:text-emerald-100 min-w-0">' + escapeHtml(name) + '</span><strong class="text-emerald-900 dark:text-emerald-100 whitespace-nowrap">' + formatJournalVolume(amount) + '</strong></div>').join('') + '</div>'
-                            : '<div class="text-xs text-emerald-800 dark:text-emerald-200">No nutrient use recorded</div>'}
+                            ? '<div class="space-y-1">' + Object.entries(usage.nutrientTotals).sort((a, b) => a[0].localeCompare(b[0])).map(([name, amount]) => '<div class="flex justify-between items-start gap-2 text-xs"><span class="text-rose-900 dark:text-rose-100 min-w-0">' + escapeHtml(name) + '</span><strong class="text-rose-900 dark:text-rose-100 whitespace-nowrap">' + formatJournalVolume(amount) + '</strong></div>').join('') + '</div>'
+                            : '<div class="text-xs text-rose-800 dark:text-rose-200">No nutrient use recorded</div>'}
                     </div>
                 </div>`;
             if (!p.logs || p.logs.length === 0) {
