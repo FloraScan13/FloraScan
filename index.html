@@ -5959,11 +5959,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
                 return;
             }
-            if (!growthStage) {
-                alert('Please select a growth stage: Seedling, Vegetative or Flowering.');
-                document.getElementById('log-growth-stage').focus();
-                return;
-            }
+            // Germination entries are allowed without a selected growth stage.
             const tankVol = document.getElementById('tank-volume-amount').value;
             const tankUnit = document.getElementById('tank-volume-unit').value;
             const newMedium = document.getElementById('log-growth-medium').value.trim();
