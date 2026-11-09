@@ -4066,6 +4066,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             menu.classList.toggle('hidden', !opening);
             button.setAttribute('aria-expanded', opening ? 'true' : 'false');
+            if (opening) button.dataset.placeholderDismissEnabled = 'true';
         }
 
         document.addEventListener('click', function(event) {
@@ -4076,8 +4077,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const label = document.getElementById('journal-plant-location-label');
             if (menu) menu.classList.add('hidden');
             if (button) button.setAttribute('aria-expanded', 'false');
-            if (label && label.textContent.trim() === 'Choose location') {
+            if (button && button.dataset.placeholderDismissEnabled === 'true' && label && label.textContent.trim() === 'Choose location') {
                 label.textContent = '';
+                button.dataset.placeholderDismissEnabled = 'false';
             }
         });
 
