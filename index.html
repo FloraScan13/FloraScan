@@ -6018,27 +6018,27 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             logs.forEach(log => {
                 const content = String(log.text || '');
                 // Water recorded in the tank-volume field.
-                const tankMatches = [...content.matchAll(/Filled tank with\\s*([\\d.]+)\\s*(Liters|Gallons|Milliliters|L|gal|ml)\\s+(?:pure\\s+)?water/gi)];
+                const tankMatches = [...content.matchAll(/Filled tank with\s*([\d.]+)\s*(Liters|Gallons|Milliliters|L|gal|ml)\s+(?:pure\s+)?water/gi)];
                 tankMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
 
                 // Water recorded through the watering-can fill control.
-                const canMatches = [...content.matchAll(/Watering can:\\s*([\\d.]+)\\s*(Liters|Gallons|Milliliters|L|gal|ml)\\s+water/gi)];
+                const canMatches = [...content.matchAll(/Watering can:\s*([\d.]+)\s*(Liters|Gallons|Milliliters|L|gal|ml)\s+water/gi)];
                 canMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
 
                 // Product lines are saved as "• Product name (amount unit)" under a brand heading.
-                const productLines = content.split(/\\r?\\n/).filter(line => /^\\s*[•*-]\\s*.+\\([\\d.]+\\s*(?:ml|tsp|ml\\/L)\\)\\s*$/i.test(line));
+                const productLines = content.split(/\r?\n/).filter(line => /^\s*[•*-]\s*.+\([\d.]+\s*(?:ml|tsp|ml\/L)\)\s*$/i.test(line));
                 productLines.forEach(line => {
-                    const match = line.match(/\\(([\\d.]+)\\s*(ml|tsp|ml\\/L)\\)\\s*$/i);
+                    const match = line.match(/\(([\d.]+)\s*(ml|tsp|ml\/L)\)\s*$/i);
                     if (!match) return;
                     const amount = Number(match[1]);
                     const unit = match[2].toLowerCase();
-                    const productName = line.replace(/^\\s*[•*-]\\s*/, '').replace(/\\s*\\([\\d.]+\\s*(?:ml|tsp|ml\\/L)\\)\\s*$/i, '').trim();
+                    const productName = line.replace(/^\s*[•*-]\s*/, '').replace(/\s*\([\d.]+\s*(?:ml|tsp|ml\/L)\)\s*$/i, '').trim();
                     let usedMl = 0;
                     if (unit === 'ml') usedMl = amount;
                     else if (unit === 'tsp') usedMl = toMl(amount, unit);
                     else {
                         // ml/L is a dosage rate; multiply by the recorded tank volume where available.
-                        const tank = content.match(/Filled tank with\\s*([\\d.]+)\\s*(Liters|L)/i);
+                        const tank = content.match(/Filled tank with\s*([\d.]+)\s*(Liters|L)/i);
                         if (tank) usedMl = amount * Number(tank[1]);
                     }
                     if (productName && usedMl > 0) nutrientTotals[productName] = (nutrientTotals[productName] || 0) + usedMl;
@@ -6048,8 +6048,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function formatJournalVolume(ml) {
-            if (ml >= 1000) return (ml / 1000).toFixed(2).replace(/\\.?0+$/, '') + ' L';
-            return ml.toFixed(1).replace(/\\.?0+$/, '') + ' ml';
+            if (ml >= 1000) return (ml / 1000).toFixed(2).replace(/\.?0+$/, '') + ' L';
+            return ml.toFixed(1).replace(/\.?0+$/, '') + ' ml';
         }
 
         function renderJournalLogs(p) {
