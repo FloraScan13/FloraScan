@@ -5775,6 +5775,33 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 <footer>Exported from Flora Scan on ${generated}.</footer>
 <div class="no-print" style="margin-top:24px"><button onclick="window.print()" style="background:#15803d;color:white;border:0;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer">Print / Save as PDF</button> <button onclick="window.close()" style="padding:10px 16px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer">Close</button><p style="color:#64748b;font-size:12px">In the print dialog, choose “Save as PDF” as the destination to download your journal.</p></div>
 <script>window.addEventListener('load', () => setTimeout(() => window.print(), 350));<\/script>
+    <style id="journal-germination-box-palette">
+        /* Match the germination panel to the other soft-rose boxes in the Plant Journal. */
+        #journal-modal #germination-section {
+            background: #fff0f4 !important;
+            background-color: #fff0f4 !important;
+            border-color: #e8a7bd !important;
+            color: #81334f !important;
+        }
+        #journal-modal #germination-section label {
+            color: #a63d65 !important;
+        }
+        #journal-modal #germination-section p {
+            color: #986b7b !important;
+        }
+        #journal-modal #germination-section > div {
+            border-color: #e8a7bd !important;
+        }
+        #journal-modal #germination-section input {
+            background: #fff8fa !important;
+            border-color: #e8a7bd !important;
+            color: #81334f !important;
+        }
+        #journal-modal #germination-section input:focus {
+            border-color: #c6537b !important;
+            box-shadow: 0 0 0 3px rgba(198,83,123,.14) !important;
+        }
+    </style>
 </body></html>`);
             printWindow.document.close();
         }
