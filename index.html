@@ -4087,13 +4087,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!control || control.contains(event.target)) return;
             const menu = document.getElementById('journal-plant-location-menu');
             const button = document.getElementById('journal-plant-location');
-            const label = document.getElementById('journal-plant-location-label');
-            if (menu) menu.classList.add('hidden');
-            if (button) button.setAttribute('aria-expanded', 'false');
-            if (button && button.dataset.placeholderDismissEnabled === 'true' && label && label.textContent.trim() === 'Choose location') {
-                label.textContent = '';
-                button.dataset.placeholderDismissEnabled = 'false';
+            if (menu) {
+                menu.classList.add('hidden');
+                menu.style.setProperty('display', 'none', 'important');
             }
+            if (button) button.setAttribute('aria-expanded', 'false');
         });
 
         function closeJournalLocationMenuIfOutside(event) {
