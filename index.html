@@ -6017,6 +6017,37 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
 
 
+
+    <style id="mobile-nav-icon-centering-fix">
+      @media screen and (max-width: 767px) {
+        #main-navigation-tabs > button {
+          display: flex !important;
+          flex-flow: column nowrap !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 4px !important;
+          text-align: center !important;
+        }
+        #main-navigation-tabs > button > i,
+        #main-navigation-tabs > button > img {
+          display: block !important;
+          margin: 0 auto !important;
+          width: 20px;
+          height: 20px;
+        }
+        #main-navigation-tabs > button > span {
+          display: block !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100%;
+          text-align: center !important;
+          line-height: 1.15 !important;
+        }
+        #main-navigation-tabs > button > :not(:first-child) {
+          margin-left: 0 !important;
+        }
+      }
+    </style>
 </body>
 </html>
 
