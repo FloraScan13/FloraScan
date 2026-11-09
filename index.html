@@ -5579,6 +5579,78 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             alert('Journal amount updated successfully.');
         }
 
+        function formatLocalWeatherDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        }
+
+        async function recordWeeklyOutdoorRainfall(location) {
+            if (!location || locationTypes[location] !== 'outdoor' || !locationPostcodes[location] || !locationCoordinates[location]) return;
+            const postcode = locationPostcodes[location];
+            const coordinates = locationCoordinates[location];
+            const today = new Date();
+            const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+            const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+            const start = formatLocalWeatherDate(startDate);
+            const end = formatLocalWeatherDate(endDate);
+            const periodLabel = start + ' to ' + end;
+
+            const outdoorPlants = plants.filter(plant => plant.location === location);
+            if (!outdoorPlants.length || outdoorPlants.every(plant =>
+                (plant.logs || []).some(log => log.type === 'Weather' && String(log.text || '').includes('Rainfall for ' + periodLabel))
+            )) return;
+
+            try {
+                const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(coordinates.latitude) +
+                    '&longitude=' + encodeURIComponent(coordinates.longitude) +
+                    '&daily=precipitation_sum&past_days=7&forecast_days=1&timezone=Europe%2FLondon';
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Weather service returned ' + response.status);
+                const weather = await response.json();
+                const daily = weather.daily || {};
+                const rainfallByDate = new Map((daily.time || []).map((date, index) => [date, Number((daily.precipitation_sum || [])[index])]));
+                const days = [];
+                for (let offset = 0; offset < 7; offset++) {
+                    const date = formatLocalWeatherDate(new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + offset));
+                    if (!rainfallByDate.has(date) || !Number.isFinite(rainfallByDate.get(date))) {
+                        throw new Error('Rainfall data is not yet available for ' + date);
+                    }
+                    days.push(rainfallByDate.get(date));
+                }
+                const totalMm = days.reduce((sum, amount) => sum + amount, 0);
+                const rainfallText = 'Rainfall for ' + periodLabel + ': ' + totalMm.toFixed(1) +
+                    ' mm total (' + (totalMm / 25.4).toFixed(2) + ' in) at ' + postcode + '. Source: Open-Meteo.';
+                let changed = false;
+                for (const plant of outdoorPlants) {
+                    plant.logs = Array.isArray(plant.logs) ? plant.logs : [];
+                    if (plant.logs.some(log => log.type === 'Weather' && String(log.text || '').includes('Rainfall for ' + periodLabel))) continue;
+                    const log = {
+                        id: 'log_weather_' + plant.id + '_' + start.replace(/-/g, ''),
+                        date: end,
+                        type: 'Weather',
+                        text: rainfallText
+                    };
+                    plant.logs.push(log);
+                    await syncLogToCloud(plant.id, log);
+                    changed = true;
+                }
+                if (changed) {
+                    localStorage.setItem('flora_plants', JSON.stringify(plants));
+                    markFloraSyncPending();
+                    renderPlants();
+                    const currentPlantId = document.getElementById('log-plant-id')?.value;
+                    if (currentPlantId && outdoorPlants.some(plant => String(plant.id) === String(currentPlantId))) {
+                        const currentPlant = plants.find(plant => String(plant.id) === String(currentPlantId));
+                        if (currentPlant) renderJournalLogs(currentPlant);
+                    }
+                }
+            } catch (error) {
+                console.warn('Weekly outdoor rainfall could not be recorded:', error);
+            }
+        }
+
         function openJournalModal(id) {
             const p = plants.find(item => item.id === id);
             if (!p) return;
@@ -5637,6 +5709,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             try { toggleNutrientLibraryView(); toggleGerminationSection(); } catch (error) { console.warn('Journal controls could not be refreshed:', error); }
             renderJournalLogs(p);
             document.getElementById('journal-modal').classList.remove('hidden');
+            recordWeeklyOutdoorRainfall(plantLocation).catch(error => console.warn('Outdoor rainfall log skipped:', error));
         }
 
         async function duplicatePlantJournal(plantId) {
