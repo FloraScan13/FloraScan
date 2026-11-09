@@ -5278,8 +5278,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const locationMenu = document.getElementById('journal-plant-location-menu');
                 const locationLabel = document.getElementById('journal-plant-location-label');
                 if (locationLabel) {
-                    locationLabel.textContent = p.location || 'Choose location';
-                    locationLabel.classList.toggle('text-slate-500', !p.location);
+                    // Always show the prompt until the user actively chooses a destination.
+                    // The plant's current location is shown elsewhere in its journal details.
+                    locationLabel.textContent = 'Choose location';
+                    locationLabel.classList.add('text-slate-500');
                 }
                 if (locationMenu) {
                     locationMenu.innerHTML = plantLocations.map(location => '<button type="button" role="option" onclick="selectJournalLocation(\'' + escapeHtml(location).replace(/\\'/g, '&#39;') + '\')" class="block w-full text-left px-3.5 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700">' + escapeHtml(location) + '</button>').join('');
