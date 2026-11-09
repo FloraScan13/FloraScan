@@ -2644,6 +2644,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-quantity">Quantity</label>
+                        <input type="number" id="plant-quantity" min="1" step="1" value="1" required class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 10">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-quantity-type">Quantity type</label>
+                        <select id="plant-quantity-type" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                            <option value="plants">Plants</option>
+                            <option value="seeds">Seeds sown</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Date Planted / Sown</label>
                         <input type="date" id="plant-date" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                     </div>
@@ -3600,6 +3611,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (deletedPlants.includes(plant.id)) continue;
                     const { error: plantError } = await supabaseClient.from('plants').upsert({
                         id: plant.id, user_id: currentUser.id, name: plant.name, variety: plant.variety,
+                        quantity: Math.max(1, Number(plant.quantity) || 1),
+                        quantity_type: plant.quantityType === 'seeds' ? 'seeds' : 'plants',
                         icon_key: plant.iconKey, hex: plant.hex, date: plant.date, medium: plant.medium,
                         notes: plant.notes, location: plant.location || ''
                     });
@@ -3749,6 +3762,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             id: p.id,
                             name: p.name,
                             variety: p.variety,
+                            quantity: Math.max(1, Number(p.quantity) || 1),
+                            quantityType: p.quantity_type === 'seeds' ? 'seeds' : 'plants',
                             iconKey: p.icon_key,
                             hex: p.hex,
                             date: p.date,
@@ -3782,6 +3797,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     user_id: currentUser.id,
                     name: plant.name,
                     variety: plant.variety,
+                    quantity: Math.max(1, Number(plant.quantity) || 1),
+                    quantity_type: plant.quantityType === 'seeds' ? 'seeds' : 'plants',
                     icon_key: plant.iconKey,
                     hex: plant.hex,
                     date: plant.date,
@@ -4721,6 +4738,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="min-w-0 pr-2">
                                 <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${escapeHtml(p.name)}</h4>
                                 <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate">${escapeHtml(p.variety || 'Standard Variety')}</p>
+                                <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${Number(p.quantity || 1)} ${p.quantityType === 'seeds' ? 'seeds sown' : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')}</p>
                             </div>
                             <details class="relative flex-shrink-0" onclick="event.stopPropagation()">
                                 <summary class="list-none cursor-pointer p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-300 hover:bg-slate-200/70 dark:hover:bg-slate-700 rounded-lg transition" aria-label="Plant actions" title="Plant actions" onclick="event.stopPropagation()"><i class="fa-solid fa-ellipsis-vertical"></i></summary>
@@ -4996,6 +5014,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('edit-plant-id').value = '';
             document.getElementById('plant-nfc-pending-id').value = '';
             document.getElementById('plant-form').reset();
+            document.getElementById('plant-quantity').value = '1';
+            document.getElementById('plant-quantity-type').value = 'plants';
             renderPlantLocationControls('');
             
             renderIconPickerGrid('cucumber');
@@ -5015,6 +5035,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-nfc-pending-id').value = '';
             document.getElementById('plant-name').value = p.name;
             document.getElementById('plant-variety').value = p.variety || '';
+            document.getElementById('plant-quantity').value = Math.max(1, Number(p.quantity) || 1);
+            document.getElementById('plant-quantity-type').value = p.quantityType === 'seeds' ? 'seeds' : 'plants';
             document.getElementById('plant-date').value = p.date || '';
             document.getElementById('plant-medium').value = p.medium || '';
             renderPlantLocationControls(p.location || '');
@@ -5172,6 +5194,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 id: editId || pendingNfcId || ('plant_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)),
                 name: document.getElementById('plant-name').value,
                 variety: document.getElementById('plant-variety').value,
+                quantity: Math.max(1, parseInt(document.getElementById('plant-quantity').value, 10) || 1),
+                quantityType: document.getElementById('plant-quantity-type').value === 'seeds' ? 'seeds' : 'plants',
                 iconKey: document.getElementById('plant-icon-key').value,
                 hex: document.getElementById('form-color-hex').value,
                 date: document.getElementById('plant-date').value,
