@@ -6001,14 +6001,74 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return formatted;
         }
 
+        function getJournalUsageTotals(plant) {
+            const logs = Array.isArray(plant.logs) ? plant.logs : [];
+            let waterMl = 0;
+            let nutrientMl = 0;
+            const toMl = (amount, unit) => {
+                const value = Number(amount);
+                if (!Number.isFinite(value) || value <= 0) return 0;
+                const normalized = String(unit || '').toLowerCase();
+                if (normalized === 'l' || normalized === 'liters' || normalized === 'litres') return value * 1000;
+                if (normalized === 'gal' || normalized === 'gallons') return value * 3785.411784;
+                if (normalized === 'tsp') return value * 4.92892;
+                return normalized === 'ml' ? value : 0;
+            };
+
+            logs.forEach(log => {
+                const content = String(log.text || '');
+                // Water recorded in the tank-volume field.
+                const tankMatches = [...content.matchAll(/Filled tank with\\s*([\\d.]+)\\s*(Liters|Gallons|Milliliters|L|gal|ml)\\s+(?:pure\\s+)?water/gi)];
+                tankMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
+
+                // Water recorded through the watering-can fill control.
+                const canMatches = [...content.matchAll(/Watering can:\\s*([\\d.]+)\\s*(Liters|Gallons|Milliliters|L|gal|ml)\\s+water/gi)];
+                canMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
+
+                // Product lines are saved as "• Product name (amount unit)" under a brand heading.
+                const productLines = content.split(/\\r?\\n/).filter(line => /^\\s*[•*-]\\s*.+\\([\\d.]+\\s*(?:ml|tsp|ml\\/L)\\)\\s*$/i.test(line));
+                productLines.forEach(line => {
+                    const match = line.match(/\\(([\\d.]+)\\s*(ml|tsp|ml\\/L)\\)\\s*$/i);
+                    if (!match) return;
+                    const amount = Number(match[1]);
+                    const unit = match[2].toLowerCase();
+                    if (unit === 'ml') nutrientMl += amount;
+                    else if (unit === 'tsp') nutrientMl += toMl(amount, unit);
+                    else {
+                        // ml/L is a dosage rate; multiply by the recorded tank volume where available.
+                        const tank = content.match(/Filled tank with\\s*([\\d.]+)\\s*(Liters|L)/i);
+                        if (tank) nutrientMl += amount * Number(tank[1]);
+                    }
+                });
+            });
+            return { waterMl, nutrientMl };
+        }
+
+        function formatJournalVolume(ml) {
+            if (ml >= 1000) return (ml / 1000).toFixed(2).replace(/\\.?0+$/, '') + ' L';
+            return ml.toFixed(1).replace(/\\.?0+$/, '') + ' ml';
+        }
+
         function renderJournalLogs(p) {
             const container = document.getElementById('journal-logs-container');
+            const usage = getJournalUsageTotals(p);
+            const usageSummary = `
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div class="rounded-xl border border-sky-200 dark:border-sky-900 bg-sky-50 dark:bg-sky-950/30 p-3">
+                        <div class="text-[10px] uppercase tracking-wide font-bold text-sky-700 dark:text-sky-300">Total water used</div>
+                        <div class="text-lg font-bold text-sky-900 dark:text-sky-100">${formatJournalVolume(usage.waterMl)}</div>
+                    </div>
+                    <div class="rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/30 p-3">
+                        <div class="text-[10px] uppercase tracking-wide font-bold text-emerald-700 dark:text-emerald-300">Total nutrients used</div>
+                        <div class="text-lg font-bold text-emerald-900 dark:text-emerald-100">${formatJournalVolume(usage.nutrientMl)}</div>
+                    </div>
+                </div>`;
             if (!p.logs || p.logs.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic py-3 text-center">No growth logs recorded yet. Add your first update above!</p>`;
+                container.innerHTML = usageSummary + `<p class="text-xs text-slate-400 italic py-3 text-center">No growth logs recorded yet. Add your first update above!</p>`;
                 return;
             }
 
-            container.innerHTML = p.logs.map((log, idx) => `
+            container.innerHTML = usageSummary + p.logs.map((log, idx) => `
                 <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-start">
                     <div class="space-y-1">
                         <div class="flex items-center space-x-2">
