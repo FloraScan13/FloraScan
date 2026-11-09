@@ -5620,12 +5620,27 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     days.push(rainfallByDate.get(date));
                 }
                 const totalMm = days.reduce((sum, amount) => sum + amount, 0);
-                const rainfallText = 'Rainfall for ' + periodLabel + ': ' + totalMm.toFixed(1) +
-                    ' mm total (' + (totalMm / 25.4).toFixed(2) + ' in) at ' + postcode + '. Source: Open-Meteo.';
                 let changed = false;
                 for (const plant of outdoorPlants) {
                     plant.logs = Array.isArray(plant.logs) ? plant.logs : [];
                     if (plant.logs.some(log => log.type === 'Weather' && String(log.text || '').includes('Rainfall for ' + periodLabel))) continue;
+
+                    // Add this week's rainfall to the running total already recorded in this plant's journal.
+                    // Each journal is calculated independently so the same location-wide rainfall is not double-counted across plants.
+                    const weeklyRainfallPattern = /Rainfall for (\\d{4}-\\d{2}-\\d{2}) to (\\d{4}-\\d{2}-\\d{2}): ([\\d.]+) mm total/;
+                    const previousWeeks = plant.logs
+                        .filter(log => log.type === 'Weather')
+                        .map(log => {
+                            const match = String(log.text || '').match(weeklyRainfallPattern);
+                            return match ? { start: match[1], amount: Number(match[3]) } : null;
+                        })
+                        .filter(entry => entry && Number.isFinite(entry.amount));
+                    const cumulativeMm = previousWeeks.reduce((sum, entry) => sum + entry.amount, totalMm);
+                    const firstRecordedWeek = previousWeeks.reduce((earliest, entry) => entry.start < earliest ? entry.start : earliest, start);
+                    const rainfallText = 'Rainfall for ' + periodLabel + ': ' + totalMm.toFixed(1) +
+                        ' mm total (' + (totalMm / 25.4).toFixed(2) + ' in) at ' + postcode +
+                        '. Cumulative recorded rainfall since ' + firstRecordedWeek + ': ' + cumulativeMm.toFixed(1) +
+                        ' mm (' + (cumulativeMm / 25.4).toFixed(2) + ' in). Source: Open-Meteo.';
                     const log = {
                         id: 'log_weather_' + plant.id + '_' + start.replace(/-/g, ''),
                         date: end,
