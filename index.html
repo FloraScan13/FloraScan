@@ -2711,7 +2711,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                         <div>
                             <label for="journal-plant-location" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Move to location</label>
-                            <div id="journal-plant-location-control" class="relative"><button type="button" id="journal-plant-location" aria-label="Move plant to location" aria-haspopup="listbox" aria-expanded="false" onclick="toggleJournalLocationMenu()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span id="journal-plant-location-label" class="text-slate-500">Choose location</span><i class="fa-solid fa-chevron-down text-xs text-slate-400"></i></button><div id="journal-plant-location-menu" role="listbox" class="hidden absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg"></div></div>
+                            <div id="journal-plant-location-control" class="relative"><button type="button" id="journal-plant-location" aria-label="Move plant to location" aria-haspopup="listbox" aria-expanded="false" onclick="toggleJournalLocationMenu()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span id="journal-plant-location-label" class="text-slate-900 dark:text-slate-100">Choose location</span><i class="fa-solid fa-chevron-down text-xs text-slate-400"></i></button><div id="journal-plant-location-menu" role="listbox" class="hidden absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg"></div></div>
                         </div>
                         <div>
                             <label for="log-growth-stage" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Growth Stage <span class="text-rose-600">*</span></label>
@@ -5299,7 +5299,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     // Always show the prompt until the user actively chooses a destination.
                     // The plant's current location is shown elsewhere in its journal details.
                     locationLabel.textContent = 'Choose location';
-                    locationLabel.classList.add('text-slate-500');
+                    locationLabel.classList.remove('text-slate-500');
+                    locationLabel.classList.add('text-slate-900', 'dark:text-slate-100');
                 }
                 if (locationMenu) {
                     locationMenu.innerHTML = plantLocations.map(location => '<button type="button" role="option" onclick="selectJournalLocation(\'' + escapeHtml(location).replace(/\\'/g, '&#39;') + '\')" class="block w-full text-left px-3.5 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700">' + escapeHtml(location) + '</button>').join('');
