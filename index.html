@@ -2867,15 +2867,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
     <!-- MODAL: DELETE PLANT CONFIRMATION -->
     <div id="delete-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-800 max-w-sm w-full rounded-2xl shadow-xl overflow-hidden p-6 space-y-4 text-center">
-            <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto text-xl">
+        <div class="max-w-sm w-full rounded-2xl shadow-xl overflow-hidden p-6 space-y-4 text-center border" style="background:#fff8fa;border-color:#e8a7bd;">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl" style="background:#f9dce6;color:#a63d65;">
                 <i class="fa-solid fa-trash-can"></i>
             </div>
-            <h3 class="text-base font-bold">Delete Plant Record?</h3>
-            <p class="text-xs text-slate-500">This will permanently remove <span id="delete-plant-name" class="font-bold text-slate-700 dark:text-slate-200"></span> and all associated growth logs.</p>
+            <h3 class="text-base font-bold" style="color:#81334f;">Delete Plant Record?</h3>
+            <p class="text-xs" style="color:#986b7b;">This will permanently remove <span id="delete-plant-name" class="font-bold" style="color:#a63d65;"></span> and all associated growth logs.</p>
             <div class="flex justify-center space-x-3 pt-2">
-                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700">Cancel</button>
-                <button id="confirm-delete-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Delete Permanently</button>
+                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-xs font-semibold transition border" style="background:#fff0f4;border-color:#e8a7bd;color:#81334f;">Cancel</button>
+                <button id="confirm-delete-btn" class="px-4 py-2 rounded-xl text-xs font-semibold shadow transition" style="background:#c6537b;border:1px solid #c6537b;color:#fff8fa;">Delete Permanently</button>
             </div>
         </div>
     </div>
