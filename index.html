@@ -4078,11 +4078,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!control || !menu || menu.classList.contains('hidden') || control.contains(event.target)) return;
             menu.classList.add('hidden');
             if (button) button.setAttribute('aria-expanded', 'false');
-            const label = document.getElementById('journal-plant-location-label');
-            if (button && button.dataset.placeholderDismissEnabled === 'true' && label && label.textContent.trim() === 'Choose location') {
-                label.textContent = '';
-                button.dataset.placeholderDismissEnabled = 'false';
-            }
         }, true);
 
         document.addEventListener('click', function(event) {
@@ -4109,11 +4104,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             menu.classList.add('hidden');
             if (button) button.setAttribute('aria-expanded', 'false');
 
-            const label = document.getElementById('journal-plant-location-label');
-            if (button && button.dataset.placeholderDismissEnabled === 'true' && label && label.textContent.trim() === 'Choose location') {
-                label.textContent = '';
-                button.dataset.placeholderDismissEnabled = 'false';
-            }
         }
 
         // Capture on window so the menu closes even if a modal or inner panel
