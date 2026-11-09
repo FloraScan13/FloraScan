@@ -2808,11 +2808,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </details>
                             </div>
                             <div id="cutting-rooting-controls" class="hidden space-y-2">
-                                <label class="flex items-start gap-2 text-xs font-semibold text-emerald-800">
-                                    <input type="checkbox" id="log-cuttings-rooted" onchange="toggleGerminationSection()" class="mt-0.5 rounded border-emerald-300">
-                                    <span>My cuttings have rooted and are now plants</span>
-                                </label>
-                                <p class="text-[11px] text-emerald-700">Use this when all the cuttings tracked by this journal have developed roots. Their quantity will be converted to plants.</p>
+                                <label for="log-cuttings-rooted-amount" class="block text-xs font-semibold text-emerald-800">Cuttings rooted</label>
+                                <input type="number" id="log-cuttings-rooted-amount" oninput="toggleGerminationSection()" min="1" step="1" inputmode="numeric" placeholder="How many cuttings have rooted?" class="w-full px-3 py-2 rounded-xl bg-white border border-emerald-200 text-sm">
+                                <p class="text-[11px] text-emerald-700">Enter the number of cuttings that have rooted since your last update. They will be added to your plant total while unrooted cuttings remain tracked separately.</p>
                             </div>
                         </div>
 
@@ -3667,6 +3665,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         quantity: Math.max(1, Number(plant.quantity) || 1),
                         quantity_type: ['plants', 'seeds', 'cuttings'].includes(plant.quantityType) ? plant.quantityType : 'plants',
                         remaining_seeds: Math.max(0, Number(plant.remainingSeeds) || 0),
+                        remaining_cuttings: Math.max(0, Number(plant.remainingCuttings) || (plant.quantityType === 'cuttings' ? Number(plant.quantity) || 0 : 0)),
                         icon_key: plant.iconKey, hex: plant.hex, date: plant.date, medium: plant.medium,
                         notes: plant.notes, location: plant.location || ''
                     });
@@ -3819,6 +3818,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             quantity: Math.max(1, Number(p.quantity) || 1),
                             quantityType: ['plants', 'seeds', 'cuttings'].includes(p.quantity_type) ? p.quantity_type : 'plants',
                             remainingSeeds: Math.max(0, Number(p.remaining_seeds) || 0),
+                            remainingCuttings: Math.max(0, Number(p.remaining_cuttings) || 0),
                             iconKey: p.icon_key,
                             hex: p.hex,
                             date: p.date,
@@ -3854,6 +3854,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     variety: plant.variety,
                     quantity: Math.max(1, Number(plant.quantity) || 1),
                     quantity_type: ['plants', 'seeds', 'cuttings'].includes(plant.quantityType) ? plant.quantityType : 'plants',
+                    remaining_seeds: Math.max(0, Number(plant.remainingSeeds) || 0),
+                    remaining_cuttings: Math.max(0, Number(plant.remainingCuttings) || (plant.quantityType === 'cuttings' ? Number(plant.quantity) || 0 : 0)),
                     icon_key: plant.iconKey,
                     hex: plant.hex,
                     date: plant.date,
@@ -4793,7 +4795,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="min-w-0 pr-2">
                                 <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${escapeHtml(p.name)}</h4>
                                 <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate">${escapeHtml(p.variety || 'Standard Variety')}</p>
-                                <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${p.quantityType === 'seeds' ? (Number(p.quantity || 1) + ' seeds sown') : (Number(p.quantity || 1) + ' ' + (p.quantityType === 'cuttings' ? (Number(p.quantity || 1) === 1 ? 'cutting' : 'cuttings') : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')))}${Number(p.remainingSeeds) > 0 ? ' · ' + Number(p.remainingSeeds) + ' seeds left' : ''}</p>
+                                <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${p.quantityType === 'seeds' ? (Number(p.quantity || 1) + ' seeds sown') : (Number(p.quantity || 1) + ' ' + (p.quantityType === 'cuttings' ? (Number(p.quantity || 1) === 1 ? 'cutting' : 'cuttings') : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')))}${Number(p.remainingSeeds) > 0 ? ' · ' + Number(p.remainingSeeds) + ' seeds left' : ''}${Number(p.remainingCuttings || (p.quantityType === 'cuttings' ? p.quantity : 0)) > 0 && p.quantityType !== 'cuttings' ? ' · ' + Number(p.remainingCuttings) + ' cuttings left' : ''}</p>
                             </div>
                             <details class="relative flex-shrink-0" onclick="event.stopPropagation()">
                                 <summary class="list-none cursor-pointer p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-300 hover:bg-slate-200/70 dark:hover:bg-slate-700 rounded-lg transition" aria-label="Plant actions" title="Plant actions" onclick="event.stopPropagation()"><i class="fa-solid fa-ellipsis-vertical"></i></summary>
@@ -5252,6 +5254,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 quantity: Math.max(1, parseInt(document.getElementById('plant-quantity').value, 10) || 1),
                 quantityType: ['plants', 'seeds', 'cuttings'].includes(document.getElementById('plant-quantity-type').value) ? document.getElementById('plant-quantity-type').value : 'plants',
                 remainingSeeds: 0,
+                remainingCuttings: 0,
                 iconKey: document.getElementById('plant-icon-key').value,
                 hex: document.getElementById('form-color-hex').value,
                 date: document.getElementById('plant-date').value,
@@ -5268,10 +5271,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (idx !== -1) {
                     plantData.logs = plants[idx].logs || [];
                     plantData.remainingSeeds = Math.max(0, Number(plants[idx].remainingSeeds) || (plants[idx].quantityType === 'seeds' ? Number(plants[idx].quantity) || 0 : 0));
+                    plantData.remainingCuttings = Math.max(0, Number(plants[idx].remainingCuttings) || (plants[idx].quantityType === 'cuttings' ? Number(plants[idx].quantity) || 0 : 0));
                     plants[idx] = plantData;
                 }
             } else {
                 if (plantData.quantityType === 'seeds') plantData.remainingSeeds = plantData.quantity;
+                if (plantData.quantityType === 'cuttings') plantData.remainingCuttings = plantData.quantity;
                 // Record the starting quantity as a Growth journal entry when the plant is created.
                 const localToday = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
                 const quantityLabels = { plants: 'Plants', seeds: 'Seeds sown', cuttings: 'Cuttings' };
@@ -5323,7 +5328,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const availableSeeds = plant ? (plant.quantityType === 'seeds' ? Math.max(0, Number(plant.quantity) || 0) : Math.max(0, Number(plant.remainingSeeds) || 0)) : 0;
             const isGrowth = document.getElementById('log-type').value === 'Growth';
             const showSeeds = isGrowth && plant && plant.quantityType !== 'cuttings' && availableSeeds > 0;
-            const showCuttings = isGrowth && plant && plant.quantityType === 'cuttings' && Number(plant.quantity) > 0;
+            const availableCuttings = plant ? (plant.quantityType === 'cuttings' ? Math.max(0, Number(plant.quantity) || 0) : Math.max(0, Number(plant.remainingCuttings) || 0)) : 0;
+            const showCuttings = isGrowth && plant && availableCuttings > 0;
             section.classList.toggle('hidden', !showSeeds && !showCuttings);
             const seedControls = document.getElementById('seed-germination-controls');
             const cuttingControls = document.getElementById('cutting-rooting-controls');
@@ -5335,10 +5341,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const stageSelect = document.getElementById('log-growth-stage');
             const failedInput = document.getElementById('log-failed-seed-amount');
             if (failedInput) failedInput.max = showSeeds ? String(availableSeeds) : '';
-            const rootedInput = document.getElementById('log-cuttings-rooted');
-            if (!showCuttings && rootedInput) rootedInput.checked = false;
+            const rootedInput = document.getElementById('log-cuttings-rooted-amount');
+            if (rootedInput) rootedInput.max = showCuttings ? String(availableCuttings) : '';
+            if (!showCuttings && rootedInput) rootedInput.value = '';
             const recordingSeedOutcome = showSeeds && (amountInput.value.trim() !== '' || (failedInput && failedInput.value.trim() !== ''));
-            const recordingCuttingOutcome = showCuttings && rootedInput && rootedInput.checked;
+            const recordingCuttingOutcome = showCuttings && rootedInput && rootedInput.value.trim() !== '';
             if (stageSection) stageSection.classList.toggle('hidden', recordingSeedOutcome || recordingCuttingOutcome);
             if (stageSelect) {
                 stageSelect.required = !(recordingSeedOutcome || recordingCuttingOutcome);
@@ -5970,7 +5977,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 document.getElementById('log-germinated-amount').value.trim() !== '' ||
                 document.getElementById('log-failed-seed-amount').value.trim() !== ''
             );
-            const enteringCuttingOutcome = type === 'Growth' && !!document.getElementById('log-cuttings-rooted')?.checked;
+            const enteringCuttingOutcome = type === 'Growth' && document.getElementById('log-cuttings-rooted-amount').value.trim() !== '';
             if (!growthStage && !enteringSeedOutcome && !enteringCuttingOutcome) {
                 alert('Please select a growth stage: Seedling, Vegetative or Flowering, or record a seed germination outcome.');
                 document.getElementById('log-growth-stage').focus();
@@ -6062,14 +6069,24 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const seedsAvailable = p.quantityType === 'seeds'
                 ? Math.max(0, Number(p.quantity) || 0)
                 : Math.max(0, Number(p.remainingSeeds) || 0);
-            if (type === 'Growth' && p.quantityType === 'cuttings' && document.getElementById('log-cuttings-rooted')?.checked) {
-                rootedCuttingsAmount = Math.max(0, Number(p.quantity) || 0);
-                if (!Number.isSafeInteger(rootedCuttingsAmount) || rootedCuttingsAmount < 1) {
-                    alert('There are no cuttings available to convert.');
+            const availableCuttings = p.quantityType === 'cuttings'
+                ? Math.max(0, Number(p.quantity) || 0)
+                : Math.max(0, Number(p.remainingCuttings) || 0);
+            const cuttingRootInput = document.getElementById('log-cuttings-rooted-amount');
+            const cuttingRootValue = cuttingRootInput ? cuttingRootInput.value.trim() : '';
+            if (type === 'Growth' && cuttingRootValue !== '') {
+                rootedCuttingsAmount = Number(cuttingRootValue);
+                if (!Number.isSafeInteger(rootedCuttingsAmount) || rootedCuttingsAmount < 1 || rootedCuttingsAmount > availableCuttings) {
+                    alert('Enter a whole number between 1 and ' + availableCuttings + ' cuttings.');
+                    cuttingRootInput.focus();
                     return;
                 }
+                const existingPlants = p.quantityType === 'cuttings' ? 0 : Math.max(0, Number(p.quantity) || 0);
+                const updatedPlantTotal = existingPlants + rootedCuttingsAmount;
+                p.quantity = updatedPlantTotal;
                 p.quantityType = 'plants';
-                text = (text.trim() ? text.trim() + ' ' : '') + rootedCuttingsAmount + ' ' + (rootedCuttingsAmount === 1 ? 'cutting has' : 'cuttings have') + ' rooted and been converted into plants. Plant total is now ' + rootedCuttingsAmount + ' ' + (rootedCuttingsAmount === 1 ? 'plant.' : 'plants.');
+                p.remainingCuttings = availableCuttings - rootedCuttingsAmount;
+                text = (text.trim() ? text.trim() + ' ' : '') + rootedCuttingsAmount + ' ' + (rootedCuttingsAmount === 1 ? 'cutting has' : 'cuttings have') + ' rooted and been converted into plants. Plant total is now ' + updatedPlantTotal + ' ' + (updatedPlantTotal === 1 ? 'plant' : 'plants') + '; ' + p.remainingCuttings + ' ' + (p.remainingCuttings === 1 ? 'cutting' : 'cuttings') + ' still rooting.';
             } else if (type === 'Growth' && seedsAvailable > 0) {
                 const germinationInput = document.getElementById('log-germinated-amount');
                 const failedInput = document.getElementById('log-failed-seed-amount');
