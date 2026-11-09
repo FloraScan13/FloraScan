@@ -5232,12 +5232,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     plants[idx] = plantData;
                 }
             } else {
-                // Record the medium chosen during plant creation as the first journal entry.
+                // Record the starting quantity as a Growth journal entry when the plant is created.
+                const localToday = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                const quantityLabels = { plants: 'Plants', seeds: 'Seeds sown', cuttings: 'Cuttings' };
+                const quantityLabel = quantityLabels[plantData.quantityType] || 'Plants';
+                const initialGrowthLog = {
+                    id: 'log_' + Date.now() + '_growth',
+                    date: plantData.date || localToday,
+                    type: 'Growth',
+                    text: 'Initial amount recorded: ' + plantData.quantity + ' ' + quantityLabel.toLowerCase()
+                };
+                plantData.logs.unshift(initialGrowthLog);
+
+                // Also record the medium chosen during plant creation as a separate journal entry.
                 const initialMedium = String(plantData.medium || '').trim();
                 if (initialMedium) {
-                    const localToday = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
                     initialMediumLog = {
-                        id: 'log_' + Date.now(),
+                        id: 'log_' + (Date.now() + 1),
                         date: plantData.date || localToday,
                         type: 'Medium',
                         text: 'Initial growing medium / setup: ' + initialMedium
@@ -5245,11 +5256,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     plantData.logs.unshift(initialMediumLog);
                 }
                 plants.unshift(plantData);
+                plantData._initialGrowthLog = initialGrowthLog;
             }
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             markFloraSyncPending();
+            const initialGrowthLog = !editId ? plantData.logs.find(log => log.type === 'Growth' && log.id.endsWith('_growth')) : null;
+            delete plantData._initialGrowthLog;
             await syncPlantToCloud(plantData);
+            if (initialGrowthLog) await syncLogToCloud(plantData.id, initialGrowthLog);
             if (initialMediumLog) await syncLogToCloud(plantData.id, initialMediumLog);
 
             renderPlants();
