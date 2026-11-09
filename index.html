@@ -5038,7 +5038,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 await writer.write({ records: [{ recordType: 'text', data: tagText }] });
                 if (!editId) pendingIdField.value = plantId;
                 setNfcStatus('NFC tag written successfully for ' + (existingPlant ? existingPlant.name : plantName) + '. ' + (editId ? '' : 'Now select Save Plant to finish adding it.'));
-                alert('NFC tag written successfully!\\n\\nPlant: ' + (existingPlant ? existingPlant.name : plantName) + (editId ? '' : '\\n\\nRemember to select Save Plant to finish adding this plant.'));
+                alert('NFC tag written successfully for ' + (existingPlant ? existingPlant.name : plantName) + '.' + (editId ? '' : ' Select Save Plant to finish adding it.'));
             } catch (err) { setNfcStatus(err && err.name === 'NotAllowedError' ? 'NFC permission was not granted.' : 'Could not write this tag. Hold a writable NFC tag close to the phone and try again.', true); }
         }
 
