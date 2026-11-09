@@ -2711,7 +2711,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                         <div>
                             <label for="journal-plant-location" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Move to location</label>
-                            <div class="relative"><select id="journal-plant-location" aria-label="Move plant to location" onchange="document.getElementById('journal-plant-location-placeholder').classList.add('hidden'); changePlantLocation(document.getElementById('log-plant-id').value, this.value)" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></select><span id="journal-plant-location-placeholder" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-500 pointer-events-none">Choose location</span></div>
+                            <div class="relative"><button type="button" id="journal-plant-location" aria-label="Move plant to location" aria-haspopup="listbox" aria-expanded="false" onclick="toggleJournalLocationMenu()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span id="journal-plant-location-label" class="text-slate-500">Choose location</span><i class="fa-solid fa-chevron-down text-xs text-slate-400"></i></button><div id="journal-plant-location-menu" role="listbox" class="hidden absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg"></div></div>
                         </div>
                         <div>
                             <label for="log-growth-stage" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Growth Stage <span class="text-rose-600">*</span></label>
@@ -4052,16 +4052,38 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }[char]));
         }
 
+        function toggleJournalLocationMenu() {
+            const button = document.getElementById('journal-plant-location');
+            const menu = document.getElementById('journal-plant-location-menu');
+            if (!button || !menu || button.disabled) return;
+            const opening = menu.classList.contains('hidden');
+            menu.classList.toggle('hidden', !opening);
+            button.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        }
+
+        function selectJournalLocation(location) {
+            const menu = document.getElementById('journal-plant-location-menu');
+            const button = document.getElementById('journal-plant-location');
+            if (menu) menu.classList.add('hidden');
+            if (button) button.setAttribute('aria-expanded', 'false');
+            changePlantLocation(document.getElementById('log-plant-id').value, location);
+        }
+
         async function changePlantLocation(plantId, newLocation) {
             const plant = plants.find(item => String(item.id) === String(plantId));
             if (!plant || !plantLocations.includes(newLocation) || (plant.location || '') === newLocation) return;
             const previousLocation = plant.location || 'Unassigned';
             plant.location = newLocation;
-            const journalLocationSelect = document.getElementById('journal-plant-location');
-            if (journalLocationSelect && String(document.getElementById('log-plant-id')?.value) === String(plantId)) {
-                journalLocationSelect.value = newLocation;
-                const locationPlaceholder = document.getElementById('journal-plant-location-placeholder');
-                if (locationPlaceholder) locationPlaceholder.classList.add('hidden');
+            const journalLocationButton = document.getElementById('journal-plant-location');
+            if (journalLocationButton && String(document.getElementById('log-plant-id')?.value) === String(plantId)) {
+                const locationLabel = document.getElementById('journal-plant-location-label');
+                if (locationLabel) {
+                    locationLabel.textContent = newLocation;
+                    locationLabel.classList.remove('text-slate-500');
+                }
+                const locationMenu = document.getElementById('journal-plant-location-menu');
+                if (locationMenu) locationMenu.classList.add('hidden');
+                journalLocationButton.setAttribute('aria-expanded', 'false');
             }
             if (!Array.isArray(plant.logs)) plant.logs = [];
             plant.logs.push({
@@ -5251,14 +5273,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             setActiveNavigationTab('plants');
 
             document.getElementById('log-plant-id').value = p.id;
-            const journalLocationSelect = document.getElementById('journal-plant-location');
-            if (journalLocationSelect) {
-                journalLocationSelect.innerHTML = plantLocations.map(location => '<option value="' + escapeHtml(location) + '">' + escapeHtml(location) + '</option>').join('');
-                journalLocationSelect.value = p.location || '';
-                if (!p.location) journalLocationSelect.selectedIndex = -1;
-                const locationPlaceholder = document.getElementById('journal-plant-location-placeholder');
-                if (locationPlaceholder) locationPlaceholder.classList.toggle('hidden', !!p.location);
-                journalLocationSelect.disabled = false;
+            const journalLocationButton = document.getElementById('journal-plant-location');
+            if (journalLocationButton) {
+                const locationMenu = document.getElementById('journal-plant-location-menu');
+                const locationLabel = document.getElementById('journal-plant-location-label');
+                if (locationLabel) {
+                    locationLabel.textContent = p.location || 'Choose location';
+                    locationLabel.classList.toggle('text-slate-500', !p.location);
+                }
+                if (locationMenu) {
+                    locationMenu.innerHTML = plantLocations.map(location => '<button type="button" role="option" onclick="selectJournalLocation(\'' + escapeHtml(location).replace(/\\'/g, '&#39;') + '\')" class="block w-full text-left px-3.5 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700">' + escapeHtml(location) + '</button>').join('');
+                }
+                journalLocationButton.disabled = false;
+                journalLocationButton.setAttribute('aria-expanded', 'false');
             }
             document.getElementById('journal-name').textContent = p.name;
             document.getElementById('journal-variety').textContent = p.variety || 'Standard Variety';
@@ -5571,6 +5598,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-edit-id').value = log.id || String(plant.logs.indexOf(log));
             const journalLocationSelect = document.getElementById('journal-plant-location');
             if (journalLocationSelect) journalLocationSelect.disabled = true;
+            const journalLocationMenu = document.getElementById('journal-plant-location-menu');
+            if (journalLocationMenu) journalLocationMenu.classList.add('hidden');
             document.getElementById('log-date').value = log.date || '';
             document.getElementById('log-type').value = log.type || 'Growth';
             document.getElementById('log-growth-stage').value = log.growthStage || '';
