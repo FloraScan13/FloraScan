@@ -2791,6 +2791,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
 
                         <div id="germination-section" class="hidden p-3 rounded-xl border border-emerald-200 bg-emerald-50/70 space-y-2">
+                            <div id="seed-germination-controls">
                             <label for="log-germinated-amount" class="block text-xs font-semibold text-emerald-800">Seeds germinated</label>
                             <input type="number" id="log-germinated-amount" oninput="toggleGerminationSection()" min="1" step="1" inputmode="numeric" placeholder="How many additional seeds germinated?" class="w-full px-3 py-2 rounded-xl bg-white border border-emerald-200 text-sm">
                             <p class="text-[11px] text-emerald-700">Enter only the additional seeds that have germinated since your last update. Each entry adds to your plant total and reduces the seeds remaining.</p>
@@ -2805,6 +2806,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <p class="text-[11px] text-emerald-700 mt-1">Record seeds that are no longer viable. They will be removed from the remaining seed count, without increasing the plant total.</p>
                                 </div>
                             </details>
+                            </div>
+                            <div id="cutting-rooting-controls" class="hidden space-y-2">
+                                <label class="flex items-start gap-2 text-xs font-semibold text-emerald-800">
+                                    <input type="checkbox" id="log-cuttings-rooted" onchange="toggleGerminationSection()" class="mt-0.5 rounded border-emerald-300">
+                                    <span>My cuttings have rooted and are now plants</span>
+                                </label>
+                                <p class="text-[11px] text-emerald-700">Use this when all the cuttings tracked by this journal have developed roots. Their quantity will be converted to plants.</p>
+                            </div>
                         </div>
 
                         <div id="growth-medium-section" class="hidden p-3 rounded-xl border space-y-2" style="background-color:#f0f2e8 !important;border-color:#dfe3d5 !important;">
@@ -5312,19 +5321,28 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const plantId = document.getElementById('log-plant-id').value;
             const plant = plants.find(item => String(item.id) === String(plantId));
             const availableSeeds = plant ? (plant.quantityType === 'seeds' ? Math.max(0, Number(plant.quantity) || 0) : Math.max(0, Number(plant.remainingSeeds) || 0)) : 0;
-            const show = document.getElementById('log-type').value === 'Growth' && plant && availableSeeds > 0;
-            section.classList.toggle('hidden', !show);
-            amountInput.max = show ? String(availableSeeds) : '';
-            if (!show) amountInput.value = '';
+            const isGrowth = document.getElementById('log-type').value === 'Growth';
+            const showSeeds = isGrowth && plant && plant.quantityType !== 'cuttings' && availableSeeds > 0;
+            const showCuttings = isGrowth && plant && plant.quantityType === 'cuttings' && Number(plant.quantity) > 0;
+            section.classList.toggle('hidden', !showSeeds && !showCuttings);
+            const seedControls = document.getElementById('seed-germination-controls');
+            const cuttingControls = document.getElementById('cutting-rooting-controls');
+            if (seedControls) seedControls.classList.toggle('hidden', !showSeeds);
+            if (cuttingControls) cuttingControls.classList.toggle('hidden', !showCuttings);
+            amountInput.max = showSeeds ? String(availableSeeds) : '';
+            if (!showSeeds) amountInput.value = '';
             const stageSection = document.getElementById('growth-stage-section');
             const stageSelect = document.getElementById('log-growth-stage');
             const failedInput = document.getElementById('log-failed-seed-amount');
-            if (failedInput) failedInput.max = show ? String(availableSeeds) : '';
-            const recordingSeedOutcome = show && (amountInput.value.trim() !== '' || (failedInput && failedInput.value.trim() !== ''));
-            if (stageSection) stageSection.classList.toggle('hidden', recordingSeedOutcome);
+            if (failedInput) failedInput.max = showSeeds ? String(availableSeeds) : '';
+            const rootedInput = document.getElementById('log-cuttings-rooted');
+            if (!showCuttings && rootedInput) rootedInput.checked = false;
+            const recordingSeedOutcome = showSeeds && (amountInput.value.trim() !== '' || (failedInput && failedInput.value.trim() !== ''));
+            const recordingCuttingOutcome = showCuttings && rootedInput && rootedInput.checked;
+            if (stageSection) stageSection.classList.toggle('hidden', recordingSeedOutcome || recordingCuttingOutcome);
             if (stageSelect) {
-                stageSelect.required = !recordingSeedOutcome;
-                if (recordingSeedOutcome) stageSelect.value = '';
+                stageSelect.required = !(recordingSeedOutcome || recordingCuttingOutcome);
+                if (recordingSeedOutcome || recordingCuttingOutcome) stageSelect.value = '';
             }
         }
 
@@ -5952,7 +5970,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 document.getElementById('log-germinated-amount').value.trim() !== '' ||
                 document.getElementById('log-failed-seed-amount').value.trim() !== ''
             );
-            if (!growthStage && !enteringSeedOutcome) {
+            const enteringCuttingOutcome = type === 'Growth' && !!document.getElementById('log-cuttings-rooted')?.checked;
+            if (!growthStage && !enteringSeedOutcome && !enteringCuttingOutcome) {
                 alert('Please select a growth stage: Seedling, Vegetative or Flowering, or record a seed germination outcome.');
                 document.getElementById('log-growth-stage').focus();
                 return;
@@ -6039,10 +6058,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             let germinatedAmount = null;
             let failedSeedAmount = null;
+            let rootedCuttingsAmount = null;
             const seedsAvailable = p.quantityType === 'seeds'
                 ? Math.max(0, Number(p.quantity) || 0)
                 : Math.max(0, Number(p.remainingSeeds) || 0);
-            if (type === 'Growth' && seedsAvailable > 0) {
+            if (type === 'Growth' && p.quantityType === 'cuttings' && document.getElementById('log-cuttings-rooted')?.checked) {
+                rootedCuttingsAmount = Math.max(0, Number(p.quantity) || 0);
+                if (!Number.isSafeInteger(rootedCuttingsAmount) || rootedCuttingsAmount < 1) {
+                    alert('There are no cuttings available to convert.');
+                    return;
+                }
+                p.quantityType = 'plants';
+                text = (text.trim() ? text.trim() + ' ' : '') + rootedCuttingsAmount + ' ' + (rootedCuttingsAmount === 1 ? 'cutting has' : 'cuttings have') + ' rooted and been converted into plants. Plant total is now ' + rootedCuttingsAmount + ' ' + (rootedCuttingsAmount === 1 ? 'plant.' : 'plants.');
+            } else if (type === 'Growth' && seedsAvailable > 0) {
                 const germinationInput = document.getElementById('log-germinated-amount');
                 const failedInput = document.getElementById('log-failed-seed-amount');
                 const germinationValue = germinationInput ? germinationInput.value.trim() : '';
@@ -6095,7 +6123,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             markFloraSyncPending();
-            if (type === 'Medium' || germinatedAmount !== null || failedSeedAmount !== null) await syncPlantToCloud(p);
+            if (type === 'Medium' || germinatedAmount !== null || failedSeedAmount !== null || rootedCuttingsAmount !== null) await syncPlantToCloud(p);
             await syncLogToCloud(plantId, newLog);
 
             renderJournalLogs(p);
