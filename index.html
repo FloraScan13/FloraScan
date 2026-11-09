@@ -2590,6 +2590,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             <form id="plant-form" onsubmit="handlePlantSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
                 <h3 id="modal-title" class="hidden">Add New Plant</h3>
                 <input type="hidden" id="edit-plant-id">
+                <input type="hidden" id="plant-nfc-pending-id">
                 <input type="hidden" id="plant-icon-key" value="cucumber">
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2617,10 +2618,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 <div id="plant-nfc-section" class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
                     <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-4 h-4 object-contain inline-flex items-center justify-center" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /><span>Plant NFC Tag</span></div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Link a blank, writable NFC tag to this plant as you save it, or write a tag later from its profile. Use a compatible Android phone with NFC enabled.</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">You can write a blank NFC tag now, before saving this plant. After writing it, select Save Plant to finish. Use a compatible Android phone with NFC enabled.</p>
                     <input type="hidden" id="form-color-hex" value="#16a34a">
-                    <button type="button" onclick="writePlantNfcTag()" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 text-sm font-semibold"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-4 h-4 mr-2 object-contain align-middle inline-flex items-center justify-center" style="filter: brightness(0) invert(1);" />Write / Relink NFC Tag</button>
-                    <p id="plant-nfc-status" class="text-xs text-slate-500" role="status">For a new plant, save it first, then use Write / Relink NFC Tag. The tag will open this plant's journal when scanned.</p>
+                    <button type="button" onclick="writePlantNfcTag()" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 text-sm font-semibold"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-4 h-4 mr-2 object-contain align-middle inline-flex items-center justify-center" style="filter: brightness(0) invert(1);" />Write NFC Tag Now</button>
+                    <p id="plant-nfc-status" class="text-xs text-slate-500" role="status">For a new plant, write the tag here first, then select Save Plant. The tag will open this plant's journal after it has been saved.</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -4887,6 +4888,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             setActiveNavigationTab('add-plant');
             document.getElementById('modal-title').textContent = 'Add New Plant';
             document.getElementById('edit-plant-id').value = '';
+            document.getElementById('plant-nfc-pending-id').value = '';
             document.getElementById('plant-form').reset();
             renderPlantLocationControls('');
             
@@ -4904,6 +4906,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             setActiveNavigationTab('plants');
             document.getElementById('modal-title').textContent = 'Edit Plant Profile';
             document.getElementById('edit-plant-id').value = p.id;
+            document.getElementById('plant-nfc-pending-id').value = '';
             document.getElementById('plant-name').value = p.name;
             document.getElementById('plant-variety').value = p.variety || '';
             document.getElementById('plant-date').value = p.date || '';
@@ -5021,21 +5024,26 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
         async function writePlantNfcTag() {
-            const id = document.getElementById('edit-plant-id').value;
-            const plant = plants.find(p => String(p.id) === String(id));
-            if (!plant) { setNfcStatus('Save the plant first, then reopen Edit Plant Profile to write its tag.', true); return; }
+            const editId = document.getElementById('edit-plant-id').value;
+            const pendingIdField = document.getElementById('plant-nfc-pending-id');
+            const existingPlant = editId ? plants.find(p => String(p.id) === String(editId)) : null;
+            if (editId && !existingPlant) { setNfcStatus('Could not find this saved plant. Close the form and try again.', true); return; }
+            const plantId = editId || pendingIdField.value || ('plant_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8));
+            const plantName = document.getElementById('plant-name').value.trim() || 'your new plant';
             const unsupported = nfcSupportMessage();
             if (unsupported) { setNfcStatus(unsupported, true); return; }
             try {
                 const writer = new NDEFReader();
-                await writer.write({ records: [{ recordType: 'text', data: 'FLORASCAN:' + plant.id }] });
-                setNfcStatus('NFC tag successfully linked to ' + plant.name + '.');
+                await writer.write({ records: [{ recordType: 'text', data: 'FLORASCAN:' + plantId }] });
+                if (!editId) pendingIdField.value = plantId;
+                setNfcStatus('NFC tag written successfully for ' + (existingPlant ? existingPlant.name : plantName) + '. ' + (editId ? '' : 'Now select Save Plant to finish adding it.'));
             } catch (err) { setNfcStatus(err && err.name === 'NotAllowedError' ? 'NFC permission was not granted.' : 'Could not write this tag. Hold a writable NFC tag close to the phone and try again.', true); }
         }
 
         async function handlePlantSubmit(e) {
             e.preventDefault();
             const editId = document.getElementById('edit-plant-id').value;
+            const pendingNfcId = document.getElementById('plant-nfc-pending-id').value;
             const locationSelect = document.getElementById('plant-location');
             const selectedLocation = locationSelect ? locationSelect.value.trim() : '';
 
@@ -5053,7 +5061,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (locationSelect) locationSelect.setCustomValidity('');
 
             const plantData = {
-                id: editId || 'plant_' + Date.now(),
+                id: editId || pendingNfcId || ('plant_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)),
                 name: document.getElementById('plant-name').value,
                 variety: document.getElementById('plant-variety').value,
                 iconKey: document.getElementById('plant-icon-key').value,
