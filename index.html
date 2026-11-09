@@ -2673,7 +2673,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <span id="journal-variety" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">Variety</span>
                                 <h4 id="journal-name" class="text-xl font-bold mt-1">Plant Name</h4>
                             </div>
-                            <button onclick="downloadPlantJournalPDF(document.getElementById('log-plant-id').value)" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm" title="Export this plant journal as a PDF"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button>
+                            <div class="flex flex-wrap gap-2"><button type="button" onclick="duplicatePlantJournal(document.getElementById('log-plant-id').value)" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm" title="Create a new journal using this plant's details"><i class="fa-solid fa-copy mr-1"></i> Duplicate Plant</button><button onclick="downloadPlantJournalPDF(document.getElementById('log-plant-id').value)" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-2 rounded-lg text-xs font-semibold transition shadow-sm" title="Export this plant journal as a PDF"><i class="fa-solid fa-file-pdf mr-1"></i> Download PDF</button></div>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <div><strong class="text-slate-800 dark:text-slate-200">Planted:</strong> <span id="journal-date">-</span></div>
@@ -5284,6 +5284,28 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             try { toggleNutrientLibraryView(); } catch (error) { console.warn('Nutrient controls could not be refreshed:', error); }
             renderJournalLogs(p);
             document.getElementById('journal-modal').classList.remove('hidden');
+        }
+
+        async function duplicatePlantJournal(plantId) {
+            const original = plants.find(item => String(item.id) === String(plantId));
+            if (!original) {
+                alert('Could not find this plant journal. Please close and reopen it, then try again.');
+                return;
+            }
+
+            const duplicate = {
+                ...original,
+                id: 'plant_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+                name: String(original.name || 'Plant') + ' (duplicate)',
+                logs: []
+            };
+
+            plants.unshift(duplicate);
+            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            markFloraSyncPending();
+            await syncPlantToCloud(duplicate);
+            renderPlants();
+            openJournalModal(duplicate.id);
         }
 
         function escapePDFHTML(value) {
