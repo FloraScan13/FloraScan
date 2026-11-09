@@ -2811,8 +2811,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <label for="log-cuttings-rooted-amount" class="block text-xs font-semibold text-emerald-800">Cuttings rooted</label>
                                 <input type="number" id="log-cuttings-rooted-amount" oninput="toggleGerminationSection()" min="1" step="1" inputmode="numeric" placeholder="How many cuttings have rooted?" class="w-full px-3 py-2 rounded-xl bg-white border border-emerald-200 text-sm">
                                 <p class="text-[11px] text-emerald-700">Enter the number of cuttings that have rooted since your last update. They will be added to your plant total while unrooted cuttings remain tracked separately.</p>
-                                <details class="rounded-lg border border-emerald-200 bg-white/70 p-2">
-                                    <summary class="cursor-pointer text-xs font-semibold text-emerald-800">Cuttings that failed to root</summary>
+                                <details class="pt-2 border-t border-emerald-200">
+                                    <summary class="flex cursor-pointer list-none items-center justify-between gap-2 py-1 text-xs font-semibold text-emerald-800">
+                                        <span><i class="fa-solid fa-chevron-right mr-1"></i>Cuttings that failed to root</span>
+                                        <i class="fa-solid fa-chevron-down transition-transform"></i>
+                                    </summary>
                                     <div class="mt-2">
                                         <label for="log-failed-cutting-amount" class="block text-xs font-semibold text-emerald-800">Number of cuttings that failed</label>
                                         <input type="number" id="log-failed-cutting-amount" oninput="toggleGerminationSection()" min="1" step="1" inputmode="numeric" placeholder="Number of cuttings that did not root" class="mt-1 w-full px-3 py-2 rounded-xl bg-white border border-emerald-200 text-sm">
