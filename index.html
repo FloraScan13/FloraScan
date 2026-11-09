@@ -2711,7 +2711,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                         <div>
                             <label for="journal-plant-location" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Move to location</label>
-                            <select id="journal-plant-location" aria-label="Move plant to location" onchange="changePlantLocation(document.getElementById('log-plant-id').value, this.value)" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"><option value="" disabled selected hidden>Choose location</option></select>
+                            <div class="relative"><select id="journal-plant-location" aria-label="Move plant to location" onchange="document.getElementById('journal-plant-location-placeholder').classList.add('hidden'); changePlantLocation(document.getElementById('log-plant-id').value, this.value)" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></select><span id="journal-plant-location-placeholder" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-500 pointer-events-none">Choose location</span></div>
                         </div>
                         <div>
                             <label for="log-growth-stage" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Growth Stage <span class="text-rose-600">*</span></label>
@@ -4060,6 +4060,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const journalLocationSelect = document.getElementById('journal-plant-location');
             if (journalLocationSelect && String(document.getElementById('log-plant-id')?.value) === String(plantId)) {
                 journalLocationSelect.value = newLocation;
+                const locationPlaceholder = document.getElementById('journal-plant-location-placeholder');
+                if (locationPlaceholder) locationPlaceholder.classList.add('hidden');
             }
             if (!Array.isArray(plant.logs)) plant.logs = [];
             plant.logs.push({
@@ -5251,8 +5253,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-plant-id').value = p.id;
             const journalLocationSelect = document.getElementById('journal-plant-location');
             if (journalLocationSelect) {
-                journalLocationSelect.innerHTML = '<option value="" disabled selected hidden>Choose location</option>' + plantLocations.map(location => '<option value="' + escapeHtml(location) + '">' + escapeHtml(location) + '</option>').join('');
+                journalLocationSelect.innerHTML = plantLocations.map(location => '<option value="' + escapeHtml(location) + '">' + escapeHtml(location) + '</option>').join('');
                 journalLocationSelect.value = p.location || '';
+                if (!p.location) journalLocationSelect.selectedIndex = -1;
+                const locationPlaceholder = document.getElementById('journal-plant-location-placeholder');
+                if (locationPlaceholder) locationPlaceholder.classList.toggle('hidden', !!p.location);
                 journalLocationSelect.disabled = false;
             }
             document.getElementById('journal-name').textContent = p.name;
