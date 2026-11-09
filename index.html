@@ -4069,6 +4069,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (opening) button.dataset.placeholderDismissEnabled = 'true';
         }
 
+        // Use capture-phase pointer handling so clicks elsewhere still close the
+        // location menu even when the journal modal stops bubbling click events.
+        document.addEventListener('pointerdown', function(event) {
+            const control = document.getElementById('journal-plant-location-control');
+            const menu = document.getElementById('journal-plant-location-menu');
+            const button = document.getElementById('journal-plant-location');
+            if (!control || !menu || menu.classList.contains('hidden') || control.contains(event.target)) return;
+            menu.classList.add('hidden');
+            if (button) button.setAttribute('aria-expanded', 'false');
+            const label = document.getElementById('journal-plant-location-label');
+            if (button && button.dataset.placeholderDismissEnabled === 'true' && label && label.textContent.trim() === 'Choose location') {
+                label.textContent = '';
+                button.dataset.placeholderDismissEnabled = 'false';
+            }
+        }, true);
+
         document.addEventListener('click', function(event) {
             const control = document.getElementById('journal-plant-location-control');
             if (!control || control.contains(event.target)) return;
