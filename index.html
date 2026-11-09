@@ -2652,6 +2652,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         <select id="plant-quantity-type" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                             <option value="plants">Plants</option>
                             <option value="seeds">Seeds sown</option>
+                            <option value="cuttings">Cuttings</option>
                         </select>
                     </div>
                     <div>
@@ -2713,6 +2714,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                         <select id="journal-quantity-type" aria-label="Quantity type" class="flex-1 min-w-[110px] px-3 py-2 rounded-lg border border-pink-200 bg-white text-sm">
                                             <option value="plants">Plants</option>
                                             <option value="seeds">Seeds</option>
+                                            <option value="cuttings">Cuttings</option>
                                         </select>
                                         <button type="button" onclick="saveJournalPlantQuantity()" class="px-3 py-2 rounded-lg text-xs font-semibold text-white" style="background:#C4557C;">Save amount</button>
                                     </div>
@@ -3624,7 +3626,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const { error: plantError } = await supabaseClient.from('plants').upsert({
                         id: plant.id, user_id: currentUser.id, name: plant.name, variety: plant.variety,
                         quantity: Math.max(1, Number(plant.quantity) || 1),
-                        quantity_type: plant.quantityType === 'seeds' ? 'seeds' : 'plants',
+                        quantity_type: ['plants', 'seeds', 'cuttings'].includes(plant.quantityType) ? plant.quantityType : 'plants',
                         icon_key: plant.iconKey, hex: plant.hex, date: plant.date, medium: plant.medium,
                         notes: plant.notes, location: plant.location || ''
                     });
@@ -3775,7 +3777,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             name: p.name,
                             variety: p.variety,
                             quantity: Math.max(1, Number(p.quantity) || 1),
-                            quantityType: p.quantity_type === 'seeds' ? 'seeds' : 'plants',
+                            quantityType: ['plants', 'seeds', 'cuttings'].includes(p.quantity_type) ? p.quantity_type : 'plants',
                             iconKey: p.icon_key,
                             hex: p.hex,
                             date: p.date,
@@ -3810,7 +3812,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     name: plant.name,
                     variety: plant.variety,
                     quantity: Math.max(1, Number(plant.quantity) || 1),
-                    quantity_type: plant.quantityType === 'seeds' ? 'seeds' : 'plants',
+                    quantity_type: ['plants', 'seeds', 'cuttings'].includes(plant.quantityType) ? plant.quantityType : 'plants',
                     icon_key: plant.iconKey,
                     hex: plant.hex,
                     date: plant.date,
@@ -4750,7 +4752,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="min-w-0 pr-2">
                                 <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${escapeHtml(p.name)}</h4>
                                 <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate">${escapeHtml(p.variety || 'Standard Variety')}</p>
-                                <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${Number(p.quantity || 1)} ${p.quantityType === 'seeds' ? 'seeds sown' : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')}</p>
+                                <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${Number(p.quantity || 1)} ${p.quantityType === 'seeds' ? 'seeds sown' : (p.quantityType === 'cuttings' ? (Number(p.quantity || 1) === 1 ? 'cutting' : 'cuttings') : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants'))}</p>
                             </div>
                             <details class="relative flex-shrink-0" onclick="event.stopPropagation()">
                                 <summary class="list-none cursor-pointer p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-300 hover:bg-slate-200/70 dark:hover:bg-slate-700 rounded-lg transition" aria-label="Plant actions" title="Plant actions" onclick="event.stopPropagation()"><i class="fa-solid fa-ellipsis-vertical"></i></summary>
@@ -5048,7 +5050,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-name').value = p.name;
             document.getElementById('plant-variety').value = p.variety || '';
             document.getElementById('plant-quantity').value = Math.max(1, Number(p.quantity) || 1);
-            document.getElementById('plant-quantity-type').value = p.quantityType === 'seeds' ? 'seeds' : 'plants';
+            document.getElementById('plant-quantity-type').value = ['plants', 'seeds', 'cuttings'].includes(p.quantityType) ? p.quantityType : 'plants';
             document.getElementById('plant-date').value = p.date || '';
             document.getElementById('plant-medium').value = p.medium || '';
             renderPlantLocationControls(p.location || '');
@@ -5207,7 +5209,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 name: document.getElementById('plant-name').value,
                 variety: document.getElementById('plant-variety').value,
                 quantity: Math.max(1, parseInt(document.getElementById('plant-quantity').value, 10) || 1),
-                quantityType: document.getElementById('plant-quantity-type').value === 'seeds' ? 'seeds' : 'plants',
+                quantityType: ['plants', 'seeds', 'cuttings'].includes(document.getElementById('plant-quantity-type').value) ? document.getElementById('plant-quantity-type').value : 'plants',
                 iconKey: document.getElementById('plant-icon-key').value,
                 hex: document.getElementById('form-color-hex').value,
                 date: document.getElementById('plant-date').value,
@@ -5459,7 +5461,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
 
             plant.quantity = quantity;
-            plant.quantityType = document.getElementById('journal-quantity-type').value === 'seeds' ? 'seeds' : 'plants';
+            plant.quantityType = ['plants', 'seeds', 'cuttings'].includes(document.getElementById('journal-quantity-type').value) ? document.getElementById('journal-quantity-type').value : 'plants';
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             markFloraSyncPending();
             await syncPlantToCloud(plant);
@@ -5495,7 +5497,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 journalLocationButton.setAttribute('aria-expanded', 'false');
             }
             document.getElementById('journal-quantity').value = Math.max(1, Number(p.quantity) || 1);
-            document.getElementById('journal-quantity-type').value = p.quantityType === 'seeds' ? 'seeds' : 'plants';
+            document.getElementById('journal-quantity-type').value = ['plants', 'seeds', 'cuttings'].includes(p.quantityType) ? p.quantityType : 'plants';
             document.getElementById('journal-name').textContent = p.name;
             document.getElementById('journal-variety').textContent = p.variety || 'Standard Variety';
             document.getElementById('journal-date').textContent = p.date || 'Not specified';
