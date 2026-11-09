@@ -6012,36 +6012,43 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (normalized === 'l' || normalized === 'liters' || normalized === 'litres') return value * 1000;
                 if (normalized === 'gal' || normalized === 'gallons') return value * 3785.411784;
                 if (normalized === 'tsp') return value * 4.92892;
-                return normalized === 'ml' ? value : 0;
+                if (normalized === 'ml' || normalized === 'milliliters' || normalized === 'millilitres') return value;
+                return 0;
             };
 
             logs.forEach(log => {
                 const content = String(log.text || '');
-                // Water recorded in the tank-volume field.
-                const tankMatches = [...content.matchAll(/Filled tank with\s*([\d.]+)\s*(Liters|Gallons|Milliliters|L|gal|ml)\s+(?:pure\s+)?water/gi)];
+                const tankMatches = [...content.matchAll(/Filled tank with\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+(?:pure\s+)?water/gi)];
                 tankMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
-
-                // Water recorded through the watering-can fill control.
-                const canMatches = [...content.matchAll(/Watering can:\s*([\d.]+)\s*(Liters|Gallons|Milliliters|L|gal|ml)\s+water/gi)];
+                const canMatches = [...content.matchAll(/Watering can:\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+water/gi)];
                 canMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
 
-                // Product lines are saved as "• Product name (amount unit)" under a brand heading.
-                const productLines = content.split(/\r?\n/).filter(line => /^\s*[•*-]\s*.+\([\d.]+\s*(?:ml|tsp|ml\/L)\)\s*$/i.test(line));
-                productLines.forEach(line => {
-                    const match = line.match(/\(([\d.]+)\s*(ml|tsp|ml\/L)\)\s*$/i);
-                    if (!match) return;
-                    const amount = Number(match[1]);
-                    const unit = match[2].toLowerCase();
-                    const productName = line.replace(/^\s*[•*-]\s*/, '').replace(/\s*\([\d.]+\s*(?:ml|tsp|ml\/L)\)\s*$/i, '').trim();
+                // Read each saved product bullet independently. Put ml/L before ml so the
+                // longer unit is not accidentally consumed as plain ml.
+                content.split(/\r?\n/).forEach(line => {
+                    const productLine = line.match(/^\s*[•*-]\s*(.*?)\s*\((.*?)\)\s*$/);
+                    if (!productLine) return;
+                    const productName = productLine[1].trim();
+                    const dosage = productLine[2].trim();
+                    const dosageMatch = dosage.match(/(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?\s*(ml\/L|ml|tsp)\b/i);
+                    if (!productName || !dosageMatch) return;
+
+                    let amount = Number(dosageMatch[1]);
+                    // If a library recommendation is a range (e.g. 1-2 ml/L), use its
+                    // midpoint as a transparent estimate for the cumulative total.
+                    if (dosageMatch[2]) amount = (amount + Number(dosageMatch[2])) / 2;
+                    const unit = dosageMatch[3].toLowerCase();
                     let usedMl = 0;
                     if (unit === 'ml') usedMl = amount;
                     else if (unit === 'tsp') usedMl = toMl(amount, unit);
                     else {
-                        // ml/L is a dosage rate; multiply by the recorded tank volume where available.
-                        const tank = content.match(/Filled tank with\s*([\d.]+)\s*(Liters|L)/i);
-                        if (tank) usedMl = amount * Number(tank[1]);
+                        const tank = content.match(/Filled tank with\s*([\d.]+)\s*(Liters|Litres|L|Gallons|gal)/i);
+                        if (tank) {
+                            const tankLitres = toMl(tank[1], tank[2]) / 1000;
+                            usedMl = amount * tankLitres;
+                        }
                     }
-                    if (productName && usedMl > 0) nutrientTotals[productName] = (nutrientTotals[productName] || 0) + usedMl;
+                    if (usedMl > 0) nutrientTotals[productName] = (nutrientTotals[productName] || 0) + usedMl;
                 });
             });
             return { waterMl, nutrientTotals };
