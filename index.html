@@ -5560,7 +5560,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             iconContainer.innerHTML = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
 
             // Open the journal even if an optional nutrient UI control is unavailable.
-            try { toggleNutrientLibraryView(); } catch (error) { console.warn('Nutrient controls could not be refreshed:', error); }
+            try { toggleNutrientLibraryView(); toggleGerminationSection(); } catch (error) { console.warn('Journal controls could not be refreshed:', error); }
             renderJournalLogs(p);
             document.getElementById('journal-modal').classList.remove('hidden');
         }
@@ -5879,6 +5879,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-growth-stage').value = log.growthStage || '';
             document.getElementById('log-text').value = log.text || '';
             document.getElementById('log-growth-medium').value = '';
+            toggleGerminationSection();
             document.getElementById('journal-log-form-title').textContent = 'Edit Growth Log Entry';
             document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
             document.getElementById('journal-edit-actions').classList.remove('hidden');
