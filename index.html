@@ -5743,7 +5743,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
                 return;
             }
-            if (type !== 'Medium' && !growthStage) {
+            if (!growthStage) {
                 alert('Please select a growth stage: Seedling, Vegetative or Flowering.');
                 document.getElementById('log-growth-stage').focus();
                 return;
