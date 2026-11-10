@@ -2333,8 +2333,8 @@ textarea {
                 <div class="mx-auto w-14 h-14 rounded-2xl flex items-center justify-center" style="background:#fff0f4;color:#c6537b"><i class="fa-solid fa-qrcode text-2xl"></i></div>
                 <h2 id="scan-options-title" class="text-xl font-bold" style="color:#294b34">Scan a plant tag</h2>
                 <p class="text-sm" style="color:#647568">Choose how you’d like to open a plant journal.</p>
-                <button type="button" onclick="startNfcScan()" class="w-full rounded-xl p-4 flex items-center gap-3 text-left font-semibold" style="background:#fff0f4;color:#a63d65;border:1px solid #e8a7bd"><i class="fa-solid fa-wifi text-xl w-7 text-center"></i><span>Scan NFC tag</span></button>
-                <button type="button" onclick="startQrScan()" class="w-full rounded-xl p-4 flex items-center gap-3 text-left font-semibold" style="background:#fff0f4;color:#a63d65;border:1px solid #e8a7bd"><i class="fa-solid fa-qrcode text-xl w-7 text-center"></i><span>Scan QR code</span></button>
+                <button id="scan-option-nfc" type="button" onclick="startNfcScan()" class="w-full rounded-xl p-4 flex items-center gap-3 text-left font-semibold" style="background:#fff0f4;color:#a63d65;border:1px solid #e8a7bd"><i class="fa-solid fa-wifi text-xl w-7 text-center"></i><span>Scan NFC tag</span></button>
+                <button id="scan-option-qr" type="button" onclick="startQrScan()" class="w-full rounded-xl p-4 flex items-center gap-3 text-left font-semibold" style="background:#fff0f4;color:#a63d65;border:1px solid #e8a7bd"><i class="fa-solid fa-qrcode text-xl w-7 text-center"></i><span>Scan QR code</span></button>
                 <button type="button" onclick="closeScanOptions()" class="text-sm font-semibold py-2" style="color:#647568">Cancel</button>
             </div>
         </div>
@@ -2370,6 +2370,18 @@ textarea {
 
         <!-- TAB 3: SETTINGS & SUPABASE CLOUD AUTH -->
         <div id="view-settings" class="hidden space-y-6">
+            <!-- Scanner Preference Settings -->
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                <h3 class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-qrcode text-emerald-600"></i><span>Scanner Preference</span></h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Choose which plant-tag scanner and related buttons Flora Scan should show throughout the app.</p>
+                <select id="setting-scanner-preference" onchange="saveScannerPreference()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                    <option value="nfc">NFC scanning</option>
+                    <option value="qr">QR code scanning</option>
+                    <option value="none">No scanner</option>
+                </select>
+                <p id="setting-scanner-preference-status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite">Your choice is saved on this device.</p>
+            </div>
+
             <!-- App Branding Settings -->
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                 <h3 class="text-base font-bold flex items-center space-x-2">
@@ -3249,6 +3261,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             appearancePreset: 'garden'
         };
 
+        if (!['nfc', 'qr', 'none'].includes(appSettings.scannerPreference)) appSettings.scannerPreference = 'nfc';
+
         const DEFAULT_PLANT_LOCATIONS = ['Grow Tent', 'Front Garden', 'Back Garden', 'Greenhouse', 'Windowsill'];
         let plantLocations = JSON.parse(localStorage.getItem('flora_plant_locations') || 'null') || [...DEFAULT_PLANT_LOCATIONS];
         const DEFAULT_LOCATION_TYPES = { 'Grow Tent': 'indoor', 'Front Garden': 'outdoor', 'Back Garden': 'outdoor', 'Greenhouse': 'indoor', 'Windowsill': 'indoor' };
@@ -3298,6 +3312,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         window.addEventListener('DOMContentLoaded', async () => {
             showMobileWelcomeScreen();
             applyAppearance();
+            applyScannerPreference();
             applyBranding();
             renderIconPickerGrid();
             renderPlantLocationControls();
@@ -5190,10 +5205,54 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let qrJsLoaded = false;
         let qrScanPurpose = 'journal';
 
+        function getScannerPreference() {
+            return ['nfc', 'qr', 'none'].includes(appSettings.scannerPreference) ? appSettings.scannerPreference : 'nfc';
+        }
+
+        function applyScannerPreference() {
+            const preference = getScannerPreference();
+            const scannerTab = document.getElementById('tab-scanner');
+            if (scannerTab) scannerTab.classList.toggle('hidden', preference === 'none');
+            const nfcOption = document.getElementById('scan-option-nfc');
+            const qrOption = document.getElementById('scan-option-qr');
+            if (nfcOption) nfcOption.classList.toggle('hidden', preference !== 'nfc');
+            if (qrOption) qrOption.classList.toggle('hidden', preference !== 'qr');
+            const nfcFormSection = document.getElementById('plant-nfc-section');
+            const qrFormSection = document.getElementById('plant-qr-link-section');
+            if (nfcFormSection) nfcFormSection.classList.toggle('hidden', preference !== 'nfc');
+            if (qrFormSection) qrFormSection.classList.toggle('hidden', preference !== 'qr');
+            const preferenceSelect = document.getElementById('setting-scanner-preference');
+            if (preferenceSelect) preferenceSelect.value = preference;
+            const journalActions = document.getElementById('journal-nfc-tag-actions');
+            const currentPlantId = document.getElementById('log-plant-id')?.value;
+            const currentPlant = currentPlantId ? plants.find(item => String(item.id) === String(currentPlantId)) : null;
+            if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc' || !!String(currentPlant?.qrCodeValue || '').trim());
+            const scannerTabIcon = scannerTab?.querySelector('i');
+            if (scannerTabIcon) scannerTabIcon.className = preference === 'qr' ? 'fa-solid fa-qrcode' : 'fa-solid fa-wifi';
+        }
+
+        function saveScannerPreference() {
+            const select = document.getElementById('setting-scanner-preference');
+            const preference = select?.value;
+            if (!['nfc', 'qr', 'none'].includes(preference)) return;
+            appSettings.scannerPreference = preference;
+            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            applyScannerPreference();
+            const status = document.getElementById('setting-scanner-preference-status');
+            if (status) status.textContent = 'Saved. ' + (preference === 'nfc' ? 'NFC controls are now shown.' : preference === 'qr' ? 'QR controls are now shown.' : 'Scanner controls are hidden.');
+            if (preference === 'none') {
+                closeScanOptions();
+                stopQrScan();
+                stopNfcScan();
+            }
+        }
+
         function showScanOptions() {
+            const preference = getScannerPreference();
+            if (preference === 'none') return;
             setActiveNavigationTab('scanner');
-            const overlay = document.getElementById('scan-options-overlay');
-            if (overlay) overlay.classList.remove('hidden');
+            if (preference === 'nfc') startNfcScan();
+            else if (preference === 'qr') startQrScan();
         }
         function closeScanOptions() {
             const overlay = document.getElementById('scan-options-overlay');
@@ -5226,6 +5285,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function startNfcScan() {
+            if (getScannerPreference() !== 'nfc') return;
             const chooser = document.getElementById('scan-options-overlay');
             if (chooser) chooser.classList.add('hidden');
             const unsupported = nfcSupportMessage();
@@ -5333,6 +5393,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function startQrScan(purpose = 'journal') {
+            if (getScannerPreference() !== 'qr') return;
             qrScanPurpose = purpose === 'link' ? 'link' : 'journal';
             const chooser = document.getElementById('scan-options-overlay');
             if (chooser) chooser.classList.add('hidden');
@@ -5409,6 +5470,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function writePlantNfcTag() {
+            if (getScannerPreference() !== 'nfc') return;
             const editId = document.getElementById('edit-plant-id').value;
             const pendingIdField = document.getElementById('plant-nfc-pending-id');
             const existingPlant = editId ? plants.find(p => String(p.id) === String(editId)) : null;
@@ -5689,6 +5751,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function rewriteJournalPlantNfcTag() {
+            if (getScannerPreference() !== 'nfc') return;
             const status = document.getElementById('journal-nfc-status');
             const plantId = document.getElementById('log-plant-id').value;
             const plant = plants.find(item => String(item.id) === String(plantId));
@@ -5864,7 +5927,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             document.getElementById('log-plant-id').value = p.id;
             const nfcTagActions = document.getElementById('journal-nfc-tag-actions');
-            if (nfcTagActions) nfcTagActions.classList.toggle('hidden', !!String(p.qrCodeValue || '').trim());
+            if (nfcTagActions) nfcTagActions.classList.toggle('hidden', getScannerPreference() !== 'nfc' || !!String(p.qrCodeValue || '').trim());
             const journalLocationButton = document.getElementById('journal-plant-location');
             if (journalLocationButton) {
                 // Reset the outside-click dismissal state every time a journal opens,
