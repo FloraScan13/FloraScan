@@ -3545,16 +3545,36 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             screen.classList.remove('is-hidden');
         }
 
+        let mobileRefreshShownAt = 0;
+        let mobileRefreshHideTimer = null;
+
         function showMobileRefreshScreen() {
             const screen = document.getElementById('mobile-refresh-screen');
             if (!screen || window.matchMedia('(min-width: 769px)').matches) return;
+            if (mobileRefreshHideTimer) {
+                window.clearTimeout(mobileRefreshHideTimer);
+                mobileRefreshHideTimer = null;
+            }
+            mobileRefreshShownAt = Date.now();
             screen.classList.remove('is-hidden');
         }
 
         function hideMobileRefreshScreen() {
             const screen = document.getElementById('mobile-refresh-screen');
-            document.documentElement.classList.remove('flora-refresh-navigation');
-            if (screen) screen.classList.add('is-hidden');
+            if (!screen) {
+                document.documentElement.classList.remove('flora-refresh-navigation');
+                return;
+            }
+            // Keep the refresh screen visible long enough to be noticed, even
+            // when cached garden data restores almost instantly.
+            const minimumDisplayMs = 2500;
+            const remaining = Math.max(0, minimumDisplayMs - (Date.now() - mobileRefreshShownAt));
+            if (mobileRefreshHideTimer) window.clearTimeout(mobileRefreshHideTimer);
+            mobileRefreshHideTimer = window.setTimeout(() => {
+                mobileRefreshHideTimer = null;
+                document.documentElement.classList.remove('flora-refresh-navigation');
+                screen.classList.add('is-hidden');
+            }, remaining);
         }
 
         async function loadBrandingSettingsFromCloud() {
