@@ -6467,14 +6467,39 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return;
             }
 
-            // Display entries by the date they describe, not the order they were entered.
+            // Sort using the actual calendar date, not the order entries were saved.
+            // Accept ISO dates (YYYY-MM-DD), UK dates (DD/MM/YYYY or DD-MM-YYYY),
+            // and date-time strings from older/cloud-synced records.
+            const getGrowthLogSortDate = (rawDate) => {
+                if (rawDate === null || rawDate === undefined || rawDate === '') return null;
+                if (typeof rawDate === 'number') return Number.isFinite(rawDate) ? rawDate : null;
+                const value = String(rawDate).trim();
+                let parts = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+                if (parts) {
+                    const timestamp = Date.UTC(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+                    const check = new Date(timestamp);
+                    return check.getUTCFullYear() === Number(parts[1]) &&
+                        check.getUTCMonth() === Number(parts[2]) - 1 &&
+                        check.getUTCDate() === Number(parts[3]) ? timestamp : null;
+                }
+                parts = value.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+                if (parts) {
+                    const day = Number(parts[1]), month = Number(parts[2]), year = Number(parts[3]);
+                    const timestamp = Date.UTC(year, month - 1, day);
+                    const check = new Date(timestamp);
+                    return check.getUTCFullYear() === year && check.getUTCMonth() === month - 1 &&
+                        check.getUTCDate() === day ? timestamp : null;
+                }
+                const parsed = Date.parse(value);
+                return Number.isNaN(parsed) ? null : parsed;
+            };
             // Keep each original array index for legacy logs that do not yet have an ID.
             const timelineLogs = p.logs
-                .map((log, originalIndex) => ({ log, originalIndex }))
+                .map((log, originalIndex) => ({ log, originalIndex, sortDate: getGrowthLogSortDate(log.date) }))
                 .sort((a, b) => {
-                    const dateA = /^\d{4}-\d{2}-\d{2}$/.test(a.log.date || '') ? a.log.date : '';
-                    const dateB = /^\d{4}-\d{2}-\d{2}$/.test(b.log.date || '') ? b.log.date : '';
-                    return dateB.localeCompare(dateA) || a.originalIndex - b.originalIndex;
+                    if (a.sortDate === null && b.sortDate !== null) return 1;
+                    if (a.sortDate !== null && b.sortDate === null) return -1;
+                    return (b.sortDate ?? 0) - (a.sortDate ?? 0) || a.originalIndex - b.originalIndex;
                 });
             container.innerHTML = usageSummary + timelineLogs.map(({ log, originalIndex }) => `
                 <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-start">
