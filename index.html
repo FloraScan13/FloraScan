@@ -6801,7 +6801,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
                 if (log.type !== 'Weather') return;
                 const match = String(log.text || '').match(pattern);
-                if (match && Number.isFinite(Number(match[3])) && (!addedAt || match[2] >= addedAt)) {
+                // Only include complete rainfall periods that begin on or after
+                // the plant was added; do not carry in rainfall from earlier dates.
+                if (match && Number.isFinite(Number(match[3])) && (!addedAt || match[1] >= addedAt)) {
                     weeklyTotals.set(match[1] + '|' + match[2], { start: match[1], end: match[2], amount: Number(match[3]) });
                 }
             });
@@ -6866,8 +6868,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return Number.isNaN(parsed) ? null : parsed;
             };
             // Keep each original array index for legacy logs that do not yet have an ID.
+            const addedAtSortDate = getGrowthLogSortDate(p.addedAt || p.createdAt || p.date);
             const timelineLogs = p.logs
                 .map((log, originalIndex) => ({ log, originalIndex, sortDate: getGrowthLogSortDate(log.date) }))
+                // Hide journal entries dated before this plant was added to FloraScan.
+                .filter(({ sortDate }) => addedAtSortDate === null || sortDate === null || sortDate >= addedAtSortDate)
                 .sort((a, b) => {
                     if (a.sortDate === null && b.sortDate !== null) return 1;
                     if (a.sortDate !== null && b.sortDate === null) return -1;
