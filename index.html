@@ -2276,8 +2276,8 @@ textarea {
                 <span>Plants</span>
             </button>
             <button onclick="switchTab('scanner')" id="tab-scanner" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
-                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-5 h-5 object-contain inline-flex items-center justify-center" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" />
-                <span>NFC Scan</span>
+                <i class="fa-solid fa-qrcode"></i>
+                <span>Scan</span>
             </button>
             <button onclick="openAddPlantModal()" id="tab-add-plant" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
                 <i class="fa-solid fa-plus"></i>
@@ -2324,6 +2324,31 @@ textarea {
                     <i class="fa-solid fa-plus"></i>
                     Add Your First Plant
                 </button>
+            </div>
+        </div>
+
+        <!-- Scan method chooser. -->
+        <div id="scan-options-overlay" class="hidden fixed inset-0 z-[2990] flex items-center justify-center p-5" style="background:rgba(247,246,240,.98)" role="dialog" aria-modal="true" aria-labelledby="scan-options-title">
+            <div class="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl text-center space-y-4" style="border:1px solid #e8a7bd">
+                <div class="mx-auto w-14 h-14 rounded-2xl flex items-center justify-center" style="background:#fff0f4;color:#c6537b"><i class="fa-solid fa-qrcode text-2xl"></i></div>
+                <h2 id="scan-options-title" class="text-xl font-bold" style="color:#294b34">Scan a plant tag</h2>
+                <p class="text-sm" style="color:#647568">Choose how you’d like to open a plant journal.</p>
+                <button type="button" onclick="startNfcScan()" class="w-full rounded-xl p-4 flex items-center gap-3 text-left font-semibold" style="background:#fff0f4;color:#a63d65;border:1px solid #e8a7bd"><i class="fa-solid fa-wifi text-xl w-7 text-center"></i><span>Scan NFC tag</span></button>
+                <button type="button" onclick="startQrScan()" class="w-full rounded-xl p-4 flex items-center gap-3 text-left font-semibold" style="background:#fff0f4;color:#a63d65;border:1px solid #e8a7bd"><i class="fa-solid fa-qrcode text-xl w-7 text-center"></i><span>Scan QR code</span></button>
+                <button type="button" onclick="closeScanOptions()" class="text-sm font-semibold py-2" style="color:#647568">Cancel</button>
+            </div>
+        </div>
+
+        <!-- QR camera scanner. -->
+        <div id="qr-scan-overlay" class="hidden fixed inset-0 z-[3000] flex items-center justify-center p-4" style="background:rgba(247,246,240,.98)" role="dialog" aria-modal="true" aria-labelledby="qr-scan-title">
+            <div class="w-full max-w-md text-center">
+                <h2 id="qr-scan-title" class="text-2xl font-bold mb-3" style="color:#294b34">Scan QR code</h2>
+                <p class="text-sm mb-5" style="color:#526653">Allow camera access, then point it at a Flora Scan plant QR code.</p>
+                <div class="overflow-hidden rounded-2xl bg-black border-2" style="border-color:#e8a7bd">
+                    <video id="qr-scan-video" class="w-full" style="max-height:55vh;object-fit:cover" playsinline muted></video>
+                </div>
+                <p id="qr-scan-status" class="text-sm font-semibold my-4" style="color:#c6537b" role="status" aria-live="polite">Starting camera…</p>
+                <button type="button" onclick="stopQrScan()" class="rounded-xl px-7 py-3 font-semibold" style="border:1px solid #c6537b;color:#a63d65">Stop scanning</button>
             </div>
         </div>
 
@@ -4148,7 +4173,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (plantModal) plantModal.classList.add('hidden');
 
             if (tabId === 'scanner') {
-                startNfcScan();
+                showScanOptions();
                 return;
             }
             ['plants', 'settings'].forEach(t => {
@@ -5140,7 +5165,21 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return '';
         }
         let activeNfcScanController = null;
+        let activeQrStream = null;
+        let activeQrFrame = null;
+        let activeQrDetector = null;
+        let qrJsLoaded = false;
 
+        function showScanOptions() {
+            setActiveNavigationTab('scanner');
+            const overlay = document.getElementById('scan-options-overlay');
+            if (overlay) overlay.classList.remove('hidden');
+        }
+        function closeScanOptions() {
+            const overlay = document.getElementById('scan-options-overlay');
+            if (overlay) overlay.classList.add('hidden');
+            switchTab('plants');
+        }
         function showNfcTapOverlay() {
             const overlay = document.getElementById('nfc-tap-overlay');
             if (overlay) overlay.classList.remove('hidden');
@@ -5167,6 +5206,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function startNfcScan() {
+            const chooser = document.getElementById('scan-options-overlay');
+            if (chooser) chooser.classList.add('hidden');
             const unsupported = nfcSupportMessage();
             if (unsupported) { setNfcStatus(unsupported, true); setActiveNavigationTab('plants'); return; }
             // Abort any previous reader synchronously so the browser's NFC permission
@@ -5193,10 +5234,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         if (record.recordType === 'text') { try { value = new TextDecoder(record.encoding || 'utf-8').decode(record.data); } catch (_) {} }
                         if (value) break;
                     }
-                    const match = value.match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
-                    if (!match) { setNfcStatus('This tag is not linked to a Flora Scan plant. Open that plant and write its NFC tag first.', true); return; }
-                    const plant = plants.find(p => String(p.id) === match[1]);
-                    if (!plant) { setNfcStatus('No saved plant matches this NFC tag on this device/account.', true); return; }
+                    if (!openScannedPlantCode(value, 'NFC tag')) {
+                        if (!value) setNfcStatus('Could not read a Flora Scan plant ID from this NFC tag.', true);
+                        return;
+                    }
 
                     // Stop the active reader immediately on the first valid plant tag.
                     const scanButton = document.getElementById('nfc-scan-btn');
@@ -5219,6 +5260,121 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 await stopNfcScan();
             }
         }
+        function openScannedPlantCode(value, source) {
+            const match = String(value || '').trim().match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
+            if (!match) {
+                setNfcStatus('This ' + source + ' is not a Flora Scan plant tag. Use a code beginning FLORASCAN: followed by the plant ID.', true);
+                const qrStatus = document.getElementById('qr-scan-status');
+                if (qrStatus) qrStatus.textContent = 'This QR code is not linked to a Flora Scan plant.';
+                return false;
+            }
+            const plant = plants.find(p => String(p.id) === match[1]);
+            if (!plant) {
+                setNfcStatus('No saved plant matches this ' + source + ' on this device/account.', true);
+                const qrStatus = document.getElementById('qr-scan-status');
+                if (qrStatus) qrStatus.textContent = 'No saved plant matches this QR code on this device/account.';
+                return false;
+            }
+            stopQrScan();
+            hideNfcTapOverlay();
+            const chooser = document.getElementById('scan-options-overlay');
+            if (chooser) chooser.classList.add('hidden');
+            if (activeNfcScanController) { activeNfcScanController.abort(); activeNfcScanController = null; }
+            const button = document.getElementById('nfc-scan-btn');
+            if (button) { button.disabled = false; button.innerHTML = '<span>Start NFC Scan</span>'; }
+            setNfcStatus('Plant found: ' + plant.name + ' — opening its growth journal.');
+            openJournalModal(plant.id);
+            return true;
+        }
+
+        async function loadQrDecoder() {
+            if (window.jsQR) { qrJsLoaded = true; return true; }
+            if (qrJsLoaded) return !!window.jsQR;
+            qrJsLoaded = true;
+            return new Promise(resolve => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+                script.onload = () => resolve(!!window.jsQR);
+                script.onerror = () => resolve(false);
+                document.head.appendChild(script);
+            });
+        }
+
+        async function startQrScan() {
+            const chooser = document.getElementById('scan-options-overlay');
+            if (chooser) chooser.classList.add('hidden');
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                const message = 'Camera scanning requires a secure HTTPS connection and a browser with camera support.';
+                setNfcStatus(message, true);
+                alert(message);
+                return;
+            }
+            const overlay = document.getElementById('qr-scan-overlay');
+            const video = document.getElementById('qr-scan-video');
+            const status = document.getElementById('qr-scan-status');
+            overlay.classList.remove('hidden');
+            status.textContent = 'Requesting camera access…';
+            try {
+                activeQrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+                video.srcObject = activeQrStream;
+                await video.play();
+                if ('BarcodeDetector' in window) {
+                    try { activeQrDetector = new BarcodeDetector({ formats: ['qr_code'] }); } catch (_) { activeQrDetector = null; }
+                }
+                if (!activeQrDetector && !(await loadQrDecoder())) {
+                    throw new Error('QR scanning is not available. Check your internet connection and try again.');
+                }
+                status.textContent = 'Camera ready — point it at a QR code.';
+                scanQrFrame();
+            } catch (err) {
+                status.textContent = err && err.name === 'NotAllowedError'
+                    ? 'Camera permission was denied. Allow camera access in your browser settings and try again.'
+                    : (err.message || 'Could not start the camera. Please try again.');
+                stopQrCameraOnly();
+            }
+        }
+
+        function stopQrCameraOnly() {
+            if (activeQrFrame) { cancelAnimationFrame(activeQrFrame); activeQrFrame = null; }
+            if (activeQrStream) { activeQrStream.getTracks().forEach(track => track.stop()); activeQrStream = null; }
+            const video = document.getElementById('qr-scan-video');
+            if (video) video.srcObject = null;
+            activeQrDetector = null;
+        }
+        function stopQrScan() {
+            stopQrCameraOnly();
+            const overlay = document.getElementById('qr-scan-overlay');
+            if (overlay) overlay.classList.add('hidden');
+            switchTab('plants');
+        }
+
+        async function scanQrFrame() {
+            const video = document.getElementById('qr-scan-video');
+            if (!activeQrStream || !video || video.readyState < 2) {
+                if (activeQrStream) activeQrFrame = requestAnimationFrame(scanQrFrame);
+                return;
+            }
+            try {
+                let value = '';
+                if (activeQrDetector) {
+                    const codes = await activeQrDetector.detect(video);
+                    if (codes.length) value = codes[0].rawValue;
+                } else if (window.jsQR) {
+                    const canvas = scanQrFrame.canvas || (scanQrFrame.canvas = document.createElement('canvas'));
+                    const context = canvas.getContext('2d', { willReadFrequently: true });
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const result = window.jsQR(context.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height, { inversionAttempts: 'dontInvert' });
+                    if (result) value = result.data;
+                }
+                if (value && openScannedPlantCode(value, 'QR code')) return;
+            } catch (err) {
+                console.warn('QR scan frame could not be decoded:', err);
+            }
+            if (activeQrStream) activeQrFrame = requestAnimationFrame(scanQrFrame);
+        }
+
         async function writePlantNfcTag() {
             const editId = document.getElementById('edit-plant-id').value;
             const pendingIdField = document.getElementById('plant-nfc-pending-id');
