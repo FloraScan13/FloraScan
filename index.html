@@ -6743,22 +6743,42 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         if (!productLine) return;
                         const productName = productLine[1].trim();
                         const dosage = productLine[2].trim();
-                        const dosageMatch = dosage.match(/(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?\s*(ml\/L|ml|tsp)\b/i);
-                        if (!productName || !dosageMatch) return;
+                        if (!productName) return;
+
+                        // Support the volume-based dosage formats used in the nutrient
+                        // library: ml/L, ml per 9 L, tsp/gal, tbsp/gal, and direct
+                        // ml/tsp/tbsp/cup amounts. Use the midpoint for dosage ranges.
+                        const dosageMatch = dosage.match(/(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?\s*(ml|millilitres?|tsp|teaspoons?|tbsp|tablespoons?|cups?)\s*(?:(\/|per)\s*(?:(\d+(?:\.\d+)?)\s*)?(L|litres?|liters?|gal|gallons?))?/i);
+                        if (!dosageMatch) return;
 
                         let amount = Number(dosageMatch[1]);
                         if (dosageMatch[2]) amount = (amount + Number(dosageMatch[2])) / 2;
-                        // A nutrient amount can only be prorated when this log records
-                        // both the water applied and the volume it was mixed into.
-                        if (totalEntryWaterMl <= 0 || canWaterMl <= 0) return;
-
                         const unit = dosageMatch[3].toLowerCase();
-                        let mixedNutrientMl = 0;
-                        if (unit === 'ml') mixedNutrientMl = amount;
-                        else if (unit === 'tsp') mixedNutrientMl = toMl(amount, unit);
-                        else if (unit === 'ml/l') mixedNutrientMl = amount * (canWaterMl / 1000);
+                        const unitMl = unit === 'ml' || unit.startsWith('millilitre') ? 1
+                            : unit === 'tsp' || unit.startsWith('teaspoon') ? 4.92892
+                            : unit === 'tbsp' || unit.startsWith('tablespoon') ? 14.7868
+                            : 236.588;
+                        const doseMl = amount * unitMl;
+                        const denominatorUnit = (dosageMatch[6] || '').toLowerCase();
+                        const denominatorAmount = Number(dosageMatch[5] || 1);
+                        const denominatorMl = denominatorUnit
+                            ? denominatorAmount * (denominatorUnit === 'gal' || denominatorUnit.startsWith('gallon') ? 3785.411784 : 1000)
+                            : 0;
+                        const isPerPlantDose = /\bper\s+plant\b/i.test(dosage);
+                        let usedMl = 0;
 
-                        const usedMl = mixedNutrientMl * (totalEntryWaterMl / canWaterMl);
+                        if (denominatorMl > 0 && totalEntryWaterMl > 0) {
+                            // Rate-based dosage: scale the dose to the water volume applied.
+                            usedMl = (doseMl / denominatorMl) * totalEntryWaterMl;
+                        } else if (isPerPlantDose) {
+                            usedMl = doseMl * plantCount;
+                        } else if (canWaterMl > 0 && totalEntryWaterMl > 0) {
+                            // Direct amount mixed into a can: prorate by the amount applied.
+                            usedMl = doseMl * (totalEntryWaterMl / canWaterMl);
+                        } else if (totalEntryWaterMl > 0) {
+                            usedMl = doseMl;
+                        }
+
                         if (usedMl > 0) nutrientTotals[productName] = (nutrientTotals[productName] || 0) + usedMl;
                     });
                 });
