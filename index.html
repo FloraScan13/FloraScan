@@ -6695,10 +6695,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return formatted;
         }
 
-        function getJournalUsageTotals() {
+        function getJournalUsageTotals(plant) {
             let waterMl = 0;
             const nutrientTotals = {};
-            const allPlants = Array.isArray(plants) ? plants : [];
+            // Usage summaries belong to the currently viewed plant journal only.
+            const journalPlants = plant ? [plant] : [];
             const toMl = (amount, unit) => {
                 const value = Number(amount);
                 if (!Number.isFinite(value) || value <= 0) return 0;
@@ -6712,7 +6713,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             // Aggregate individual plant watering amounts across the whole garden.
             // Watering-can fill/capacity is deliberately excluded from usage totals.
-            allPlants.forEach(plant => {
+            journalPlants.forEach(plant => {
                 (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
                     const content = String(log.text || '');
                     const perPlantMatch = content.match(/Watered this plant with\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\b/i);
@@ -6781,7 +6782,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function renderJournalLogs(p) {
             const container = document.getElementById('journal-logs-container');
-            const usage = getJournalUsageTotals();
+            const usage = getJournalUsageTotals(p);
             const rainfall = getJournalCumulativeRainfall(p);
             const usageSummary = `
                 <div class="grid grid-cols-2 gap-2 mb-3">
