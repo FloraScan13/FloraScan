@@ -2659,6 +2659,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <p class="text-[11px] text-slate-400 mt-1.5"><span id="selected-icon-name-display" class="font-semibold text-emerald-600 dark:text-emerald-400">Cucumber / Gherkin</span></p>
                 </div>
 
+                <div id="plant-qr-section" class="p-4 rounded-xl space-y-3" style="background:#fff0f4;border:1px solid #e8a7bd">
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style="color:#a63d65"><i class="fa-solid fa-qrcode"></i><span>Plant QR Code</span></div>
+                    <p class="text-xs" style="color:#986b7b">A unique QR code is created for this plant. Print it or attach it to the pot; scanning it opens this plant’s growth journal.</p>
+                    <div class="flex flex-col items-center gap-2">
+                        <div id="plant-qr-preview" class="min-h-[150px] min-w-[150px] bg-white rounded-xl p-2 flex items-center justify-center" aria-label="Plant QR code preview"><span class="text-xs text-slate-400">Preparing QR code…</span></div>
+                        <p id="plant-qr-id" class="text-[10px] break-all text-center" style="color:#986b7b"></p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="printPlantQrCode()" class="rounded-xl py-2.5 text-sm font-semibold" style="background:#c6537b;color:white"><i class="fa-solid fa-print mr-1"></i> Print QR Code</button>
+                        <button type="button" onclick="refreshPlantQrCode()" class="rounded-xl py-2.5 text-sm font-semibold" style="background:white;color:#a63d65;border:1px solid #e8a7bd"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
+                    </div>
+                    <p id="plant-qr-status" class="text-xs" style="color:#986b7b" role="status" aria-live="polite">Save the plant to keep its QR code linked to its journal.</p>
+                </div>
+
                 <div id="plant-nfc-section" class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
                     <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-4 h-4 object-contain inline-flex items-center justify-center" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /><span>Plant NFC Tag</span></div>
                     <p class="text-xs text-slate-500 dark:text-slate-400">For a new plant, write the tag here first, then select Save Plant. The tag will open this plant's journal after it has been saved.</p>
@@ -5101,6 +5115,58 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'just now';
             panel.textContent = t + '     ' + h;
         }
+        let plantQrLibraryPromise = null;
+        function loadPlantQrLibrary() {
+            if (window.QRCode) return Promise.resolve(true);
+            if (!plantQrLibraryPromise) {
+                plantQrLibraryPromise = new Promise(resolve => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+                    script.onload = () => resolve(!!window.QRCode);
+                    script.onerror = () => resolve(false);
+                    document.head.appendChild(script);
+                });
+            }
+            return plantQrLibraryPromise;
+        }
+
+        async function refreshPlantQrCode() {
+            const preview = document.getElementById('plant-qr-preview');
+            const status = document.getElementById('plant-qr-status');
+            const idField = document.getElementById('edit-plant-id');
+            const pendingField = document.getElementById('plant-nfc-pending-id');
+            if (!preview) return;
+            let plantId = (idField && idField.value) || (pendingField && pendingField.value);
+            if (!plantId) {
+                plantId = 'plant_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                if (pendingField) pendingField.value = plantId;
+            }
+            const idLabel = document.getElementById('plant-qr-id');
+            if (idLabel) idLabel.textContent = 'FLORASCAN:' + plantId;
+            preview.innerHTML = '<span class="text-xs text-slate-400">Preparing QR code…</span>';
+            if (!(await loadPlantQrLibrary())) {
+                if (status) status.textContent = 'QR code generator could not load. Check your internet connection and reopen this form.';
+                return;
+            }
+            preview.innerHTML = '';
+            new QRCode(preview, { text: 'FLORASCAN:' + plantId, width: 180, height: 180, colorDark: '#294b34', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+            if (status) status.textContent = idField && idField.value ? 'This QR code is linked to the saved plant.' : 'This QR code will be linked to the plant when you select Save Plant.';
+        }
+
+        function printPlantQrCode() {
+            const preview = document.getElementById('plant-qr-preview');
+            if (!preview || !preview.querySelector('canvas, img')) {
+                alert('The QR code is not ready yet. Please wait a moment and try again.');
+                return;
+            }
+            const image = preview.querySelector('canvas') ? preview.querySelector('canvas').toDataURL('image/png') : preview.querySelector('img').src;
+            const plantName = (document.getElementById('plant-name').value || 'Flora Scan Plant').trim();
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) { alert('Allow pop-ups to print the QR code.'); return; }
+            printWindow.document.write('<!DOCTYPE html><html><head><title>Plant QR Code</title><style>body{font-family:Arial,sans-serif;text-align:center;padding:30px;color:#294b34}img{width:260px;height:260px}h1{font-size:22px}</style></head><body><h1>' + plantName.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) + '</h1><img src="' + image + '"><p>Scan with Flora Scan to open this plant journal</p><script>window.onload=()=>window.print();<\/script></body></html>');
+            printWindow.document.close();
+        }
+
         function openAddPlantModal() {
             setActiveNavigationTab('add-plant');
             document.getElementById('modal-title').textContent = 'Add New Plant';
@@ -5117,6 +5183,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('form-color-hex').value = initialHex;
 
             document.getElementById('plant-modal').classList.remove('hidden');
+            refreshPlantQrCode();
         }
 
         function openEditPlantModal(id) {
@@ -5139,6 +5206,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             renderIconPickerGrid(p.iconKey || 'cucumber');
 
             document.getElementById('plant-modal').classList.remove('hidden');
+            refreshPlantQrCode();
         }
 
         function closePlantModal() {
