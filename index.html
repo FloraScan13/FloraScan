@@ -6721,8 +6721,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const totalEntryWaterMl = perPlantMl * plantCount;
                     if (totalEntryWaterMl > 0) waterMl += totalEntryWaterMl;
 
-                    // Nutrient product lines are counted only in entries where nutrients were used.
-                    // ml/L dosages are calculated from that same entry's per-plant water amount.
+                    // Calculate nutrient use against the total water volume recorded for this log entry.
+                    // ml/L dosages scale with total entry water; fixed ml/tsp amounts scale by plant count.
                     content.split(/\r?\n/).forEach(line => {
                         const productLine = line.match(/^\s*[•*-]\s*(.*?)\s*\((.*?)\)\s*$/);
                         if (!productLine) return;
@@ -6740,8 +6740,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                         const unit = dosageMatch[3].toLowerCase();
                         let usedMl = 0;
-                        if (unit === 'ml') usedMl = amount;
-                        else if (unit === 'tsp') usedMl = toMl(amount, unit);
+                        if (unit === 'ml') usedMl = amount * plantCount;
+                        else if (unit === 'tsp') usedMl = toMl(amount * plantCount, unit);
                         else if (unit === 'ml/l') usedMl = amount * (totalEntryWaterMl / 1000);
 
                         if (usedMl > 0) nutrientTotals[productName] = (nutrientTotals[productName] || 0) + usedMl;
