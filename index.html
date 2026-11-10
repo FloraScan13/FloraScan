@@ -3002,6 +3002,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <option value="Prune">Pruning</option>
                                 <option value="Harvest">Harvest</option>
                                 <option value="Medium">Growth Medium</option>
+                                <option value="Problem">Problems / Disease</option>
                             </select>
                         </div>
                         <div>
@@ -6013,10 +6014,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!showCuttings && failedCuttingInput) failedCuttingInput.value = '';
             const recordingSeedOutcome = showSeeds && (amountInput.value.trim() !== '' || (failedInput && failedInput.value.trim() !== ''));
             const recordingCuttingOutcome = showCuttings && ((rootedInput && rootedInput.value.trim() !== '') || (failedCuttingInput && failedCuttingInput.value.trim() !== ''));
-            if (stageSection) stageSection.classList.toggle('hidden', recordingSeedOutcome || recordingCuttingOutcome);
+            if (stageSection) stageSection.classList.toggle('hidden', !isGrowth || recordingSeedOutcome || recordingCuttingOutcome);
             if (stageSelect) {
-                stageSelect.required = !(recordingSeedOutcome || recordingCuttingOutcome);
-                if (recordingSeedOutcome || recordingCuttingOutcome) stageSelect.value = '';
+                stageSelect.required = isGrowth && !(recordingSeedOutcome || recordingCuttingOutcome);
+                if (!isGrowth || recordingSeedOutcome || recordingCuttingOutcome) stageSelect.value = '';
             }
         }
 
@@ -6957,7 +6958,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 document.getElementById('log-cuttings-rooted-amount').value.trim() !== '' ||
                 document.getElementById('log-failed-cutting-amount').value.trim() !== ''
             );
-            if (!growthStage && !enteringSeedOutcome && !enteringCuttingOutcome) {
+            if (type === 'Growth' && !growthStage && !enteringSeedOutcome && !enteringCuttingOutcome) {
                 alert('Please select a growth stage: Cutting, Seedling, Vegetative or Flowering, or record a seed germination outcome.');
                 document.getElementById('log-growth-stage').focus();
                 return;
