@@ -6719,13 +6719,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const perPlantMatch = content.match(/Watered this plant with\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\b/i);
                     const perPlantMl = perPlantMatch ? toMl(perPlantMatch[1], perPlantMatch[2]) : 0;
                     const plantCount = Math.max(1, Number(plant.quantity) || 1);
-                    const totalEntryWaterMl = perPlantMl * plantCount;
-                    if (totalEntryWaterMl > 0) waterMl += totalEntryWaterMl;
 
-                    // Read the water volume the nutrients were mixed into for this specific log.
+                    // Read the water volume recorded for this log's tank/watering can.
                     const canWaterMatch = content.match(/Watering can:\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+water\s+in\s+a/i)
-                        || content.match(/Filled tank with\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+water/i);
+                        || content.match(/(?:Filled tank with|Watering can filled with)\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+(?:pure\s+)?water/i);
                     const canWaterMl = canWaterMatch ? toMl(canWaterMatch[1], canWaterMatch[2]) : 0;
+
+                    // If no per-plant amount was entered, a Feed/Water tank fill is
+                    // treated as the full volume applied to this journal's plants.
+                    const totalEntryWaterMl = perPlantMl > 0
+                        ? perPlantMl * plantCount
+                        : canWaterMl;
+                    if (totalEntryWaterMl > 0) waterMl += totalEntryWaterMl;
 
                     // Nutrient totals are the proportion of the mixed can actually applied:
                     // (nutrient mixed ÷ can water volume) × total water applied to all plants.
