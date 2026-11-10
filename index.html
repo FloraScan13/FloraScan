@@ -3083,11 +3083,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <span>Use watering can for this nutrient mix</span>
                                 </label>
                                 <div id="nutrient-watering-can-fields" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div>
-                                        <label for="watering-can-capacity" class="block text-[11px] text-slate-500 mb-0.5">Watering can capacity</label>
-                                        <input type="number" id="watering-can-capacity" min="0.1" step="0.1" placeholder="e.g. 10" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-                                    </div>
-                                    <div>
+                                    <div class="sm:col-span-2">
                                         <label for="watering-can-fill" class="block text-[11px] text-slate-500 mb-0.5">Water volume in can</label>
                                         <input type="number" id="watering-can-fill" min="0.1" step="0.1" placeholder="e.g. 8" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
                                     </div>
@@ -6064,24 +6060,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const enabled = document.getElementById('nutrient-watering-can-enabled').checked;
             if (!enabled) return '';
 
-            const capacity = Number(document.getElementById('watering-can-capacity').value);
             const fill = Number(document.getElementById('watering-can-fill').value);
             const unit = document.getElementById('watering-can-unit').value;
 
-            if (!Number.isFinite(capacity) || capacity <= 0) {
-                alert('Enter a watering-can capacity greater than zero.');
-                return null;
-            }
             if (!Number.isFinite(fill) || fill <= 0) {
                 alert('Enter a water fill volume greater than zero.');
                 return null;
             }
-            if (fill > capacity) {
-                alert('Water fill volume cannot exceed watering-can capacity.');
-                return null;
-            }
 
-            return `Watering Can (Includes runoff): ${fill} ${unit} water in a ${capacity} ${unit} capacity can`;
+            return `Watering Can (Includes runoff): ${fill} ${unit} water`;
         }
 
         function populateNutrientBrandOptions() {
@@ -6724,14 +6711,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const plantCount = Math.max(1, Number(plant.quantity) || 1);
 
                     // Read the water volume recorded for this log's tank/watering can.
-                    const canWaterMatch = content.match(/Watering can:\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+water\s+in\s+a/i)
+                    const canWaterMatch = content.match(/Watering can(?:\s*\(Includes runoff\))?:\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+water(?:\s+in\s+a)?/i)
                         || content.match(/(?:Filled tank with|Watering can filled with)\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+(?:pure\s+)?water/i);
                     const canWaterMl = canWaterMatch ? toMl(canWaterMatch[1], canWaterMatch[2]) : 0;
 
                     // Tank entries count the entered tank volume exactly once.
                     // Watering-can Feed entries retain the previous per-plant behavior:
                     // multiply the applied per-plant amount by plant quantity when entered.
-                    const isWateringCanFeed = /Watering can:/i.test(content);
+                    const isWateringCanFeed = /Watering can(?:\s*\(Includes runoff\))?:/i.test(content);
                     const totalEntryWaterMl = isWateringCanFeed && perPlantMl > 0
                         ? perPlantMl * plantCount
                         : canWaterMl > 0
@@ -7165,7 +7152,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('volume-per-plant-amount').value = '';
             document.getElementById('volume-per-plant-unit').value = 'Milliliters';
             document.getElementById('nutrient-watering-can-enabled').checked = false;
-            document.getElementById('watering-can-capacity').value = '';
             document.getElementById('watering-can-fill').value = '';
             toggleWateringCanFields();
             closeJournalModal();
