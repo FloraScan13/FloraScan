@@ -3461,7 +3461,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let activeMatchStream = null;
 
         window.addEventListener('DOMContentLoaded', async () => {
-            showMobileWelcomeScreen();
+            const navigationEntry = performance.getEntriesByType('navigation')[0];
+            const isPageRefresh = navigationEntry && navigationEntry.type === 'reload';
+            if (isPageRefresh) {
+                showMobileRefreshScreen();
+            } else {
+                showMobileWelcomeScreen();
+            }
             applyAppearance();
             applyScannerPreference();
             applyBranding();
@@ -3486,7 +3492,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             setupAutocomplete();
             const logDateInput = document.getElementById('log-date');
             if (logDateInput) logDateInput.valueAsDate = new Date();
-            hideMobileWelcomeScreen();
+            if (isPageRefresh) {
+                hideMobileRefreshScreen();
+            } else {
+                hideMobileWelcomeScreen();
+            }
         });
 
         let mobileWelcomeShownAt = 0;
@@ -3504,6 +3514,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             updateMobileWelcomeGreeting();
             mobileWelcomeShownAt = Date.now();
             screen.classList.remove('is-hidden');
+        }
+
+        function showMobileRefreshScreen() {
+            const screen = document.getElementById('mobile-refresh-screen');
+            if (!screen || window.matchMedia('(min-width: 769px)').matches) return;
+            screen.classList.remove('is-hidden');
+        }
+
+        function hideMobileRefreshScreen() {
+            const screen = document.getElementById('mobile-refresh-screen');
+            if (screen) screen.classList.add('is-hidden');
         }
 
         async function loadBrandingSettingsFromCloud() {
