@@ -2634,6 +2634,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <h3 id="modal-title" class="hidden">Add New Plant</h3>
                 <input type="hidden" id="edit-plant-id">
                 <input type="hidden" id="plant-nfc-pending-id">
+                <input type="hidden" id="plant-qr-pending-value">
                 <input type="hidden" id="plant-icon-key" value="cucumber">
 
 
@@ -5114,6 +5115,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('modal-title').textContent = 'Add New Plant';
             document.getElementById('edit-plant-id').value = '';
             document.getElementById('plant-nfc-pending-id').value = '';
+            document.getElementById('plant-qr-pending-value').value = '';
             document.getElementById('plant-form').reset();
             const qrLinkSection = document.getElementById('plant-qr-link-section');
             if (qrLinkSection) qrLinkSection.classList.remove('hidden');
@@ -5138,6 +5140,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('modal-title').textContent = 'Edit Plant Profile';
             document.getElementById('edit-plant-id').value = p.id;
             document.getElementById('plant-nfc-pending-id').value = '';
+            document.getElementById('plant-qr-pending-value').value = '';
             const qrLinkSection = document.getElementById('plant-qr-link-section');
             if (qrLinkSection) qrLinkSection.classList.add('hidden');
             document.getElementById('plant-name').value = p.name;
@@ -5263,36 +5266,43 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
         function openScannedPlantCode(value, source) {
-            const match = String(value || '').trim().match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
-            if (!match) {
-                setNfcStatus('This ' + source + ' is not a Flora Scan plant tag. Use a code beginning FLORASCAN: followed by the plant ID.', true);
-                const qrStatus = document.getElementById('qr-scan-status');
-                if (qrStatus) qrStatus.textContent = 'This QR code is not linked to a Flora Scan plant.';
-                return false;
-            }
+            const rawValue = String(value || '').trim();
+            if (!rawValue) return false;
+
             if (qrScanPurpose === 'link') {
-                const duplicate = plants.find(p => String(p.id) === match[1]);
-                if (duplicate) {
+                const floraMatch = rawValue.match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
+                const existingPlant = floraMatch
+                    ? plants.find(p => String(p.id) === floraMatch[1])
+                    : plants.find(p => String(p.qrCodeValue || '') === rawValue);
+                if (existingPlant) {
                     const status = document.getElementById('qr-scan-status');
-                    if (status) status.textContent = 'This QR code is already linked to ' + duplicate.name + '. Scan a different, unassigned code.';
+                    if (status) status.textContent = 'This QR code is already linked to ' + existingPlant.name + '. Scan a different, unassigned code.';
                     return false;
                 }
+                const pendingValue = document.getElementById('plant-qr-pending-value');
+                if (!pendingValue) return false;
+                pendingValue.value = rawValue;
+                // Preserve existing Flora Scan tag IDs as the plant ID; other QR payloads
+                // are stored separately so the new plant receives its own internal ID.
                 const pendingId = document.getElementById('plant-nfc-pending-id');
-                if (!pendingId) return false;
-                pendingId.value = match[1];
+                if (pendingId) pendingId.value = floraMatch ? floraMatch[1] : '';
                 const linkStatus = document.getElementById('plant-qr-link-status');
-                if (linkStatus) linkStatus.textContent = 'QR code linked: FLORASCAN:' + match[1] + '. Save this plant to finish linking it.';
+                if (linkStatus) linkStatus.textContent = 'QR code scanned and linked. Save this plant to finish. (' + rawValue.slice(0, 90) + (rawValue.length > 90 ? '…' : '') + ')';
                 stopQrCameraOnly();
                 const scanOverlay = document.getElementById('qr-scan-overlay');
                 if (scanOverlay) scanOverlay.classList.add('hidden');
                 qrScanPurpose = 'journal';
                 return true;
             }
-            const plant = plants.find(p => String(p.id) === match[1]);
+
+            const floraMatch = rawValue.match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
+            const plant = floraMatch
+                ? plants.find(p => String(p.id) === floraMatch[1])
+                : plants.find(p => String(p.qrCodeValue || '') === rawValue);
             if (!plant) {
                 setNfcStatus('No saved plant matches this ' + source + ' on this device/account.', true);
                 const qrStatus = document.getElementById('qr-scan-status');
-                if (qrStatus) qrStatus.textContent = 'No saved plant matches this QR code on this device/account.';
+                if (qrStatus) qrStatus.textContent = 'No saved plant is linked to this QR code yet.';
                 return false;
             }
             stopQrScan();
@@ -5419,6 +5429,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             e.preventDefault();
             const editId = document.getElementById('edit-plant-id').value;
             const pendingNfcId = document.getElementById('plant-nfc-pending-id').value;
+            const pendingQrValue = document.getElementById('plant-qr-pending-value').value;
             const locationSelect = document.getElementById('plant-location');
             const selectedLocation = locationSelect ? locationSelect.value.trim() : '';
 
@@ -5437,6 +5448,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             const plantData = {
                 id: editId || pendingNfcId || ('plant_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)),
+                ...(pendingQrValue ? { qrCodeValue: pendingQrValue } : {}),
                 name: document.getElementById('plant-name').value,
                 variety: document.getElementById('plant-variety').value,
                 quantity: Math.max(1, parseInt(document.getElementById('plant-quantity').value, 10) || 1),
