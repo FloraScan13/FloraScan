@@ -5776,7 +5776,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 await syncPlantToCloud(plant);
                 const tagTypeRow = document.getElementById('journal-tag-type-row');
                 const tagTypeLabel = document.getElementById('journal-tag-type');
-                if (tagTypeRow && tagTypeLabel) { tagTypeLabel.textContent = 'NFC'; tagTypeRow.classList.remove('hidden'); }
+                if (tagTypeRow && tagTypeLabel) { tagTypeLabel.textContent = 'NFC'; tagTypeRow.classList.remove('hidden'); tagTypeRow.style.display = ''; }
                 setStatus('NFC tag successfully written for ' + plant.name + '.', false);
                 alert('NFC tag successfully written for ' + plant.name + '.');
             } catch (err) {
@@ -5970,6 +5970,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (tagTypeRow && tagTypeLabel) {
                 tagTypeLabel.textContent = linkedTagType;
                 tagTypeRow.classList.toggle('hidden', !linkedTagType);
+                tagTypeRow.style.display = linkedTagType ? '' : 'none';
             }
             document.getElementById('journal-initial-notes').textContent = p.notes ? `"${p.notes}"` : '';
 
