@@ -3730,7 +3730,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         remaining_seeds: Math.max(0, Number(plant.remainingSeeds) || 0),
                         remaining_cuttings: Math.max(0, Number(plant.remainingCuttings) || (plant.quantityType === 'cuttings' ? Number(plant.quantity) || 0 : 0)),
                         icon_key: plant.iconKey, hex: plant.hex, date: plant.date, medium: plant.medium,
-                        notes: plant.notes, location: plant.location || ''
+                        notes: plant.notes, location: plant.location || '',
+                        nfc_tag_linked: !!plant.nfcTagLinked, qr_code_value: plant.qrCodeValue || null
                     });
                     if (plantError) throw plantError;
 
@@ -3888,6 +3889,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             medium: p.medium,
                             location: p.location || (JSON.parse(localStorage.getItem('flora_plants') || '[]').find(localPlant => localPlant.id === p.id) || {}).location || '',
                             notes: p.notes,
+                            nfcTagLinked: !!p.nfc_tag_linked,
+                            qrCodeValue: p.qr_code_value || '',
                             logs: await Promise.all((dbLogs || []).filter(l => l.plant_id === p.id).map(async l => {
                                 const photoPaths = Array.isArray(l.photos) ? l.photos : [];
                                 const photoUrls = await Promise.all(photoPaths.map(createJournalPhotoUrl));
@@ -3924,7 +3927,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     date: plant.date,
                     medium: plant.medium,
                     notes: plant.notes,
-                    location: plant.location || ''
+                    location: plant.location || '',
+                    nfc_tag_linked: !!plant.nfcTagLinked,
+                    qr_code_value: plant.qrCodeValue || null
                 });
                 if (error) {
                     console.error("Failed to sync plant to cloud:", error);
