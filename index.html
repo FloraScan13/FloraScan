@@ -5156,8 +5156,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-nfc-pending-id').value = '';
             document.getElementById('plant-qr-pending-value').value = '';
             document.getElementById('plant-form').reset();
-            const qrLinkSection = document.getElementById('plant-qr-link-section');
-            if (qrLinkSection) qrLinkSection.classList.remove('hidden');
+            // Re-apply the saved scanner preference whenever the Add Plant modal opens.
+            // This prevents the QR linking option from reappearing for NFC / no-scanner users.
+            applyScannerPreference();
             const qrLinkStatus = document.getElementById('plant-qr-link-status');
             if (qrLinkStatus) qrLinkStatus.textContent = 'No QR code linked yet. You can also add the plant without one.';
             document.getElementById('plant-quantity').value = '1';
@@ -5265,7 +5266,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const nfcFormSection = document.getElementById('plant-nfc-section');
             const qrFormSection = document.getElementById('plant-qr-link-section');
             if (nfcFormSection) nfcFormSection.classList.toggle('hidden', preference !== 'nfc');
-            if (qrFormSection) qrFormSection.classList.toggle('hidden', preference !== 'nfc');
+            if (qrFormSection) {
+                const hideQrFormSection = preference !== 'qr';
+                qrFormSection.classList.toggle('hidden', hideQrFormSection);
+                qrFormSection.style.display = hideQrFormSection ? 'none' : '';
+            }
             const preferenceSelect = document.getElementById('setting-scanner-preference');
             if (preferenceSelect) preferenceSelect.value = preference;
             const journalActions = document.getElementById('journal-nfc-tag-actions');
