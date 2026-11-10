@@ -2383,6 +2383,10 @@ textarea {
                     </select>
                     <button id="save-scanner-preference-btn" type="button" onclick="saveScannerPreference()" class="flex-shrink-0 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition shadow-sm">Save preference</button>
                 </div>
+                <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <input id="setting-remember-scanner-preference" type="checkbox" checked onchange="scannerPreferenceChanged()" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                    <span>Use this scanner preference as the default on every app launch</span>
+                </label>
                 <p id="setting-scanner-preference-status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite">Select a scanner preference, then save your choice.</p>
             </div>
 
@@ -3264,13 +3268,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             theme: 'light',
             accentColor: 'green',
             appearancePreset: 'garden',
-            scannerPreference: 'nfc'
+            scannerPreference: 'nfc',
+            rememberScannerPreference: true
         };
 
-        // Always launch Flora Scan with NFC selected, regardless of the last
-        // scanner choice. Persist the launch default so it remains consistent
-        // across refreshes and future app sessions.
-        appSettings.scannerPreference = 'nfc';
+        // Remember the selected scanner across launches when the user enables
+        // that option. Otherwise, fall back to NFC as the launch default.
+        if (!['nfc', 'qr', 'none'].includes(appSettings.scannerPreference)) appSettings.scannerPreference = 'nfc';
+        if (typeof appSettings.rememberScannerPreference !== 'boolean') appSettings.rememberScannerPreference = true;
+        if (!appSettings.rememberScannerPreference) appSettings.scannerPreference = 'nfc';
         localStorage.setItem('flora_settings', JSON.stringify(appSettings));
 
         const DEFAULT_PLANT_LOCATIONS = ['Grow Tent', 'Front Garden', 'Back Garden', 'Greenhouse', 'Windowsill'];
@@ -5272,6 +5278,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             const preferenceSelect = document.getElementById('setting-scanner-preference');
             if (preferenceSelect) preferenceSelect.value = preference;
+            const rememberPreference = document.getElementById('setting-remember-scanner-preference');
+            if (rememberPreference) rememberPreference.checked = appSettings.rememberScannerPreference !== false;
             const journalActions = document.getElementById('journal-nfc-tag-actions');
             const currentPlantId = document.getElementById('log-plant-id')?.value;
             const currentPlant = currentPlantId ? plants.find(item => String(item.id) === String(currentPlantId)) : null;
@@ -5293,11 +5301,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const select = document.getElementById('setting-scanner-preference');
             const preference = select?.value;
             if (!['nfc', 'qr', 'none'].includes(preference)) return;
-            appSettings.scannerPreference = preference;
+            const rememberPreference = document.getElementById('setting-remember-scanner-preference');
+            appSettings.rememberScannerPreference = rememberPreference ? rememberPreference.checked : true;
+            appSettings.scannerPreference = appSettings.rememberScannerPreference ? preference : 'nfc';
             localStorage.setItem('flora_settings', JSON.stringify(appSettings));
             applyScannerPreference();
+            const savedPreference = appSettings.scannerPreference;
             const status = document.getElementById('setting-scanner-preference-status');
-            if (status) status.textContent = '✓ Scanner preference saved successfully. ' + (preference === 'nfc' ? 'NFC controls are now shown.' : preference === 'qr' ? 'QR controls are now shown.' : 'Scanner controls are now hidden.');
+            if (status) status.textContent = '✓ Launch default saved. ' + (savedPreference === 'nfc' ? 'NFC controls are now shown.' : savedPreference === 'qr' ? 'QR controls are now shown.' : 'Scanner controls are now hidden.') + (appSettings.rememberScannerPreference ? ' This choice will be used every time the app opens.' : ' NFC will be selected next time the app opens.');
             if (preference === 'none') {
                 closeScanOptions();
                 stopQrScan();
