@@ -56,6 +56,66 @@
             body { min-height: 100%; }
         }
 
+        /* Mobile refresh screen shown when the app reloads garden data in the background. */
+        #mobile-refresh-screen { display: none; }
+        @media (max-width: 768px) {
+            #mobile-refresh-screen {
+                position: fixed;
+                inset: 0;
+                z-index: 1999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 28px;
+                background: #294b34;
+                color: #fffef9;
+                text-align: center;
+                opacity: 1;
+                visibility: visible;
+                transition: opacity .28s ease, visibility .28s ease;
+            }
+            #mobile-refresh-screen.is-hidden {
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+            }
+            #mobile-refresh-screen .refresh-mark {
+                display: flex;
+                width: 112px;
+                height: 112px;
+                margin: 0 auto 22px;
+                align-items: center;
+                justify-content: center;
+                color: #ffffff;
+                font-size: 76px;
+            }
+            #mobile-refresh-screen .refresh-title {
+                margin: 12px 0 0;
+                color: #ffffff;
+                font-size: clamp(28px, 7.5vw, 36px);
+                font-weight: 650;
+                letter-spacing: -.035em;
+                line-height: 1.2;
+            }
+            #mobile-refresh-screen .refresh-caption {
+                margin: 18px 0 0;
+                color: #C4557C;
+                font-size: 15px;
+                letter-spacing: .12em;
+                text-transform: uppercase;
+            }
+            #mobile-refresh-screen .refresh-spinner {
+                width: 24px;
+                height: 24px;
+                margin: 28px auto 0;
+                border: 3px solid rgba(244, 198, 213, .3);
+                border-top-color: #C4557C;
+                border-radius: 50%;
+                animation: flora-refresh-spin .8s linear infinite;
+            }
+            @keyframes flora-refresh-spin { to { transform: rotate(360deg); } }
+        }
+
         /* Mobile welcome screen shown while the app restores its plant data. */
         #mobile-welcome-screen {
             display: none;
@@ -2292,6 +2352,14 @@ textarea {
             <p class="welcome-caption">Your growing journal</p>
         </div>
     </div>
+    <div id="mobile-refresh-screen" class="is-hidden" role="status" aria-live="polite">
+        <div>
+            <div class="refresh-mark"><i class="fa-solid fa-leaf" aria-hidden="true"></i></div>
+            <h1 class="refresh-title">Flora Scan</h1>
+            <p class="refresh-caption">Refreshing your garden</p>
+            <div class="refresh-spinner" aria-hidden="true"></div>
+        </div>
+    </div>
 
     <!-- Fixed Header -->
     <header id="app-header" class="bg-emerald-700 text-white shadow-md sticky top-0 z-30 transition-colors duration-300">
@@ -3473,12 +3541,31 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         // Keep growing-location settings live across every signed-in device.
+        let backgroundGardenRefreshPromise = null;
+
         async function refreshPlantLocationsFromCloud() {
             if (!supabaseClient || !currentUser || !navigator.onLine) return;
-            if (getFloraSyncQueue().locationsDirty) return;
-            await fetchPlantLocationsFromCloudOrLocal();
-            renderPlantLocationControls();
-            renderPlants();
+            const pending = getFloraSyncQueue();
+            if (pending.dirty || pending.profileDirty || pending.locationsDirty) return;
+            if (backgroundGardenRefreshPromise) return backgroundGardenRefreshPromise;
+
+            const screen = document.getElementById('mobile-refresh-screen');
+            const showScreen = screen && !window.matchMedia('(min-width: 769px)').matches;
+            if (showScreen) screen.classList.remove('is-hidden');
+
+            backgroundGardenRefreshPromise = (async () => {
+                try {
+                    await fetchPlantsFromCloudOrLocal();
+                    await fetchPlantLocationsFromCloudOrLocal();
+                    renderPlantLocationControls();
+                    renderPlants();
+                } finally {
+                    if (showScreen) screen.classList.add('is-hidden');
+                    backgroundGardenRefreshPromise = null;
+                }
+            })();
+
+            return backgroundGardenRefreshPromise;
         }
 
         function subscribeToPlantLocationChanges() {
