@@ -4868,7 +4868,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <button type="button" onclick="event.stopPropagation(); this.closest('details').open = false; promptDeletePlant('${p.id}')" class="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-pink-50 dark:hover:bg-pink-900/20 rounded-lg" style="color: #C4557C;"><i class="fa-solid fa-trash w-4"></i>Delete</button>
                                 </div>
                             </details>
-                            ${String(p.qrCodeValue || '').trim() ? '<i class="fa-solid fa-qrcode flex-shrink-0 text-slate-600 dark:text-slate-300" title="QR code tag" aria-label="QR code tag"></i>' : (p.nfcTagLinked ? '<img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC tag" title="NFC tag" class="inline-block w-4 h-4 flex-shrink-0 object-contain" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" />' : '')}
                         </div>
                         <div class="p-5 flex space-x-4 items-center" style="background-color: #f7f6f0;">
                             <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
