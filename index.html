@@ -5231,7 +5231,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const nfcFormSection = document.getElementById('plant-nfc-section');
             const qrFormSection = document.getElementById('plant-qr-link-section');
             if (nfcFormSection) nfcFormSection.classList.toggle('hidden', preference !== 'nfc');
-            if (qrFormSection) qrFormSection.classList.toggle('hidden', preference !== 'qr');
+            if (qrFormSection) qrFormSection.classList.toggle('hidden', preference === 'qr');
             const preferenceSelect = document.getElementById('setting-scanner-preference');
             if (preferenceSelect) preferenceSelect.value = preference;
             const journalActions = document.getElementById('journal-nfc-tag-actions');
