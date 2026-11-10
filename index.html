@@ -6014,10 +6014,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!showCuttings && failedCuttingInput) failedCuttingInput.value = '';
             const recordingSeedOutcome = showSeeds && (amountInput.value.trim() !== '' || (failedInput && failedInput.value.trim() !== ''));
             const recordingCuttingOutcome = showCuttings && ((rootedInput && rootedInput.value.trim() !== '') || (failedCuttingInput && failedCuttingInput.value.trim() !== ''));
-            if (stageSection) stageSection.classList.toggle('hidden', !isGrowth || recordingSeedOutcome || recordingCuttingOutcome);
+            const requiresGrowthStage = isGrowth || document.getElementById('log-type').value === 'Problem';
+            if (stageSection) stageSection.classList.toggle('hidden', !requiresGrowthStage || recordingSeedOutcome || recordingCuttingOutcome);
             if (stageSelect) {
-                stageSelect.required = isGrowth && !(recordingSeedOutcome || recordingCuttingOutcome);
-                if (!isGrowth || recordingSeedOutcome || recordingCuttingOutcome) stageSelect.value = '';
+                stageSelect.required = requiresGrowthStage && !(recordingSeedOutcome || recordingCuttingOutcome);
+                if (!requiresGrowthStage || recordingSeedOutcome || recordingCuttingOutcome) stageSelect.value = '';
             }
         }
 
@@ -6958,8 +6959,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 document.getElementById('log-cuttings-rooted-amount').value.trim() !== '' ||
                 document.getElementById('log-failed-cutting-amount').value.trim() !== ''
             );
-            if (type === 'Growth' && !growthStage && !enteringSeedOutcome && !enteringCuttingOutcome) {
-                alert('Please select a growth stage: Cutting, Seedling, Vegetative or Flowering, or record a seed germination outcome.');
+            if ((type === 'Growth' || type === 'Problem') && !growthStage && !enteringSeedOutcome && !enteringCuttingOutcome) {
+                alert('Please select a growth stage: Cutting, Seedling, Vegetative or Flowering.');
                 document.getElementById('log-growth-stage').focus();
                 return;
             }
