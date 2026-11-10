@@ -2926,13 +2926,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <div><strong class="text-slate-800 dark:text-slate-200">Medium:</strong> <span id="journal-medium">-</span></div>
                                     <div id="journal-tag-type-row" class="hidden"><strong class="text-slate-800 dark:text-slate-200">Tag type:</strong> <span id="journal-tag-type"></span></div>
                                 </div>
-                                <div id="journal-amount-editor" class="hidden mt-2">
-<details class="mt-2 rounded-xl border border-pink-200 bg-pink-50/70 p-3 group">
-                                    <summary class="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-semibold" style="color:#963D5D;">
-                                        <span><i class="fa-solid fa-sliders mr-1"></i>Amount in this journal</span>
-                                        <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180"></i>
-                                    </summary>
-                                    <div class="pt-3 space-y-2">
+                                <div id="journal-amount-editor" class="hidden mt-2 rounded-xl border border-pink-200 bg-pink-50/70 p-3">
+                                    <div class="space-y-2">
+                                        <div class="text-xs font-semibold" style="color:#963D5D;"><i class="fa-solid fa-sliders mr-1"></i>Amount in this journal</div>
                                         <div class="flex flex-wrap items-center gap-2">
                                             <input id="journal-quantity" type="number" min="1" step="1" inputmode="numeric" aria-label="Plant or seed quantity" class="w-24 px-3 py-2 rounded-lg border border-pink-200 bg-white text-sm" />
                                             <select id="journal-quantity-type" aria-label="Quantity type" class="flex-1 min-w-[110px] px-3 py-2 rounded-lg border border-pink-200 bg-white text-sm">
@@ -2945,7 +2941,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                         <p id="journal-multisow-summary" class="hidden text-[11px]" style="color:#9b6478;"></p>
                                         <p class="text-[11px]" style="color:#9b6478;">Update how many plants, seeds, or cuttings this journal tracks. Multisown seed totals are calculated from pots / plugs × seeds per pot / plug.</p>
                                     </div>
-                                </details>
                                 </div>
                                 <div id="journal-plant-details-editor" class="hidden mt-3 space-y-2">
                                     <div><label for="journal-edit-plant-name" class="block text-xs font-semibold mb-1">Plant name</label><input id="journal-edit-plant-name" type="text" maxlength="100" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm" placeholder="Plant name"></div>
