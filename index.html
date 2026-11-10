@@ -5228,7 +5228,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function applyScannerPreference() {
             const preference = getScannerPreference();
             const scannerTab = document.getElementById('tab-scanner');
-            if (scannerTab) scannerTab.classList.toggle('hidden', preference === 'none');
+            if (scannerTab) {
+                const hideScannerTab = preference === 'none';
+                scannerTab.classList.toggle('hidden', hideScannerTab);
+                // The tab uses inline flex layout, so explicitly control display as well
+                // as the utility class to ensure it is fully removed when no scanner is selected.
+                scannerTab.style.display = hideScannerTab ? 'none' : 'flex';
+                scannerTab.setAttribute('aria-hidden', hideScannerTab ? 'true' : 'false');
+                scannerTab.tabIndex = hideScannerTab ? -1 : 0;
+            }
             const nfcOption = document.getElementById('scan-option-nfc');
             const qrOption = document.getElementById('scan-option-qr');
             if (nfcOption) nfcOption.classList.toggle('hidden', preference !== 'nfc');
