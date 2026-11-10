@@ -3606,7 +3606,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const screen = document.getElementById('mobile-welcome-screen');
             if (!screen) return;
             // Keep the welcome visible long enough to be noticed even when cached data loads instantly.
-            const minimumDisplayMs = 2000;
+            const minimumDisplayMs = 2500;
             const remaining = Math.max(0, minimumDisplayMs - (Date.now() - mobileWelcomeShownAt));
             window.setTimeout(() => screen.classList.add('is-hidden'), remaining);
         }
