@@ -2374,12 +2374,13 @@ textarea {
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <h3 class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-qrcode text-emerald-600"></i><span>Scanner Preference</span></h3>
                 <p class="text-sm text-slate-500 dark:text-slate-400">Choose which plant-tag scanner and related buttons Flora Scan should show throughout the app.</p>
-                <select id="setting-scanner-preference" onchange="saveScannerPreference()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                <select id="setting-scanner-preference" onchange="scannerPreferenceChanged()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                     <option value="nfc">NFC scanning</option>
                     <option value="qr">QR code scanning</option>
                     <option value="none">No scanner</option>
                 </select>
-                <p id="setting-scanner-preference-status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite">Your choice is saved on this device.</p>
+                <button id="save-scanner-preference-btn" type="button" onclick="saveScannerPreference()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition shadow-sm">Save preference</button>
+                <p id="setting-scanner-preference-status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite">Select a scanner preference, then save your choice.</p>
             </div>
 
             <!-- App Branding Settings -->
@@ -5240,6 +5241,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (scannerTabIcon) scannerTabIcon.className = preference === 'qr' ? 'fa-solid fa-qrcode' : 'fa-solid fa-wifi';
         }
 
+        function scannerPreferenceChanged() {
+            const status = document.getElementById('setting-scanner-preference-status');
+            if (status) status.textContent = 'You have an unsaved change. Select Save preference to apply it.';
+        }
+
         function saveScannerPreference() {
             const select = document.getElementById('setting-scanner-preference');
             const preference = select?.value;
@@ -5248,7 +5254,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             localStorage.setItem('flora_settings', JSON.stringify(appSettings));
             applyScannerPreference();
             const status = document.getElementById('setting-scanner-preference-status');
-            if (status) status.textContent = 'Saved. ' + (preference === 'nfc' ? 'NFC controls are now shown.' : preference === 'qr' ? 'QR controls are now shown.' : 'Scanner controls are hidden.');
+            if (status) status.textContent = '✓ Scanner preference saved successfully. ' + (preference === 'nfc' ? 'NFC controls are now shown.' : preference === 'qr' ? 'QR controls are now shown.' : 'Scanner controls are now hidden.');
             if (preference === 'none') {
                 closeScanOptions();
                 stopQrScan();
