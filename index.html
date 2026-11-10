@@ -5722,7 +5722,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     date: plantData.date || localToday,
                     type: 'Growth',
                     text: plantData.multisow
-                        ? 'Multisown: ' + plantData.quantity + ' seeds across ' + plantData.multisowPots + ' pots / plugs'
+                        ? 'Multisown: ' + plantData.quantity + ' seeds total (' + plantData.multisowPots + ' pots / plugs × ' + plantData.seedsPerPot + ' seeds each)'
                         : 'Initial amount recorded: ' + plantData.quantity + ' ' + quantityLabel.toLowerCase()
                 };
                 plantData.logs.unshift(initialGrowthLog);
