@@ -5920,6 +5920,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (editId) {
                 const idx = plants.findIndex(p => p.id === editId);
                 if (idx !== -1) {
+                    plantData.addedAt = plants[idx].addedAt || plants[idx].createdAt || plants[idx].date || '';
                     plantData.logs = plants[idx].logs || [];
                     plantData.remainingSeeds = Math.max(0, Number(plants[idx].remainingSeeds) || (plants[idx].quantityType === 'seeds' ? Number(plants[idx].quantity) || 0 : 0));
                     plantData.remainingCuttings = Math.max(0, Number(plants[idx].remainingCuttings) || (plants[idx].quantityType === 'cuttings' ? Number(plants[idx].quantity) || 0 : 0));
@@ -5928,8 +5929,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             } else {
                 if (plantData.quantityType === 'seeds') plantData.remainingSeeds = plantData.quantity;
                 if (plantData.quantityType === 'cuttings') plantData.remainingCuttings = plantData.quantity;
-                // Record the starting quantity as a Growth journal entry when the plant is created.
+                // Store the actual date this plant was added, independently of its planting date.
                 const localToday = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                plantData.addedAt = localToday;
+                // Record the starting quantity as a Growth journal entry when the plant is created.
                 const quantityLabels = { plants: 'Plants', seeds: 'Seeds sown', cuttings: 'Cuttings' };
                 const quantityLabel = quantityLabels[plantData.quantityType] || 'Plants';
                 initialGrowthLog = {
@@ -6793,19 +6796,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function getJournalCumulativeRainfall(plant) {
             if (!plant || !plant.location || locationTypes[plant.location] !== 'outdoor') return null;
             const weeklyTotals = new Map();
+            const addedAt = String(plant.addedAt || plant.createdAt || plant.date || '');
             const pattern = /Rainfall for (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2}): ([\d.]+) mm total/;
             (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
                 if (log.type !== 'Weather') return;
                 const match = String(log.text || '').match(pattern);
-                if (match && Number.isFinite(Number(match[3]))) {
-                    weeklyTotals.set(match[1] + '|' + match[2], { start: match[1], amount: Number(match[3]) });
+                if (match && Number.isFinite(Number(match[3])) && (!addedAt || match[2] >= addedAt)) {
+                    weeklyTotals.set(match[1] + '|' + match[2], { start: match[1], end: match[2], amount: Number(match[3]) });
                 }
             });
             if (!weeklyTotals.size) return null;
             const weeks = Array.from(weeklyTotals.values());
+            const firstCoveredDate = addedAt && weeks.some(week => week.start <= addedAt && week.end >= addedAt)
+                ? addedAt
+                : weeks.reduce((earliest, week) => week.start < earliest ? week.start : earliest, weeks[0].start);
             return {
                 mm: weeks.reduce((sum, week) => sum + week.amount, 0),
-                since: weeks.reduce((earliest, week) => week.start < earliest ? week.start : earliest, weeks[0].start)
+                since: firstCoveredDate
             };
         }
 
