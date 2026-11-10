@@ -6712,11 +6712,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                         let amount = Number(dosageMatch[1]);
                         if (dosageMatch[2]) amount = (amount + Number(dosageMatch[2])) / 2;
+                        // Only include nutrient use when this feeding entry records
+                        // an actual per-plant water volume. This prevents nutrient totals
+                        // appearing when no water was recorded for the feed.
+                        if (perPlantMl <= 0) return;
+
                         const unit = dosageMatch[3].toLowerCase();
                         let usedMl = 0;
                         if (unit === 'ml') usedMl = amount;
                         else if (unit === 'tsp') usedMl = toMl(amount, unit);
-                        else if (perPlantMl > 0) usedMl = amount * (perPlantMl / 1000);
+                        else if (unit === 'ml/l') usedMl = amount * (perPlantMl / 1000);
 
                         if (usedMl > 0) nutrientTotals[productName] = (nutrientTotals[productName] || 0) + usedMl;
                     });
