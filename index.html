@@ -3264,7 +3264,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             appearancePreset: 'garden'
         };
 
-        if (!['nfc', 'qr', 'none'].includes(appSettings.scannerPreference)) appSettings.scannerPreference = 'nfc';
+        // NFC is the first-run default. Persist it once so the preference is available
+        // on every later app launch without requiring the user to save it repeatedly.
+        if (!['nfc', 'qr', 'none'].includes(appSettings.scannerPreference)) {
+            appSettings.scannerPreference = 'nfc';
+            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+        }
 
         const DEFAULT_PLANT_LOCATIONS = ['Grow Tent', 'Front Garden', 'Back Garden', 'Greenhouse', 'Windowsill'];
         let plantLocations = JSON.parse(localStorage.getItem('flora_plant_locations') || 'null') || [...DEFAULT_PLANT_LOCATIONS];
