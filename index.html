@@ -1772,6 +1772,8 @@ textarea {
             background: rgba(247, 246, 240, .98); color: #294333;
         }
         #nfc-tap-overlay.hidden { display: none !important; }
+        #tab-scanner[hidden],
+        #tab-scanner[data-scanner-disabled="true"] { display: none !important; }
         .nfc-overlay-content { width: 100%; max-width: 440px; text-align: center; }
         .nfc-overlay-brand { color: #c6537b; font-size: 12px; font-weight: 800; letter-spacing: .22em; margin-bottom: 48px; }
         .nfc-tap-animation { width: 210px; height: 210px; margin: 0 auto 38px; position: relative; display: grid; place-items: center; }
@@ -5231,9 +5233,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (scannerTab) {
                 const hideScannerTab = preference === 'none';
                 scannerTab.classList.toggle('hidden', hideScannerTab);
-                // The tab uses inline flex layout, so explicitly control display as well
-                // as the utility class to ensure it is fully removed when no scanner is selected.
-                scannerTab.style.display = hideScannerTab ? 'none' : 'flex';
+                // Native hidden state plus a CSS !important rule overrides the tab's
+                // inline flex layout when no scanner is selected.
+                scannerTab.hidden = hideScannerTab;
+                scannerTab.dataset.scannerDisabled = hideScannerTab ? 'true' : 'false';
+                if (hideScannerTab) scannerTab.style.setProperty('display', 'none', 'important');
+                else scannerTab.style.setProperty('display', 'flex');
                 scannerTab.setAttribute('aria-hidden', hideScannerTab ? 'true' : 'false');
                 scannerTab.tabIndex = hideScannerTab ? -1 : 0;
             }
