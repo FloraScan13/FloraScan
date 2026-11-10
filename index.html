@@ -5563,6 +5563,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const editId = document.getElementById('edit-plant-id').value;
             const pendingNfcId = document.getElementById('plant-nfc-pending-id').value;
             const pendingQrValue = document.getElementById('plant-qr-pending-value').value;
+            const scannerPreference = getScannerPreference();
+
+            // New plants in QR/NFC mode must have a tag physically scanned/written first.
+            // Editing existing plants is unaffected.
+            if (!editId && scannerPreference === 'qr' && !String(pendingQrValue || '').trim()) {
+                const status = document.getElementById('plant-qr-link-status');
+                if (status) status.textContent = 'A QR tag must be scanned before this plant can be saved.';
+                alert('Scan a QR tag before saving this plant.');
+                return;
+            }
+            if (!editId && scannerPreference === 'nfc' && !String(pendingNfcId || '').trim()) {
+                setNfcStatus('An NFC tag must be written successfully before this plant can be saved.', true);
+                alert('Write an NFC tag before saving this plant.');
+                return;
+            }
+
             const locationSelect = document.getElementById('plant-location');
             const selectedLocation = locationSelect ? locationSelect.value.trim() : '';
 
