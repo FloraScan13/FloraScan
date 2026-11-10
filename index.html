@@ -3062,6 +3062,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <option value="Milliliters">Milliliters (ml)</option>
                                 </select>
                             </div>
+                            <div id="volume-per-plant-field" class="hidden space-y-1.5">
+                                <label for="volume-per-plant-amount" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Volume per plant</label>
+                                <div class="flex gap-2">
+                                    <input type="number" id="volume-per-plant-amount" step="0.1" min="0" placeholder="e.g. 500" class="flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                                    <select id="volume-per-plant-unit" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                                        <option value="Milliliters">Milliliters (ml)</option>
+                                        <option value="Liters">Liters (L)</option>
+                                        <option value="Gallons">Gallons (gal)</option>
+                                    </select>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Optional amount of water given to this individual plant.</p>
+                            </div>
                         </div>
 
                         <!-- Nutrient Brand Library Selector (Shown when Feed is selected) -->
@@ -6002,7 +6014,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const tankSec = document.getElementById('tank-volume-section');
             const mediumSec = document.getElementById('growth-medium-section');
             const tankLabel = document.getElementById('tank-volume-label');
+            const perPlantField = document.getElementById('volume-per-plant-field');
             if (tankLabel) tankLabel.textContent = logType === 'Water' ? 'Watering Can Fill Volume' : 'Tank Fill Volume';
+            if (perPlantField) perPlantField.classList.toggle('hidden', logType !== 'Water');
             if (mediumSec) mediumSec.classList.toggle('hidden', logType !== 'Medium');
             
             if (logType === 'Feed') {
@@ -6948,9 +6962,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             }
 
-            if (type === 'Water' && tankVol) {
-                const waterPrefix = `Watering can filled with ${tankVol} ${tankUnit} pure water. `;
-                text = waterPrefix + text;
+            if (type === 'Water') {
+                const perPlantAmount = document.getElementById('volume-per-plant-amount').value.trim();
+                const perPlantUnit = document.getElementById('volume-per-plant-unit').value;
+                if (perPlantAmount && (!Number.isFinite(Number(perPlantAmount)) || Number(perPlantAmount) <= 0)) {
+                    alert('Enter a volume per plant greater than zero.');
+                    return;
+                }
+                const waterDetails = [];
+                if (tankVol) waterDetails.push(`Watering can filled with ${tankVol} ${tankUnit} pure water.`);
+                if (perPlantAmount) waterDetails.push(`Watered this plant with ${perPlantAmount} ${perPlantUnit}.`);
+                if (waterDetails.length) text = waterDetails.join(' ') + ' ' + text;
             }
 
             const p = plants.find(item => item.id === plantId);
@@ -7069,6 +7091,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             toggleNutrientLibraryView();
             toggleGerminationSection();
             document.getElementById('tank-volume-amount').value = '';
+            document.getElementById('volume-per-plant-amount').value = '';
+            document.getElementById('volume-per-plant-unit').value = 'Milliliters';
             document.getElementById('nutrient-watering-can-enabled').checked = false;
             document.getElementById('watering-can-capacity').value = '';
             document.getElementById('watering-can-fill').value = '';
