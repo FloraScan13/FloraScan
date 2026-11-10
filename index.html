@@ -62,7 +62,7 @@
             #mobile-refresh-screen {
                 position: fixed;
                 inset: 0;
-                z-index: 1999;
+                z-index: 2001;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -3464,6 +3464,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const navigationEntry = performance.getEntriesByType('navigation')[0];
             const isPageRefresh = navigationEntry && navigationEntry.type === 'reload';
             if (isPageRefresh) {
+                // The welcome overlay is visible by default on mobile, so explicitly
+                // hide it before showing the refresh overlay above the app.
+                const welcomeScreen = document.getElementById('mobile-welcome-screen');
+                if (welcomeScreen) welcomeScreen.classList.add('is-hidden');
                 showMobileRefreshScreen();
             } else {
                 showMobileWelcomeScreen();
