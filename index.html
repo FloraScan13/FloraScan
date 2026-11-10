@@ -6717,7 +6717,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const content = String(log.text || '');
                     const perPlantMatch = content.match(/Watered this plant with\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\b/i);
                     const perPlantMl = perPlantMatch ? toMl(perPlantMatch[1], perPlantMatch[2]) : 0;
-                    if (perPlantMl > 0) waterMl += perPlantMl;
+                    const plantCount = Math.max(1, Number(plant.quantity) || 1);
+                    const totalEntryWaterMl = perPlantMl * plantCount;
+                    if (totalEntryWaterMl > 0) waterMl += totalEntryWaterMl;
 
                     // Nutrient product lines are counted only in entries where nutrients were used.
                     // ml/L dosages are calculated from that same entry's per-plant water amount.
@@ -6740,7 +6742,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         let usedMl = 0;
                         if (unit === 'ml') usedMl = amount;
                         else if (unit === 'tsp') usedMl = toMl(amount, unit);
-                        else if (unit === 'ml/l') usedMl = amount * (perPlantMl / 1000);
+                        else if (unit === 'ml/l') usedMl = amount * (totalEntryWaterMl / 1000);
 
                         if (usedMl > 0) nutrientTotals[productName] = (nutrientTotals[productName] || 0) + usedMl;
                     });
