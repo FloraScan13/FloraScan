@@ -6016,7 +6016,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const tankLabel = document.getElementById('tank-volume-label');
             const perPlantField = document.getElementById('volume-per-plant-field');
             if (tankLabel) tankLabel.textContent = logType === 'Water' ? 'Watering Can Fill Volume' : 'Tank Fill Volume';
-            if (perPlantField) perPlantField.classList.toggle('hidden', logType !== 'Water');
+            if (perPlantField) perPlantField.classList.toggle('hidden', logType !== 'Water' && logType !== 'Feed');
             if (mediumSec) mediumSec.classList.toggle('hidden', logType !== 'Medium');
             
             if (logType === 'Feed') {
@@ -6676,10 +6676,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return formatted;
         }
 
-        function getJournalUsageTotals(plant) {
-            const logs = Array.isArray(plant.logs) ? plant.logs : [];
+        function getJournalUsageTotals() {
             let waterMl = 0;
             const nutrientTotals = {};
+            const allPlants = Array.isArray(plants) ? plants : [];
             const toMl = (amount, unit) => {
                 const value = Number(amount);
                 if (!Number.isFinite(value) || value <= 0) return 0;
@@ -6691,44 +6691,39 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return 0;
             };
 
-            logs.forEach(log => {
-                const content = String(log.text || '');
-                const tankMatches = [...content.matchAll(/(?:Filled tank with|Watering can filled with)\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+(?:pure\s+)?water/gi)];
-                tankMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
-                const canMatches = [...content.matchAll(/Watering can:\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+water/gi)];
-                canMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
+            // Aggregate individual plant watering amounts across the whole garden.
+            // Watering-can fill/capacity is deliberately excluded from usage totals.
+            allPlants.forEach(plant => {
+                (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
+                    const content = String(log.text || '');
+                    const perPlantMatch = content.match(/Watered this plant with\\s*([\\d.]+)\\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\\b/i);
+                    const perPlantMl = perPlantMatch ? toMl(perPlantMatch[1], perPlantMatch[2]) : 0;
+                    if (perPlantMl > 0) waterMl += perPlantMl;
 
-                // Read each saved product bullet independently. Put ml/L before ml so the
-                // longer unit is not accidentally consumed as plain ml.
-                content.split(/\r?\n/).forEach(line => {
-                    const productLine = line.match(/^\s*[•*-]\s*(.*?)\s*\((.*?)\)\s*$/);
-                    if (!productLine) return;
-                    const productName = productLine[1].trim();
-                    const dosage = productLine[2].trim();
-                    const dosageMatch = dosage.match(/(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?\s*(ml\/L|ml|tsp)\b/i);
-                    if (!productName || !dosageMatch) return;
+                    // Nutrient product lines are counted only in entries where nutrients were used.
+                    // ml/L dosages are calculated from that same entry's per-plant water amount.
+                    content.split(/\\r?\\n/).forEach(line => {
+                        const productLine = line.match(/^\\s*[•*-]\\s*(.*?)\\s*\\((.*?)\\)\\s*$/);
+                        if (!productLine) return;
+                        const productName = productLine[1].trim();
+                        const dosage = productLine[2].trim();
+                        const dosageMatch = dosage.match(/(\\d+(?:\\.\\d+)?)(?:\\s*[-–]\\s*(\\d+(?:\\.\\d+)?))?\\s*(ml\\/L|ml|tsp)\\b/i);
+                        if (!productName || !dosageMatch) return;
 
-                    let amount = Number(dosageMatch[1]);
-                    // If a library recommendation is a range (e.g. 1-2 ml/L), use its
-                    // midpoint as a transparent estimate for the cumulative total.
-                    if (dosageMatch[2]) amount = (amount + Number(dosageMatch[2])) / 2;
-                    const unit = dosageMatch[3].toLowerCase();
-                    let usedMl = 0;
-                    if (unit === 'ml') usedMl = amount;
-                    else if (unit === 'tsp') usedMl = toMl(amount, unit);
-                    else {
-                        const tank = content.match(/(?:Filled tank with|Watering can filled with)\s*([\d.]+)\s*(Liters|Litres|L|Gallons|gal)/i);
-                        if (tank) {
-                            const tankLitres = toMl(tank[1], tank[2]) / 1000;
-                            usedMl = amount * tankLitres;
-                        }
-                    }
-                    if (usedMl > 0) nutrientTotals[productName] = (nutrientTotals[productName] || 0) + usedMl;
+                        let amount = Number(dosageMatch[1]);
+                        if (dosageMatch[2]) amount = (amount + Number(dosageMatch[2])) / 2;
+                        const unit = dosageMatch[3].toLowerCase();
+                        let usedMl = 0;
+                        if (unit === 'ml') usedMl = amount;
+                        else if (unit === 'tsp') usedMl = toMl(amount, unit);
+                        else if (perPlantMl > 0) usedMl = amount * (perPlantMl / 1000);
+
+                        if (usedMl > 0) nutrientTotals[productName] = (nutrientTotals[productName] || 0) + usedMl;
+                    });
                 });
             });
             return { waterMl, nutrientTotals };
         }
-
         function formatJournalVolume(ml) {
             if (ml >= 1000) return (ml / 1000).toFixed(2).replace(/\.?0+$/, '') + ' L';
             return ml.toFixed(1).replace(/\.?0+$/, '') + ' ml';
@@ -6755,7 +6750,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function renderJournalLogs(p) {
             const container = document.getElementById('journal-logs-container');
-            const usage = getJournalUsageTotals(p);
+            const usage = getJournalUsageTotals();
             const rainfall = getJournalCumulativeRainfall(p);
             const usageSummary = `
                 <div class="grid grid-cols-2 gap-2 mb-3">
@@ -6962,7 +6957,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             }
 
-            if (type === 'Water') {
+            if (type === 'Water' || type === 'Feed') {
                 const perPlantAmount = document.getElementById('volume-per-plant-amount').value.trim();
                 const perPlantUnit = document.getElementById('volume-per-plant-unit').value;
                 if (perPlantAmount && (!Number.isFinite(Number(perPlantAmount)) || Number(perPlantAmount) <= 0)) {
@@ -6970,8 +6965,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     return;
                 }
                 const waterDetails = [];
-                if (tankVol) waterDetails.push(`Watering can filled with ${tankVol} ${tankUnit} pure water.`);
-                if (perPlantAmount) waterDetails.push(`Watered this plant with ${perPlantAmount} ${perPlantUnit}.`);
+                if (type === 'Water' && tankVol) waterDetails.push(`Watering can filled with ${tankVol} ${tankUnit} pure water.`);
+                if (perPlantAmount && !text.includes('Watered this plant with')) waterDetails.push(`Watered this plant with ${perPlantAmount} ${perPlantUnit}.`);
                 if (waterDetails.length) text = waterDetails.join(' ') + ' ' + text;
             }
 
