@@ -5239,8 +5239,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             const nfcOption = document.getElementById('scan-option-nfc');
             const qrOption = document.getElementById('scan-option-qr');
-            if (nfcOption) nfcOption.classList.toggle('hidden', preference !== 'nfc');
-            if (qrOption) qrOption.classList.toggle('hidden', preference !== 'qr');
+            if (nfcOption) {
+                const hideNfcOption = preference !== 'nfc';
+                nfcOption.classList.toggle('hidden', hideNfcOption);
+                nfcOption.style.display = hideNfcOption ? 'none' : '';
+            }
+            if (qrOption) {
+                const hideQrOption = preference !== 'qr';
+                qrOption.classList.toggle('hidden', hideQrOption);
+                qrOption.style.display = hideQrOption ? 'none' : '';
+            }
+            if (preference === 'none') {
+                document.getElementById('scan-options-overlay')?.classList.add('hidden');
+                document.getElementById('qr-scan-overlay')?.classList.add('hidden');
+            }
             const nfcFormSection = document.getElementById('plant-nfc-section');
             const qrFormSection = document.getElementById('plant-qr-link-section');
             if (nfcFormSection) nfcFormSection.classList.toggle('hidden', preference !== 'nfc');
@@ -5256,7 +5268,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 ? '<img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" style="display:block; width:20px; height:20px; margin:0 auto; object-fit:contain; filter:brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" />'
                 : '<i class="fa-solid fa-qrcode text-lg" style="display:block; margin:0 auto;"></i>';
             const scannerTabLabel = document.getElementById('scanner-tab-label');
-            if (scannerTabLabel) scannerTabLabel.textContent = preference === 'nfc' ? 'NFC Scan' : 'QR Scan';
+            if (scannerTabLabel) scannerTabLabel.textContent = preference === 'nfc' ? 'NFC Scan' : preference === 'qr' ? 'QR Scan' : '';
         }
 
         function scannerPreferenceChanged() {
