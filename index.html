@@ -2276,7 +2276,7 @@ textarea {
                 <span>Plants</span>
             </button>
             <button onclick="switchTab('scanner')" id="tab-scanner" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
-                <i class="fa-solid fa-qrcode"></i>
+                <span id="scanner-tab-icon" class="inline-flex items-center justify-center"><i class="fa-solid fa-qrcode"></i></span>
                 <span>Scan</span>
             </button>
             <button onclick="openAddPlantModal()" id="tab-add-plant" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
@@ -5238,8 +5238,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const currentPlantId = document.getElementById('log-plant-id')?.value;
             const currentPlant = currentPlantId ? plants.find(item => String(item.id) === String(currentPlantId)) : null;
             if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc' || !!String(currentPlant?.qrCodeValue || '').trim());
-            const scannerTabIcon = scannerTab?.querySelector('i');
-            if (scannerTabIcon) scannerTabIcon.className = preference === 'qr' ? 'fa-solid fa-qrcode' : 'fa-solid fa-wifi';
+            const scannerTabIcon = document.getElementById('scanner-tab-icon');
+            if (scannerTabIcon) scannerTabIcon.innerHTML = preference === 'nfc'
+                ? '<img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" class="inline-block w-4 h-4 object-contain" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" />'
+                : '<i class="fa-solid fa-qrcode"></i>';
         }
 
         function scannerPreferenceChanged() {
