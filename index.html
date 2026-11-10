@@ -3052,7 +3052,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         <div id="tank-volume-section" class="hidden p-3 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
                                 <i class="fa-solid fa-droplet text-emerald-600"></i>
-                                <span>Tank Fill Volume</span>
+                                <span id="tank-volume-label">Tank Fill Volume</span>
                             </label>
                             <div class="flex gap-2">
                                 <input type="number" id="tank-volume-amount" step="0.1" min="0" placeholder="e.g. 10" class="flex-1 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
@@ -6001,6 +6001,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const librarySec = document.getElementById('nutrient-library-section');
             const tankSec = document.getElementById('tank-volume-section');
             const mediumSec = document.getElementById('growth-medium-section');
+            const tankLabel = document.getElementById('tank-volume-label');
+            if (tankLabel) tankLabel.textContent = logType === 'Water' ? 'Watering Can Fill Volume' : 'Tank Fill Volume';
             if (mediumSec) mediumSec.classList.toggle('hidden', logType !== 'Medium');
             
             if (logType === 'Feed') {
@@ -6677,7 +6679,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             logs.forEach(log => {
                 const content = String(log.text || '');
-                const tankMatches = [...content.matchAll(/Filled tank with\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+(?:pure\s+)?water/gi)];
+                const tankMatches = [...content.matchAll(/(?:Filled tank with|Watering can filled with)\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+(?:pure\s+)?water/gi)];
                 tankMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
                 const canMatches = [...content.matchAll(/Watering can:\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+water/gi)];
                 canMatches.forEach(match => { waterMl += toMl(match[1], match[2]); });
@@ -6701,7 +6703,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (unit === 'ml') usedMl = amount;
                     else if (unit === 'tsp') usedMl = toMl(amount, unit);
                     else {
-                        const tank = content.match(/Filled tank with\s*([\d.]+)\s*(Liters|Litres|L|Gallons|gal)/i);
+                        const tank = content.match(/(?:Filled tank with|Watering can filled with)\s*([\d.]+)\s*(Liters|Litres|L|Gallons|gal)/i);
                         if (tank) {
                             const tankLitres = toMl(tank[1], tank[2]) / 1000;
                             usedMl = amount * tankLitres;
@@ -6947,7 +6949,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
 
             if (type === 'Water' && tankVol) {
-                const waterPrefix = `Filled tank with ${tankVol} ${tankUnit} pure water. `;
+                const waterPrefix = `Watering can filled with ${tankVol} ${tankUnit} pure water. `;
                 text = waterPrefix + text;
             }
 
