@@ -2700,7 +2700,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-quantity">Quantity</label>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-quantity">Quantity / total seeds sown</label>
                         <input type="number" id="plant-quantity" min="1" step="1" value="1" required class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 10">
                     </div>
                     <div>
@@ -2717,9 +2717,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             Multisow seeds (multiple seeds per pot / plug)
                         </label>
                         <div id="plant-multisow-details" class="hidden">
-                            <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-pots">Number of pots / plugs</label>
-                            <input type="number" id="plant-multisow-pots" min="1" step="1" value="1" required inputmode="numeric" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 6">
-                            <p class="text-[11px] text-slate-500 mt-1">Enter how many individual pots or plugs you are sowing the seeds into.</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-pots">Number of pots / plugs</label>
+                                    <input type="number" id="plant-multisow-pots" min="1" step="1" value="1" required inputmode="numeric" onchange="updateMultisowTotal()" oninput="updateMultisowTotal()" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 6">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-seeds-per-pot">Seeds per pot / plug</label>
+                                    <input type="number" id="plant-multisow-seeds-per-pot" min="1" step="1" value="2" required inputmode="numeric" onchange="updateMultisowTotal()" oninput="updateMultisowTotal()" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 4">
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-1">Total seeds sown is calculated automatically: pots / plugs × seeds per pot / plug.</p>
                         </div>
                     </div>
                     <div>
@@ -2797,7 +2805,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                             </select>
                                             <button type="button" onclick="saveJournalPlantQuantity()" class="px-3 py-2 rounded-lg text-xs font-semibold text-white" style="background:#C4557C;">Save amount</button>
                                         </div>
-                                        <p class="text-[11px]" style="color:#9b6478;">Update how many plants, seeds, or cuttings this journal tracks.</p>
+                                        <p id="journal-multisow-summary" class="hidden text-[11px]" style="color:#9b6478;"></p>
+                                        <p class="text-[11px]" style="color:#9b6478;">Update how many plants, seeds, or cuttings this journal tracks. Multisown seed totals are calculated from pots / plugs × seeds per pot / plug.</p>
                                     </div>
                                 </details>
                                 </div>
@@ -5176,6 +5185,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             // Multisowing is only meaningful for seeds; selecting it sets the quantity type.
             if (checkbox.checked) quantityType.value = 'seeds';
             details.classList.toggle('hidden', !checkbox.checked);
+            const quantity = document.getElementById('plant-quantity');
+            if (quantity) quantity.readOnly = checkbox.checked;
+            if (checkbox.checked) updateMultisowTotal();
+        }
+
+        function updateMultisowTotal() {
+            const pots = document.getElementById('plant-multisow-pots');
+            const seedsPerPot = document.getElementById('plant-multisow-seeds-per-pot');
+            const quantity = document.getElementById('plant-quantity');
+            const checkbox = document.getElementById('plant-multisow');
+            if (!pots || !seedsPerPot || !quantity || !checkbox || !checkbox.checked) return;
+            const potCount = Math.max(1, parseInt(pots.value, 10) || 1);
+            const seedsCount = Math.max(1, parseInt(seedsPerPot.value, 10) || 1);
+            quantity.value = potCount * seedsCount;
         }
 
         function openAddPlantModal() {
@@ -5194,6 +5217,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-quantity-type').value = 'plants';
             document.getElementById('plant-multisow').checked = false;
             document.getElementById('plant-multisow-pots').value = '1';
+            document.getElementById('plant-multisow-seeds-per-pot').value = '2';
             toggleMultisowFields();
             renderPlantLocationControls('');
             
@@ -5220,7 +5244,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-quantity').value = Math.max(1, Number(p.quantity) || 1);
             document.getElementById('plant-quantity-type').value = ['plants', 'seeds', 'cuttings'].includes(p.quantityType) ? p.quantityType : 'plants';
             document.getElementById('plant-multisow').checked = !!p.multisow;
-            document.getElementById('plant-multisow-pots').value = Math.max(1, Number(p.multisowPots) || Math.ceil((Number(p.quantity) || 1) / Math.max(2, Number(p.seedsPerPlug) || 2)));
+            document.getElementById('plant-multisow-pots').value = Math.max(1, Number(p.multisowPots) || 1);
+            document.getElementById('plant-multisow-seeds-per-pot').value = Math.max(1, Number(p.seedsPerPot || p.seedsPerPlug) || Math.ceil((Number(p.quantity) || 1) / Math.max(1, Number(p.multisowPots) || 1)));
             toggleMultisowFields();
             document.getElementById('plant-date').value = p.date || '';
             document.getElementById('plant-medium').value = p.medium || '';
@@ -5657,10 +5682,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 ...(pendingQrValue ? { qrCodeValue: pendingQrValue } : {}),
                 name: document.getElementById('plant-name').value,
                 variety: document.getElementById('plant-variety').value,
-                quantity: Math.max(1, parseInt(document.getElementById('plant-quantity').value, 10) || 1),
+                quantity: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds'
+                    ? Math.max(1, parseInt(document.getElementById('plant-multisow-pots').value, 10) || 1) * Math.max(1, parseInt(document.getElementById('plant-multisow-seeds-per-pot').value, 10) || 1)
+                    : Math.max(1, parseInt(document.getElementById('plant-quantity').value, 10) || 1),
                 quantityType: ['plants', 'seeds', 'cuttings'].includes(document.getElementById('plant-quantity-type').value) ? document.getElementById('plant-quantity-type').value : 'plants',
                 multisow: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds',
                 multisowPots: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds' ? Math.max(1, parseInt(document.getElementById('plant-multisow-pots').value, 10) || 1) : 0,
+                seedsPerPot: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds' ? Math.max(1, parseInt(document.getElementById('plant-multisow-seeds-per-pot').value, 10) || 1) : 0,
                 remainingSeeds: 0,
                 remainingCuttings: 0,
                 iconKey: document.getElementById('plant-icon-key').value,
@@ -5979,6 +6007,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             plant.quantity = quantity;
             plant.quantityType = ['plants', 'seeds', 'cuttings'].includes(document.getElementById('journal-quantity-type').value) ? document.getElementById('journal-quantity-type').value : 'plants';
+            if (plant.quantityType !== 'seeds') {
+                plant.multisow = false;
+                plant.multisowPots = 0;
+                plant.seedsPerPot = 0;
+            }
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             markFloraSyncPending();
             await syncPlantToCloud(plant);
@@ -6104,6 +6137,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             document.getElementById('journal-quantity').value = Math.max(1, Number(p.quantity) || 1);
             document.getElementById('journal-quantity-type').value = ['plants', 'seeds', 'cuttings'].includes(p.quantityType) ? p.quantityType : 'plants';
+            const journalMultisowSummary = document.getElementById('journal-multisow-summary');
+            if (journalMultisowSummary) {
+                journalMultisowSummary.textContent = p.multisow && p.quantityType === 'seeds'
+                    ? 'Multisown: ' + Number(p.quantity || 0) + ' total seeds (' + Number(p.multisowPots || 0) + ' pots / plugs × ' + Number(p.seedsPerPot || 0) + ' seeds each).'
+                    : '';
+                journalMultisowSummary.classList.toggle('hidden', !(p.multisow && p.quantityType === 'seeds'));
+            }
             document.getElementById('journal-name').textContent = p.name;
             document.getElementById('journal-variety').textContent = p.variety || 'Standard Variety';
             document.getElementById('journal-date').textContent = p.date || 'Not specified';
