@@ -2705,7 +2705,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-quantity-type">Quantity type</label>
-                        <select id="plant-quantity-type" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <select id="plant-quantity-type" onchange="toggleMultisowFields()" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                             <option value="plants">Plants</option>
                             <option value="seeds">Seeds sown</option>
                             <option value="cuttings">Cuttings</option>
@@ -5173,9 +5173,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const details = document.getElementById('plant-multisow-details');
             const quantityType = document.getElementById('plant-quantity-type');
             if (!checkbox || !details || !quantityType) return;
-            const enabled = checkbox.checked && quantityType.value === 'seeds';
-            details.classList.toggle('hidden', !enabled);
-            checkbox.disabled = quantityType.value !== 'seeds';
+            // Multisowing is only meaningful for seeds; selecting it sets the quantity type.
+            if (checkbox.checked) quantityType.value = 'seeds';
+            details.classList.toggle('hidden', !checkbox.checked);
         }
 
         function openAddPlantModal() {
