@@ -6696,18 +6696,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             allPlants.forEach(plant => {
                 (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
                     const content = String(log.text || '');
-                    const perPlantMatch = content.match(/Watered this plant with\\s*([\\d.]+)\\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\\b/i);
+                    const perPlantMatch = content.match(/Watered this plant with\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\b/i);
                     const perPlantMl = perPlantMatch ? toMl(perPlantMatch[1], perPlantMatch[2]) : 0;
                     if (perPlantMl > 0) waterMl += perPlantMl;
 
                     // Nutrient product lines are counted only in entries where nutrients were used.
                     // ml/L dosages are calculated from that same entry's per-plant water amount.
-                    content.split(/\\r?\\n/).forEach(line => {
-                        const productLine = line.match(/^\\s*[•*-]\\s*(.*?)\\s*\\((.*?)\\)\\s*$/);
+                    content.split(/\r?\n/).forEach(line => {
+                        const productLine = line.match(/^\s*[•*-]\s*(.*?)\s*\((.*?)\)\s*$/);
                         if (!productLine) return;
                         const productName = productLine[1].trim();
                         const dosage = productLine[2].trim();
-                        const dosageMatch = dosage.match(/(\\d+(?:\\.\\d+)?)(?:\\s*[-–]\\s*(\\d+(?:\\.\\d+)?))?\\s*(ml\\/L|ml|tsp)\\b/i);
+                        const dosageMatch = dosage.match(/(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?\s*(ml\/L|ml|tsp)\b/i);
                         if (!productName || !dosageMatch) return;
 
                         let amount = Number(dosageMatch[1]);
