@@ -2654,13 +2654,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <input type="hidden" id="plant-icon-key" value="cucumber">
 
 
-                <div id="plant-qr-link-section" class="p-4 rounded-xl space-y-3" style="background:#fff0f4;border:1px solid #e8a7bd">
-                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style="color:#a63d65"><i class="fa-solid fa-qrcode"></i><span>Link an Existing QR Code</span></div>
-                    <p class="text-xs" style="color:#986b7b">Already have a Flora Scan QR tag? Scan it here to assign its unique ID to this new plant.</p>
-                    <button type="button" onclick="startQrScan('link')" class="w-full rounded-xl py-2.5 text-sm font-semibold" style="background:#c6537b;color:white"><i class="fa-solid fa-camera mr-1"></i> Scan Existing QR Code</button>
-                    <p id="plant-qr-link-status" class="text-xs" style="color:#986b7b" role="status" aria-live="polite">No QR code linked yet. You can also add the plant without one.</p>
-                </div>
-
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <!-- Plant Name with Predictive Autocomplete -->
                     <div class="relative">
@@ -2682,6 +2675,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         <!-- SVG Icon buttons injected dynamically -->
                     </div>
                     <p class="text-[11px] text-slate-400 mt-1.5"><span id="selected-icon-name-display" class="font-semibold text-emerald-600 dark:text-emerald-400">Cucumber / Gherkin</span></p>
+                </div>
+
+                <div id="plant-qr-link-section" class="p-4 rounded-xl space-y-3" style="background:#fff0f4;border:1px solid #e8a7bd">
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style="color:#a63d65"><i class="fa-solid fa-qrcode"></i><span>Link an Existing QR Code</span></div>
+                    <p class="text-xs" style="color:#986b7b">Already have a Flora Scan QR tag? Scan it here to assign its unique ID to this new plant.</p>
+                    <button type="button" onclick="startQrScan('link')" class="w-full rounded-xl py-2.5 text-sm font-semibold" style="background:#c6537b;color:white"><i class="fa-solid fa-camera mr-1"></i> Scan Existing QR Code</button>
+                    <p id="plant-qr-link-status" class="text-xs" style="color:#986b7b" role="status" aria-live="polite">No QR code linked yet. You can also add the plant without one.</p>
                 </div>
 
                 <div id="plant-nfc-section"                <div id="plant-nfc-section" class="p-4 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
