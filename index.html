@@ -6016,7 +6016,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const tankLabel = document.getElementById('tank-volume-label');
             const perPlantField = document.getElementById('volume-per-plant-field');
             if (tankLabel) tankLabel.textContent = logType === 'Water' ? 'Watering Can Fill Volume' : 'Tank Fill Volume';
-            if (perPlantField) perPlantField.classList.toggle('hidden', logType !== 'Water' && logType !== 'Feed');
+            const wateringCanEnabled = document.getElementById('nutrient-watering-can-enabled');
+            if (perPlantField) {
+                const showPerPlantVolume = logType === 'Water' || (logType === 'Feed' && wateringCanEnabled && wateringCanEnabled.checked);
+                perPlantField.classList.toggle('hidden', !showPerPlantVolume);
+            }
             if (mediumSec) mediumSec.classList.toggle('hidden', logType !== 'Medium');
             
             if (logType === 'Feed') {
@@ -6035,6 +6039,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function toggleWateringCanFields() {
             const enabled = document.getElementById('nutrient-watering-can-enabled').checked;
             document.getElementById('nutrient-watering-can-fields').classList.toggle('hidden', !enabled);
+            const perPlantField = document.getElementById('volume-per-plant-field');
+            const logType = document.getElementById('log-type').value;
+            if (perPlantField) {
+                const showPerPlantVolume = logType === 'Water' || (logType === 'Feed' && enabled);
+                perPlantField.classList.toggle('hidden', !showPerPlantVolume);
+            }
+            if (!enabled && logType === 'Feed') {
+                document.getElementById('volume-per-plant-amount').value = '';
+            }
         }
 
         // Returns a journal-ready summary, or null when enabled fields are invalid.
@@ -6963,7 +6976,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
 
             if (type === 'Water' || type === 'Feed') {
-                const perPlantAmount = document.getElementById('volume-per-plant-amount').value.trim();
+                const wateringCanEnabled = type === 'Feed' && document.getElementById('nutrient-watering-can-enabled').checked;
+                const perPlantAmount = (type === 'Water' || wateringCanEnabled)
+                    ? document.getElementById('volume-per-plant-amount').value.trim()
+                    : '';
                 const perPlantUnit = document.getElementById('volume-per-plant-unit').value;
                 if (perPlantAmount && (!Number.isFinite(Number(perPlantAmount)) || Number(perPlantAmount) <= 0)) {
                     alert('Enter a volume per plant greater than zero.');
