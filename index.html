@@ -5292,14 +5292,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc' || !!String(currentPlant?.qrCodeValue || '').trim());
             const headerScannerIcon = document.getElementById('header-scanner-mode-icon');
             if (headerScannerIcon) {
-                const scannerModeDetails = preference === 'nfc'
-                    ? { title: 'Scanning mode: NFC', markup: '<img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" class="w-4 h-4 object-contain" style="filter:brightness(0) saturate(100%) invert(79%) sepia(18%) saturate(590%) hue-rotate(292deg) brightness(101%) contrast(91%);" />' }
-                    : preference === 'qr'
-                        ? { title: 'Scanning mode: QR code', markup: '<i class="fa-solid fa-qrcode text-white text-sm" aria-hidden="true"></i>' }
-                        : { title: 'Scanning mode: scanning disabled', markup: '<i class="fa-solid fa-ban text-white/80 text-sm" aria-hidden="true"></i>' };
-                headerScannerIcon.innerHTML = scannerModeDetails.markup;
-                headerScannerIcon.title = scannerModeDetails.title;
-                headerScannerIcon.setAttribute('aria-label', scannerModeDetails.title);
+                if (preference === 'none') {
+                    headerScannerIcon.innerHTML = '';
+                    headerScannerIcon.hidden = true;
+                    headerScannerIcon.removeAttribute('title');
+                    headerScannerIcon.removeAttribute('aria-label');
+                } else {
+                    headerScannerIcon.hidden = false;
+                    const scannerModeDetails = preference === 'nfc'
+                        ? { title: 'Scanning mode: NFC', markup: '<img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" class="w-4 h-4 object-contain" style="filter:brightness(0) saturate(100%) invert(79%) sepia(18%) saturate(590%) hue-rotate(292deg) brightness(101%) contrast(91%);" />' }
+                        : { title: 'Scanning mode: QR code', markup: '<i class="fa-solid fa-qrcode text-sm" style="color:#f2a6c1;" aria-hidden="true"></i>' };
+                    headerScannerIcon.innerHTML = scannerModeDetails.markup;
+                    headerScannerIcon.title = scannerModeDetails.title;
+                    headerScannerIcon.setAttribute('aria-label', scannerModeDetails.title);
+                }
             }
             const scannerTabIcon = document.getElementById('scanner-tab-icon');
             if (scannerTabIcon) scannerTabIcon.innerHTML = preference === 'nfc'
