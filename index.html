@@ -5292,6 +5292,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (scannerTabLabel) scannerTabLabel.textContent = preference === 'nfc' ? 'NFC Scan' : preference === 'qr' ? 'QR Scan' : '';
         }
 
+        /* Mobile scanner preference checkbox uses Flora Scan's dark pink brand accent. */
+        @media (max-width: 767px) {
+            #setting-remember-scanner-preference {
+                accent-color: #C4557C;
+            }
+        }
+
         function scannerPreferenceChanged() {
             const status = document.getElementById('setting-scanner-preference-status');
             if (status) status.textContent = 'You have an unsaved change. Select Save preference to apply it.';
