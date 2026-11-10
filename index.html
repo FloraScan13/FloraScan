@@ -2711,6 +2711,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <option value="cuttings">Cuttings</option>
                         </select>
                     </div>
+                    <div class="sm:col-span-2 rounded-xl border border-slate-200 dark:border-slate-700 p-3 space-y-2">
+                        <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            <input type="checkbox" id="plant-multisow" class="rounded" onchange="toggleMultisowFields()">
+                            Multisow seeds (multiple seeds per pot / plug)
+                        </label>
+                        <div id="plant-multisow-details" class="hidden">
+                            <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-seeds-per-plug">Seeds per pot / plug</label>
+                            <input type="number" id="plant-seeds-per-plug" min="2" step="1" value="2" inputmode="numeric" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 3">
+                            <p class="text-[11px] text-slate-500 mt-1">Quantity is the total number of seeds. The number of pots / plugs is calculated from this and the seeds per pot / plug.</p>
+                        </div>
+                    </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Date Planted / Sown</label>
                         <input type="date" id="plant-date" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
@@ -5157,6 +5168,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const updated = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'just now';
             panel.textContent = t + '     ' + h;
         }
+        function toggleMultisowFields() {
+            const checkbox = document.getElementById('plant-multisow');
+            const details = document.getElementById('plant-multisow-details');
+            const quantityType = document.getElementById('plant-quantity-type');
+            if (!checkbox || !details || !quantityType) return;
+            const enabled = checkbox.checked && quantityType.value === 'seeds';
+            details.classList.toggle('hidden', !enabled);
+            checkbox.disabled = quantityType.value !== 'seeds';
+        }
+
         function openAddPlantModal() {
             setActiveNavigationTab('add-plant');
             document.getElementById('modal-title').textContent = 'Add New Plant';
@@ -5171,6 +5192,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (qrLinkStatus) qrLinkStatus.textContent = 'No QR code linked yet.';
             document.getElementById('plant-quantity').value = '1';
             document.getElementById('plant-quantity-type').value = 'plants';
+            document.getElementById('plant-multisow').checked = false;
+            document.getElementById('plant-seeds-per-plug').value = '2';
+            toggleMultisowFields();
             renderPlantLocationControls('');
             
             renderIconPickerGrid('cucumber');
@@ -5195,6 +5219,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-variety').value = p.variety || '';
             document.getElementById('plant-quantity').value = Math.max(1, Number(p.quantity) || 1);
             document.getElementById('plant-quantity-type').value = ['plants', 'seeds', 'cuttings'].includes(p.quantityType) ? p.quantityType : 'plants';
+            document.getElementById('plant-multisow').checked = !!p.multisow;
+            document.getElementById('plant-seeds-per-plug').value = Math.max(2, Number(p.seedsPerPlug) || 2);
+            toggleMultisowFields();
             document.getElementById('plant-date').value = p.date || '';
             document.getElementById('plant-medium').value = p.medium || '';
             renderPlantLocationControls(p.location || '');
@@ -5632,6 +5659,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 variety: document.getElementById('plant-variety').value,
                 quantity: Math.max(1, parseInt(document.getElementById('plant-quantity').value, 10) || 1),
                 quantityType: ['plants', 'seeds', 'cuttings'].includes(document.getElementById('plant-quantity-type').value) ? document.getElementById('plant-quantity-type').value : 'plants',
+                multisow: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds',
+                seedsPerPlug: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds' ? Math.max(2, parseInt(document.getElementById('plant-seeds-per-plug').value, 10) || 2) : 1,
                 remainingSeeds: 0,
                 remainingCuttings: 0,
                 iconKey: document.getElementById('plant-icon-key').value,
@@ -5664,7 +5693,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     id: 'log_' + Date.now() + '_growth',
                     date: plantData.date || localToday,
                     type: 'Growth',
-                    text: 'Initial amount recorded: ' + plantData.quantity + ' ' + quantityLabel.toLowerCase()
+                    text: plantData.multisow
+                        ? 'Multisown: ' + plantData.quantity + ' seeds, ' + plantData.seedsPerPlug + ' per pot / plug (' + Math.ceil(plantData.quantity / plantData.seedsPerPlug) + ' pots / plugs)'
+                        : 'Initial amount recorded: ' + plantData.quantity + ' ' + quantityLabel.toLowerCase()
                 };
                 plantData.logs.unshift(initialGrowthLog);
 
