@@ -6725,11 +6725,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         || content.match(/(?:Filled tank with|Watering can filled with)\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+(?:pure\s+)?water/i);
                     const canWaterMl = canWaterMatch ? toMl(canWaterMatch[1], canWaterMatch[2]) : 0;
 
-                    // If no per-plant amount was entered, a Feed/Water tank fill is
-                    // treated as the full volume applied to this journal's plants.
-                    const totalEntryWaterMl = perPlantMl > 0
-                        ? perPlantMl * plantCount
-                        : canWaterMl;
+                    // When a tank/watering-can volume is recorded, count that
+                    // exact volume once. Do not multiply tank-based water or nutrients
+                    // by the number of plants. Plant quantity applies only to
+                    // per-plant watering entries without a tank volume.
+                    const totalEntryWaterMl = canWaterMl > 0
+                        ? canWaterMl
+                        : perPlantMl * plantCount;
                     if (totalEntryWaterMl > 0) waterMl += totalEntryWaterMl;
 
                     // Nutrient totals are the proportion of the mixed can actually applied:
