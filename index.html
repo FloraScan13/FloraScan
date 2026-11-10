@@ -6,6 +6,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <script>
+        // Identify a browser reload before the first page paint so the welcome
+        // overlay never flashes ahead of the refresh screen.
+        try {
+            const navigation = performance.getEntriesByType('navigation')[0];
+            if (navigation && navigation.type === 'reload') {
+                document.documentElement.classList.add('flora-refresh-navigation');
+            }
+        } catch (error) {
+            console.warn('Could not identify page navigation type:', error);
+        }
+    </script>
     <title>Flora Scan - Plant Tag & Growth Journal</title>
     <link rel="icon" type="image/svg+xml" href="./leaf-icon-v2.svg">
     <link rel="apple-touch-icon" href="./leaf-icon-v2.svg">
@@ -114,6 +126,19 @@
                 animation: flora-refresh-spin .8s linear infinite;
             }
             @keyframes flora-refresh-spin { to { transform: rotate(360deg); } }
+        }
+
+        @media (max-width: 768px) {
+            html.flora-refresh-navigation #mobile-welcome-screen {
+                opacity: 0 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+            }
+            html.flora-refresh-navigation #mobile-refresh-screen {
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+            }
         }
 
         /* Mobile welcome screen shown while the app restores its plant data. */
@@ -3528,6 +3553,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function hideMobileRefreshScreen() {
             const screen = document.getElementById('mobile-refresh-screen');
+            document.documentElement.classList.remove('flora-refresh-navigation');
             if (screen) screen.classList.add('is-hidden');
         }
 
