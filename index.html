@@ -1792,6 +1792,50 @@ textarea {
         @keyframes nfc-blink { 50% { opacity: .3; } }
         @media (prefers-reduced-motion: reduce) { .nfc-wave, .nfc-overlay-hint i { animation: none; } }
 
+
+    /* The Add Plant multisow checkbox should have no pale native border or focus halo when selected. */
+    #plant-modal #plant-multisow,
+    #plant-modal #plant-multisow:checked,
+    #plant-modal #plant-multisow:focus,
+    #plant-modal #plant-multisow:focus-visible,
+    #plant-modal #plant-multisow:active {
+        accent-color: #C4557C !important;
+        border: 0 !important;
+        outline: 0 !important;
+        box-shadow: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px !important;
+        min-height: 16px !important;
+        border-radius: 4px !important;
+        background-color: #ffffff !important;
+        background-image: none !important;
+        vertical-align: middle !important;
+        position: relative !important;
+    }
+    #plant-modal #plant-multisow:checked {
+        background-color: #C4557C !important;
+        border: 0 !important;
+    }
+    #plant-modal #plant-multisow:checked::after {
+        content: "" !important;
+        position: absolute !important;
+        left: 5px !important;
+        top: 1px !important;
+        width: 4px !important;
+        height: 9px !important;
+        border: solid #ffffff !important;
+        border-width: 0 2px 2px 0 !important;
+        transform: rotate(45deg) !important;
+    }
+    #plant-modal #plant-multisow:focus,
+    #plant-modal #plant-multisow:focus-visible,
+    #plant-modal #plant-multisow:active {
+        outline: none !important;
+        box-shadow: none !important;
+    }
 </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 <style>
