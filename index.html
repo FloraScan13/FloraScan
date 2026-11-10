@@ -6467,18 +6467,27 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return;
             }
 
-            container.innerHTML = usageSummary + p.logs.map((log, idx) => `
+            // Display entries by the date they describe, not the order they were entered.
+            // Keep each original array index for legacy logs that do not yet have an ID.
+            const timelineLogs = p.logs
+                .map((log, originalIndex) => ({ log, originalIndex }))
+                .sort((a, b) => {
+                    const dateA = /^\\d{4}-\\d{2}-\\d{2}$/.test(a.log.date || '') ? a.log.date : '';
+                    const dateB = /^\\d{4}-\\d{2}-\\d{2}$/.test(b.log.date || '') ? b.log.date : '';
+                    return dateB.localeCompare(dateA) || a.originalIndex - b.originalIndex;
+                });
+            container.innerHTML = usageSummary + timelineLogs.map(({ log, originalIndex }) => `
                 <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-start">
                     <div class="space-y-1">
                         <div class="flex items-center space-x-2">
                             <span class="font-bold text-slate-700 dark:text-slate-300">${log.type || 'Growth'}</span>
                             ${log.growthStage ? '<span class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">' + escapeHtml(log.growthStage) + '</span>' : ''}
-                            <span class="text-[10px] text-slate-400">• ${log.date}</span>
+                            <span class="text-[10px] text-slate-400">• ${log.date || 'Date not set'}</span>
                         </div>
                         <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${formatGrowthLogText(log.text)}</p>
                         ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a>').join('') + '</div>' : ''}
                     </div>
-                    <div class="flex items-center gap-2 flex-shrink-0"><button type="button" onclick="editJournalLog('${p.id}', '${log.id || idx}')" aria-label="Edit growth log" title="Edit entry" class="text-emerald-700 hover:text-emerald-900 p-1"><i class="fa-solid fa-pen"></i></button><button type="button" onclick="deleteJournalLog('${p.id}', '${log.id || idx}')" aria-label="Delete growth log" title="Delete entry" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button></div>
+                    <div class="flex items-center gap-2 flex-shrink-0"><button type="button" onclick="editJournalLog('${p.id}', '${log.id || originalIndex}')" aria-label="Edit growth log" title="Edit entry" class="text-emerald-700 hover:text-emerald-900 p-1"><i class="fa-solid fa-pen"></i></button><button type="button" onclick="deleteJournalLog('${p.id}', '${log.id || originalIndex}')" aria-label="Delete growth log" title="Delete entry" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button></div>
                 </div>
             `).join('');
         }
