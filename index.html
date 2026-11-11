@@ -5206,6 +5206,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 </div>
                                 <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate">${escapeHtml(p.variety || 'Standard Variety')}</p>
                                 <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${p.quantityType === 'seeds' ? (Number(p.quantity || 1) + ' seeds sown') : (Number(p.quantity || 1) + ' ' + (p.quantityType === 'cuttings' ? (Number(p.quantity || 1) === 1 ? 'cutting' : 'cuttings') : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')))}${p.multisow && p.quantityType === 'seeds' ? ' · ' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType === 'plugs' ? 'plugs' : 'pots') + ' × ' + Number(p.seedsPerPot || 0) + ' seeds each' : ''}${Number(p.remainingSeeds) > 0 ? ' · ' + Number(p.remainingSeeds) + ' seeds left' : ''}${Number(p.remainingCuttings || (p.quantityType === 'cuttings' ? p.quantity : 0)) > 0 && p.quantityType !== 'cuttings' ? ' · ' + Number(p.remainingCuttings) + ' cuttings left' : ''}</p>
+                                ${feedReminderMarkup}
                             </div>
                             <details class="relative flex-shrink-0" onclick="event.stopPropagation()">
                                 <summary class="list-none cursor-pointer p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-300 hover:bg-slate-200/70 dark:hover:bg-slate-700 rounded-lg transition" aria-label="Plant actions" title="Plant actions" onclick="event.stopPropagation()"><i class="fa-solid fa-ellipsis-vertical"></i></summary>
@@ -5218,7 +5219,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
-                                ${feedReminderMarkup}
 
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
                                 <span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-2"><i class="fa-solid fa-book-open mr-1 text-[10px]"></i> ${p.logs ? p.logs.length : 0} Growth Logs</span>
