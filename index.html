@@ -3031,7 +3031,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <button type="button" onclick="closeFeedReminderManager()" class="p-2 rounded-lg text-brand-800" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5 space-y-3">
-                <button type="button" onclick="recordFeedReminderCompleted()" class="w-full flex items-center gap-3 rounded-xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900/40 text-brand-900 dark:text-brand-50 px-4 py-3 text-left dark: ">
+                <button id="feed-reminder-complete-button" type="button" onclick="recordFeedReminderCompleted()" class="w-full flex items-center gap-3 rounded-xl border border-brand-200 dark:border-brand-700 bg-white dark:bg-brand-900/40 text-brand-900 dark:text-brand-50 px-4 py-3 text-left dark: disabled:opacity-45 disabled:cursor-not-allowed">
                     <i class="fa-solid fa-check-circle text-lg text-brand-800"></i><span><strong class="block text-sm">I've fed this plant</strong><span class="block text-xs opacity-90">Record today and schedule the next feed</span></span>
                 </button>
                 <button type="button" onclick="document.getElementById('feed-reminder-manage-edit').classList.toggle('hidden')" class="w-full flex items-center gap-3 rounded-xl border border-brand-200 dark:border-brand-800 bg-white dark:bg-brand-900/40 text-brand-900 dark:text-brand-50 px-4 py-3 text-left dark: ">
@@ -6366,6 +6366,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return;
             }
             activeFeedReminderContext = { plant, reminderLog };
+            const completeButton = document.getElementById('feed-reminder-complete-button');
+            if (completeButton) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayKey = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+                const scheduledKey = String(reminderLog.feedReminderDate || '');
+                const isTooEarly = !scheduledKey || todayKey < scheduledKey;
+                completeButton.disabled = isTooEarly;
+                completeButton.title = isTooEarly
+                    ? 'Available from ' + (scheduledKey ? new Date(scheduledKey + 'T00:00:00').toLocaleDateString('en-GB') : 'the scheduled day')
+                    : '';
+                completeButton.setAttribute('aria-disabled', String(isTooEarly));
+            }
             const interval = document.getElementById('feed-reminder-manage-interval');
             const unit = document.getElementById('feed-reminder-manage-unit');
             if (interval) interval.value = Number(reminderLog.feedReminderInterval) || 1;
@@ -6429,6 +6442,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function recordFeedReminderCompleted() {
             if (!activeFeedReminderContext) return;
             const { plant, reminderLog } = activeFeedReminderContext;
+            const todayCheck = new Date();
+            todayCheck.setHours(0, 0, 0, 0);
+            const todayKey = [todayCheck.getFullYear(), String(todayCheck.getMonth() + 1).padStart(2, '0'), String(todayCheck.getDate()).padStart(2, '0')].join('-');
+            if (!reminderLog.feedReminderDate || todayKey < String(reminderLog.feedReminderDate)) return;
             const interval = Number(reminderLog.feedReminderInterval);
             if (!Number.isInteger(interval) || interval < 1) {
                 alert('This reminder has an invalid repeat interval. Please edit the schedule first.');
