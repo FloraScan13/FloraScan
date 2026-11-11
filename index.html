@@ -5623,7 +5623,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!['nfc', 'qr', 'none'].includes(preference)) return;
             const rememberPreference = document.getElementById('setting-remember-scanner-preference');
             appSettings.rememberScannerPreference = rememberPreference ? rememberPreference.checked : true;
-            appSettings.scannerPreference = appSettings.rememberScannerPreference ? preference : 'nfc';
+            // Always persist the selected mode, including "none", regardless of the remember toggle.
+            appSettings.scannerPreference = preference;
             localStorage.setItem('flora_settings', JSON.stringify(appSettings));
             applyScannerPreference();
             const savedPreference = appSettings.scannerPreference;
@@ -5884,18 +5885,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const pendingNfcId = document.getElementById('plant-nfc-pending-id').value;
             const pendingQrValue = document.getElementById('plant-qr-pending-value').value;
             const scannerPreference = getScannerPreference();
-            const qrSection = document.getElementById('plant-qr-link-section');
-            const nfcSection = document.getElementById('plant-nfc-section');
-            const qrSectionVisible = !!qrSection && !qrSection.classList.contains('hidden') && qrSection.style.display !== 'none';
-            const nfcSectionVisible = !!nfcSection && !nfcSection.classList.contains('hidden') && nfcSection.style.display !== 'none';
-            // Use the form section the user can actually see, not just a possibly stale
-            // saved preference. Fall back to the saved preference if neither is visible.
-            const requiredTagMode = qrSectionVisible !== nfcSectionVisible
-                ? (qrSectionVisible ? 'qr' : 'nfc')
-                : scannerPreference;
+            // The saved scanner setting is authoritative. With "No scanner" selected,
+            // adding a plant must never require a QR or NFC tag, even if a form section
+            // was left visible by an earlier setting or stale UI state.
+            const requiredTagMode = scannerPreference;
 
             // A new plant in QR/NFC mode cannot be saved until its tag is scanned/written.
-            // Editing existing plants is unaffected.
+            // With "none", no tag is required. Editing existing plants is unaffected.
             if (!editId && requiredTagMode === 'qr' && !String(pendingQrValue || '').trim()) {
                 const status = document.getElementById('plant-qr-link-status');
                 if (status) status.textContent = 'A QR tag must be scanned before this plant can be saved.';
