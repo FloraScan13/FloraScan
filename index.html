@@ -2397,11 +2397,19 @@ textarea {
     }
 
     /* Keep Cancel legible and visually distinct on the unified cream surface. */
-    #feed-reminder-manage-modal button[onclick="closeFeedReminderManager()"] {
+        /* Strong, modal-specific override so the Cancel action remains visible. */
+    #feed-reminder-manage-modal > div > div.p-5 > button[onclick="closeFeedReminderManager()"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        min-height: 42px !important;
+        background: #31583b !important;
         background-color: #31583b !important;
         color: #ffffff !important;
+        border: 0 !important;
     }
-    #feed-reminder-manage-modal button[onclick="closeFeedReminderManager()"]:hover {
+    #feed-reminder-manage-modal > div > div.p-5 > button[onclick="closeFeedReminderManager()"]:hover {
+        background: #294b32 !important;
         background-color: #294b32 !important;
         color: #ffffff !important;
     }
