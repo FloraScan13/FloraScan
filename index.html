@@ -2948,6 +2948,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="min-w-0 flex flex-col items-start gap-2">
                                 <h4 id="journal-name" class="text-xl font-bold">Plant Name</h4>
                                 <span id="journal-variety" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">Variety</span>
+                                <span id="journal-feed-reminder" class="hidden inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border border-[#c6537b]/40 whitespace-nowrap"><i class="fa-regular fa-bell"></i><span id="journal-feed-reminder-label"></span></span>
                                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
                                     <div><strong class="text-slate-800 dark:text-slate-200">Planted:</strong> <span id="journal-date">-</span></div>
                                     <div><strong class="text-slate-800 dark:text-slate-200">Medium:</strong> <span id="journal-medium">-</span></div>
@@ -5194,7 +5195,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const reminderDay = new Date(reminderDate);
                     reminderDay.setHours(0, 0, 0, 0);
                     const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Feed reminder' : reminderDay.getTime() < today.getTime() ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Feed due';
-                    return '<div class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-[11px] font-bold border border-[#c6537b]/40 bg-[#c6537b]/10 text-[#a63d65]" title="Next feeding reminder"><i class="fa-regular fa-bell"></i><span>' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '</span></div>';
+                    return '<span class="inline-flex items-center justify-center mt-1 text-[#c6537b] text-lg" title="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '" aria-label="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '"><i class="fa-solid fa-bell"></i></span>';
                 })() : '';
                 return `
                     <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="plant-card relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition flex flex-col cursor-pointer" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
@@ -6560,6 +6561,30 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             document.getElementById('journal-name').textContent = p.name;
             document.getElementById('journal-variety').textContent = p.variety || 'Standard Variety';
+            const journalFeedReminder = (Array.isArray(p.logs) ? p.logs : [])
+                .filter(log => log.type === 'Feed' && log.feedReminderDate)
+                .sort((a, b) => String(a.feedReminderDate).localeCompare(String(b.feedReminderDate)))[0];
+            const journalFeedReminderPill = document.getElementById('journal-feed-reminder');
+            const journalFeedReminderLabel = document.getElementById('journal-feed-reminder-label');
+            if (journalFeedReminderPill && journalFeedReminderLabel) {
+                if (journalFeedReminder) {
+                    const reminderParts = String(journalFeedReminder.feedReminderDate).split('-').map(Number);
+                    const reminderDate = reminderParts.length === 3 && reminderParts.every(Number.isFinite)
+                        ? new Date(reminderParts[0], reminderParts[1] - 1, reminderParts[2])
+                        : new Date(journalFeedReminder.feedReminderDate);
+                    const reminderLabel = Number.isNaN(reminderDate.getTime()) ? journalFeedReminder.feedReminderDate : reminderDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const reminderDay = new Date(reminderDate);
+                    reminderDay.setHours(0, 0, 0, 0);
+                    const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Repeat feed' : reminderDay.getTime() < today.getTime() ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Repeat feed';
+                    journalFeedReminderLabel.textContent = dueLabel + ' · ' + reminderLabel;
+                    journalFeedReminderPill.classList.remove('hidden');
+                } else {
+                    journalFeedReminderLabel.textContent = '';
+                    journalFeedReminderPill.classList.add('hidden');
+                }
+            }
             document.getElementById('journal-date').textContent = p.date || 'Not specified';
             document.getElementById('journal-medium').textContent = p.medium || 'Not specified';
             const tagTypeRow = document.getElementById('journal-tag-type-row');
