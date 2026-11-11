@@ -2935,7 +2935,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <button type="button" onclick="closeFeedReminderManager()" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5 space-y-3">
-                <button type="button" onclick="recordFeedReminderCompleted()" class="w-full flex items-center gap-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white px-4 py-3 text-left transition">
+                <button type="button" onclick="recordFeedReminderCompleted()" class="w-full flex items-center gap-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-4 py-3 text-left hover:bg-pink-50 dark:hover:bg-slate-700 transition">
                     <i class="fa-solid fa-check-circle text-lg"></i><span><strong class="block text-sm">I've fed this plant</strong><span class="block text-xs opacity-90">Record today and schedule the next feed</span></span>
                 </button>
                 <button type="button" onclick="document.getElementById('feed-reminder-manage-edit').classList.toggle('hidden')" class="w-full flex items-center gap-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-4 py-3 text-left hover:bg-pink-50 dark:hover:bg-slate-700 transition">
