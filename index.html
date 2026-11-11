@@ -7929,3 +7929,28 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         border-color: #334155 !important;
     }
 </style>
+
+
+<style id="remove-plant-card-hover-highlight">
+    /* Prevent card-wide hover highlighting, including nested card wrappers and content areas. */
+    #view-plants #plants-grid .plant-card:hover,
+    #view-plants #plants-grid .plant-card:focus,
+    #view-plants #plants-grid .plant-card:focus-visible,
+    #plants-grid .location-group .grid > div:hover,
+    #plants-grid > div:hover,
+    #plants-grid article:hover {
+        background-color: #fffef9 !important;
+        background-image: none !important;
+        border-color: #e1e1d5 !important;
+        box-shadow: 0 3px 12px rgba(40,65,43,.045) !important;
+        filter: none !important;
+        outline: none !important;
+        transform: none !important;
+    }
+    #view-plants #plants-grid .plant-card:hover > div,
+    #view-plants #plants-grid .plant-card:focus > div,
+    #view-plants #plants-grid .plant-card:focus-visible > div {
+        filter: none !important;
+        background-image: none !important;
+    }
+</style>
