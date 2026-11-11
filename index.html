@@ -3079,7 +3079,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <h4 id="journal-name" class="text-xl font-bold">Plant Name</h4>
                                 <div class="flex items-center gap-2 flex-wrap">
                                 <span id="journal-variety" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">Variety</span>
-                                <button type="button" id="journal-feed-reminder" onclick="manageJournalFeedReminder()" title="Manage repeat feed reminder" style="height:24px;min-height:24px;max-height:24px;padding-top:0;padding-bottom:0;box-sizing:border-box;line-height:16px" class="hidden inline-flex items-center gap-1 text-xs px-2.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border-0 whitespace-nowrap hover:bg-[#c6537b]/25"><i class="fa-regular fa-bell"></i><span id="journal-feed-reminder-label"></span></button>
+                                <button type="button" id="journal-feed-reminder" onclick="manageJournalFeedReminder()" title="Manage feed schedule" style="height:24px;min-height:24px;max-height:24px;padding-top:0;padding-bottom:0;box-sizing:border-box;line-height:16px" class="hidden inline-flex items-center gap-1 text-xs px-2.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border-0 whitespace-nowrap hover:bg-[#c6537b]/25"><i class="fa-regular fa-bell"></i><span id="journal-feed-reminder-label"></span></button>
                                 </div>
                                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
                                     <div><strong class="text-slate-800 dark:text-slate-200">Planted:</strong> <span id="journal-date">-</span></div>
@@ -3308,7 +3308,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                             <div class="flex items-center justify-between gap-2 pt-1 flex-wrap">
                                 <button type="button" id="feed-reminder-toggle" aria-expanded="false" aria-controls="feed-reminder-inputs" onclick="toggleFeedReminderInputs()" class="hidden inline-flex items-center gap-1.5 text-xs font-semibold text-pink-800 dark:text-pink-200 border border-pink-300 dark:border-pink-700 bg-pink-50 dark:bg-pink-950/30 hover:bg-pink-100 dark:hover:bg-pink-900/40 px-3 py-1.5 rounded-lg transition">
-                                    <i class="fa-regular fa-bell"></i><span>Feed reminder</span><i id="feed-reminder-toggle-icon" class="fa-solid fa-chevron-down text-[10px]"></i>
+                                    <i class="fa-regular fa-bell"></i><span>Feed Schedule</span><i id="feed-reminder-toggle-icon" class="fa-solid fa-chevron-down text-[10px]"></i>
                                 </button>
                                 <button id="add-selected-nutrients-button" type="button" onclick="applyNutrientSelection()" style="color:#ffffff !important;" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-[11px] font-semibold transition flex items-center space-x-1">
                                     <i class="fa-solid fa-plus text-[10px]" style="color:#ffffff !important;"></i>
