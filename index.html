@@ -6141,11 +6141,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function updateFeedReminderModeUI() {
-            const mode = document.getElementById('feed-reminder-mode')?.value || 'once';
+            // Keep the interval controls editable in both one-time and repeat modes.
+            // In once mode, the interval can still be used to calculate the single reminder date.
             const repeatInterval = document.getElementById('feed-reminder-interval');
             const repeatUnit = document.getElementById('feed-reminder-unit');
-            if (repeatInterval) repeatInterval.disabled = mode !== 'repeat';
-            if (repeatUnit) repeatUnit.disabled = mode !== 'repeat';
+            if (repeatInterval) repeatInterval.disabled = false;
+            if (repeatUnit) repeatUnit.disabled = false;
         }
 
         function restoreFeedReminderInterval(log) {
