@@ -3097,7 +3097,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <option value="once">Remind me once</option>
                                 <option value="repeat">Repeat automatically</option>
                             </select>
-                            <div id="feed-reminder-repeat-options" class="space-y-1.5">
+                            <div id="feed-reminder-repeat-options" class="hidden space-y-1.5">
                             <div class="flex items-center gap-2">
                                 <span class="text-xs text-slate-700 dark:text-slate-300 whitespace-nowrap">Repeat every</span>
                                 <input type="number" id="feed-reminder-interval" min="1" step="1" placeholder="e.g. 7" oninput="updateFeedReminderDateFromInterval()" class="w-24 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 text-sm">
