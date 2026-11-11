@@ -6563,9 +6563,24 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return String(text || '').replace(/^Harvested:[^\r\n]*(?:\r?\n|$)/i, '').trim();
         }
 
+        function pluralizeHarvestPlantName(plantName) {
+            const name = String(plantName || 'plant').trim() || 'plant';
+            const lower = name.toLowerCase();
+            const irregular = { tomato: 'tomatoes', potato: 'potatoes', hero: 'heroes', leaf: 'leaves', berry: 'berries', strawberry: 'strawberries', blueberry: 'blueberries', raspberry: 'raspberries', blackberry: 'blackberries', pea: 'peas' };
+            if (irregular[lower]) return irregular[lower];
+            if (/(?:s|x|z|ch|sh)$/i.test(name)) return name + 'es';
+            if (/[^aeiou]y$/i.test(name)) return name.slice(0, -1) + 'ies';
+            if (/[^aeiou]o$/i.test(name)) return name + 'es';
+            if (/s$/i.test(name)) return name;
+            return name + 's';
+        }
+
         function buildHarvestLogText(notes, measurement, value, unit, plantName) {
+            const singularOrPluralName = Number(value) === 1
+                ? (String(plantName || 'plant').trim() || 'plant')
+                : pluralizeHarvestPlantName(plantName);
             const harvestLine = measurement === 'number'
-                ? 'Harvested: ' + value + ' ' + (String(plantName || 'plant').trim() || 'plant')
+                ? 'Harvested: ' + value + ' ' + singularOrPluralName
                 : 'Harvested: ' + value + ' ' + unit;
             const cleanNotes = stripHarvestLogLine(notes);
             return cleanNotes ? harvestLine + '\n' + cleanNotes : harvestLine;
