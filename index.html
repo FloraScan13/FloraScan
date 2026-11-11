@@ -4171,10 +4171,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         quantity_type: ['plants', 'seeds', 'cuttings'].includes(plant.quantityType) ? plant.quantityType : 'plants',
                         remaining_seeds: Math.max(0, Number(plant.remainingSeeds) || 0),
                         remaining_cuttings: Math.max(0, Number(plant.remainingCuttings) || (plant.quantityType === 'cuttings' ? Number(plant.quantity) || 0 : 0)),
-                    multisow: !!plant.multisow && plant.quantityType === 'seeds',
-                    multisow_pots: plant.multisow && plant.quantityType === 'seeds' ? Math.max(0, Number(plant.multisowPots) || 0) : 0,
-                    multisow_container_type: plant.multisow && plant.quantityType === 'seeds' ? (plant.multisowContainerType === 'plugs' ? 'plugs' : 'pots') : '',
-                    seeds_per_pot: plant.multisow && plant.quantityType === 'seeds' ? Math.max(0, Number(plant.seedsPerPot) || 0) : 0,
+                    multisow: !!plant.multisow,
+                    multisow_pots: plant.multisow ? Math.max(0, Number(plant.multisowPots) || 0) : 0,
+                    multisow_container_type: plant.multisow ? (plant.multisowContainerType === 'plugs' ? 'plugs' : 'pots') : '',
+                    seeds_per_pot: plant.multisow ? Math.max(0, Number(plant.seedsPerPot) || 0) : 0,
                         icon_key: plant.iconKey, hex: plant.hex, date: plant.date, medium: plant.medium,
                         notes: plant.notes, location: plant.location || '',
                         nfc_tag_linked: !!plant.nfcTagLinked, qr_code_value: plant.qrCodeValue || null
@@ -4382,10 +4382,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     quantity_type: ['plants', 'seeds', 'cuttings'].includes(plant.quantityType) ? plant.quantityType : 'plants',
                     remaining_seeds: Math.max(0, Number(plant.remainingSeeds) || 0),
                     remaining_cuttings: Math.max(0, Number(plant.remainingCuttings) || (plant.quantityType === 'cuttings' ? Number(plant.quantity) || 0 : 0)),
-                    multisow: !!plant.multisow && plant.quantityType === 'seeds',
-                    multisow_pots: plant.multisow && plant.quantityType === 'seeds' ? Math.max(0, Number(plant.multisowPots) || 0) : 0,
-                    multisow_container_type: plant.multisow && plant.quantityType === 'seeds' ? (plant.multisowContainerType === 'plugs' ? 'plugs' : 'pots') : '',
-                    seeds_per_pot: plant.multisow && plant.quantityType === 'seeds' ? Math.max(0, Number(plant.seedsPerPot) || 0) : 0,
+                    multisow: !!plant.multisow,
+                    multisow_pots: plant.multisow ? Math.max(0, Number(plant.multisowPots) || 0) : 0,
+                    multisow_container_type: plant.multisow ? (plant.multisowContainerType === 'plugs' ? 'plugs' : 'pots') : '',
+                    seeds_per_pot: plant.multisow ? Math.max(0, Number(plant.seedsPerPot) || 0) : 0,
                     icon_key: plant.iconKey,
                     hex: plant.hex,
                     date: plant.date,
@@ -5361,7 +5361,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 </div>
                                 <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate">${escapeHtml(p.variety || 'Standard Variety')}</p>
                                 <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${p.quantityType === 'seeds' ? (Number(p.quantity || 1) + ' seeds sown') : (Number(p.quantity || 1) + ' ' + (p.quantityType === 'cuttings' ? (Number(p.quantity || 1) === 1 ? 'cutting' : 'cuttings') : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')))}${Number(p.remainingSeeds) > 0 ? ' · ' + Number(p.remainingSeeds) + ' seeds left' : ''}${Number(p.remainingCuttings || (p.quantityType === 'cuttings' ? p.quantity : 0)) > 0 && p.quantityType !== 'cuttings' ? ' · ' + Number(p.remainingCuttings) + ' cuttings left' : ''}</p>
-                                ${p.multisow && p.quantityType === 'seeds' ? '<p class="plant-multisow-card-detail text-xs font-semibold mt-1" style="color:#526653;">' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType === 'plugs' ? 'plugs' : 'pots') + ' · ' + Number(p.seedsPerPot || 0) + ' seeds per ' + (p.multisowContainerType === 'plugs' ? 'plug' : 'pot') + '</p>' : ''}
+                                ${p.multisow ? '<p class="plant-multisow-card-detail text-xs font-semibold mt-1" style="color:#526653;">' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType === 'plugs' ? 'plugs' : 'pots') + ' · ' + Number(p.seedsPerPot || 0) + ' seeds per ' + (p.multisowContainerType === 'plugs' ? 'plug' : 'pot') + '</p>' : ''}
                             </div>
                             <div class="plant-feed-reminder-indicator ml-auto flex flex-col items-end justify-center gap-1 min-w-0 flex-shrink-0">
                                 ${feedReminderMarkup}
@@ -6842,10 +6842,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-quantity-type').value = ['plants', 'seeds', 'cuttings'].includes(p.quantityType) ? p.quantityType : 'plants';
             const journalMultisowSummary = document.getElementById('journal-multisow-summary');
             if (journalMultisowSummary) {
-                journalMultisowSummary.textContent = p.multisow && p.quantityType === 'seeds'
-                    ? 'Multisown: ' + Number(p.quantity || 0) + ' total seeds (' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType || 'pots') + ' × ' + Number(p.seedsPerPot || 0) + ' seeds each).'
+                journalMultisowSummary.textContent = p.multisow
+                    ? 'Multisown in ' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType || 'pots') + ' × ' + Number(p.seedsPerPot || 0) + ' seeds each.'
                     : '';
-                journalMultisowSummary.classList.toggle('hidden', !(p.multisow && p.quantityType === 'seeds'));
+                journalMultisowSummary.classList.toggle('hidden', !(p.multisow));
             }
             document.getElementById('journal-name').textContent = p.name;
             document.getElementById('journal-variety').textContent = p.variety || 'Standard Variety';
