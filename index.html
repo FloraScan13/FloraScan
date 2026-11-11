@@ -1844,7 +1844,7 @@ textarea {
 
         /* NFC tag linking is available on desktop and mobile. */
 
-        /* Desktop: hide all NFC / QR scanning controls and preferences. */
+        /* Desktop: hide scanning interfaces, but keep scanner preferences available in Settings. */
         @media (min-width: 768px) {
             #tab-scanner,
             #view-scanner,
@@ -1852,7 +1852,6 @@ textarea {
             #scan-options-overlay,
             #qr-scan-overlay,
             #nfc-tap-overlay,
-            #view-settings > #scanner-preference-settings,
             #plant-qr-link-section,
             #plant-nfc-section,
             #journal-nfc-tag-actions {
