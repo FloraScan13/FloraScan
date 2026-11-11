@@ -2871,16 +2871,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </label>
                         <div id="plant-multisow-details" class="hidden">
                             <div class="grid grid-cols-2 gap-2">
+                                <div class="col-span-2">
+                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-container-type">Container type</label>
+                                    <select id="plant-multisow-container-type" onchange="updateMultisowLabels()" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                        <option value="pots">Pots</option>
+                                        <option value="plugs">Plugs</option>
+                                    </select>
+                                </div>
                                 <div>
-                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-pots">Number of pots / plugs</label>
+                                    <label id="plant-multisow-count-label" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-pots">Number of pots</label>
                                     <input type="number" id="plant-multisow-pots" min="1" step="1" value="1" required inputmode="numeric" onchange="updateMultisowTotal()" oninput="updateMultisowTotal()" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 6">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-seeds-per-pot">Seeds per pot / plug</label>
+                                    <label id="plant-multisow-seeds-label" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-seeds-per-pot">Seeds per pot</label>
                                     <input type="number" id="plant-multisow-seeds-per-pot" min="1" step="1" value="2" required inputmode="numeric" onchange="updateMultisowTotal()" oninput="updateMultisowTotal()" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 4">
                                 </div>
                             </div>
-                            <p class="text-[11px] text-slate-500 mt-1">Total seeds sown is calculated automatically: pots / plugs × seeds per pot / plug.</p>
+                            <p id="plant-multisow-help" class="text-[11px] text-slate-500 mt-1">Total seeds sown is calculated automatically: number of pots × seeds per pot.</p>
                         </div>
                     </div>
                     <div>
@@ -5408,10 +5415,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!checkbox || !details || !quantityType) return;
             // Multisowing is only meaningful for seeds; selecting it sets the quantity type.
             if (checkbox.checked) quantityType.value = 'seeds';
+            updateMultisowLabels();
             details.classList.toggle('hidden', !checkbox.checked);
             const quantity = document.getElementById('plant-quantity');
             if (quantity) quantity.readOnly = checkbox.checked;
             if (checkbox.checked) updateMultisowTotal();
+        }
+
+        function updateMultisowLabels() {
+            const typeSelect = document.getElementById('plant-multisow-container-type');
+            const type = typeSelect && typeSelect.value === 'plugs' ? 'plug' : 'pot';
+            const plural = type + 's';
+            const countLabel = document.getElementById('plant-multisow-count-label');
+            const seedsLabel = document.getElementById('plant-multisow-seeds-label');
+            const help = document.getElementById('plant-multisow-help');
+            if (countLabel) countLabel.textContent = 'Number of ' + plural;
+            if (seedsLabel) seedsLabel.textContent = 'Seeds per ' + type;
+            if (help) help.textContent = 'Total seeds sown is calculated automatically: number of ' + plural + ' × seeds per ' + type + '.';
         }
 
         function updateMultisowTotal() {
@@ -5441,7 +5461,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-quantity-type').value = 'plants';
             document.getElementById('plant-multisow').checked = false;
             document.getElementById('plant-multisow-pots').value = '1';
+            document.getElementById('plant-multisow-container-type').value = 'pots';
             document.getElementById('plant-multisow-seeds-per-pot').value = '2';
+            updateMultisowLabels();
             toggleMultisowFields();
             renderPlantLocationControls('');
             
@@ -5469,7 +5491,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-quantity-type').value = ['plants', 'seeds', 'cuttings'].includes(p.quantityType) ? p.quantityType : 'plants';
             document.getElementById('plant-multisow').checked = !!p.multisow;
             document.getElementById('plant-multisow-pots').value = Math.max(1, Number(p.multisowPots) || 1);
+            document.getElementById('plant-multisow-container-type').value = p.multisowContainerType === 'plugs' ? 'plugs' : 'pots';
             document.getElementById('plant-multisow-seeds-per-pot').value = Math.max(1, Number(p.seedsPerPot || p.seedsPerPlug) || Math.ceil((Number(p.quantity) || 1) / Math.max(1, Number(p.multisowPots) || 1)));
+            updateMultisowLabels();
             toggleMultisowFields();
             document.getElementById('plant-date').value = p.date || '';
             document.getElementById('plant-medium').value = p.medium || '';
@@ -5912,6 +5936,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 quantityType: ['plants', 'seeds', 'cuttings'].includes(document.getElementById('plant-quantity-type').value) ? document.getElementById('plant-quantity-type').value : 'plants',
                 multisow: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds',
                 multisowPots: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds' ? Math.max(1, parseInt(document.getElementById('plant-multisow-pots').value, 10) || 1) : 0,
+                multisowContainerType: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds' ? (document.getElementById('plant-multisow-container-type').value === 'plugs' ? 'plugs' : 'pots') : '',
                 seedsPerPot: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds' ? Math.max(1, parseInt(document.getElementById('plant-multisow-seeds-per-pot').value, 10) || 1) : 0,
                 remainingSeeds: 0,
                 remainingCuttings: 0,
@@ -5949,7 +5974,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     date: plantData.date || localToday,
                     type: 'Growth',
                     text: plantData.multisow
-                        ? 'Multisown: ' + plantData.quantity + ' seeds total (' + plantData.multisowPots + ' pots / plugs × ' + plantData.seedsPerPot + ' seeds each)'
+                        ? 'Multisown: ' + plantData.quantity + ' seeds total (' + plantData.multisowPots + ' ' + (plantData.multisowContainerType || 'pots') + ' × ' + plantData.seedsPerPot + ' seeds each)'
                         : 'Initial amount recorded: ' + plantData.quantity + ' ' + quantityLabel.toLowerCase()
                 };
                 plantData.logs.unshift(initialGrowthLog);
@@ -6381,7 +6406,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const journalMultisowSummary = document.getElementById('journal-multisow-summary');
             if (journalMultisowSummary) {
                 journalMultisowSummary.textContent = p.multisow && p.quantityType === 'seeds'
-                    ? 'Multisown: ' + Number(p.quantity || 0) + ' total seeds (' + Number(p.multisowPots || 0) + ' pots / plugs × ' + Number(p.seedsPerPot || 0) + ' seeds each).'
+                    ? 'Multisown: ' + Number(p.quantity || 0) + ' total seeds (' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType || 'pots') + ' × ' + Number(p.seedsPerPot || 0) + ' seeds each).'
                     : '';
                 journalMultisowSummary.classList.toggle('hidden', !(p.multisow && p.quantityType === 'seeds'));
             }
