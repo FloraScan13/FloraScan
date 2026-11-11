@@ -4041,7 +4041,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         }
                         const { error: logError } = await supabaseClient.from('plant_logs').upsert({
                             id: log.id, plant_id: plant.id, user_id: currentUser.id,
-                            date: log.date, type: log.type, text: log.text, photos: photoPaths
+                            date: log.date, type: log.type, text: log.text, photos: photoPaths, feed_reminder_date: log.feedReminderDate || null
                         });
                         if (logError) throw logError;
                         log.photoPaths = photoPaths;
@@ -4193,7 +4193,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             logs: await Promise.all((dbLogs || []).filter(l => l.plant_id === p.id).map(async l => {
                                 const photoPaths = Array.isArray(l.photos) ? l.photos : [];
                                 const photoUrls = await Promise.all(photoPaths.map(createJournalPhotoUrl));
-                                return { ...l, photos: photoUrls.filter(Boolean), photoPaths };
+                                return { ...l, feedReminderDate: l.feed_reminder_date || '', photos: photoUrls.filter(Boolean), photoPaths };
                             }))
                         })));
                         localStorage.setItem('flora_plants', JSON.stringify(plants));
@@ -4298,7 +4298,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     date: log.date,
                     type: log.type,
                     text: log.text,
-                    photos: Array.isArray(log.photoPaths) ? log.photoPaths : []
+                    photos: Array.isArray(log.photoPaths) ? log.photoPaths : [],
+                    feed_reminder_date: log.feedReminderDate || null
                 });
                 if (error) throw error;
             } catch (err) {
