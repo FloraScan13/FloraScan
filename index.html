@@ -5395,7 +5395,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 })() : '';
                 return `
                     <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="plant-card relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition flex flex-col cursor-pointer" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
-                        <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
+                        <div class="flex items-center justify-between p-3.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
                             <div class="min-w-0 pr-2">
                                 <div class="flex items-center gap-2 min-w-0">
                                     <h4 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">${escapeHtml(p.name)}</h4>
@@ -5405,7 +5405,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${p.quantityType === 'seeds' ? (Number(p.quantity || 1) + ' seeds sown') : (Number(p.quantity || 1) + ' ' + (p.quantityType === 'cuttings' ? (Number(p.quantity || 1) === 1 ? 'cutting' : 'cuttings') : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')))}${Number(p.remainingSeeds) > 0 ? ' · ' + Number(p.remainingSeeds) + ' seeds left' : ''}${Number(p.remainingCuttings || (p.quantityType === 'cuttings' ? p.quantity : 0)) > 0 && p.quantityType !== 'cuttings' ? ' · ' + Number(p.remainingCuttings) + ' cuttings left' : ''}</p>
                                 ${p.multisow ? '<p class="plant-multisow-card-detail text-xs font-semibold mt-1" style="color:#526653;">' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType === 'plugs' ? 'plugs' : 'pots') + ' · ' + Number(p.seedsPerPot || 0) + ' seeds per ' + (p.multisowContainerType === 'plugs' ? 'plug' : 'pot') + '</p>' : ''}
                             </div>
-                            <div class="plant-feed-reminder-indicator ml-auto mr-20 flex flex-col items-end justify-center gap-1 min-w-0 flex-shrink-0">
+                            <div class="plant-feed-reminder-indicator ml-auto flex flex-col items-end justify-center gap-1 min-w-0 flex-shrink-0">
                                 ${feedReminderMarkup}
                             </div>
                         </div>
@@ -8064,10 +8064,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
 
 <style id="plant-list-feed-bell-inset">
-    /* Use equal 8px card padding on every edge in list view; do not offset the bell itself. */
-    .location-group-plants.is-list-view .plant-card {
-        padding-right: 0.5rem !important;
-    }
+    /* The plant-card header now provides equal 14px inset on all four sides in both layouts. */
     .location-group-plants.is-list-view .plant-feed-reminder-indicator {
         margin-right: 0 !important;
     }
