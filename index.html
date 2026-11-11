@@ -3107,8 +3107,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 </select>
                             </div>
                             </div>
-                            <p class="text-[11px] text-slate-600 dark:text-slate-400">First reminder date (choose a date or set the interval above):</p>
-                            <input type="date" id="feed-reminder-date" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 text-sm">
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400">First reminder date (automatically calculated from the log date and repeat interval):</p>
+                            <input type="date" id="feed-reminder-date" readonly aria-readonly="true" tabindex="-1" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-emerald-200 dark:border-emerald-800 text-sm cursor-not-allowed opacity-80">
                             <p class="text-[11px] text-slate-600 dark:text-slate-400">Optional. We’ll email you at 8:00 am on the selected date, using your local time. Notifications go to the email address saved in Settings → Profile.</p>
                         </div>
 
