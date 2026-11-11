@@ -2935,10 +2935,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <button type="button" onclick="closeFeedReminderManager()" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5 space-y-3">
-                <button type="button" onclick="recordFeedReminderCompleted()" class="w-full flex items-center gap-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-4 py-3 text-left hover:bg-pink-50 dark:hover:bg-slate-700 transition">
+                <button type="button" onclick="recordFeedReminderCompleted()" class="w-full flex items-center gap-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-4 py-3 text-left dark:hover:bg-slate-700 transition">
                     <i class="fa-solid fa-check-circle text-lg"></i><span><strong class="block text-sm">I've fed this plant</strong><span class="block text-xs opacity-90">Record today and schedule the next feed</span></span>
                 </button>
-                <button type="button" onclick="document.getElementById('feed-reminder-manage-edit').classList.toggle('hidden')" class="w-full flex items-center gap-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-4 py-3 text-left hover:bg-pink-50 dark:hover:bg-slate-700 transition">
+                <button type="button" onclick="document.getElementById('feed-reminder-manage-edit').classList.toggle('hidden')" class="w-full flex items-center gap-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-4 py-3 text-left dark:hover:bg-slate-700 transition">
                     <i class="fa-solid fa-pen-to-square text-lg text-pink-600"></i><span><strong class="block text-sm">Edit feed schedule</strong><span class="block text-xs text-slate-500 dark:text-slate-400">Change how often you feed</span></span>
                 </button>
                 <div id="feed-reminder-manage-edit" class="hidden rounded-xl border border-pink-200 dark:border-pink-800 bg-pink-50/70 dark:bg-pink-950/20 p-3 space-y-3">
@@ -2949,10 +2949,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     </div>
                     <button type="button" onclick="saveEditedFeedSchedule()" class="w-full rounded-lg bg-pink-600 hover:bg-pink-700 text-white px-4 py-2.5 text-sm font-semibold">Save new schedule</button>
                 </div>
-                <button type="button" onclick="turnOffFeedReminder()" class="w-full flex items-center gap-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-4 py-3 text-left hover:bg-pink-50 dark:hover:bg-slate-700 transition">
+                <button type="button" onclick="turnOffFeedReminder()" class="w-full flex items-center gap-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-4 py-3 text-left dark:hover:bg-slate-700 transition">
                     <i class="fa-solid fa-bell-slash text-lg text-pink-600"></i><span><strong class="block text-sm">Turn off reminder</strong><span class="block text-xs text-red-600/80 dark:text-red-300/80">Stop all future repeat reminders</span></span>
                 </button>
-                <button type="button" onclick="closeFeedReminderManager()" class="w-full py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-white">Cancel</button>
+                <button type="button" onclick="closeFeedReminderManager()" class="w-full py-2 text-sm font-semibold text-slate-500">Cancel</button>
             </div>
         </div>
     </div>
