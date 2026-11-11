@@ -6233,14 +6233,42 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 alert('There is no active repeat feed reminder to manage.');
                 return;
             }
-            const choice = prompt('Repeat feed reminder:\n\n1 - Record that you have fed the plant today (the next date will be calculated from today)\n2 - Turn off this repeat reminder completely\n\nEnter 1 or 2:');
+            const choice = prompt('Repeat feed reminder:\n\n1 - Record that you have fed the plant today (the next date will be calculated from today)\n2 - Turn off this repeat reminder completely\n3 - Edit the repeat schedule\n\nEnter 1, 2 or 3:');
             if (choice === null) return;
             const action = String(choice).trim();
-            if (action !== '1' && action !== '2') {
-                alert('Please enter 1 to record the feed or 2 to turn the reminder off.');
+            if (!['1', '2', '3'].includes(action)) {
+                alert('Please enter 1, 2 or 3.');
                 return;
             }
-            if (action === '2') {
+            if (action === '3') {
+                const currentInterval = Number(reminderLog.feedReminderInterval) || 1;
+                const intervalInput = prompt('Repeat every how many days or weeks?', String(currentInterval));
+                if (intervalInput === null) return;
+                const newInterval = Number(String(intervalInput).trim());
+                if (!Number.isInteger(newInterval) || newInterval < 1 || newInterval > 3650) {
+                    alert('Enter a whole number between 1 and 3650.');
+                    return;
+                }
+                const currentUnit = reminderLog.feedReminderUnit === 'weeks' ? 'weeks' : 'days';
+                const unitInput = prompt('Choose the interval unit:\n\n1 - Days\n2 - Weeks', currentUnit === 'weeks' ? '2' : '1');
+                if (unitInput === null) return;
+                const unitChoice = String(unitInput).trim();
+                if (unitChoice !== '1' && unitChoice !== '2') {
+                    alert('Choose 1 for days or 2 for weeks.');
+                    return;
+                }
+                reminderLog.feedReminderInterval = newInterval;
+                reminderLog.feedReminderUnit = unitChoice === '2' ? 'weeks' : 'days';
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const nextDate = new Date(today);
+                nextDate.setDate(nextDate.getDate() + newInterval * (reminderLog.feedReminderUnit === 'weeks' ? 7 : 1));
+                reminderLog.feedReminderDate = [nextDate.getFullYear(), String(nextDate.getMonth() + 1).padStart(2, '0'), String(nextDate.getDate()).padStart(2, '0')].join('-');
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                const cloudLogSaved = await syncLogToCloud(plant.id, reminderLog);
+                const reminderSaved = await saveFeedReminder(plant, reminderLog);
+                if (!cloudLogSaved || !reminderSaved) alert('The schedule was updated on this device, but cloud sync may need attention.');
+            } else if (action === '2') {
                 if (!confirm('Turn off this repeat feed reminder completely?')) return;
                 reminderLog.feedReminderDate = '';
                 reminderLog.feedReminderMode = 'once';
