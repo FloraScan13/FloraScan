@@ -8064,9 +8064,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
 
 <style id="plant-list-feed-bell-inset">
-    /* Match the bell right gap (8px) to the list card top and bottom padding (8px). */
+    /* Use equal 8px card padding on every edge in list view; do not offset the bell itself. */
+    .location-group-plants.is-list-view .plant-card {
+        padding-right: 0.5rem !important;
+    }
     .location-group-plants.is-list-view .plant-feed-reminder-indicator {
-        margin-right: -0.25rem !important;
+        margin-right: 0 !important;
     }
 </style>
 
