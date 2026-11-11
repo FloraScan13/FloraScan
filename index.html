@@ -6094,7 +6094,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     return true;
                 }
                 const notificationEmail = String(appSettings.notificationEmail || 'markriches.mail@gmail.com').trim();
-                if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(notificationEmail)) {
+                if (!/^[^\s@]+@[^\s@]+\\.[^\s@]+$/.test(notificationEmail)) {
                     alert('Please add a valid notification email in Settings → Profile before scheduling a feed reminder.');
                     return false;
                 }
