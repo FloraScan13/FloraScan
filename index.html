@@ -2552,6 +2552,11 @@ textarea {
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Email address</label>
+                        <input type="email" id="setting-profile-email" readonly aria-readonly="true" placeholder="Sign in to view your email address" class="w-full px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed">
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Your account email address.</p>
+                    </div>
+                    <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Username</label>
                         <input type="text" id="setting-username" name="nickname" autocomplete="nickname" autocapitalize="none" spellcheck="false" value="@kitchengardener" placeholder="e.g. @kitchengardener" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                     </div>
@@ -3823,12 +3828,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const loggedOutSec = document.getElementById('auth-logged-out');
             const loggedInSec = document.getElementById('auth-logged-in');
             const emailDisp = document.getElementById('user-email-display');
+            const profileEmail = document.getElementById('setting-profile-email');
 
             if (isLoggedIn) {
                 if (loggedOutSec) loggedOutSec.classList.add('hidden');
                 if (loggedInSec) loggedInSec.classList.remove('hidden');
                 if (emailDisp) emailDisp.textContent = email;
+                if (profileEmail) profileEmail.value = email || '';
             } else {
+                if (profileEmail) profileEmail.value = '';
                 if (loggedOutSec) loggedOutSec.classList.remove('hidden');
                 if (loggedInSec) loggedInSec.classList.add('hidden');
             }
