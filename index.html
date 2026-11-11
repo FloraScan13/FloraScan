@@ -6547,23 +6547,25 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     unit: storedMeasurement === 'weight' ? (log.harvestUnit || 'kg') : 'items'
                 };
             }
-            const match = String(log.text || '').match(/^Harvested:\s*([0-9]+(?:\.[0-9]+)?)\s*(g|kg|oz|lb|items?)\s*(?:\r?\n|$)/i);
+            const match = String(log.text || '').match(/^Harvested:\s*([0-9]+(?:\.[0-9]+)?)\s+(.+?)\s*(?:\r?\n|$)/i);
             if (!match) return null;
-            const unit = match[2].toLowerCase();
+            const suffix = match[2].trim();
+            const normalizedUnit = suffix.toLowerCase();
+            const isWeight = ['g', 'kg', 'oz', 'lb'].includes(normalizedUnit);
             return {
-                measurement: unit === 'item' || unit === 'items' ? 'number' : 'weight',
+                measurement: isWeight ? 'weight' : 'number',
                 value: Number(match[1]),
-                unit: unit === 'item' ? 'items' : unit
+                unit: isWeight ? normalizedUnit : suffix
             };
         }
 
         function stripHarvestLogLine(text) {
-            return String(text || '').replace(/^Harvested:\s*[0-9]+(?:\.[0-9]+)?\s*(?:g|kg|oz|lb|items?)\s*\r?\n?/i, '').trim();
+            return String(text || '').replace(/^Harvested:[^\r\n]*(?:\r?\n|$)/i, '').trim();
         }
 
-        function buildHarvestLogText(notes, measurement, value, unit) {
+        function buildHarvestLogText(notes, measurement, value, unit, plantName) {
             const harvestLine = measurement === 'number'
-                ? 'Harvested: ' + value + ' items'
+                ? 'Harvested: ' + value + ' ' + (String(plantName || 'plant').trim() || 'plant')
                 : 'Harvested: ' + value + ' ' + unit;
             const cleanNotes = stripHarvestLogLine(notes);
             return cleanNotes ? harvestLine + '\n' + cleanNotes : harvestLine;
@@ -7654,7 +7656,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 existingLog.harvestValue = type === 'Harvest' ? harvestValue : null;
                 existingLog.harvestUnit = type === 'Harvest' && harvestMeasurement === 'weight' ? harvestUnit : '';
                 existingLog.text = type === 'Harvest'
-                    ? buildHarvestLogText(journalNotes, harvestMeasurement, harvestValue, harvestUnit)
+                    ? buildHarvestLogText(journalNotes, harvestMeasurement, harvestValue, harvestUnit, plant.name)
                     : journalNotes;
                 existingLog.feedReminderDate = type === 'Feed' ? document.getElementById('feed-reminder-date').value : '';
                 existingLog.feedReminderMode = type === 'Feed' ? document.getElementById('feed-reminder-mode').value : 'once';
@@ -7841,7 +7843,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     harvestValue,
                     harvestUnit: harvestMeasurement === 'weight' ? harvestUnit : ''
                 } : {}),
-                text: type === 'Harvest' ? buildHarvestLogText(text, harvestMeasurement, harvestValue, harvestUnit) : text,
+                text: type === 'Harvest' ? buildHarvestLogText(text, harvestMeasurement, harvestValue, harvestUnit, p.name) : text,
                 ...(feedReminderDate ? { feedReminderDate } : {}), ...(feedReminderMode === 'repeat' ? { feedReminderMode, feedReminderInterval: Number(feedReminderInterval), feedReminderUnit } : { feedReminderMode }), ...(photos.length ? { photos } : {}), ...(photoPaths.length ? { photoPaths } : {}) };
             p.logs.unshift(newLog);
 
