@@ -6101,7 +6101,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const dateInput = document.getElementById('feed-reminder-date');
             if (!dateInput) return;
             if (!Number.isInteger(amount) || amount < 1 || !baseDate) {
-                if (!document.getElementById('feed-reminder-interval')?.value) dateInput.value = '';
+                dateInput.value = '';
                 return;
             }
             const [year, month, day] = baseDate.split('-').map(Number);
