@@ -4058,6 +4058,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         .from('plant_logs').select('photos').eq('id', logId).eq('user_id', currentUser.id).maybeSingle();
                     if (oldLogReadError) throw oldLogReadError;
                     await deleteJournalPhotoFiles(oldLog?.photos || []);
+                    const { error: reminderError } = await supabaseClient.from('feed_reminders').delete().eq('log_id', String(logId)).eq('user_id', currentUser.id);
+                    if (reminderError) throw reminderError;
                     const { error } = await supabaseClient.from('plant_logs').delete().eq('id', logId).eq('user_id', currentUser.id);
                     if (error) throw error;
                 }
@@ -4066,6 +4068,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         .from('plant_logs').select('photos').eq('plant_id', plantId).eq('user_id', currentUser.id);
                     if (oldLogsReadError) throw oldLogsReadError;
                     await deleteJournalPhotoFiles((oldLogs || []).flatMap(log => log.photos || []));
+                    const { error: reminderError } = await supabaseClient.from('feed_reminders').delete().eq('plant_id', String(plantId)).eq('user_id', currentUser.id);
+                    if (reminderError) throw reminderError;
                     const { error: logsError } = await supabaseClient.from('plant_logs').delete().eq('plant_id', plantId).eq('user_id', currentUser.id);
                     if (logsError) throw logsError;
                     const { error: plantError } = await supabaseClient.from('plants').delete().eq('id', plantId).eq('user_id', currentUser.id);
