@@ -7899,3 +7899,33 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         margin-right: .35rem !important;
     }
 </style>
+
+
+<style id="disable-plant-card-hover-effects">
+    /* Plant cards remain visually static on hover in both grid and list layouts. */
+    #plants-grid > div,
+    #plants-grid > div:hover,
+    #plants-grid article,
+    #plants-grid article:hover,
+    #plants-grid .plant-card,
+    #plants-grid .plant-card:hover,
+    #view-plants .plant-card,
+    #view-plants .plant-card:hover,
+    .location-group-plants .plant-card,
+    .location-group-plants .plant-card:hover {
+        transform: none !important;
+        box-shadow: 0 3px 12px rgba(40,65,43,.045) !important;
+        border-color: #e1e1d5 !important;
+        transition: none !important;
+    }
+    .dark #plants-grid > div,
+    .dark #plants-grid > div:hover,
+    .dark #plants-grid .plant-card,
+    .dark #plants-grid .plant-card:hover,
+    .dark #view-plants .plant-card,
+    .dark #view-plants .plant-card:hover,
+    .dark .location-group-plants .plant-card,
+    .dark .location-group-plants .plant-card:hover {
+        border-color: #334155 !important;
+    }
+</style>
