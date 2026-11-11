@@ -2395,6 +2395,16 @@ textarea {
     #feed-reminder-manage-modal > div > div:first-child + div > button {
         background-color: rgb(255, 254, 249) !important;
     }
+
+    /* Keep Cancel legible and visually distinct on the unified cream surface. */
+    #feed-reminder-manage-modal button[onclick="closeFeedReminderManager()"] {
+        background-color: #31583b !important;
+        color: #ffffff !important;
+    }
+    #feed-reminder-manage-modal button[onclick="closeFeedReminderManager()"]:hover {
+        background-color: #294b32 !important;
+        color: #ffffff !important;
+    }
 </style>
 <style id="feed-reminder-wavy-close">
     /* Match Add Plant pink close tab, extending below the wavy divider. */
