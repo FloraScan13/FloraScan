@@ -4270,6 +4270,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 const photoPaths = (logs || []).flatMap(log => Array.isArray(log.photos) ? log.photos : []);
                 await deleteJournalPhotoFiles(photoPaths);
+                const { error: reminderDeleteError } = await supabaseClient.from('feed_reminders').delete().eq('plant_id', String(plantId)).eq('user_id', currentUser.id);
+                if (reminderDeleteError) throw reminderDeleteError;
 
                 const { error: deleteLogsError } = await supabaseClient
                     .from('plant_logs').delete().eq('plant_id', plantId).eq('user_id', currentUser.id);
@@ -4319,6 +4321,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (fetchError) throw fetchError;
 
                 await deleteJournalPhotoFiles(log && Array.isArray(log.photos) ? log.photos : []);
+                const { error: reminderDeleteError } = await supabaseClient.from('feed_reminders').delete().eq('log_id', String(logId)).eq('user_id', currentUser.id);
+                if (reminderDeleteError) throw reminderDeleteError;
 
                 const { error: deleteError } = await supabaseClient
                     .from('plant_logs').delete().eq('id', logId).eq('user_id', currentUser.id);
