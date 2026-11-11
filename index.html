@@ -6102,7 +6102,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return null;
             }
 
-            return `Watering Can (Includes runoff): ${fill} ${unit} water`;
+            return `Watering Can: ${fill} ${unit} water`;
         }
 
         function populateNutrientBrandOptions() {
@@ -6166,23 +6166,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!selectedProducts.length) return;
             const logTextarea = document.getElementById('log-text');
             const currentText = logTextarea.value.split(String.fromCharCode(92) + 'n').join('\n').trim();
-            const hasFeedSection = /Fed with:/i.test(currentText);
             const nutrientLines = selectedProducts.map(item => '• ' + item.product.name + ' (' + item.amount + ')');
             const brandBlock = brandName + ':\n' + nutrientLines.join('\n');
-            if (hasFeedSection) {
-                logTextarea.value = currentText + '\n' + brandBlock;
-                return;
-            }
-            const tankVol = document.getElementById('tank-volume-amount').value.trim();
-            const tankUnit = document.getElementById('tank-volume-unit').value;
             const wateringCanSummary = getWateringCanSummary();
             if (wateringCanSummary === null) return;
-            const headerParts = [];
-            if (wateringCanSummary) headerParts.push(wateringCanSummary + '.');
-            if (tankVol) headerParts.push('Filled tank with ' + tankVol + ' ' + tankUnit + ' water.');
-            headerParts.push('Fed with:');
-            const prefix = currentText ? currentText + '\n' : '';
-            logTextarea.value = prefix + headerParts.join(' ') + '\n' + brandBlock;
+            const existingPrefix = currentText
+                .replace(/^Watering Can:\s*[^\n]+\n?/i, '')
+                .replace(/^Mixed with:\s*\n?/i, '')
+                .replace(/^Fed with:\s*\n?/i, '')
+                .trim();
+            const header = wateringCanSummary
+                ? wateringCanSummary + '\nMixed with:\n'
+                : 'Fed with:\n';
+            const retainedText = existingPrefix && !/^[^\n]+:\s*\n[•*-]/.test(existingPrefix)
+                ? existingPrefix + '\n'
+                : '';
+            logTextarea.value = retainedText + header + brandBlock;
         }
 
         async function rewriteJournalPlantNfcTag() {
@@ -6740,7 +6739,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             journalPlants.forEach(plant => {
                 (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
                     const content = String(log.text || '');
-                    const perPlantMatch = content.match(/Watered this plant with\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\b/i);
+                    const perPlantMatch = content.match(/(?:Watered this plant with|Each plant fed with:)\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\b/i);
                     const perPlantMl = perPlantMatch ? toMl(perPlantMatch[1], perPlantMatch[2]) : 0;
                     const plantCount = Math.max(1, Number(plant.quantity) || 1);
 
@@ -7068,8 +7067,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
                 const waterDetails = [];
                 if (type === 'Water' && tankVol) waterDetails.push(`Watering can filled with ${tankVol} ${tankUnit} pure water.`);
-                if (perPlantAmount && !text.includes('Watered this plant with')) waterDetails.push(`Watered this plant with ${perPlantAmount} ${perPlantUnit}.`);
-                if (waterDetails.length) text = waterDetails.join(' ') + ' ' + text;
+                if (type === 'Feed' && wateringCanEnabled && perPlantAmount && !/Each plant fed with:/i.test(text)) {
+                    waterDetails.push(`Each plant fed with: ${perPlantAmount} ${perPlantUnit} (includes runoff).`);
+                } else if (type === 'Water' && perPlantAmount && !text.includes('Watered this plant with')) {
+                    waterDetails.push(`Watered this plant with ${perPlantAmount} ${perPlantUnit}.`);
+                }
+                if (waterDetails.length) text = text.trim() ? text.trimEnd() + '\n' + waterDetails.join('\n') : waterDetails.join('\n');
             }
 
             const p = plants.find(item => item.id === plantId);
