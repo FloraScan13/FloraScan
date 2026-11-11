@@ -2948,7 +2948,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="min-w-0 flex flex-col items-start gap-2">
                                 <h4 id="journal-name" class="text-xl font-bold">Plant Name</h4>
                                 <span id="journal-variety" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">Variety</span>
-                                <span id="journal-feed-reminder" class="hidden inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border border-[#c6537b]/40 whitespace-nowrap"><i class="fa-regular fa-bell"></i><span id="journal-feed-reminder-label"></span></span>
+                                <button type="button" id="journal-feed-reminder" onclick="manageJournalFeedReminder()" title="Manage repeat feed reminder" class="hidden inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border border-[#c6537b]/40 whitespace-nowrap hover:bg-[#c6537b]/25"><i class="fa-regular fa-bell"></i><span id="journal-feed-reminder-label"></span></button>
                                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
                                     <div><strong class="text-slate-800 dark:text-slate-200">Planted:</strong> <span id="journal-date">-</span></div>
                                     <div><strong class="text-slate-800 dark:text-slate-200">Medium:</strong> <span id="journal-medium">-</span></div>
@@ -6220,6 +6220,65 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 alert('Your journal entry was saved, but the email reminder could not be scheduled: ' + (error.message || error));
                 return false;
             }
+        }
+
+        async function manageJournalFeedReminder() {
+            const plantId = document.getElementById('log-plant-id')?.value;
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            if (!plant) return;
+            const reminderLog = (Array.isArray(plant.logs) ? plant.logs : [])
+                .filter(log => log.type === 'Feed' && log.feedReminderDate && log.feedReminderMode === 'repeat')
+                .sort((a, b) => String(a.feedReminderDate).localeCompare(String(b.feedReminderDate)))[0];
+            if (!reminderLog) {
+                alert('There is no active repeat feed reminder to manage.');
+                return;
+            }
+            const choice = prompt('Repeat feed reminder:\n\n1 - Record that you have fed the plant today (the next date will be calculated from today)\n2 - Turn off this repeat reminder completely\n\nEnter 1 or 2:');
+            if (choice === null) return;
+            const action = String(choice).trim();
+            if (action !== '1' && action !== '2') {
+                alert('Please enter 1 to record the feed or 2 to turn the reminder off.');
+                return;
+            }
+            if (action === '2') {
+                if (!confirm('Turn off this repeat feed reminder completely?')) return;
+                reminderLog.feedReminderDate = '';
+                reminderLog.feedReminderMode = 'once';
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                const cloudLogSaved = await syncLogToCloud(plant.id, reminderLog);
+                const reminderSaved = await saveFeedReminder(plant, reminderLog);
+                if (!cloudLogSaved || !reminderSaved) alert('The reminder was turned off on this device, but cloud sync may need attention.');
+            } else {
+                const interval = Number(reminderLog.feedReminderInterval);
+                if (!Number.isInteger(interval) || interval < 1) {
+                    alert('This reminder has an invalid repeat interval. Edit the feed entry and set a valid interval first.');
+                    return;
+                }
+                const unitDays = reminderLog.feedReminderUnit === 'weeks' ? 7 : 1;
+                const completed = new Date();
+                completed.setHours(0, 0, 0, 0);
+                const completedDate = [completed.getFullYear(), String(completed.getMonth() + 1).padStart(2, '0'), String(completed.getDate()).padStart(2, '0')].join('-');
+                const nextDate = new Date(completed);
+                nextDate.setDate(nextDate.getDate() + interval * unitDays);
+                reminderLog.feedReminderDate = [nextDate.getFullYear(), String(nextDate.getMonth() + 1).padStart(2, '0'), String(nextDate.getDate()).padStart(2, '0')].join('-');
+                const completedLog = {
+                    id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'feed_completed_' + Date.now(),
+                    date: completedDate,
+                    type: 'Feed',
+                    text: 'Feed completed (repeat schedule continued).'
+                };
+                plant.logs = Array.isArray(plant.logs) ? plant.logs : [];
+                plant.logs.push(completedLog);
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                const completionSaved = await syncLogToCloud(plant.id, completedLog);
+                const cloudLogSaved = await syncLogToCloud(plant.id, reminderLog);
+                const reminderSaved = await saveFeedReminder(plant, reminderLog);
+                if (!completionSaved || !cloudLogSaved || !reminderSaved) alert('The feed was recorded on this device, but cloud sync may need attention.');
+            }
+            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            renderPlants();
+            renderJournalLogs(plant);
+            openJournalModal(plant.id);
         }
 
         function toggleNutrientLibraryView() {
