@@ -5405,7 +5405,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${p.quantityType === 'seeds' ? (Number(p.quantity || 1) + ' seeds sown') : (Number(p.quantity || 1) + ' ' + (p.quantityType === 'cuttings' ? (Number(p.quantity || 1) === 1 ? 'cutting' : 'cuttings') : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')))}${Number(p.remainingSeeds) > 0 ? ' · ' + Number(p.remainingSeeds) + ' seeds left' : ''}${Number(p.remainingCuttings || (p.quantityType === 'cuttings' ? p.quantity : 0)) > 0 && p.quantityType !== 'cuttings' ? ' · ' + Number(p.remainingCuttings) + ' cuttings left' : ''}</p>
                                 ${p.multisow ? '<p class="plant-multisow-card-detail text-xs font-semibold mt-1" style="color:#526653;">' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType === 'plugs' ? 'plugs' : 'pots') + ' · ' + Number(p.seedsPerPot || 0) + ' seeds per ' + (p.multisowContainerType === 'plugs' ? 'plug' : 'pot') + '</p>' : ''}
                             </div>
-                            <div class="plant-feed-reminder-indicator ml-auto flex flex-col items-end justify-center gap-1 min-w-0 flex-shrink-0">
+                            <div class="plant-feed-reminder-indicator flex flex-col items-end justify-center gap-1 min-w-0 flex-shrink-0">
                                 ${feedReminderMarkup}
                             </div>
                         </div>
@@ -8064,9 +8064,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
 
 <style id="plant-list-feed-bell-inset">
-    /* The plant-card header now provides equal 14px inset on all four sides in both layouts. */
-    .location-group-plants.is-list-view .plant-feed-reminder-indicator {
-        margin-right: 0 !important;
+    /* Anchor the reminder to the card, not the responsive header. A 4.75rem right inset matches the vertical breathing room on the compact plant card. */
+    .plant-card { position: relative !important; }
+    .plant-card .plant-feed-reminder-indicator {
+        position: absolute !important;
+        top: 50% !important;
+        right: 4.75rem !important;
+        margin: 0 !important;
+        transform: translateY(-50%) !important;
+        z-index: 2;
     }
 </style>
 
