@@ -5180,6 +5180,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const plantLocation = (groupLocation || p.location || '').trim();
                 const savedDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
                 const sharedLocationDetails = String(locationDetails[plantLocation] || savedDetails[plantLocation] || '');
+                const feedReminderLog = (Array.isArray(p.logs) ? p.logs : [])
+                    .filter(log => log.type === 'Feed' && log.feedReminderDate)
+                    .sort((a, b) => String(a.feedReminderDate).localeCompare(String(b.feedReminderDate)))[0];
+                const feedReminderMarkup = feedReminderLog ? (() => {
+                    const reminderParts = String(feedReminderLog.feedReminderDate).split('-').map(Number);
+                    const reminderDate = reminderParts.length === 3 && reminderParts.every(Number.isFinite)
+                        ? new Date(reminderParts[0], reminderParts[1] - 1, reminderParts[2])
+                        : new Date(feedReminderLog.feedReminderDate);
+                    const reminderLabel = Number.isNaN(reminderDate.getTime()) ? feedReminderLog.feedReminderDate : reminderDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const reminderDay = new Date(reminderDate);
+                    reminderDay.setHours(0, 0, 0, 0);
+                    const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Feed reminder' : reminderDay.getTime() < today.getTime() ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Feed due';
+                    return '<div class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-[11px] font-bold border border-[#c6537b]/40 bg-[#c6537b]/10 text-[#a63d65]" title="Next feeding reminder"><i class="fa-regular fa-bell"></i><span>' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '</span></div>';
+                })() : '';
                 return `
                     <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="plant-card relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition flex flex-col cursor-pointer" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
                         <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
@@ -5202,6 +5218,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
+                                ${feedReminderMarkup}
 
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
                                 <span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-2"><i class="fa-solid fa-book-open mr-1 text-[10px]"></i> ${p.logs ? p.logs.length : 0} Growth Logs</span>
