@@ -2553,8 +2553,8 @@ textarea {
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Email address</label>
-                        <input type="email" id="setting-profile-email" readonly aria-readonly="true" placeholder="Sign in to view your email address" class="w-full px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed">
-                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Your account email address.</p>
+                        <input type="email" id="setting-profile-email" autocomplete="email" placeholder="Email for notifications" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Notifications will be sent to this address. This does not change your sign-in email.</p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Username</label>
@@ -3623,6 +3623,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             currentUser = data.user || currentUser;
             const cloudUsername = currentUser.user_metadata && currentUser.user_metadata.username;
+            const cloudNotificationEmail = currentUser.user_metadata && currentUser.user_metadata.notification_email;
+            if (typeof cloudNotificationEmail === 'string') {
+                appSettings.notificationEmail = cloudNotificationEmail;
+                const emailInput = document.getElementById('setting-profile-email');
+                if (emailInput) emailInput.value = cloudNotificationEmail;
+                localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            }
             if (typeof cloudUsername === 'string' && cloudUsername.trim()) {
                 appSettings.username = cloudUsername.trim();
                 localStorage.setItem('flora_settings', JSON.stringify(appSettings));
@@ -3834,7 +3841,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (loggedOutSec) loggedOutSec.classList.add('hidden');
                 if (loggedInSec) loggedInSec.classList.remove('hidden');
                 if (emailDisp) emailDisp.textContent = email;
-                if (profileEmail) profileEmail.value = email || '';
+                if (profileEmail) profileEmail.value = (appSettings.notificationEmail || email || '');
             } else {
                 if (profileEmail) profileEmail.value = '';
                 if (loggedOutSec) loggedOutSec.classList.remove('hidden');
@@ -4080,8 +4087,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 if (queue.profileDirty) {
                     const settings = JSON.parse(localStorage.getItem('flora_settings') || '{}');
-                    if (settings.username) {
-                        const { error } = await supabaseClient.auth.updateUser({ data: { username: settings.username } });
+                    if (settings.username || typeof settings.notificationEmail === 'string') {
+                        const { error } = await supabaseClient.auth.updateUser({
+                            data: {
+                                ...(settings.username ? { username: settings.username } : {}),
+                                ...(typeof settings.notificationEmail === 'string' ? { notification_email: settings.notificationEmail } : {})
+                            }
+                        });
                         if (error) throw error;
                         currentUser = (await supabaseClient.auth.getUser()).data.user || currentUser;
                     }
@@ -4348,13 +4360,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function saveBrandingSettings() {
             appSettings.username = document.getElementById('setting-username').value.trim() || '@kitchengardener';
+            const notificationEmail = document.getElementById('setting-profile-email').value.trim();
+            if (notificationEmail && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(notificationEmail)) {
+                alert('Please enter a valid notification email address.');
+                return;
+            }
+            appSettings.notificationEmail = notificationEmail;
             localStorage.setItem('flora_settings', JSON.stringify(appSettings));
             markFloraSyncPending('profile');
             applyBranding();
             let savedToCloud = false;
             if (supabaseClient && currentUser) {
                 const { error } = await supabaseClient.auth.updateUser({
-                    data: { username: appSettings.username }
+                    data: { username: appSettings.username, notification_email: appSettings.notificationEmail || '' }
                 });
                 if (error) {
                     console.error('Could not sync username to cloud:', error);
