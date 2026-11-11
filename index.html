@@ -3149,6 +3149,41 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <option value="Problem">Problems / Disease</option>
                             </select>
                         </div>
+                        <div id="harvest-measurement-section" class="hidden rounded-xl border border-[#e8a7bd] bg-[#fff0f4] p-3 space-y-3">
+                            <div>
+                                <p class="text-xs font-semibold text-[#81334f] mb-2">How would you like to record this harvest?</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center gap-2 rounded-lg border border-[#e8a7bd] bg-white px-3 py-2 text-xs font-semibold text-[#81334f] cursor-pointer">
+                                        <input type="radio" name="harvest-measurement" value="weight" checked onchange="toggleHarvestFields()" class="accent-pink-600">
+                                        <i class="fa-solid fa-weight-hanging"></i> Weight
+                                    </label>
+                                    <label class="flex items-center gap-2 rounded-lg border border-[#e8a7bd] bg-white px-3 py-2 text-xs font-semibold text-[#81334f] cursor-pointer">
+                                        <input type="radio" name="harvest-measurement" value="number" onchange="toggleHarvestFields()" class="accent-pink-600">
+                                        <i class="fa-solid fa-hashtag"></i> Number
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="harvest-weight-fields" class="grid grid-cols-[1fr_auto] gap-2">
+                                <div>
+                                    <label for="harvest-weight-value" class="block text-xs font-semibold text-[#81334f] mb-1">Harvested weight</label>
+                                    <input type="number" id="harvest-weight-value" min="0.001" step="any" inputmode="decimal" placeholder="e.g. 1.25" class="w-full px-3 py-2 rounded-lg bg-white border border-[#e8a7bd] text-sm text-slate-900">
+                                </div>
+                                <div>
+                                    <label for="harvest-weight-unit" class="block text-xs font-semibold text-[#81334f] mb-1">Unit</label>
+                                    <select id="harvest-weight-unit" class="h-[38px] px-3 rounded-lg bg-white border border-[#e8a7bd] text-sm text-slate-900">
+                                        <option value="g">Grams (g)</option>
+                                        <option value="kg" selected>Kilograms (kg)</option>
+                                        <option value="oz">Ounces (oz)</option>
+                                        <option value="lb">Pounds (lb)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="harvest-number-fields" class="hidden space-y-1">
+                                <label for="harvest-number-value" class="block text-xs font-semibold text-[#81334f]">Number harvested</label>
+                                <input type="number" id="harvest-number-value" min="1" step="1" inputmode="numeric" placeholder="e.g. 12" class="w-full px-3 py-2 rounded-lg bg-white border border-[#e8a7bd] text-sm text-slate-900">
+                                <p class="text-[11px] text-[#986b7b]">Enter the number of individual items picked.</p>
+                            </div>
+                        </div>
                         <div>
                             <label for="journal-plant-location" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Move to location</label>
                             <div id="journal-plant-location-control" class="relative"><button type="button" id="journal-plant-location" aria-label="Move plant to location" aria-haspopup="listbox" aria-expanded="false" onclick="toggleJournalLocationMenu()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span id="journal-plant-location-label" class="text-slate-900 dark:text-slate-100" style="color:#294b34 !important;">Choose location</span><i class="fa-solid fa-chevron-down text-xs text-slate-400"></i></button><div id="journal-plant-location-menu" role="listbox" class="hidden absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg"></div></div>
@@ -6501,6 +6536,49 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             await finishFeedReminderManager('Feed recorded. Your next reminder is ' + new Date(reminderLog.feedReminderDate + 'T00:00:00').toLocaleDateString('en-GB') + '.');
         }
 
+        function getHarvestLogDetails(log) {
+            if (!log || log.type !== 'Harvest') return null;
+            const storedMeasurement = log.harvestMeasurement;
+            const storedValue = Number(log.harvestValue);
+            if ((storedMeasurement === 'weight' || storedMeasurement === 'number') && Number.isFinite(storedValue) && storedValue > 0) {
+                return {
+                    measurement: storedMeasurement,
+                    value: storedValue,
+                    unit: storedMeasurement === 'weight' ? (log.harvestUnit || 'kg') : 'items'
+                };
+            }
+            const match = String(log.text || '').match(/^Harvested:\s*([0-9]+(?:\.[0-9]+)?)\s*(g|kg|oz|lb|items?)\s*(?:\r?\n|$)/i);
+            if (!match) return null;
+            const unit = match[2].toLowerCase();
+            return {
+                measurement: unit === 'item' || unit === 'items' ? 'number' : 'weight',
+                value: Number(match[1]),
+                unit: unit === 'item' ? 'items' : unit
+            };
+        }
+
+        function stripHarvestLogLine(text) {
+            return String(text || '').replace(/^Harvested:\s*[0-9]+(?:\.[0-9]+)?\s*(?:g|kg|oz|lb|items?)\s*\r?\n?/i, '').trim();
+        }
+
+        function buildHarvestLogText(notes, measurement, value, unit) {
+            const harvestLine = measurement === 'number'
+                ? 'Harvested: ' + value + ' items'
+                : 'Harvested: ' + value + ' ' + unit;
+            const cleanNotes = stripHarvestLogLine(notes);
+            return cleanNotes ? harvestLine + '\n' + cleanNotes : harvestLine;
+        }
+
+        function toggleHarvestFields() {
+            const section = document.getElementById('harvest-measurement-section');
+            if (!section) return;
+            const isHarvest = document.getElementById('log-type')?.value === 'Harvest';
+            section.classList.toggle('hidden', !isHarvest);
+            const selected = document.querySelector('input[name="harvest-measurement"]:checked')?.value || 'weight';
+            document.getElementById('harvest-weight-fields')?.classList.toggle('hidden', selected !== 'weight');
+            document.getElementById('harvest-number-fields')?.classList.toggle('hidden', selected !== 'number');
+        }
+
         function toggleNutrientLibraryView() {
             const logType = document.getElementById('log-type').value;
             const librarySec = document.getElementById('nutrient-library-section');
@@ -6525,6 +6603,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (feedReminderToggle) feedReminderToggle.classList.toggle('hidden', logType !== 'Feed');
             const feedReminderDateInput = document.getElementById('feed-reminder-date');
             if (feedReminderDateInput) feedReminderDateInput.min = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+            toggleHarvestFields();
 
             if (logType === 'Feed') {
                 librarySec.classList.remove('hidden');
@@ -7414,7 +7493,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <span class="text-[10px] text-slate-400">• ${log.date || 'Date not set'}</span>
                             </div>
                         </div>
-                        <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${formatGrowthLogText(log.text)}</p>
+                        ${log.type === 'Harvest' && getHarvestLogDetails(log) ? '<div class="inline-flex items-center gap-1 rounded-full bg-[#fff0f4] border border-[#e8a7bd] px-2.5 py-1 text-[11px] font-bold text-[#81334f]"><i class="fa-solid ' + (getHarvestLogDetails(log).measurement === 'weight' ? 'fa-weight-hanging' : 'fa-hashtag') + '"></i> Harvested: ' + escapeHtml(String(getHarvestLogDetails(log).value) + ' ' + getHarvestLogDetails(log).unit) + '</div>' : ''}
+                        <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${formatGrowthLogText(log.type === 'Harvest' ? stripHarvestLogLine(log.text) : log.text)}</p>
                         ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<div class="relative"><a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a><button type="button" onclick="removeJournalLogPhoto(\'' + p.id + '\', \'' + (log.id || originalIndex) + '\', ' + photoIndex + ')" aria-label="Delete journal photo ' + (photoIndex + 1) + '" title="Delete photo" class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 text-white text-xs shadow"><i class="fa-solid fa-xmark"></i></button></div>').join('') + '</div>' : ''}
                     </div>
                     <div class="flex flex-col items-end gap-1 flex-shrink-0">
@@ -7482,7 +7562,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-date').value = log.date || '';
             document.getElementById('log-type').value = log.type || 'Growth';
             document.getElementById('log-growth-stage').value = log.growthStage || '';
-            document.getElementById('log-text').value = log.text || '';
+            const harvestDetails = getHarvestLogDetails(log);
+            const harvestChoice = document.querySelector('input[name="harvest-measurement"][value="' + (harvestDetails?.measurement || 'weight') + '"]');
+            if (harvestChoice) harvestChoice.checked = true;
+            document.getElementById('harvest-weight-value').value = harvestDetails?.measurement === 'weight' ? harvestDetails.value : '';
+            document.getElementById('harvest-weight-unit').value = harvestDetails?.measurement === 'weight' ? harvestDetails.unit : 'kg';
+            document.getElementById('harvest-number-value').value = harvestDetails?.measurement === 'number' ? harvestDetails.value : '';
+            document.getElementById('log-text').value = log.type === 'Harvest' ? stripHarvestLogLine(log.text) : (log.text || '');
             document.getElementById('feed-reminder-date').value = log.feedReminderDate || '';
             restoreFeedReminderInterval(log);
             document.getElementById('log-growth-medium').value = '';
@@ -7491,6 +7577,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
             document.getElementById('journal-edit-actions').classList.remove('hidden');
             toggleNutrientLibraryView();
+            toggleHarvestFields();
             document.getElementById('log-date').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
@@ -7505,6 +7592,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-type').value = 'Growth';
             document.getElementById('log-growth-stage').value = '';
             document.getElementById('log-text').value = '';
+            document.querySelector('input[name="harvest-measurement"][value="weight"]').checked = true;
+            document.getElementById('harvest-weight-value').value = '';
+            document.getElementById('harvest-weight-unit').value = 'kg';
+            document.getElementById('harvest-number-value').value = '';
             document.getElementById('feed-reminder-date').value = '';
             document.getElementById('feed-reminder-interval').value = '';
             document.getElementById('feed-reminder-unit').value = 'days';
@@ -7525,6 +7616,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const type = document.getElementById('log-type').value;
             const growthStage = document.getElementById('log-growth-stage').value;
             const editId = document.getElementById('log-edit-id').value;
+            const harvestMeasurement = document.querySelector('input[name="harvest-measurement"]:checked')?.value || 'weight';
+            const harvestValueInput = document.getElementById(harvestMeasurement === 'number' ? 'harvest-number-value' : 'harvest-weight-value');
+            const harvestValue = harvestValueInput ? Number(harvestValueInput.value) : NaN;
+            const harvestUnit = document.getElementById('harvest-weight-unit')?.value || 'kg';
+            if (type === 'Harvest' && (!Number.isFinite(harvestValue) || harvestValue <= 0 || (harvestMeasurement === 'number' && !Number.isSafeInteger(harvestValue)))) {
+                alert(harvestMeasurement === 'number' ? 'Enter a whole number of items harvested (at least 1).' : 'Enter a harvested weight greater than zero.');
+                if (harvestValueInput) harvestValueInput.focus();
+                return;
+            }
             const enteringSeedOutcome = type === 'Growth' && (
                 document.getElementById('log-germinated-amount').value.trim() !== '' ||
                 document.getElementById('log-failed-seed-amount').value.trim() !== ''
@@ -7550,7 +7650,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 existingLog.date = date;
                 existingLog.type = type;
                 existingLog.growthStage = growthStage;
-                existingLog.text = document.getElementById('log-text').value;
+                const journalNotes = document.getElementById('log-text').value;
+                existingLog.harvestMeasurement = type === 'Harvest' ? harvestMeasurement : '';
+                existingLog.harvestValue = type === 'Harvest' ? harvestValue : null;
+                existingLog.harvestUnit = type === 'Harvest' && harvestMeasurement === 'weight' ? harvestUnit : '';
+                existingLog.text = type === 'Harvest'
+                    ? buildHarvestLogText(journalNotes, harvestMeasurement, harvestValue, harvestUnit)
+                    : journalNotes;
                 existingLog.feedReminderDate = type === 'Feed' ? document.getElementById('feed-reminder-date').value : '';
                 existingLog.feedReminderMode = type === 'Feed' ? document.getElementById('feed-reminder-mode').value : 'once';
                 existingLog.feedReminderInterval = type === 'Feed' && document.getElementById('feed-reminder-interval').value ? Number(document.getElementById('feed-reminder-interval').value) : '';
@@ -7729,7 +7835,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const feedReminderMode = type === 'Feed' ? document.getElementById('feed-reminder-mode').value : 'once';
             const feedReminderInterval = type === 'Feed' ? (document.getElementById('feed-reminder-interval').value || '') : '';
             const feedReminderUnit = type === 'Feed' ? document.getElementById('feed-reminder-unit').value : 'days';
-            const newLog = { id: logId, date, type, growthStage, text, ...(feedReminderDate ? { feedReminderDate } : {}), ...(feedReminderMode === 'repeat' ? { feedReminderMode, feedReminderInterval: Number(feedReminderInterval), feedReminderUnit } : { feedReminderMode }), ...(photos.length ? { photos } : {}), ...(photoPaths.length ? { photoPaths } : {}) };
+            const newLog = {
+                id: logId, date, type, growthStage,
+                ...(type === 'Harvest' ? {
+                    harvestMeasurement,
+                    harvestValue,
+                    harvestUnit: harvestMeasurement === 'weight' ? harvestUnit : ''
+                } : {}),
+                text: type === 'Harvest' ? buildHarvestLogText(text, harvestMeasurement, harvestValue, harvestUnit) : text,
+                ...(feedReminderDate ? { feedReminderDate } : {}), ...(feedReminderMode === 'repeat' ? { feedReminderMode, feedReminderInterval: Number(feedReminderInterval), feedReminderUnit } : { feedReminderMode }), ...(photos.length ? { photos } : {}), ...(photoPaths.length ? { photoPaths } : {}) };
             p.logs.unshift(newLog);
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
