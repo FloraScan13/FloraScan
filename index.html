@@ -7040,19 +7040,21 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 });
             container.innerHTML = usageSummary + timelineLogs.map(({ log, originalIndex }) => `
                 <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-start">
-                    <div class="relative flex-1 min-w-0 space-y-1 pr-1">
-                        ${log.type === 'Feed' && log.feedReminderDate ? (() => {
-                            const reminderParts = String(log.feedReminderDate).split('-').map(Number);
-                            const reminderDate = reminderParts.length === 3 && reminderParts.every(Number.isFinite)
-                                ? new Date(reminderParts[0], reminderParts[1] - 1, reminderParts[2])
-                                : new Date(log.feedReminderDate);
-                            const reminderLabel = Number.isNaN(reminderDate.getTime()) ? log.feedReminderDate : reminderDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                            return '<span class="absolute top-0 right-0 inline-flex items-center space-x-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border border-[#c6537b]/40"><i class="fa-regular fa-bell"></i><span>Repeat feed · ' + escapeHtml(reminderLabel) + '</span></span>';
-                        })() : ''}
-                        <div class="flex items-center space-x-2 pr-2">
+                    <div class="flex-1 min-w-0 space-y-1 pr-1">
+                        <div class="flex items-start justify-between gap-2 flex-wrap">
+                            <div class="flex items-center space-x-2 flex-wrap">
                             <span class="font-bold text-slate-700 dark:text-slate-300">${log.type || 'Growth'}</span>
                             ${log.growthStage ? '<span class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">' + escapeHtml(log.growthStage) + '</span>' : ''}
                             <span class="text-[10px] text-slate-400">• ${log.date || 'Date not set'}</span>
+                            </div>
+                            ${log.type === 'Feed' && log.feedReminderDate ? (() => {
+                                const reminderParts = String(log.feedReminderDate).split('-').map(Number);
+                                const reminderDate = reminderParts.length === 3 && reminderParts.every(Number.isFinite)
+                                    ? new Date(reminderParts[0], reminderParts[1] - 1, reminderParts[2])
+                                    : new Date(log.feedReminderDate);
+                                const reminderLabel = Number.isNaN(reminderDate.getTime()) ? log.feedReminderDate : reminderDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                                return '<span class="inline-flex items-center space-x-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border border-[#c6537b]/40 whitespace-nowrap"><i class="fa-regular fa-bell"></i><span>Repeat feed · ' + escapeHtml(reminderLabel) + '</span></span>';
+                            })() : ''}
                         </div>
                         <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${formatGrowthLogText(log.text)}</p>
                         ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<div class="relative"><a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a><button type="button" onclick="removeJournalLogPhoto(\'' + p.id + '\', \'' + (log.id || originalIndex) + '\', ' + photoIndex + ')" aria-label="Delete journal photo ' + (photoIndex + 1) + '" title="Delete photo" class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 text-white text-xs shadow"><i class="fa-solid fa-xmark"></i></button></div>').join('') + '</div>' : ''}
