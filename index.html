@@ -6098,7 +6098,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (error) throw error;
                     return true;
                 }
-                const notificationEmail = String(appSettings.notificationEmail || 'markriches.mail@gmail.com').trim();
+                if (!currentUser.user_metadata?.feed_reminder_email_initialized) {
+                    const { data: updatedAuth, error: profileError } = await supabaseClient.auth.updateUser({
+                        data: { notification_email: 'markriches.mail@gmail.com', feed_reminder_email_initialized: true }
+                    });
+                    if (profileError) throw profileError;
+                    currentUser = updatedAuth.user || currentUser;
+                    appSettings.notificationEmail = 'markriches.mail@gmail.com';
+                    localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+                    const profileEmailInput = document.getElementById('setting-profile-email');
+                    if (profileEmailInput) profileEmailInput.value = appSettings.notificationEmail;
+                }
+                const notificationEmail = String(appSettings.notificationEmail || currentUser.user_metadata?.notification_email || 'markriches.mail@gmail.com').trim();
                 if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationEmail)) {
                     alert('Please add a valid notification email in Settings → Profile before scheduling a feed reminder.');
                     return false;
