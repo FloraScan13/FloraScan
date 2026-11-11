@@ -2924,6 +2924,39 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         </div>
     </div>
 
+    <!-- MODAL: MANAGE REPEAT FEED REMINDER -->
+    <div id="feed-reminder-manage-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] hidden items-center justify-center p-4" onclick="if(event.target===this) closeFeedReminderManager()">
+        <div class="bg-white dark:bg-slate-800 max-w-sm w-full rounded-2xl shadow-2xl overflow-hidden">
+            <div class="px-5 py-4 border-b border-pink-100 dark:border-pink-900 flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white"><i class="fa-regular fa-bell mr-2 text-pink-600"></i>Repeat feed reminder</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Choose what you would like to do.</p>
+                </div>
+                <button type="button" onclick="closeFeedReminderManager()" class="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 space-y-3">
+                <button type="button" onclick="recordFeedReminderCompleted()" class="w-full flex items-center gap-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white px-4 py-3 text-left transition">
+                    <i class="fa-solid fa-check-circle text-lg"></i><span><strong class="block text-sm">I've fed this plant</strong><span class="block text-xs opacity-90">Record today and schedule the next feed</span></span>
+                </button>
+                <button type="button" onclick="document.getElementById('feed-reminder-manage-edit').classList.toggle('hidden')" class="w-full flex items-center gap-3 rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-4 py-3 text-left hover:bg-pink-50 dark:hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-calendar-pen text-lg text-pink-600"></i><span><strong class="block text-sm">Edit feed schedule</strong><span class="block text-xs text-slate-500 dark:text-slate-400">Change how often you feed</span></span>
+                </button>
+                <div id="feed-reminder-manage-edit" class="hidden rounded-xl border border-pink-200 dark:border-pink-800 bg-pink-50/70 dark:bg-pink-950/20 p-3 space-y-3">
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-200">Repeat every</label>
+                    <div class="flex gap-2">
+                        <input id="feed-reminder-manage-interval" type="number" min="1" max="3650" step="1" class="w-24 rounded-lg border border-pink-300 bg-white px-3 py-2 text-sm text-black" />
+                        <select id="feed-reminder-manage-unit" class="flex-1 rounded-lg border border-pink-300 bg-white px-3 py-2 text-sm text-black"><option value="days">Days</option><option value="weeks">Weeks</option></select>
+                    </div>
+                    <button type="button" onclick="saveEditedFeedSchedule()" class="w-full rounded-lg bg-pink-600 hover:bg-pink-700 text-white px-4 py-2.5 text-sm font-semibold">Save new schedule</button>
+                </div>
+                <button type="button" onclick="turnOffFeedReminder()" class="w-full flex items-center gap-3 rounded-xl border border-red-200 dark:border-red-900 bg-white dark:bg-slate-900 text-red-700 dark:text-red-300 px-4 py-3 text-left hover:bg-red-50 dark:hover:bg-red-950/30 transition">
+                    <i class="fa-solid fa-bell-slash text-lg"></i><span><strong class="block text-sm">Turn off reminder</strong><span class="block text-xs text-red-600/80 dark:text-red-300/80">Stop all future repeat reminders</span></span>
+                </button>
+                <button type="button" onclick="closeFeedReminderManager()" class="w-full py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-white">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: PLANT DETAILS & GROWTH JOURNAL -->
     <div id="journal-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white dark:bg-slate-800 max-w-2xl w-full rounded-2xl shadow-xl overflow-hidden my-8">
@@ -6223,7 +6256,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
-        async function manageJournalFeedReminder() {
+        let activeFeedReminderContext = null;
+
+        function manageJournalFeedReminder() {
             const plantId = document.getElementById('log-plant-id')?.value;
             const plant = plants.find(item => String(item.id) === String(plantId));
             if (!plant) return;
@@ -6234,80 +6269,92 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 alert('There is no active repeat feed reminder to manage.');
                 return;
             }
-            const choice = prompt('Repeat feed reminder:\n\n1 - Record that you have fed the plant today (the next date will be calculated from today)\n2 - Turn off this repeat reminder completely\n3 - Edit the repeat schedule\n\nEnter 1, 2 or 3:');
-            if (choice === null) return;
-            const action = String(choice).trim();
-            if (!['1', '2', '3'].includes(action)) {
-                alert('Please enter 1, 2 or 3.');
-                return;
+            activeFeedReminderContext = { plant, reminderLog };
+            const interval = document.getElementById('feed-reminder-manage-interval');
+            const unit = document.getElementById('feed-reminder-manage-unit');
+            if (interval) interval.value = Number(reminderLog.feedReminderInterval) || 1;
+            if (unit) unit.value = reminderLog.feedReminderUnit === 'weeks' ? 'weeks' : 'days';
+            document.getElementById('feed-reminder-manage-edit').classList.add('hidden');
+            document.getElementById('feed-reminder-manage-modal').classList.remove('hidden');
+            document.getElementById('feed-reminder-manage-modal').classList.add('flex');
+        }
+
+        function closeFeedReminderManager() {
+            const modal = document.getElementById('feed-reminder-manage-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
             }
-            if (action === '3') {
-                const currentInterval = Number(reminderLog.feedReminderInterval) || 1;
-                const intervalInput = prompt('Repeat every how many days or weeks?', String(currentInterval));
-                if (intervalInput === null) return;
-                const newInterval = Number(String(intervalInput).trim());
-                if (!Number.isInteger(newInterval) || newInterval < 1 || newInterval > 3650) {
-                    alert('Enter a whole number between 1 and 3650.');
-                    return;
-                }
-                const currentUnit = reminderLog.feedReminderUnit === 'weeks' ? 'weeks' : 'days';
-                const unitInput = prompt('Choose the interval unit:\n\n1 - Days\n2 - Weeks', currentUnit === 'weeks' ? '2' : '1');
-                if (unitInput === null) return;
-                const unitChoice = String(unitInput).trim();
-                if (unitChoice !== '1' && unitChoice !== '2') {
-                    alert('Choose 1 for days or 2 for weeks.');
-                    return;
-                }
-                reminderLog.feedReminderInterval = newInterval;
-                reminderLog.feedReminderUnit = unitChoice === '2' ? 'weeks' : 'days';
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const nextDate = new Date(today);
-                nextDate.setDate(nextDate.getDate() + newInterval * (reminderLog.feedReminderUnit === 'weeks' ? 7 : 1));
-                reminderLog.feedReminderDate = [nextDate.getFullYear(), String(nextDate.getMonth() + 1).padStart(2, '0'), String(nextDate.getDate()).padStart(2, '0')].join('-');
-                localStorage.setItem('flora_plants', JSON.stringify(plants));
-                const cloudLogSaved = await syncLogToCloud(plant.id, reminderLog);
-                const reminderSaved = await saveFeedReminder(plant, reminderLog);
-                if (!cloudLogSaved || !reminderSaved) alert('The schedule was updated on this device, but cloud sync may need attention.');
-            } else if (action === '2') {
-                if (!confirm('Turn off this repeat feed reminder completely?')) return;
-                reminderLog.feedReminderDate = '';
-                reminderLog.feedReminderMode = 'once';
-                localStorage.setItem('flora_plants', JSON.stringify(plants));
-                const cloudLogSaved = await syncLogToCloud(plant.id, reminderLog);
-                const reminderSaved = await saveFeedReminder(plant, reminderLog);
-                if (!cloudLogSaved || !reminderSaved) alert('The reminder was turned off on this device, but cloud sync may need attention.');
-            } else {
-                const interval = Number(reminderLog.feedReminderInterval);
-                if (!Number.isInteger(interval) || interval < 1) {
-                    alert('This reminder has an invalid repeat interval. Edit the feed entry and set a valid interval first.');
-                    return;
-                }
-                const unitDays = reminderLog.feedReminderUnit === 'weeks' ? 7 : 1;
-                const completed = new Date();
-                completed.setHours(0, 0, 0, 0);
-                const completedDate = [completed.getFullYear(), String(completed.getMonth() + 1).padStart(2, '0'), String(completed.getDate()).padStart(2, '0')].join('-');
-                const nextDate = new Date(completed);
-                nextDate.setDate(nextDate.getDate() + interval * unitDays);
-                reminderLog.feedReminderDate = [nextDate.getFullYear(), String(nextDate.getMonth() + 1).padStart(2, '0'), String(nextDate.getDate()).padStart(2, '0')].join('-');
-                const completedLog = {
-                    id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'feed_completed_' + Date.now(),
-                    date: completedDate,
-                    type: 'Feed',
-                    text: 'Feed completed (repeat schedule continued).'
-                };
-                plant.logs = Array.isArray(plant.logs) ? plant.logs : [];
-                plant.logs.push(completedLog);
-                localStorage.setItem('flora_plants', JSON.stringify(plants));
-                const completionSaved = await syncLogToCloud(plant.id, completedLog);
-                const cloudLogSaved = await syncLogToCloud(plant.id, reminderLog);
-                const reminderSaved = await saveFeedReminder(plant, reminderLog);
-                if (!completionSaved || !cloudLogSaved || !reminderSaved) alert('The feed was recorded on this device, but cloud sync may need attention.');
-            }
+            activeFeedReminderContext = null;
+        }
+
+        async function finishFeedReminderManager(message) {
+            const context = activeFeedReminderContext;
+            if (!context) return;
+            const { plant, reminderLog } = context;
             localStorage.setItem('flora_plants', JSON.stringify(plants));
+            const cloudLogSaved = await syncLogToCloud(plant.id, reminderLog);
+            const reminderSaved = await saveFeedReminder(plant, reminderLog);
+            if (!cloudLogSaved || !reminderSaved) alert('Your change was saved on this device, but cloud sync may need attention.');
+            closeFeedReminderManager();
             renderPlants();
             renderJournalLogs(plant);
             openJournalModal(plant.id);
+            if (message) alert(message);
+        }
+
+        async function saveEditedFeedSchedule() {
+            if (!activeFeedReminderContext) return;
+            const { reminderLog } = activeFeedReminderContext;
+            const interval = Number(document.getElementById('feed-reminder-manage-interval')?.value);
+            const unit = document.getElementById('feed-reminder-manage-unit')?.value === 'weeks' ? 'weeks' : 'days';
+            if (!Number.isInteger(interval) || interval < 1 || interval > 3650) {
+                alert('Enter a whole number between 1 and 3650.');
+                return;
+            }
+            reminderLog.feedReminderInterval = interval;
+            reminderLog.feedReminderUnit = unit;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const nextDate = new Date(today);
+            nextDate.setDate(nextDate.getDate() + interval * (unit === 'weeks' ? 7 : 1));
+            reminderLog.feedReminderDate = [nextDate.getFullYear(), String(nextDate.getMonth() + 1).padStart(2, '0'), String(nextDate.getDate()).padStart(2, '0')].join('-');
+            await finishFeedReminderManager('Your repeat feed schedule has been updated.');
+        }
+
+        async function turnOffFeedReminder() {
+            if (!activeFeedReminderContext || !confirm('Turn off this repeat feed reminder completely?')) return;
+            const { reminderLog } = activeFeedReminderContext;
+            reminderLog.feedReminderDate = '';
+            reminderLog.feedReminderMode = 'once';
+            await finishFeedReminderManager('Your repeat feed reminder has been turned off.');
+        }
+
+        async function recordFeedReminderCompleted() {
+            if (!activeFeedReminderContext) return;
+            const { plant, reminderLog } = activeFeedReminderContext;
+            const interval = Number(reminderLog.feedReminderInterval);
+            if (!Number.isInteger(interval) || interval < 1) {
+                alert('This reminder has an invalid repeat interval. Please edit the schedule first.');
+                return;
+            }
+            const completed = new Date();
+            completed.setHours(0, 0, 0, 0);
+            const completedDate = [completed.getFullYear(), String(completed.getMonth() + 1).padStart(2, '0'), String(completed.getDate()).padStart(2, '0')].join('-');
+            const nextDate = new Date(completed);
+            nextDate.setDate(nextDate.getDate() + interval * (reminderLog.feedReminderUnit === 'weeks' ? 7 : 1));
+            reminderLog.feedReminderDate = [nextDate.getFullYear(), String(nextDate.getMonth() + 1).padStart(2, '0'), String(nextDate.getDate()).padStart(2, '0')].join('-');
+            const completedLog = {
+                id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'feed_completed_' + Date.now(),
+                date: completedDate,
+                type: 'Feed',
+                text: 'Feed completed (repeat schedule continued).'
+            };
+            plant.logs = Array.isArray(plant.logs) ? plant.logs : [];
+            plant.logs.push(completedLog);
+            const completionSaved = await syncLogToCloud(plant.id, completedLog);
+            if (!completionSaved) alert('The feed entry was recorded on this device, but cloud sync may need attention.');
+            await finishFeedReminderManager('Feed recorded. Your next reminder is ' + new Date(reminderLog.feedReminderDate + 'T00:00:00').toLocaleDateString('en-GB') + '.');
         }
 
         function toggleNutrientLibraryView() {
