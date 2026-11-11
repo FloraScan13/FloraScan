@@ -5405,7 +5405,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${p.quantityType === 'seeds' ? (Number(p.quantity || 1) + ' seeds sown') : (Number(p.quantity || 1) + ' ' + (p.quantityType === 'cuttings' ? (Number(p.quantity || 1) === 1 ? 'cutting' : 'cuttings') : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')))}${Number(p.remainingSeeds) > 0 ? ' · ' + Number(p.remainingSeeds) + ' seeds left' : ''}${Number(p.remainingCuttings || (p.quantityType === 'cuttings' ? p.quantity : 0)) > 0 && p.quantityType !== 'cuttings' ? ' · ' + Number(p.remainingCuttings) + ' cuttings left' : ''}</p>
                                 ${p.multisow ? '<p class="plant-multisow-card-detail text-xs font-semibold mt-1" style="color:#526653;">' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType === 'plugs' ? 'plugs' : 'pots') + ' · ' + Number(p.seedsPerPot || 0) + ' seeds per ' + (p.multisowContainerType === 'plugs' ? 'plug' : 'pot') + '</p>' : ''}
                             </div>
-                            <div class="plant-feed-reminder-indicator ml-auto mr-10 flex flex-col items-end justify-center gap-1 min-w-0 flex-shrink-0">
+                            <div class="plant-feed-reminder-indicator ml-auto mr-20 flex flex-col items-end justify-center gap-1 min-w-0 flex-shrink-0">
                                 ${feedReminderMarkup}
                             </div>
                         </div>
