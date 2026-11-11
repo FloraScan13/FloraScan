@@ -6107,6 +6107,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     feed_details: String(log.text || ''),
                     notification_email: notificationEmail,
                     scheduled_at: scheduledAt,
+                    scheduled_date: date,
                     sent_at: null
                 }, { onConflict: 'user_id,log_id' });
                 if (error) throw error;
