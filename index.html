@@ -6914,11 +6914,43 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <span class="text-[10px] text-slate-400">• ${log.date || 'Date not set'}</span>
                         </div>
                         <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${formatGrowthLogText(log.text)}</p>
-                        ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a>').join('') + '</div>' : ''}
+                        ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<div class="relative"><a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a><button type="button" onclick="removeJournalLogPhoto(\'' + p.id + '\', \'' + (log.id || originalIndex) + '\', ' + photoIndex + ')" aria-label="Delete journal photo ' + (photoIndex + 1) + '" title="Delete photo" class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 text-white text-xs shadow"><i class="fa-solid fa-xmark"></i></button></div>').join('') + '</div>' : ''}
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0"><button type="button" onclick="editJournalLog('${p.id}', '${log.id || originalIndex}')" aria-label="Edit growth log" title="Edit entry" class="text-emerald-700 hover:text-emerald-900 p-1"><i class="fa-solid fa-pen"></i></button><button type="button" onclick="deleteJournalLog('${p.id}', '${log.id || originalIndex}')" aria-label="Delete growth log" title="Delete entry" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button></div>
                 </div>
             `).join('');
+        }
+
+        async function removeJournalLogPhoto(plantId, logId, photoIndex) {
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            if (!plant || !Array.isArray(plant.logs)) return;
+            const log = plant.logs.find((entry, index) => String(entry.id || index) === String(logId));
+            if (!log || !Array.isArray(log.photos) || !log.photos[photoIndex]) return;
+            if (!confirm('Delete this photo from the journal and cloud storage?')) return;
+
+            const photoPath = Array.isArray(log.photoPaths) ? log.photoPaths[photoIndex] : null;
+            try {
+                if (photoPath && typeof photoPath === 'string' && !photoPath.startsWith('data:') && !photoPath.startsWith('blob:')) {
+                    if (!supabaseClient || !currentUser || !navigator.onLine) {
+                        alert('Connect to the internet and sign in before deleting a cloud photo.');
+                        return;
+                    }
+                    await deleteJournalPhotoFiles([photoPath]);
+                }
+                log.photos.splice(photoIndex, 1);
+                if (Array.isArray(log.photoPaths)) log.photoPaths.splice(photoIndex, 1);
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                markFloraSyncPending();
+                if (log.id && supabaseClient && currentUser && navigator.onLine) {
+                    const synced = await syncLogToCloud(plantId, log);
+                    if (!synced) throw new Error('The updated journal entry could not be synced.');
+                }
+                renderJournalLogs(plant);
+                renderPlants();
+            } catch (error) {
+                console.error('Could not delete journal photo:', error);
+                alert('The photo could not be fully deleted from cloud storage. Please try again.');
+            }
         }
 
         function editJournalLog(plantId, logId) {
