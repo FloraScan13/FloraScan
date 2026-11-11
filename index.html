@@ -6527,7 +6527,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             if (logType === 'Feed') {
                 librarySec.classList.remove('hidden');
-                tankSec.classList.remove('hidden');
+                tankSec.classList.toggle('hidden', !!(wateringCanEnabled && wateringCanEnabled.checked));
                 populateNutrientBrandOptions();
             } else if (logType === 'Water') {
                 librarySec.classList.add('hidden');
@@ -6543,6 +6543,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('nutrient-watering-can-fields').classList.toggle('hidden', !enabled);
             const perPlantField = document.getElementById('volume-per-plant-field');
             const logType = document.getElementById('log-type').value;
+            const tankVolumeSection = document.getElementById('tank-volume-section');
+            if (tankVolumeSection && logType === 'Feed') {
+                tankVolumeSection.classList.toggle('hidden', enabled);
+            }
             if (perPlantField) {
                 if (logType === 'Water') document.getElementById('tank-volume-section').appendChild(perPlantField);
                 else document.getElementById('nutrient-watering-can-fields').appendChild(perPlantField);
