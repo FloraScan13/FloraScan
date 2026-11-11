@@ -4361,7 +4361,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function saveBrandingSettings() {
             appSettings.username = document.getElementById('setting-username').value.trim() || '@kitchengardener';
             const notificationEmail = document.getElementById('setting-profile-email').value.trim();
-            if (notificationEmail && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(notificationEmail)) {
+            if (notificationEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationEmail)) {
                 alert('Please enter a valid notification email address.');
                 return;
             }
