@@ -7597,6 +7597,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             setInput('volume-per-plant-amount', perPlantMatch?.[1]);
             if (perPlantMatch) setInput('volume-per-plant-unit', perPlantMatch[2]);
             toggleWateringCanFields();
+            const harvestDetails = getHarvestLogDetails(log);
+            const harvestChoice = document.querySelector('input[name="harvest-measurement"][value="' + (harvestDetails?.measurement || 'weight') + '"]');
+            if (harvestChoice) harvestChoice.checked = true;
+            document.getElementById('harvest-weight-value').value = harvestDetails?.measurement === 'weight' ? harvestDetails.value : '';
+            document.getElementById('harvest-weight-unit').value = harvestDetails?.measurement === 'weight' ? harvestDetails.unit : 'kg';
+            document.getElementById('harvest-number-value').value = harvestDetails?.measurement === 'number' ? harvestDetails.value : '';
+            document.getElementById('log-text').value = log.type === 'Harvest' ? stripHarvestLogLine(log.text) : (log.text || '');
+            document.getElementById('feed-reminder-date').value = log.feedReminderDate || '';
+            restoreFeedReminderInterval(log);
+            toggleGerminationSection();
+            document.getElementById('journal-log-form-title').textContent = 'Edit Growth Log Entry';
+            document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
+            document.getElementById('journal-edit-actions').classList.remove('hidden');
+            toggleNutrientLibraryView();
             const feedLines = logText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
             const feedHeaderIndex = feedLines.findIndex(line => /^(?:Mixed with:|Fed with:)$/i.test(line));
             if (feedHeaderIndex >= 0 && feedLines[feedHeaderIndex + 1]) {
@@ -7629,23 +7643,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     });
                 }
             }
-            const harvestDetails = getHarvestLogDetails(log);
-            const harvestChoice = document.querySelector('input[name="harvest-measurement"][value="' + (harvestDetails?.measurement || 'weight') + '"]');
-            if (harvestChoice) harvestChoice.checked = true;
-            document.getElementById('harvest-weight-value').value = harvestDetails?.measurement === 'weight' ? harvestDetails.value : '';
-            document.getElementById('harvest-weight-unit').value = harvestDetails?.measurement === 'weight' ? harvestDetails.unit : 'kg';
-            document.getElementById('harvest-number-value').value = harvestDetails?.measurement === 'number' ? harvestDetails.value : '';
-            document.getElementById('log-text').value = log.type === 'Harvest' ? stripHarvestLogLine(log.text) : (log.text || '');
-            document.getElementById('feed-reminder-date').value = log.feedReminderDate || '';
-            restoreFeedReminderInterval(log);
-            toggleGerminationSection();
-            document.getElementById('journal-log-form-title').textContent = 'Edit Growth Log Entry';
-            document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
-            document.getElementById('journal-edit-actions').classList.remove('hidden');
-            toggleNutrientLibraryView();
-            // Keep the nutrient library visible when a Growth log contains a saved feed block.
-            // The normal view toggle hides it for Growth entries, even though their feed
-            // selections and dosages have already been restored above.
+            // Keep the nutrient library visible when this entry contains saved feed details.
             if (feedHeaderIndex >= 0) {
                 const restoredNutrientSection = document.getElementById('nutrient-library-section');
                 if (restoredNutrientSection) restoredNutrientSection.classList.remove('hidden');
