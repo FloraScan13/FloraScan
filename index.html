@@ -4906,6 +4906,49 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (typeof setupAutocomplete === 'function') setupAutocomplete();
         }
 
+        function updatePersonalLibraryFromPlantEdit(oldName, oldVariety, plant) {
+            const library = getPersonalPlantLibrary();
+            const oldKey = String(oldName || '').trim().toLocaleLowerCase();
+            const newName = String(plant.name || '').trim();
+            const newKey = newName.toLocaleLowerCase();
+            const newVariety = String(plant.variety || '').trim();
+            const oldEntryIndex = library.findIndex(item => item.name.toLocaleLowerCase() === oldKey);
+            if (oldEntryIndex < 0) {
+                // A library entry may have been intentionally removed; do not recreate it.
+                return;
+            }
+
+            const otherOldNameRecords = plants.some(item =>
+                String(item.id) !== String(plant.id) &&
+                String(item.name || '').trim().toLocaleLowerCase() === oldKey
+            );
+
+            const oldEntry = library[oldEntryIndex];
+            const oldVarieties = (oldEntry.varieties || []).filter(value =>
+                String(value).trim().toLocaleLowerCase() !== String(oldVariety || '').trim().toLocaleLowerCase()
+            );
+
+            if (!otherOldNameRecords) {
+                oldEntry.name = newName;
+                oldEntry.varieties = oldVarieties;
+            } else {
+                oldEntry.varieties = oldVarieties;
+            }
+
+            let newEntry = library.find(item => item.name.toLocaleLowerCase() === newKey);
+            if (!newEntry) {
+                newEntry = { name: newName, varieties: [] };
+                library.push(newEntry);
+            }
+            if (newVariety && !newEntry.varieties.some(value => value.toLocaleLowerCase() === newVariety.toLocaleLowerCase())) {
+                newEntry.varieties.push(newVariety);
+            }
+            if (oldKey === newKey && newVariety && !newEntry.varieties.some(value => value.toLocaleLowerCase() === newVariety.toLocaleLowerCase())) {
+                newEntry.varieties.push(newVariety);
+            }
+            savePersonalPlantLibrary(library.filter(item => item.name && (item.varieties || []).length || item.name));
+        }
+
         function editMyPlantLibraryEntry(index) {
             const library = getPersonalPlantLibrary();
             const entry = library[index];
@@ -7375,8 +7418,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 document.getElementById('journal-edit-plant-name').focus();
                 return;
             }
+            const previousName = plant.name;
+            const previousVariety = plant.variety || '';
             plant.name = name;
             plant.variety = variety;
+            updatePersonalLibraryFromPlantEdit(previousName, previousVariety, plant);
             localStorage.setItem('flora_plants', JSON.stringify(plants));
             markFloraSyncPending();
             await syncPlantToCloud(plant);
