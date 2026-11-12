@@ -7721,18 +7721,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const productList = document.getElementById('nutrient-product-list');
                 const brandSelect = document.getElementById('nutrient-brand-select');
                 if (productList) {
-                    // Give each recorded brand its own collapsible dropdown in edit mode.
+                    // Keep each saved brand in its own native, accessible collapsible section.
                     productList.innerHTML = '';
                     recordedBlocks.filter(block => block.products.length).forEach((block, brandIndex) => {
-                        const dropdown = document.createElement('details');
-                        dropdown.className = 'mb-2 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden';
-                        dropdown.open = brandIndex === 0;
+                        const details = document.createElement('details');
+                        details.className = 'mb-2 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden';
+                        details.open = brandIndex === 0;
                         const summary = document.createElement('summary');
                         summary.className = 'cursor-pointer select-none px-3 py-2 text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-slate-700';
                         summary.textContent = block.brand.brand + ' (' + block.products.length + ')';
-                        dropdown.appendChild(summary);
-                        const brandProducts = document.createElement('div');
-                        brandProducts.className = 'p-1';
+                        details.appendChild(summary);
+                        const rows = document.createElement('div');
+                        rows.className = 'p-1';
                         block.products.forEach(savedProduct => {
                             const productIndex = block.brand.products.findIndex(product =>
                                 product.name.trim().toLowerCase() === savedProduct.name.toLowerCase()
@@ -7740,7 +7740,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             if (productIndex < 0) return;
                             const doseKey = brandIndex + '-' + productIndex;
                             const row = document.createElement('div');
-                            row.className = 'flex items-center gap-2 px-2 py-1 border-b border-slate-100 dark:border-slate-700 last:border-0';
+                            row.className = 'flex items-center gap-2 px-2 py-1 border-b border-slate-100 dark:border-slate-700';
                             const label = document.createElement('label');
                             label.className = 'flex items-center gap-2 text-xs flex-1 min-w-0';
                             const checkbox = document.createElement('input');
@@ -7751,9 +7751,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             checkbox.dataset.brandName = block.brand.brand;
                             checkbox.dataset.productIndex = String(productIndex);
                             checkbox.dataset.doseKey = doseKey;
-                            const productName = document.createElement('span');
-                            productName.textContent = savedProduct.name;
-                            label.append(checkbox, productName);
+                            const name = document.createElement('span');
+                            name.textContent = savedProduct.name;
+                            label.append(checkbox, name);
                             const dosage = savedProduct.dosage.match(/^([0-9]*\.?[0-9]+)\s*(ml\s*\/\s*L|ml|tsp)$/i);
                             const amount = document.createElement('input');
                             amount.type = 'number';
@@ -7766,7 +7766,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             const unit = document.createElement('select');
                             unit.id = 'dose-unit-' + doseKey;
                             unit.className = 'text-[10px] py-0.5 px-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900';
-                            [['ml','ml'],['ml/L','ml/L'],['tsp','tsp']].forEach(([value,labelText]) => {
+                            [['ml','ml'],['ml/L','ml/L'],['tsp','tsp']].forEach(([value, labelText]) => {
                                 const option = document.createElement('option');
                                 option.value = value;
                                 option.textContent = labelText;
@@ -7777,15 +7777,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 unit.value = unitValue === 'ml/l' ? 'ml/L' : unitValue;
                             }
                             row.append(label, amount, unit);
-                            brandProducts.appendChild(row);
+                            rows.appendChild(row);
                         });
-                        dropdown.appendChild(brandProducts);
-                        productList.appendChild(dropdown);
+                        details.appendChild(rows);
+                        productList.appendChild(details);
                     });
                 }
                 if (brandSelect) brandSelect.value = recordedBlocks[0]?.brand.brand || '';
-                const brandPicker = document.getElementById('nutrient-brand-select')?.closest('div');
-                if (brandPicker) brandPicker.classList.add('hidden');
             }
             const hasRecordedNutrients = /(?:Mixed with:|Fed with:)/i.test(logText) &&
                 NUTRIENT_BRANDS_LIBRARY.some(brand => new RegExp('^' + brand.brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':\\s*$', 'im').test(logText));
