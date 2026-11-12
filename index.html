@@ -7818,10 +7818,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const previewType = document.getElementById('log-type')?.value || original.type;
             let previewText = document.getElementById('log-text')?.value ?? original.text;
             if (previewType === 'Water' || previewType === 'Feed') {
-                // Rebuild the generated water-volume lines from the live controls so
-                // changing either an amount or its unit updates the journal preview immediately.
+                // Rebuild all generated water-volume lines from the live controls. These
+                // lines are part of the editable notes textarea as well as the journal card.
                 previewText = String(previewText || '').split(/\r?\n/)
-                    .filter(line => !/^(?:Watering can filled with [\d.]+ .* pure water\.|Watered this plant with [\d.]+ .*\.|Each plant fed with: [\d.]+ .*\.)$/i.test(line.trim()))
+                    .filter(line => !/^(?:Watering Can: [\d.]+ (?:L|gal|ml) water|Watering can filled with [\d.]+ .* pure water\.|Watered this plant with [\d.]+ .*\.|Each plant fed with: [\d.]+ .*\.)$/i.test(line.trim()))
                     .join('\n').trim();
                 const details = [];
                 const tankAmount = document.getElementById('tank-volume-amount')?.value.trim() || '';
@@ -7831,12 +7831,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const wateringCanEnabled = previewType === 'Feed' && !!document.getElementById('nutrient-watering-can-enabled')?.checked;
                 if (previewType === 'Water' && tankAmount) details.push(`Watering can filled with ${tankAmount} ${tankUnit} pure water.`);
                 if (previewType === 'Water' && perPlantAmount) details.push(`Watered this plant with ${perPlantAmount} ${perPlantUnit}.`);
-                if (wateringCanEnabled && perPlantAmount) details.push(`Each plant fed with: ${perPlantAmount} ${perPlantUnit} (includes runoff).`);
-                if (details.length) previewText = previewText ? previewText + '\n' + details.join('\n') : details.join('\n');
-                if (previewType === 'Feed' && wateringCanEnabled) {
+                if (wateringCanEnabled) {
                     const fill = document.getElementById('watering-can-fill')?.value.trim() || '';
                     const fillUnit = document.getElementById('watering-can-unit')?.value || 'L';
-                    if (fill) previewText = `Watering Can: ${fill} ${fillUnit} water\n` + previewText;
+                    if (fill) details.push(`Watering Can: ${fill} ${fillUnit} water`);
+                    if (perPlantAmount) details.push(`Each plant fed with: ${perPlantAmount} ${perPlantUnit} (includes runoff).`);
+                }
+                if (details.length) previewText = previewText ? previewText + '\n' + details.join('\n') : details.join('\n');
+                const notesField = document.getElementById('log-text');
+                if (notesField && notesField.value !== previewText) {
+                    notesField.value = previewText;
+                    resizeJournalLogTextarea();
                 }
             }
             const previewLog = {
