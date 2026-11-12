@@ -7582,11 +7582,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     // Watering-can Feed entries retain the previous per-plant behavior:
                     // multiply the applied per-plant amount by plant quantity when entered.
                     const isWateringCanFeed = /Watering can(?:\s*\(Includes runoff\))?:/i.test(content);
-                    const totalEntryWaterMl = isWateringCanFeed && perPlantMl > 0
+                    // Count the amount actually applied to plants when recorded.
+                    // Tank fill is only a fallback when no per-plant applied amount exists;
+                    // a full tank is not necessarily the amount used.
+                    const totalEntryWaterMl = perPlantMl > 0
                         ? perPlantMl * plantCount
-                        : canWaterMl > 0
-                            ? canWaterMl
-                            : perPlantMl * plantCount;
+                        : canWaterMl;
                     if (totalEntryWaterMl > 0) waterMl += totalEntryWaterMl;
 
                     // Nutrient totals are the proportion of the mixed can actually applied:
