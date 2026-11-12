@@ -7955,6 +7955,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         type === 'Water' && perPlantAmount ? 'Watered this plant with ' + perPlantAmount + ' ' + perPlantUnit + '.' : '');
                     journalNotes = replaceDetailLine(journalNotes, /^Each plant fed with:\b/i,
                         type === 'Feed' && wateringCanEnabled && perPlantAmount ? 'Each plant fed with: ' + perPlantAmount + ' ' + perPlantUnit + ' (includes runoff).' : '');
+
+                    // The feed watering-can fill is stored in its own summary line.
+                    // Replace or remove that line on every edit so the journal reflects
+                    // the current controls instead of retaining the previous fill amount.
+                    if (type === 'Feed') {
+                        const wateringCanSummary = getWateringCanSummary();
+                        if (wateringCanSummary === null) return;
+                        journalNotes = replaceDetailLine(
+                            journalNotes,
+                            /^Watering Can:\s*/i,
+                            wateringCanSummary || ''
+                        );
+                    }
                 }
                 existingLog.harvestMeasurement = type === 'Harvest' ? harvestMeasurement : '';
                 existingLog.harvestValue = type === 'Harvest' ? harvestValue : null;
