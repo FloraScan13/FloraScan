@@ -7643,6 +7643,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
             document.getElementById('journal-edit-actions').classList.remove('hidden');
             toggleNutrientLibraryView();
+            // Keep the nutrient library visible when a Growth log contains a saved feed block.
+            // The normal view toggle hides it for Growth entries, even though their feed
+            // selections and dosages have already been restored above.
+            if (feedHeaderIndex >= 0) {
+                const restoredNutrientSection = document.getElementById('nutrient-library-section');
+                if (restoredNutrientSection) restoredNutrientSection.classList.remove('hidden');
+            }
             toggleHarvestFields();
             document.getElementById('log-date').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
