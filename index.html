@@ -3114,7 +3114,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <button type="button" onclick="duplicatePlantJournal(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Create a new journal using this plant's details"><i class="fa-solid fa-copy text-emerald-700"></i> Duplicate Plant</button>
                                 <button type="button" onclick="downloadPlantJournalPDF(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Export this plant journal as a PDF"><i class="fa-solid fa-file-pdf text-black" aria-hidden="true"></i> Download PDF</button>
                                 <div id="journal-nfc-tag-actions" class="contents">
-                                    <button type="button" onclick="rewriteJournalPlantNfcTag()" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" class="inline-block w-4 h-4 object-contain" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /> Add NFC Tag</button>
+                                    <button type="button" onclick="rewriteJournalPlantNfcTag()" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" class="inline-block w-4 h-4 object-contain" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /><span id="journal-nfc-button-label">Add NFC Tag</span></button>
                                     <span id="journal-nfc-status" class="col-span-2 sm:col-span-1 text-xs text-slate-500" role="status"></span>
                                 </div>
                                 <div id="journal-qr-tag-actions" class="contents hidden">
@@ -5877,7 +5877,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const currentPlant = currentPlantId ? plants.find(item => String(item.id) === String(currentPlantId)) : null;
             const hasQrCode = !!String(currentPlant?.qrCodeValue || '').trim();
             const hasNfcTag = !!currentPlant?.nfcTagLinked;
-            if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc' || hasNfcTag);
+            if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc');
+            const nfcButtonLabel = document.getElementById('journal-nfc-button-label');
+            if (nfcButtonLabel) nfcButtonLabel.textContent = hasNfcTag ? 'Rewrite NFC Tag' : 'Add NFC Tag';
             if (journalQrActions) journalQrActions.classList.toggle('hidden', preference !== 'qr' || hasQrCode);
             const headerScannerIcon = document.getElementById('header-scanner-mode-icon');
             if (headerScannerIcon) {
@@ -7051,10 +7053,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const tagTypeRow = document.getElementById('journal-tag-type-row');
                 const tagTypeLabel = document.getElementById('journal-tag-type');
                 if (tagTypeRow && tagTypeLabel) { tagTypeLabel.textContent = 'NFC'; tagTypeRow.classList.remove('hidden'); tagTypeRow.style.display = ''; }
-                const nfcActions = document.getElementById('journal-nfc-tag-actions');
-                if (nfcActions) nfcActions.classList.add('hidden');
-                setStatus('NFC tag successfully added to ' + plant.name + '.', false);
-                alert('NFC tag successfully added to ' + plant.name + '.');
+                const nfcButtonLabel = document.getElementById('journal-nfc-button-label');
+                if (nfcButtonLabel) nfcButtonLabel.textContent = 'Rewrite NFC Tag';
+                setStatus('NFC tag successfully written for ' + plant.name + '.', false);
+                alert('NFC tag successfully written for ' + plant.name + '.');
             } catch (err) {
                 setStatus(err && err.name === 'NotAllowedError' ? 'NFC permission was not granted.' : 'Could not write this tag. Hold a writable NFC tag close to the phone and try again.', true);
             }
@@ -7221,7 +7223,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             // cannot carry over and leave the journal options inaccessible.
             cancelJournalLogEdit();
             const nfcTagActions = document.getElementById('journal-nfc-tag-actions');
-            if (nfcTagActions) nfcTagActions.classList.toggle('hidden', getScannerPreference() !== 'nfc' || !!p.nfcTagLinked);
+            if (nfcTagActions) nfcTagActions.classList.toggle('hidden', getScannerPreference() !== 'nfc');
+            const nfcButtonLabel = document.getElementById('journal-nfc-button-label');
+            if (nfcButtonLabel) nfcButtonLabel.textContent = p.nfcTagLinked ? 'Rewrite NFC Tag' : 'Add NFC Tag';
             const qrTagActions = document.getElementById('journal-qr-tag-actions');
             if (qrTagActions) qrTagActions.classList.toggle('hidden', getScannerPreference() !== 'qr' || !!String(p.qrCodeValue || '').trim());
             const qrStatus = document.getElementById('journal-qr-status');
