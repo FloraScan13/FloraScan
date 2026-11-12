@@ -7815,12 +7815,36 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (logIndex < 0) return;
 
             const original = plant.logs[logIndex];
+            const previewType = document.getElementById('log-type')?.value || original.type;
+            let previewText = document.getElementById('log-text')?.value ?? original.text;
+            if (previewType === 'Water' || previewType === 'Feed') {
+                // Rebuild the generated water-volume lines from the live controls so
+                // changing either an amount or its unit updates the journal preview immediately.
+                previewText = String(previewText || '').split(/\r?\n/)
+                    .filter(line => !/^(?:Watering can filled with [\d.]+ .* pure water\.|Watered this plant with [\d.]+ .*\.|Each plant fed with: [\d.]+ .*\.)$/i.test(line.trim()))
+                    .join('\n').trim();
+                const details = [];
+                const tankAmount = document.getElementById('tank-volume-amount')?.value.trim() || '';
+                const tankUnit = document.getElementById('tank-volume-unit')?.value || '';
+                const perPlantAmount = document.getElementById('volume-per-plant-amount')?.value.trim() || '';
+                const perPlantUnit = document.getElementById('volume-per-plant-unit')?.value || 'Milliliters';
+                const wateringCanEnabled = previewType === 'Feed' && !!document.getElementById('nutrient-watering-can-enabled')?.checked;
+                if (previewType === 'Water' && tankAmount) details.push(`Watering can filled with ${tankAmount} ${tankUnit} pure water.`);
+                if (previewType === 'Water' && perPlantAmount) details.push(`Watered this plant with ${perPlantAmount} ${perPlantUnit}.`);
+                if (wateringCanEnabled && perPlantAmount) details.push(`Each plant fed with: ${perPlantAmount} ${perPlantUnit} (includes runoff).`);
+                if (details.length) previewText = previewText ? previewText + '\n' + details.join('\n') : details.join('\n');
+                if (previewType === 'Feed' && wateringCanEnabled) {
+                    const fill = document.getElementById('watering-can-fill')?.value.trim() || '';
+                    const fillUnit = document.getElementById('watering-can-unit')?.value || 'L';
+                    if (fill) previewText = `Watering Can: ${fill} ${fillUnit} water\n` + previewText;
+                }
+            }
             const previewLog = {
                 ...original,
                 date: document.getElementById('log-date')?.value || original.date,
-                type: document.getElementById('log-type')?.value || original.type,
+                type: previewType,
                 growthStage: document.getElementById('log-growth-stage')?.value || original.growthStage,
-                text: document.getElementById('log-text')?.value ?? original.text,
+                text: previewText,
                 feedReminderDate: document.getElementById('feed-reminder-date')?.value || '',
                 feedReminderMode: document.getElementById('feed-reminder-mode')?.value || 'once',
                 feedReminderInterval: document.getElementById('feed-reminder-interval')?.value || '',
