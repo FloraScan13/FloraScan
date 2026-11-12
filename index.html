@@ -4950,7 +4950,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function editMyPlantLibraryEntry(index) {
-            const library = getPersonalPlantLibrary();
+            // The list is displayed alphabetically, so resolve the same sorted index.
+            const library = getPersonalPlantLibrary().slice().sort((a, b) => a.name.localeCompare(b.name));
             const entry = library[index];
             if (!entry) return;
             const name = window.prompt('Edit plant name:', entry.name);
@@ -4967,7 +4968,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function deleteMyPlantLibraryEntry(index) {
-            const library = getPersonalPlantLibrary();
+            // Match the alphabetical order used by renderMyPlantLibrary().
+            const library = getPersonalPlantLibrary().slice().sort((a, b) => a.name.localeCompare(b.name));
             const entry = library[index];
             if (!entry) return;
 
