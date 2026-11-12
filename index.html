@@ -7785,10 +7785,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             const reminderLabel = Number.isNaN(reminderDate.getTime()) ? log.feedReminderDate : reminderDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                             return '<span class="inline-flex items-center space-x-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border border-[#c6537b]/40 whitespace-nowrap"><i class="fa-regular fa-bell"></i><span>Repeat feed · ' + escapeHtml(reminderLabel) + '</span></span>';
                         })() : ''}
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="editJournalLogByIndex('${encodeURIComponent(String(p.id))}', ${originalIndex})" aria-label="Edit growth log" title="Edit entry" class="text-emerald-700 hover:text-emerald-900 p-1"><i class="fa-solid fa-pen"></i></button>
-                            <button type="button" onclick="deleteJournalLog('${p.id}', '${log.id || originalIndex}')" aria-label="Delete growth log" title="Delete entry" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
+                        <details class="relative">
+                            <summary aria-label="Growth log options" title="More options" class="list-none cursor-pointer rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-100 [&::-webkit-details-marker]:hidden">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </summary>
+                            <div class="absolute right-0 top-full z-30 mt-1 min-w-36 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+                                <button type="button" onclick="this.closest('details').open=false; editJournalLogByIndex('${encodeURIComponent(String(p.id))}', ${originalIndex})" class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-pen w-4"></i> Edit</button>
+                                <button type="button" onclick="this.closest('details').open=false; deleteJournalLog('${p.id}', '${log.id || originalIndex}')" class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"><i class="fa-regular fa-trash-can w-4"></i> Delete</button>
+                            </div>
+                        </details>
                     </div>
                 </div>
             `).join('');
