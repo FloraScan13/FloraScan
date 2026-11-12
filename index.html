@@ -2670,19 +2670,40 @@ textarea {
             </div>
 
             <!-- Growing Locations Settings -->
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
-                <h3 class="text-base font-bold flex items-center space-x-2">
-                    <i class="fa-solid fa-location-dot text-emerald-600"></i>
-                    <span>Growing Locations</span>
-                </h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Manage each growing location separately. Add a location with the button below, or use × to remove one.</p>
-                <div id="setting-plant-locations-list" class="space-y-2"></div>
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <input id="new-plant-location" type="text" maxlength="80" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="New location name" onkeydown="if(event.key==='Enter'){event.preventDefault();addPlantLocation();}">
-                    <select id="new-plant-location-type" aria-label="Location type" class="px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option></select>
-                    <button type="button" onclick="addPlantLocation()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition"><i class="fa-solid fa-plus mr-1"></i> Add Location</button>
+            <div id="growing-locations-settings" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <button id="growing-locations-toggle" type="button" aria-expanded="false" aria-controls="growing-locations-content" class="w-full flex items-center justify-between gap-3 text-left cursor-pointer">
+                    <span class="min-w-0">
+                        <span class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-location-dot text-emerald-600"></i><span>Growing Locations</span></span>
+                        <span class="block text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your indoor and outdoor growing areas</span>
+                    </span>
+                    <i id="growing-locations-chevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform" aria-hidden="true"></i>
+                </button>
+                <div id="growing-locations-content" hidden class="space-y-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Manage each growing location separately. Add a location with the button below, or use × to remove one.</p>
+                    <div id="setting-plant-locations-list" class="space-y-2"></div>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input id="new-plant-location" type="text" maxlength="80" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="New location name" onkeydown="if(event.key==='Enter'){event.preventDefault();addPlantLocation();}">
+                        <select id="new-plant-location-type" aria-label="Location type" class="px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option></select>
+                        <button type="button" onclick="addPlantLocation()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition"><i class="fa-solid fa-plus mr-1"></i> Add Location</button>
+                    </div>
                 </div>
             </div>
+            <script>
+                // Bind the settings accordion after its markup is parsed.
+                (() => {
+                    const button = document.getElementById('growing-locations-toggle');
+                    const content = document.getElementById('growing-locations-content');
+                    const chevron = document.getElementById('growing-locations-chevron');
+                    if (!button || !content || button.dataset.toggleBound) return;
+                    button.dataset.toggleBound = 'true';
+                    button.addEventListener('click', () => {
+                        const isExpanded = button.getAttribute('aria-expanded') === 'true';
+                        content.hidden = isExpanded;
+                        button.setAttribute('aria-expanded', String(!isExpanded));
+                        if (chevron) chevron.style.transform = isExpanded ? '' : 'rotate(180deg)';
+                    });
+                })();
+            </script>
 
             <!-- Personal Plant Library -->
             <div id="my-plant-library-settings" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
