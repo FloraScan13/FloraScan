@@ -3564,29 +3564,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             return closestName;
         }
 
-        const PLANT_DATABASE = [
-            { name: "Cucumber", defaultKey: "cucumber", varieties: ["Beth Alpha", "Mini Munch", "Marketmore", "Telegraph Improved", "Passandra", "Lemon Cucumber", "Spacemaster", "Crystal Apple", "Bush Champion", "Suyo Long", "National Pickling", "Armenian", "Socrates F1", "Marketmore 76"] },
-            { name: "Gherkin / Cornichon", defaultKey: "cucumber", varieties: ["Parisian Pickling", "Boston Pickling", "Wisconsin SMR 58", "Regal", "Vert Petit de Paris"] },
-            { name: "Courgette / Zucchini", defaultKey: "cucumber", varieties: ["Black Beauty", "Defender F1", "Yellow Custard", "Romanesco", "Midnight F1", "Golden Zucchini", "Round de Nice", "Astia", "Claritem", "Nero di Milano"] },
-            { name: "Butternut Squash", defaultKey: "cucumber", varieties: ["Waltham", "Hunter F1", "Honeynut", "Avalon", "Harrier F1", "Early Butternut"] },
-            { name: "Pumpkin", defaultKey: "cucumber", varieties: ["Jack O'Lantern", "Small Sugar", "Cinderella", "Atlantic Giant", "Baby Bear", "Crown Prince", "Musquée de Provence"] },
-            { name: "Cherry Tomato", defaultKey: "tomato", varieties: ["Gardener's Delight", "Sungold", "Sweet Million", "Black Cherry", "Super Sweet 100", "Rosella", "Yellow Pear", "Isis Candy", "Tumbler", "Tumbling Tom", "Apero", "Honeybee"] },
-            { name: "Plum / Roma Tomato", defaultKey: "tomato", varieties: ["San Marzano", "Roma VF", "Amish Paste", "Principe Borghese", "Juliet F1", "Opalka", "Polish Pastel"] },
-            { name: "Beefsteak Tomato", defaultKey: "tomato", varieties: ["Black Krim", "Cherokee Purple", "Brandywine Red", "Big Boy", "Mortgage Lifter", "Beefmaster", "Ananas Noire"] },
-            { name: "Sweet Bell Pepper", defaultKey: "pepper", varieties: ["California Wonder", "Corno di Toro", "Sweet Banana", "Mini Bell", "Yolo Wonder", "Red Knight"] },
-            { name: "Chilli Pepper", defaultKey: "pepper", varieties: ["Padrón", "Jalapeño", "Ancho Poblano", "Cayenne", "Serrano", "Scotch Bonnet", "Habanero Orange", "Carolina Reaper"] },
-            { name: "Carrot", defaultKey: "carrot", varieties: ["Nantes 2", "Chantenay Red Cored", "Autumn King 2", "Purple Haze", "Flyaway", "Touchon", "Paris Market"] },
-            { name: "Radish", defaultKey: "carrot", varieties: ["French Breakfast", "Cherry Belle", "Sparkler", "Black Spanish Round", "Daikon Long White", "Watermelon Radish"] },
-            { name: "Beetroot", defaultKey: "carrot", varieties: ["Boltardy", "Detroit Dark Red", "Chioggia", "Golden Detroit", "Cylindra", "Bull's Blood"] },
-            { name: "Lettuce", defaultKey: "greens", varieties: ["Little Gem", "Lollo Rossa", "Buttercrunch", "Tom Thumb", "Red Salad Bowl", "Parris Island Cos"] },
-            { name: "Spinach", defaultKey: "greens", varieties: ["Bloomsdale Long Standing", "Space F1", "Amazon", "Giant Winter", "Matador"] },
-            { name: "Kale", defaultKey: "greens", varieties: ["Cavolo Nero (Lacinato)", "Dwarf Blue Scotch", "Red Russian", "Curly Scarlet"] },
-            { name: "Onion", defaultKey: "onion", varieties: ["Sturon", "Stuttgarter Riesen", "Red Baron", "Kelsae", "Walla Walla"] },
-            { name: "Garlic", defaultKey: "onion", varieties: ["Chesnok Red", "Music", "Solent Wight", "Early Wight", "Elephant Garlic"] },
-            { name: "Strawberry", defaultKey: "berries", varieties: ["Elsanta", "Cambridge Favourite", "Mara des Bois", "Symphony", "Honeyoye", "Pegasus"] },
-            { name: "Fig", defaultKey: "fig", varieties: ["Brown Turkey", "Brunswick", "White Marseille", "Violette de Bordeaux"] }
-        ];
-
         const NUTRIENT_BRANDS_LIBRARY = [
             {
                 brand: "Growth Technology - Clonex Series",
@@ -4732,39 +4709,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const nameDropdown = document.getElementById('name-suggestions');
             const varietyDropdown = document.getElementById('variety-suggestions');
 
-            // Combine the built-in reference list with this user's saved plants.
-            // Plant records are already persisted to local storage and, when configured,
-            // synced to the user's Supabase account, so personal suggestions survive reloads.
+            // Suggestions come exclusively from this user's saved plant library.
             function getPlantSuggestionLibrary() {
-                const library = new Map();
-                const addPlant = (name, variety, defaultKey) => {
-                    const cleanName = String(name || '').trim();
-                    if (!cleanName) return;
-                    const key = cleanName.toLocaleLowerCase();
-                    if (!library.has(key)) library.set(key, {
-                        name: cleanName,
-                        defaultKey: defaultKey || 'cucumber',
-                        varieties: []
-                    });
-                    const entry = library.get(key);
-                    if (!entry.defaultKey && defaultKey) entry.defaultKey = defaultKey;
-                    const cleanVariety = String(variety || '').trim();
-                    if (cleanVariety && !entry.varieties.some(v => v.toLocaleLowerCase() === cleanVariety.toLocaleLowerCase())) {
-                        entry.varieties.push(cleanVariety);
-                    }
-                };
-
-                PLANT_DATABASE.forEach(item => {
-                    addPlant(item.name, '', item.defaultKey);
-                    (item.varieties || []).forEach(variety => addPlant(item.name, variety, item.defaultKey));
-                });
-                getPersonalPlantLibrary().forEach(plant => {
-                    const databaseMatch = PLANT_DATABASE.find(item => item.name.toLocaleLowerCase() === String(plant.name || '').toLocaleLowerCase());
-                    const defaultKey = databaseMatch ? databaseMatch.defaultKey : 'cucumber';
-                    addPlant(plant.name, '', defaultKey);
-                    (plant.varieties || []).forEach(variety => addPlant(plant.name, variety, defaultKey));
-                });
-                return [...library.values()];
+                return getPersonalPlantLibrary()
+                    .filter(plant => String(plant.name || '').trim())
+                    .map(plant => ({
+                        name: String(plant.name).trim(),
+                        defaultKey: 'cucumber',
+                        varieties: [...new Map((plant.varieties || [])
+                            .map(value => String(value || '').trim())
+                            .filter(Boolean)
+                            .map(value => [value.toLocaleLowerCase(), value])).values()]
+                    }));
             }
 
             nameInput.addEventListener('input', () => {
@@ -4773,11 +4729,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 const matches = getPlantSuggestionLibrary().filter(item =>
                     item.name.toLocaleLowerCase().includes(query) ||
-                    item.varieties.some(v => v.toLocaleLowerCase().includes(query))
+                    item.varieties.some(value => value.toLocaleLowerCase().includes(query))
                 ).slice(0, 10);
 
                 nameDropdown.replaceChildren();
-                if (matches.length === 0) { nameDropdown.classList.add('hidden'); return; }
+                if (!matches.length) { nameDropdown.classList.add('hidden'); return; }
 
                 matches.forEach(item => {
                     const option = document.createElement('button');
@@ -4787,7 +4743,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     details.className = 'flex items-center space-x-2.5 min-w-0';
                     const icon = document.createElement('span');
                     icon.className = 'w-7 h-7 rounded-lg crop-badge-container p-0.5 flex items-center justify-center flex-shrink-0';
-                    icon.innerHTML = MONOCHROME_VEG_SVGS[item.defaultKey] || MONOCHROME_VEG_SVGS.cucumber;
+                    icon.innerHTML = MONOCHROME_VEG_SVGS.cucumber;
                     const label = document.createElement('span');
                     label.className = 'font-semibold text-slate-800 dark:text-slate-100';
                     label.textContent = item.name;
@@ -4796,7 +4752,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     count.className = 'text-[10px] text-emerald-600 dark:text-emerald-400 font-mono pl-2 flex-shrink-0';
                     count.textContent = item.varieties.length + ' varieties';
                     option.append(details, count);
-                    option.addEventListener('click', () => selectPlantName(item.name, item.defaultKey));
+                    option.addEventListener('click', () => selectPlantName(item.name));
                     nameDropdown.appendChild(option);
                 });
                 nameDropdown.classList.remove('hidden');
@@ -4810,11 +4766,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const library = getPlantSuggestionLibrary();
                 const matchedPlant = library.find(item => item.name.toLocaleLowerCase() === selectedName);
                 let pool = matchedPlant ? matchedPlant.varieties : library.flatMap(item => item.varieties);
-                pool = [...new Map(pool.map(v => [v.toLocaleLowerCase(), v])).values()];
-                const matches = pool.filter(v => v.toLocaleLowerCase().includes(query)).slice(0, 10);
+                pool = [...new Map(pool.map(value => [value.toLocaleLowerCase(), value])).values()];
+                const matches = pool.filter(value => value.toLocaleLowerCase().includes(query)).slice(0, 10);
 
                 varietyDropdown.replaceChildren();
-                if (matches.length === 0) { varietyDropdown.classList.add('hidden'); return; }
+                if (!matches.length) { varietyDropdown.classList.add('hidden'); return; }
 
                 matches.forEach(varName => {
                     const option = document.createElement('button');
@@ -6664,6 +6620,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (editId) {
                 const idx = plants.findIndex(p => p.id === editId);
                 if (idx !== -1) {
+                    const previousPlant = plants[idx];
+                    updatePersonalLibraryFromPlantEdit(previousPlant.name, previousPlant.variety || '', plantData);
                     plantData.addedAt = plants[idx].addedAt || plants[idx].createdAt || plants[idx].date || '';
                     plantData.logs = plants[idx].logs || [];
                     plantData.remainingSeeds = Math.max(0, Number(plants[idx].remainingSeeds) || (plants[idx].quantityType === 'seeds' ? Number(plants[idx].quantity) || 0 : 0));
@@ -6700,6 +6658,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     };
                     plantData.logs.unshift(initialMediumLog);
                 }
+                // Save only names and varieties explicitly entered by the user.
+                const personalLibrary = getPersonalPlantLibrary();
+                const personalEntry = personalLibrary.find(item => item.name.toLocaleLowerCase() === plantData.name.trim().toLocaleLowerCase());
+                if (!personalEntry) personalLibrary.push({ name: plantData.name.trim(), varieties: plantData.variety.trim() ? [plantData.variety.trim()] : [] });
+                else if (plantData.variety.trim() && !(personalEntry.varieties || []).some(value => value.toLocaleLowerCase() === plantData.variety.trim().toLocaleLowerCase())) personalEntry.varieties.push(plantData.variety.trim());
+                savePersonalPlantLibrary(personalLibrary);
                 plants.unshift(plantData);
             }
 
