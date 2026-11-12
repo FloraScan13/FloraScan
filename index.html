@@ -7856,21 +7856,30 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function installJournalEditLivePreview() {
-            const form = document.querySelector('form[onsubmit="handleJournalLogSubmit(event)"]');
-            if (!form || form.dataset.livePreviewBound === 'true') return;
-            form.dataset.livePreviewBound = 'true';
+            // Some journal controls (notably water-volume inputs) are moved between
+            // sections dynamically and may sit outside the submit form. Listen at the
+            // document level so every edit control reliably refreshes the preview.
+            if (document.documentElement.dataset.journalLivePreviewBound === 'true') return;
+            document.documentElement.dataset.journalLivePreviewBound = 'true';
             const refreshEditPreview = (event) => {
-                // Nutrient checkboxes and dosage fields update the journal text without
-                // dispatching an input event on the textarea, so sync them here first.
-                if (document.getElementById('log-edit-id')?.value &&
-                    event.target?.closest('#nutrient-product-list') &&
-                    window.nutrientEditorActiveBrand) {
+                if (!document.getElementById('log-edit-id')?.value) return;
+                if (event.target?.closest?.('#nutrient-product-list') && window.nutrientEditorActiveBrand) {
                     syncNutrientBrandToLog(window.nutrientEditorActiveBrand);
                 }
-                updateJournalEditLivePreview();
+                const liveVolumeFields = [
+                    'tank-volume-amount', 'tank-volume-unit',
+                    'volume-per-plant-amount', 'volume-per-plant-unit',
+                    'watering-can-fill', 'watering-can-unit',
+                    'nutrient-watering-can-enabled'
+                ];
+                if (liveVolumeFields.includes(event.target?.id) ||
+                    event.target?.closest?.('#nutrient-product-list') ||
+                    event.target?.id === 'log-text') {
+                    updateJournalEditLivePreview();
+                }
             };
-            form.addEventListener('input', refreshEditPreview);
-            form.addEventListener('change', refreshEditPreview);
+            document.addEventListener('input', refreshEditPreview, true);
+            document.addEventListener('change', refreshEditPreview, true);
         }
 
         function editJournalLog(plantId, logId) {
