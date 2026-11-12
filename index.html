@@ -4742,11 +4742,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 )?.varieties || [];
             }
 
-            function renderVarietySuggestions() {
+            function renderVarietySuggestions(showAll = false) {
                 const query = varietyInput.value.trim().toLocaleLowerCase();
                 const selectedName = nameInput.value.trim();
-                const matches = getSuggestedVarieties(selectedName)
-                    .filter(value => !query || value.toLocaleLowerCase().includes(query)).slice(0, 10);
+                const savedVarieties = getSuggestedVarieties(selectedName);
+                const matches = savedVarieties
+                    .filter(value => showAll || !query || value.toLocaleLowerCase().includes(query)).slice(0, 10);
                 varietyDropdown.replaceChildren();
                 if (!selectedName || !matches.length) { varietyDropdown.classList.add('hidden'); return; }
 
@@ -4792,7 +4793,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 // Prefill the variety field with the first variety saved for this plant.
                 // The user can still edit it or choose another saved suggestion.
                 varietyInput.value = savedVarieties[0] || '';
-                renderVarietySuggestions();
+                // Open the dropdown with every saved variety for this plant,
+                // while keeping the first saved variety visible in the input.
+                renderVarietySuggestions(true);
             });
 
             varietyInput.addEventListener('input', renderVarietySuggestions);
