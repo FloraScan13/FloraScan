@@ -7864,7 +7864,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 // Rebuild all generated water-volume lines from the live controls. These
                 // lines are part of the editable notes textarea as well as the journal card.
                 previewText = String(previewText || '').split(/\r?\n/)
-                    .filter(line => !/^(?:Watering Can: [\d.]+ (?:L|gal|ml) water|Watering can filled with [\d.]+ .* pure water\.|Watered this plant with [\d.]+ .*\.|Each plant fed with: [\d.]+ .*\.)$/i.test(line.trim()))
+                    .filter(line => !/^(?:Tank fill volume: [\d.]+ .*\.?|Watering Can: [\d.]+ (?:L|gal|ml) water|Watering can filled with [\d.]+ .* pure water\.|Watered this plant with [\d.]+ .*\.|Each plant fed with: [\d.]+ .*\.)$/i.test(line.trim()))
                     .join('\n').trim();
                 const details = [];
                 const tankAmount = document.getElementById('tank-volume-amount')?.value.trim() || '';
@@ -7872,6 +7872,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const perPlantAmount = document.getElementById('volume-per-plant-amount')?.value.trim() || '';
                 const perPlantUnit = document.getElementById('volume-per-plant-unit')?.value || 'Milliliters';
                 const wateringCanEnabled = previewType === 'Feed' && !!document.getElementById('nutrient-watering-can-enabled')?.checked;
+                if (previewType === 'Feed' && tankAmount) details.push(`Tank fill volume: ${tankAmount} ${tankUnit}.`);
                 if (previewType === 'Water' && tankAmount) details.push(`Watering can filled with ${tankAmount} ${tankUnit} pure water.`);
                 if (previewType === 'Water' && perPlantAmount) details.push(`Watered this plant with ${perPlantAmount} ${perPlantUnit}.`);
                 if (wateringCanEnabled) {
