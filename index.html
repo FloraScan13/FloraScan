@@ -4752,6 +4752,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function switchTab(tabId) {
+            // On mobile, dismiss an open Plant Journal when navigating to Settings.
+            if (tabId === 'settings' && window.matchMedia('(max-width: 767px)').matches) {
+                const journalModal = document.getElementById('journal-modal');
+                if (journalModal) journalModal.classList.add('hidden');
+            }
             // Dismiss the Add Plant modal whenever the user navigates to another tab.
             const plantModal = document.getElementById('plant-modal');
             if (plantModal) plantModal.classList.add('hidden');
@@ -5740,6 +5745,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function openAddPlantModal() {
+            // On mobile, dismiss an open Plant Journal before opening Add Plant.
+            if (window.matchMedia('(max-width: 767px)').matches) {
+                const journalModal = document.getElementById('journal-modal');
+                if (journalModal) journalModal.classList.add('hidden');
+            }
             setActiveNavigationTab('add-plant');
             document.getElementById('modal-title').textContent = 'Add New Plant';
             document.getElementById('edit-plant-id').value = '';
