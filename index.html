@@ -4737,9 +4737,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             function getSuggestedVarieties(plantName) {
                 const normalized = String(plantName || '').trim().toLocaleLowerCase();
                 if (!normalized) return [];
-                return getPlantSuggestionLibrary().find(item =>
-                    item.name.toLocaleLowerCase() === normalized
-                )?.varieties || [];
+                const library = getPlantSuggestionLibrary();
+                // Prefer an exact plant-name match; while the user is still typing,
+                // use matching library names so suggestions appear immediately.
+                const exact = library.find(item => item.name.toLocaleLowerCase() === normalized);
+                if (exact) return exact.varieties;
+                const matches = library.filter(item =>
+                    item.name.toLocaleLowerCase().includes(normalized)
+                );
+                return [...new Map(matches.flatMap(item => item.varieties)
+                    .map(value => [value.toLocaleLowerCase(), value])).values()];
             }
 
             function renderVarietySuggestions(showAll = false) {
