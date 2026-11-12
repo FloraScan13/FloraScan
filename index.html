@@ -7599,8 +7599,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             toggleWateringCanFields();
             if (log.type === 'Feed') {
                 // Restore the saved nutrient selection from the feed description.
-                // Normalize legacy escaped newlines as well as real line breaks before parsing.
-                const feedLines = logText.replace(/\\\\n/g, '\n').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+                // logText is normalized above, so parse both real line breaks and legacy feed labels.
+                const feedLines = logText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
                 const feedHeaderIndex = feedLines.findIndex(line => /^(?:Mixed with:|Fed with:)$/i.test(line));
                 if (feedHeaderIndex >= 0 && feedLines[feedHeaderIndex + 1]) {
                     const brandName = feedLines[feedHeaderIndex + 1].replace(/:$/, '').trim();
@@ -7610,7 +7610,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         handleNutrientBrandChange();
                         const brandObj = NUTRIENT_BRANDS_LIBRARY.find(brand => brand.brand === brandName);
                         feedLines.slice(feedHeaderIndex + 2).forEach(line => {
-                            const item = line.replace(/^[•*-]\\s*/, '').match(/^(.*?)\\s*\\((.*?)\\)\\s*$/);
+                            const item = line.replace(/^[•*-]\s*/, '').match(/^(.*?)\s*\((.*?)\)\s*$/);
                             if (!item || !brandObj) return;
                             const productName = item[1].trim();
                             const index = brandObj.products.findIndex(product => product.name === productName);
@@ -7618,7 +7618,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]'))
                                 .find(el => el.value === productName);
                             if (checkbox) checkbox.checked = true;
-                            const dosage = item[2].trim().match(/^([0-9]*\\.?[0-9]+)\\s*(ml\\/L|ml|tsp)$/i);
+                            const dosage = item[2].trim().match(/^([0-9]*\.?[0-9]+)\s*(ml\/L|ml|tsp)$/i);
                             if (dosage) {
                                 setInput('dose-val-' + index, dosage[1]);
                                 setInput('dose-unit-' + index, dosage[2].toLowerCase());
