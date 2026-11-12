@@ -7678,6 +7678,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (restoredNutrientSection) restoredNutrientSection.classList.remove('hidden');
             }
             toggleHarvestFields();
+            // Restore the saved stage after all edit-mode UI refreshes. Older entries may
+            // have the stage recorded in their notes rather than the growthStage property.
+            const stageSelect = document.getElementById('log-growth-stage');
+            const recordedStage = log.growthStage ||
+                (logText.match(/(?:growth\s*stage|stage)\s*:\s*(Cutting|Seedling|Vegetative|Flowering)/i) || [])[1] ||
+                '';
+            if (stageSelect) {
+                const matchingStage = Array.from(stageSelect.options).find(option =>
+                    option.value.toLowerCase() === String(recordedStage).trim().toLowerCase()
+                );
+                stageSelect.value = matchingStage ? matchingStage.value : '';
+            }
             document.getElementById('log-date').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
