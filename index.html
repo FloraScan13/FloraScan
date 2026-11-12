@@ -5877,10 +5877,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const currentPlant = currentPlantId ? plants.find(item => String(item.id) === String(currentPlantId)) : null;
             const hasQrCode = !!String(currentPlant?.qrCodeValue || '').trim();
             const hasNfcTag = !!currentPlant?.nfcTagLinked;
-            if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc');
+            if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc' || hasQrCode);
             const nfcButtonLabel = document.getElementById('journal-nfc-button-label');
             if (nfcButtonLabel) nfcButtonLabel.textContent = hasNfcTag ? 'Rewrite NFC Tag' : 'Add NFC Tag';
-            if (journalQrActions) journalQrActions.classList.toggle('hidden', preference !== 'qr' || hasQrCode);
+            if (journalQrActions) journalQrActions.classList.toggle('hidden', preference !== 'qr' || hasQrCode || hasNfcTag);
             const headerScannerIcon = document.getElementById('header-scanner-mode-icon');
             if (headerScannerIcon) {
                 if (preference === 'none') {
@@ -6021,6 +6021,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (!journalPlant) {
                     const status = document.getElementById('qr-scan-status');
                     if (status) status.textContent = 'Could not find this plant. Close and reopen its journal.';
+                    return false;
+                }
+                if (journalPlant.nfcTagLinked) {
+                    const status = document.getElementById('qr-scan-status');
+                    if (status) status.textContent = 'This plant already has an NFC tag. Remove its NFC tag assignment before adding a QR code.';
                     return false;
                 }
                 const floraMatch = rawValue.match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
@@ -7040,6 +7045,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             };
             if (!plant) { setStatus('Could not find this plant. Close and reopen its journal.', true); return; }
+            if (String(plant.qrCodeValue || '').trim()) {
+                setStatus('This plant already has a QR code. It cannot also have an NFC tag.', true);
+                return;
+            }
             const unsupported = nfcSupportMessage();
             if (unsupported) { setStatus(unsupported, true); return; }
             setStatus('Ready — hold a writable NFC tag close to your phone.', false);
@@ -7223,11 +7232,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             // cannot carry over and leave the journal options inaccessible.
             cancelJournalLogEdit();
             const nfcTagActions = document.getElementById('journal-nfc-tag-actions');
-            if (nfcTagActions) nfcTagActions.classList.toggle('hidden', getScannerPreference() !== 'nfc');
+            if (nfcTagActions) nfcTagActions.classList.toggle('hidden', getScannerPreference() !== 'nfc' || !!String(p.qrCodeValue || '').trim());
             const nfcButtonLabel = document.getElementById('journal-nfc-button-label');
             if (nfcButtonLabel) nfcButtonLabel.textContent = p.nfcTagLinked ? 'Rewrite NFC Tag' : 'Add NFC Tag';
             const qrTagActions = document.getElementById('journal-qr-tag-actions');
-            if (qrTagActions) qrTagActions.classList.toggle('hidden', getScannerPreference() !== 'qr' || !!String(p.qrCodeValue || '').trim());
+            if (qrTagActions) qrTagActions.classList.toggle('hidden', getScannerPreference() !== 'qr' || !!String(p.qrCodeValue || '').trim() || !!p.nfcTagLinked);
             const qrStatus = document.getElementById('journal-qr-status');
             if (qrStatus) qrStatus.textContent = '';
             const journalLocationButton = document.getElementById('journal-plant-location');
