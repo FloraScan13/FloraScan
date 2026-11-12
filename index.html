@@ -7894,11 +7894,21 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 // Hide journal entries dated before this plant was added to FloraScan.
                 .filter(({ sortDate }) => addedAtSortDate === null || sortDate === null || sortDate >= addedAtSortDate)
                 .sort((a, b) => {
+                    const stageOrder = ['Cutting', 'Seedling', 'Vegetative', 'Flowering'];
+                    const stageA = String(a.log.growthStage || '').trim();
+                    const stageB = String(b.log.growthStage || '').trim();
+                    const orderA = stageOrder.includes(stageA) ? stageOrder.indexOf(stageA) : stageOrder.length;
+                    const orderB = stageOrder.includes(stageB) ? stageOrder.indexOf(stageB) : stageOrder.length;
+                    if (orderA !== orderB) return orderA - orderB;
+                    if (stageA !== stageB) return stageA.localeCompare(stageB);
                     if (a.sortDate === null && b.sortDate !== null) return 1;
                     if (a.sortDate !== null && b.sortDate === null) return -1;
                     return (b.sortDate ?? 0) - (a.sortDate ?? 0) || a.originalIndex - b.originalIndex;
                 });
-            container.innerHTML = usageSummary + timelineLogs.map(({ log, originalIndex }) => `
+            container.innerHTML = usageSummary + timelineLogs.map(({ log, originalIndex }, timelineIndex) => `
+                ${timelineIndex === 0 || String(timelineLogs[timelineIndex - 1].log.growthStage || '').trim() !== String(log.growthStage || '').trim()
+                    ? '<div class="pt-4 pb-2 first:pt-0"><h4 class="text-sm font-bold tracking-wide text-emerald-800 dark:text-emerald-300 border-b border-emerald-200 dark:border-emerald-900 pb-2">' + escapeHtml(String(log.growthStage || '').trim() || 'Other updates') + '</h4></div>'
+                    : ''}
                 <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs flex justify-between items-start">
                     <div class="flex-1 min-w-0 space-y-1 pr-1">
                         <div class="flex items-start justify-between gap-2 flex-wrap">
@@ -7907,7 +7917,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <span class="text-[10px] text-slate-400">• ${log.date || 'Date not set'}</span>
                             </div>
                         </div>
-                        ${log.growthStage ? '<div class="text-xs text-slate-500 dark:text-slate-400 mt-1">Growth stage: ' + escapeHtml(log.growthStage) + '</div>' : ''}
+
                         <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${getJournalTankFillDisplay(log)}${formatGrowthLogText(log.text, log.type) ? '<p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">' + formatGrowthLogText(log.text, log.type) + '</p>' : ''}
                         ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<div class="relative"><a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a><button type="button" onclick="removeJournalLogPhoto(\'' + p.id + '\', \'' + (log.id || originalIndex) + '\', ' + photoIndex + ')" aria-label="Delete journal photo ' + (photoIndex + 1) + '" title="Delete photo" class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 text-white text-xs shadow"><i class="fa-solid fa-xmark"></i></button></div>').join('') + '</div>' : ''}
                     </div>
