@@ -7534,18 +7534,30 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function getJournalTankFillDisplay(log) {
-            if (!log || String(log.type || '').toLowerCase() !== 'water') return '';
+            if (!log) return '';
+            const logType = String(log.type || '').toLowerCase();
             const lines = String(log.text || '').replace(/\\n/g, '\n').split(/\r?\n/);
-            const pattern = /^\s*(?:Watering can filled with|Filled tank with)\s+([\d.]+)\s+(.+?)(?:\s+pure water)?\.?\s*$/i;
-            const match = lines.map(line => line.match(pattern)).find(Boolean);
-            if (!match) return '';
-            return '<p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">Watering can:</p>';
+            if (logType === 'feed') {
+                const match = lines.map(line => line.match(/^\s*Tank fill volume:\s*([\d.]+)\s+(.+?)\.?\s*$/i)).find(Boolean);
+                if (!match) return '';
+                return '<p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">Tank fill volume: ' + escapeHtml(match[1] + ' ' + match[2]) + '</p>';
+            }
+            if (logType === 'water') {
+                const pattern = /^\s*(?:Watering can filled with|Filled tank with)\s+([\d.]+)\s+(.+?)(?:\s+pure water)?\.?\s*$/i;
+                const match = lines.map(line => line.match(pattern)).find(Boolean);
+                if (!match) return '';
+                return '<p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">Watering can:</p>';
+            }
+            return '';
         }
 
         function formatGrowthLogText(text, type) {
             let sourceText = String(text || '').replace(/\\n/g, '\n');
-            if (String(type || '').toLowerCase() === 'water') {
+            const logType = String(type || '').toLowerCase();
+            if (logType === 'water') {
                 sourceText = sourceText.split(/\r?\n/).filter(line => !/^\s*(?:Watering can filled with|Filled tank with)\s+[\d.]+\s+.+?(?:\s+pure water)?\.?\s*$/i.test(line)).join('\n');
+            } else if (logType === 'feed') {
+                sourceText = sourceText.split(/\r?\n/).filter(line => !/^\s*Tank fill volume:\s*[\d.]+\s+.+?\.?\s*$/i.test(line)).join('\n');
             }
             let formatted = escapeHtml(sourceText);
             NUTRIENT_BRANDS_LIBRARY.forEach(item => {
