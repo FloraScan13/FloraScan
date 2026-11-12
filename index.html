@@ -5947,6 +5947,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 stopQrScan();
                 stopNfcScan();
             }
+            // Saving a scanner preference is a Settings action: keep the user on Settings
+            // rather than navigating to the scanner or another view.
+            const settingsView = document.getElementById('view-settings');
+            if (settingsView) settingsView.classList.remove('hidden');
+            const plantsView = document.getElementById('view-plants');
+            if (plantsView) plantsView.classList.add('hidden');
+            const scannerView = document.getElementById('view-scanner');
+            if (scannerView) scannerView.classList.add('hidden');
+            setActiveNavigationTab('settings');
         }
 
         function showScanOptions() {
