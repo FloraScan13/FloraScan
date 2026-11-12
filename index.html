@@ -6360,10 +6360,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const unitInput = document.getElementById('feed-reminder-unit');
             const modeInput = document.getElementById('feed-reminder-mode');
             if (!amountInput || !unitInput) return;
-            amountInput.value = log.feedReminderInterval || '';
-            unitInput.value = log.feedReminderUnit || 'days';
+            amountInput.value = log.feedReminderInterval ?? '';
+            unitInput.value = log.feedReminderUnit === 'weeks' ? 'weeks' : 'days';
             if (modeInput) modeInput.value = log.feedReminderMode === 'repeat' ? 'repeat' : 'once';
             updateFeedReminderModeUI();
+
+            // Keep the saved first reminder date; older feed logs may only have
+            // the interval, in which case recalculate it from the log date.
+            const dateInput = document.getElementById('feed-reminder-date');
+            if (dateInput) {
+                dateInput.value = log.feedReminderDate || '';
+                if (!dateInput.value && amountInput.value) updateFeedReminderDateFromInterval();
+            }
         }
 
         async function saveFeedReminder(plant, log) {
@@ -7756,6 +7764,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-text').value = log.type === 'Harvest' ? stripHarvestLogLine(log.text) : (log.text || '');
             document.getElementById('feed-reminder-date').value = log.feedReminderDate || '';
             restoreFeedReminderInterval(log);
+            // In edit mode expose the saved schedule controls immediately so the
+            // existing values are visible in their original input fields.
+            const feedScheduleSection = document.getElementById('feed-reminder-section');
+            const feedScheduleToggle = document.getElementById('feed-reminder-toggle');
+            if (log.type === 'Feed' && feedScheduleSection) {
+                feedScheduleSection.classList.remove('hidden');
+                if (feedScheduleToggle) feedScheduleToggle.setAttribute('aria-expanded', 'true');
+            }
             toggleGerminationSection();
             document.getElementById('journal-log-form-title').textContent = 'Edit Growth Log Entry';
             document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
@@ -7874,6 +7890,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('feed-reminder-unit').value = 'days';
             document.getElementById('feed-reminder-mode').value = 'once';
             updateFeedReminderModeUI();
+            const feedScheduleSection = document.getElementById('feed-reminder-section');
+            const feedScheduleToggle = document.getElementById('feed-reminder-toggle');
+            if (feedScheduleSection) feedScheduleSection.classList.add('hidden');
+            if (feedScheduleToggle) feedScheduleToggle.setAttribute('aria-expanded', 'false');
             document.getElementById('log-growth-medium').value = '';
             document.getElementById('journal-photo-input').value = '';
             document.getElementById('journal-camera-input').value = '';
