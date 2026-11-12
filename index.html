@@ -7570,6 +7570,57 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-date').value = log.date || '';
             document.getElementById('log-type').value = log.type || 'Growth';
             document.getElementById('log-growth-stage').value = log.growthStage || '';
+            toggleNutrientLibraryView();
+            toggleHarvestFields();
+            const logText = String(log.text || '').replace(/\\n/g, '\n');
+            // Restore values that were previously entered in the journal form.
+            const setInput = (id, value) => { const el = document.getElementById(id); if (el) el.value = value || ''; };
+            setInput('log-germinated-amount', log.germinatedAmount || (logText.match(/Germination recorded: (\\d+)/i) || [])[1]);
+            setInput('log-failed-seed-amount', log.failedSeedAmount || (logText.match(/Failed germination recorded: (\\d+)/i) || [])[1]);
+            setInput('log-cuttings-rooted-amount', log.rootedCuttingsAmount || (logText.match(/(\\d+) cuttings? ha(?:s|ve) rooted/i) || [])[1]);
+            setInput('log-failed-cutting-amount', log.failedCuttingsAmount || (logText.match(/Failed rooting recorded: (\\d+)/i) || [])[1]);
+            const mediumMatch = logText.match(/\\(Growing medium changed from .*? to (.*?)\\.\\)/i);
+            setInput('log-growth-medium', log.growthMedium || (mediumMatch || [])[1]);
+            const wateringCanMatch = logText.match(/Watering Can: ([0-9.]+) (L|gal|ml) water/i);
+            if (wateringCanMatch) {
+                document.getElementById('nutrient-watering-can-enabled').checked = true;
+                setInput('watering-can-fill', wateringCanMatch[1]);
+                setInput('watering-can-unit', wateringCanMatch[2]);
+            } else {
+                document.getElementById('nutrient-watering-can-enabled').checked = false;
+                setInput('watering-can-fill', '');
+            }
+            const waterFillMatch = logText.match(/Watering can filled with ([0-9.]+) (Liters|Gallons|Milliliters) pure water/i);
+            setInput('tank-volume-amount', waterFillMatch?.[1]);
+            if (waterFillMatch) setInput('tank-volume-unit', waterFillMatch[2]);
+            const perPlantMatch = logText.match(/(?:Each plant fed with:|Watered this plant with) ([0-9.]+) (Milliliters|Liters|Gallons)/i);
+            setInput('volume-per-plant-amount', perPlantMatch?.[1]);
+            if (perPlantMatch) setInput('volume-per-plant-unit', perPlantMatch[2]);
+            toggleWateringCanFields();
+            if (log.type === 'Feed') {
+                const feedBlock = logText.match(/(?:Mixed with:|Fed with:)\\s*\\n([^\\n]+):\\s*\\n((?:[•*-] [^\\n]+\\n?)+)/i);
+                if (feedBlock) {
+                    const brandSelect = document.getElementById('nutrient-brand-select');
+                    brandSelect.value = feedBlock[1].trim();
+                    handleNutrientBrandChange();
+                    const brandObj = NUTRIENT_BRANDS_LIBRARY.find(b => b.brand === brandSelect.value);
+                    if (brandObj) {
+                        feedBlock[2].split('\\n').filter(Boolean).forEach(line => {
+                            const item = line.replace(/^[•*-]\\s*/, '').match(/^(.*?)\\s*\\((.*?)\\)$/);
+                            if (!item) return;
+                            const index = brandObj.products.findIndex(product => product.name === item[1].trim());
+                            if (index < 0) return;
+                            const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]')).find(el => el.value === item[1].trim());
+                            if (checkbox) checkbox.checked = true;
+                            const dosage = item[2].trim().match(/^([0-9.]+)\\s*(ml\\/L|ml|tsp)$/i);
+                            if (dosage) {
+                                setInput('dose-val-' + index, dosage[1]);
+                                setInput('dose-unit-' + index, dosage[2]);
+                            }
+                        });
+                    }
+                }
+            }
             const harvestDetails = getHarvestLogDetails(log);
             const harvestChoice = document.querySelector('input[name="harvest-measurement"][value="' + (harvestDetails?.measurement || 'weight') + '"]');
             if (harvestChoice) harvestChoice.checked = true;
