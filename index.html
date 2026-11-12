@@ -7816,7 +7816,46 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 existingLog.date = date;
                 existingLog.type = type;
                 existingLog.growthStage = growthStage;
-                const journalNotes = document.getElementById('log-text').value;
+                let journalNotes = document.getElementById('log-text').value;
+                // Update volume details in-place when editing Water/Feed entries. The edit
+                // form loads these values from the saved text, so replace the old summary
+                // lines rather than appending a second set or leaving stale amounts behind.
+                if (type === 'Water' || type === 'Feed') {
+                    const replaceDetailLine = (source, pattern, replacementLine) => {
+                        const lines = String(source || '').split(/\r?\n/);
+                        const matchingIndex = lines.findIndex(line => pattern.test(line.trim()));
+                        if (matchingIndex >= 0) {
+                            if (replacementLine) lines[matchingIndex] = replacementLine;
+                            else lines.splice(matchingIndex, 1);
+                        } else if (replacementLine) {
+                            lines.push(replacementLine);
+                        }
+                        return lines.filter((line, index) => line.trim() || index < lines.length - 1).join('\n').trim();
+                    };
+                    const tankAmount = document.getElementById('tank-volume-amount')?.value.trim() || '';
+                    const tankUnit = document.getElementById('tank-volume-unit')?.value || 'Liters';
+                    const wateringCanEnabled = type === 'Feed' && !!document.getElementById('nutrient-watering-can-enabled')?.checked;
+                    const perPlantAmount = (type === 'Water' || wateringCanEnabled)
+                        ? (document.getElementById('volume-per-plant-amount')?.value.trim() || '')
+                        : '';
+                    const perPlantUnit = document.getElementById('volume-per-plant-unit')?.value || 'Milliliters';
+                    if (tankAmount && (!Number.isFinite(Number(tankAmount)) || Number(tankAmount) <= 0)) {
+                        alert('Enter a tank or watering-can volume greater than zero.');
+                        document.getElementById('tank-volume-amount')?.focus();
+                        return;
+                    }
+                    if (perPlantAmount && (!Number.isFinite(Number(perPlantAmount)) || Number(perPlantAmount) <= 0)) {
+                        alert('Enter a volume per plant greater than zero.');
+                        document.getElementById('volume-per-plant-amount')?.focus();
+                        return;
+                    }
+                    journalNotes = replaceDetailLine(journalNotes, /^(?:Watering can filled with|Filled tank with)\b/i,
+                        type === 'Water' && tankAmount ? 'Watering can filled with ' + tankAmount + ' ' + tankUnit + ' pure water.' : '');
+                    journalNotes = replaceDetailLine(journalNotes, /^Watered this plant with\b/i,
+                        type === 'Water' && perPlantAmount ? 'Watered this plant with ' + perPlantAmount + ' ' + perPlantUnit + '.' : '');
+                    journalNotes = replaceDetailLine(journalNotes, /^Each plant fed with:\b/i,
+                        type === 'Feed' && wateringCanEnabled && perPlantAmount ? 'Each plant fed with: ' + perPlantAmount + ' ' + perPlantUnit + ' (includes runoff).' : '');
+                }
                 existingLog.harvestMeasurement = type === 'Harvest' ? harvestMeasurement : '';
                 existingLog.harvestValue = type === 'Harvest' ? harvestValue : null;
                 existingLog.harvestUnit = type === 'Harvest' && harvestMeasurement === 'weight' ? harvestUnit : '';
