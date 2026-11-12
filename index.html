@@ -2685,25 +2685,25 @@ textarea {
             </div>
 
             <!-- Personal Plant Library -->
-            <details id="my-plant-library-settings" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm group">
-                <summary class="list-none cursor-pointer flex items-center justify-between gap-3">
+            <div id="my-plant-library-settings" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <button id="my-plant-library-toggle" type="button" onclick="toggleMyPlantLibrary()" aria-expanded="false" aria-controls="my-plant-library-content" class="w-full flex items-center justify-between gap-3 text-left cursor-pointer">
                     <span class="min-w-0">
                         <span class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-book-open text-emerald-600"></i><span>My Plant Library</span></span>
                         <span class="block text-sm text-slate-500 dark:text-slate-400 mt-1">Your saved plant names and varieties</span>
                     </span>
                     <span class="flex items-center gap-2 flex-shrink-0">
                         <span id="my-plant-library-count" class="text-xs font-semibold rounded-full px-3 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">0 plants</span>
-                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                        <i id="my-plant-library-chevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform" aria-hidden="true"></i>
                     </span>
-                </summary>
-                <div class="space-y-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                </button>
+                <div id="my-plant-library-content" class="hidden space-y-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                     <p class="text-sm text-slate-500 dark:text-slate-400">Your personal collection of plant names and varieties. Add a plant to grow your library and see it in Add Plant suggestions.</p>
                     <div id="my-plant-library-list" class="space-y-2">
                         <p class="text-sm text-slate-500 dark:text-slate-400">Your saved plants will appear here.</p>
                     </div>
                     <p class="text-[11px] text-slate-400 dark:text-slate-500">Suggestions are based on plants saved to your account or this device. Built-in plant suggestions remain available too.</p>
                 </div>
-            </details>
+            </div>
 
             <!-- Supabase Cloud Connection & Authentication -->
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-5">
@@ -4816,6 +4816,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 activeTab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-[#e4eadf] border border-[#d7dfd0] text-[#294b34] shadow-sm font-semibold";
                 activeTab.setAttribute('aria-current', 'page');
             }
+        }
+
+        function toggleMyPlantLibrary() {
+            const content = document.getElementById('my-plant-library-content');
+            const toggle = document.getElementById('my-plant-library-toggle');
+            const chevron = document.getElementById('my-plant-library-chevron');
+            if (!content || !toggle) return;
+            const willOpen = content.classList.contains('hidden');
+            content.classList.toggle('hidden', !willOpen);
+            toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            if (chevron) chevron.classList.toggle('rotate-180', willOpen);
         }
 
         function renderMyPlantLibrary() {
