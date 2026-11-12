@@ -2731,6 +2731,7 @@ textarea {
                         </div>
                         <button type="button" onclick="addPlantToPersonalLibrary()" class="w-full sm:w-auto px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i> Add to library</button>
                     </div>
+                    <div id="my-plant-library-az" class="flex flex-wrap gap-1.5" aria-label="Filter plant library alphabetically"></div>
                     <div id="my-plant-library-list" class="space-y-2">
                         <p class="text-sm text-slate-500 dark:text-slate-400">Your saved plants will appear here.</p>
                     </div>
@@ -5079,15 +5080,33 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             savePersonalPlantLibrary(library);
         }
 
+        let myPlantLibraryLetterFilter = 'ALL';
+
+        function setMyPlantLibraryLetter(letter) {
+            myPlantLibraryLetterFilter = letter;
+            renderMyPlantLibrary();
+        }
+
         function renderMyPlantLibrary() {
             const list = document.getElementById('my-plant-library-list');
             const count = document.getElementById('my-plant-library-count');
+            const alphabet = document.getElementById('my-plant-library-az');
             if (!list || !count) return;
 
             const rows = getPersonalPlantLibraryRows();
             const plantNames = [...new Set(rows.map(row => row.name.toLocaleLowerCase()))];
             count.textContent = plantNames.length + ' ' + (plantNames.length === 1 ? 'plant' : 'plants') +
                 (rows.length !== plantNames.length ? ' · ' + rows.length + ' varieties' : '');
+
+            if (alphabet) {
+                const letters = [...new Set(rows.map(row => row.name.trim().charAt(0).toLocaleUpperCase()).filter(letter => /^[A-Z]$/.test(letter)))].sort();
+                alphabet.innerHTML = ['ALL', ...letters].map(letter =>
+                    '<button type="button" onclick="setMyPlantLibraryLetter(\'' + letter + '\')" aria-pressed="' + (myPlantLibraryLetterFilter === letter) + '" class="min-w-7 px-2 py-1 rounded-md text-xs font-semibold ' +
+                    (myPlantLibraryLetterFilter === letter ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300') + '">' +
+                    (letter === 'ALL' ? 'All' : letter) + '</button>'
+                ).join('');
+                alphabet.classList.toggle('hidden', rows.length === 0);
+            }
 
             if (!rows.length) {
                 list.innerHTML = '<div class="py-4 text-center"><p class="text-sm font-medium text-slate-700 dark:text-slate-200">Your library is empty</p><p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Add a plant above to get started.</p></div>';
@@ -5101,7 +5120,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 grouped.get(key).entries.push({ ...row, rowIndex: index });
             });
 
-            list.innerHTML = [...grouped.values()].map(group =>
+            const visibleGroups = [...grouped.values()]
+                .filter(group => myPlantLibraryLetterFilter === 'ALL' || group.name.trim().charAt(0).toLocaleUpperCase() === myPlantLibraryLetterFilter)
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+            if (!visibleGroups.length) {
+                list.innerHTML = '<div class="py-4 text-center text-sm text-slate-500 dark:text-slate-400">No plants under ' + escapeHtml(myPlantLibraryLetterFilter) + '.</div>';
+                return;
+            }
+
+            list.innerHTML = visibleGroups.map(group =>
                 '<div class="py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">' +
                     '<div class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-1">' + escapeHtml(group.name) + '</div>' +
                     '<div class="space-y-0">' +
@@ -5111,7 +5139,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     (row.variety ? escapeHtml(row.variety) : '<span class="italic text-slate-400">No variety</span>') +
                                 '</span>' +
                                 '<span class="flex items-center gap-1 flex-shrink-0">' +
-                                    '<button type="button" onclick="editMyPlantLibraryEntry(' + row.rowIndex + ')" aria-label="Edit ' + escapeHtml(row.name) + (row.variety ? ' - ' + escapeHtml(row.variety) : '') + '" title="Edit" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-emerald-900 dark:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-700" ><i class="fa-solid fa-pen" aria-hidden="true"></i></button>' +
+                                    '<button type="button" onclick="editMyPlantLibraryEntry(' + row.rowIndex + ')" aria-label="Edit ' + escapeHtml(row.name) + (row.variety ? ' - ' + escapeHtml(row.variety) : '') + '" title="Edit" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-emerald-900 dark:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-700"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>' +
                                     '<button type="button" onclick="deleteMyPlantLibraryEntry(' + row.rowIndex + ')" aria-label="Delete ' + escapeHtml(row.name) + (row.variety ? ' - ' + escapeHtml(row.variety) : '') + '" title="Delete" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-[#B0466C] dark:text-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-500"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>' +
                                 '</span>' +
                             '</div>'
