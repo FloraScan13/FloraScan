@@ -7598,24 +7598,30 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (perPlantMatch) setInput('volume-per-plant-unit', perPlantMatch[2]);
             toggleWateringCanFields();
             if (log.type === 'Feed') {
-                const feedBlock = logText.match(/(?:Mixed with:|Fed with:)\s*\\n([^\\n]+):\s*\\n((?:[•*-] [^\\n]+\\n?)+)/i);
-                if (feedBlock) {
+                // Restore the saved nutrient selection from the feed description.
+                // Normalize legacy escaped newlines as well as real line breaks before parsing.
+                const feedLines = logText.replace(/\\\\n/g, '\n').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+                const feedHeaderIndex = feedLines.findIndex(line => /^(?:Mixed with:|Fed with:)$/i.test(line));
+                if (feedHeaderIndex >= 0 && feedLines[feedHeaderIndex + 1]) {
+                    const brandName = feedLines[feedHeaderIndex + 1].replace(/:$/, '').trim();
                     const brandSelect = document.getElementById('nutrient-brand-select');
-                    brandSelect.value = feedBlock[1].trim();
-                    handleNutrientBrandChange();
-                    const brandObj = NUTRIENT_BRANDS_LIBRARY.find(b => b.brand === brandSelect.value);
-                    if (brandObj) {
-                        feedBlock[2].split('\\n').filter(Boolean).forEach(line => {
-                            const item = line.replace(/^[•*-]\s*/, '').match(/^(.*?)\s*\\((.*?)\\)$/);
-                            if (!item) return;
-                            const index = brandObj.products.findIndex(product => product.name === item[1].trim());
+                    if (brandSelect && NUTRIENT_BRANDS_LIBRARY.some(brand => brand.brand === brandName)) {
+                        brandSelect.value = brandName;
+                        handleNutrientBrandChange();
+                        const brandObj = NUTRIENT_BRANDS_LIBRARY.find(brand => brand.brand === brandName);
+                        feedLines.slice(feedHeaderIndex + 2).forEach(line => {
+                            const item = line.replace(/^[•*-]\\s*/, '').match(/^(.*?)\\s*\\((.*?)\\)\\s*$/);
+                            if (!item || !brandObj) return;
+                            const productName = item[1].trim();
+                            const index = brandObj.products.findIndex(product => product.name === productName);
                             if (index < 0) return;
-                            const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]')).find(el => el.value === item[1].trim());
+                            const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]'))
+                                .find(el => el.value === productName);
                             if (checkbox) checkbox.checked = true;
-                            const dosage = item[2].trim().match(/^([0-9.]+)\s*(ml\/L|ml|tsp)$/i);
+                            const dosage = item[2].trim().match(/^([0-9]*\\.?[0-9]+)\\s*(ml\\/L|ml|tsp)$/i);
                             if (dosage) {
                                 setInput('dose-val-' + index, dosage[1]);
-                                setInput('dose-unit-' + index, dosage[2]);
+                                setInput('dose-unit-' + index, dosage[2].toLowerCase());
                             }
                         });
                     }
