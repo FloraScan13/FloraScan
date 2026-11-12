@@ -7721,7 +7721,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const productList = document.getElementById('nutrient-product-list');
                 const brandSelect = document.getElementById('nutrient-brand-select');
                 if (productList) {
-                    // Keep each saved brand in its own native, accessible collapsible section.
+                    // Reuse the original product-picker row layout inside one dropdown per saved brand.
                     productList.innerHTML = '';
                     recordedBlocks.filter(block => block.products.length).forEach((block, brandIndex) => {
                         const details = document.createElement('details');
@@ -7729,43 +7729,58 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         details.open = brandIndex === 0;
                         const summary = document.createElement('summary');
                         summary.className = 'cursor-pointer select-none px-3 py-2 text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-slate-700';
-                        summary.textContent = block.brand.brand + ' (' + block.products.length + ')';
+                        summary.textContent = block.brand.brand;
                         details.appendChild(summary);
+
                         const rows = document.createElement('div');
-                        rows.className = 'p-1';
-                        block.products.forEach(savedProduct => {
-                            const productIndex = block.brand.products.findIndex(product =>
-                                product.name.trim().toLowerCase() === savedProduct.name.toLowerCase()
+                        rows.className = 'p-1.5 space-y-1';
+                        block.brand.products.forEach((product, productIndex) => {
+                            const savedProduct = block.products.find(item =>
+                                item.name.trim().toLowerCase() === product.name.trim().toLowerCase()
                             );
-                            if (productIndex < 0) return;
                             const doseKey = brandIndex + '-' + productIndex;
                             const row = document.createElement('div');
-                            row.className = 'flex items-center gap-2 px-2 py-1 border-b border-slate-100 dark:border-slate-700';
+                            row.className = 'p-1.5 hover:bg-emerald-50 dark:hover:bg-slate-700/50 rounded flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-100 dark:border-slate-700/50 last:border-0';
+
                             const label = document.createElement('label');
-                            label.className = 'flex items-center gap-2 text-xs flex-1 min-w-0';
+                            label.className = 'flex items-start space-x-2 cursor-pointer text-xs flex-1 min-w-0';
                             const checkbox = document.createElement('input');
                             checkbox.type = 'checkbox';
                             checkbox.name = 'nutrient-product-check';
-                            checkbox.value = savedProduct.name;
-                            checkbox.checked = true;
+                            checkbox.value = product.name;
+                            checkbox.checked = !!savedProduct;
+                            checkbox.className = 'mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500';
                             checkbox.dataset.brandName = block.brand.brand;
                             checkbox.dataset.productIndex = String(productIndex);
                             checkbox.dataset.doseKey = doseKey;
-                            const name = document.createElement('span');
-                            name.textContent = savedProduct.name;
-                            label.append(checkbox, name);
-                            const dosage = savedProduct.dosage.match(/^([0-9]*\.?[0-9]+)\s*(ml\s*\/\s*L|ml|tsp)$/i);
+
+                            const productInfo = document.createElement('div');
+                            productInfo.className = 'min-w-0';
+                            const productName = document.createElement('div');
+                            productName.className = 'font-semibold text-slate-800 dark:text-slate-200 text-[11px] truncate';
+                            productName.textContent = product.name;
+                            const recommendation = document.createElement('div');
+                            recommendation.className = 'text-[10px] text-slate-400 truncate';
+                            recommendation.textContent = 'Rec: ' + product.dosage;
+                            productInfo.append(productName, recommendation);
+                            label.append(checkbox, productInfo);
+
+                            const doseControls = document.createElement('div');
+                            doseControls.className = 'flex items-center space-x-1 flex-shrink-0 pl-6 sm:pl-0';
+                            const dosage = savedProduct
+                                ? savedProduct.dosage.match(/^([0-9]*\.?[0-9]+)\s*(ml\s*\/\s*L|ml|tsp)$/i)
+                                : null;
                             const amount = document.createElement('input');
                             amount.type = 'number';
                             amount.step = '0.1';
                             amount.min = '0';
                             amount.id = 'dose-val-' + doseKey;
+                            amount.placeholder = 'Amt';
                             amount.className = 'w-14 px-1.5 py-0.5 text-right rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[11px]';
                             amount.value = dosage ? dosage[1] : '';
-                            amount.placeholder = 'Amt';
                             const unit = document.createElement('select');
                             unit.id = 'dose-unit-' + doseKey;
-                            unit.className = 'text-[10px] py-0.5 px-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900';
+                            unit.className = 'text-[10px] py-0.5 px-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold text-slate-600 dark:text-slate-300';
                             [['ml','ml'],['ml/L','ml/L'],['tsp','tsp']].forEach(([value, labelText]) => {
                                 const option = document.createElement('option');
                                 option.value = value;
@@ -7776,7 +7791,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 const unitValue = dosage[2].replace(/\s+/g, '').toLowerCase();
                                 unit.value = unitValue === 'ml/l' ? 'ml/L' : unitValue;
                             }
-                            row.append(label, amount, unit);
+                            doseControls.append(amount, unit);
+                            row.append(label, doseControls);
                             rows.appendChild(row);
                         });
                         details.appendChild(rows);
