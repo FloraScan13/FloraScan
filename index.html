@@ -3138,7 +3138,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         <input type="hidden" id="log-edit-id">
                         <div id="journal-edit-actions" class="hidden rounded-lg px-3 py-2" style="background:#fce7ef;border:1px solid #edb5c9;"><span class="text-xs font-semibold" style="color:#963b5e;">Editing an existing entry</span></div>
                         <div id="journal-edit-meta-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                            <input type="date" id="log-date" required onchange="updateFeedReminderDateFromInterval()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                             <select id="log-type" onchange="toggleNutrientLibraryView(); toggleGerminationSection()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                                 <option value="Growth">Growth Update</option>
                                 <option value="Water">Watering</option>
@@ -6393,29 +6393,43 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         async function saveFeedReminder(plant, log) {
+            const date = log.type === 'Feed' ? String(log.feedReminderDate || '') : '';
+            const reminderMode = log.feedReminderMode === 'repeat' ? 'repeat' : 'once';
+            const intervalValue = log.feedReminderInterval === '' || log.feedReminderInterval == null
+                ? null
+                : Number(log.feedReminderInterval);
+            const repeatUnit = log.feedReminderUnit === 'weeks' ? 'weeks' : 'days';
+
+            // Validate the complete edited schedule before touching the existing reminder.
+            // This prevents an invalid edit from deleting a previously working schedule.
+            if (date && !/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) {
+                alert('Choose a valid reminder date.');
+                return false;
+            }
+            if (date && reminderMode === 'repeat' &&
+                (!Number.isInteger(intervalValue) || intervalValue < 1)) {
+                alert('Enter a whole-number repeat interval of at least 1.');
+                document.getElementById('feed-reminder-interval')?.focus();
+                return false;
+            }
             if (!supabaseClient || !currentUser) {
-                if (log.feedReminderDate) {
+                if (date) {
                     alert('Sign in to your Flora Scan account to schedule email reminders.');
                     return false;
                 }
                 return true;
             }
-            const date = log.type === 'Feed' ? String(log.feedReminderDate || '') : '';
-            if (date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || (log.feedReminderMode === 'repeat' && (!Number.isInteger(Number(log.feedReminderInterval)) || Number(log.feedReminderInterval) < 1)))) {
-                alert('Choose a reminder date and a valid repeat interval.');
-                return false;
-            }
-            const reminderMode = log.feedReminderMode === 'repeat' ? 'repeat' : 'once';
-            const repeatInterval = reminderMode === 'repeat' ? Math.max(1, Number(log.feedReminderInterval) || 0) : null;
-            const repeatUnit = log.feedReminderUnit === 'weeks' ? 'weeks' : 'days';
+
             try {
-                let query = supabaseClient.from('feed_reminders').delete()
-                    .eq('user_id', currentUser.id).eq('log_id', String(log.id));
+                // An empty date means the user cleared the schedule (or changed the
+                // entry away from Feed), so remove the existing scheduled reminder.
                 if (!date) {
-                    const { error } = await query;
+                    const { error } = await supabaseClient.from('feed_reminders').delete()
+                        .eq('user_id', currentUser.id).eq('log_id', String(log.id));
                     if (error) throw error;
                     return true;
                 }
+
                 if (!currentUser.user_metadata?.feed_reminder_email_initialized) {
                     const { data: updatedAuth, error: profileError } = await supabaseClient.auth.updateUser({
                         data: { notification_email: 'markriches.mail@gmail.com', feed_reminder_email_initialized: true }
@@ -6427,11 +6441,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const profileEmailInput = document.getElementById('setting-profile-email');
                     if (profileEmailInput) profileEmailInput.value = appSettings.notificationEmail;
                 }
+
                 const notificationEmail = String(appSettings.notificationEmail || currentUser.user_metadata?.notification_email || 'markriches.mail@gmail.com').trim();
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(notificationEmail)) {
+                if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(notificationEmail)) {
                     alert('Please add a valid notification email in Settings → Profile before scheduling a feed reminder.');
                     return false;
                 }
+
                 const scheduledAt = new Date(date + 'T08:00:00').toISOString();
                 const { error } = await supabaseClient.from('feed_reminders').upsert({
                     user_id: currentUser.id,
@@ -6442,7 +6458,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     notification_email: notificationEmail,
                     scheduled_at: scheduledAt,
                     scheduled_date: date,
-                    repeat_interval: repeatInterval,
+                    repeat_interval: reminderMode === 'repeat' ? intervalValue : null,
                     repeat_unit: repeatUnit,
                     sent_at: null
                 }, { onConflict: 'user_id,log_id' });
@@ -6450,7 +6466,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return true;
             } catch (error) {
                 console.error('Could not save feed reminder:', error);
-                alert('Your journal entry was saved, but the email reminder could not be scheduled: ' + (error.message || error));
+                alert('Your journal entry was saved, but the email reminder could not be updated: ' + (error.message || error));
                 return false;
             }
         }
