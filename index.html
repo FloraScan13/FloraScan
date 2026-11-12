@@ -7803,6 +7803,40 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             editJournalLog(plant.id, log.id || String(index));
         }
 
+        function updateJournalEditLivePreview() {
+            const editId = document.getElementById('log-edit-id')?.value;
+            const plantId = document.getElementById('log-plant-id')?.value;
+            if (!editId || !plantId) return;
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            if (!plant || !Array.isArray(plant.logs)) return;
+            const logIndex = plant.logs.findIndex((entry, index) => String(entry.id || index) === String(editId));
+            if (logIndex < 0) return;
+
+            const original = plant.logs[logIndex];
+            const previewLog = {
+                ...original,
+                date: document.getElementById('log-date')?.value || original.date,
+                type: document.getElementById('log-type')?.value || original.type,
+                growthStage: document.getElementById('log-growth-stage')?.value || original.growthStage,
+                text: document.getElementById('log-text')?.value ?? original.text,
+                feedReminderDate: document.getElementById('feed-reminder-date')?.value || '',
+                feedReminderMode: document.getElementById('feed-reminder-mode')?.value || 'once',
+                feedReminderInterval: document.getElementById('feed-reminder-interval')?.value || '',
+                feedReminderUnit: document.getElementById('feed-reminder-unit')?.value || 'days'
+            };
+            const previewPlant = { ...plant, logs: plant.logs.slice() };
+            previewPlant.logs[logIndex] = previewLog;
+            renderJournalLogs(previewPlant);
+        }
+
+        function installJournalEditLivePreview() {
+            const form = document.querySelector('form[onsubmit="handleJournalLogSubmit(event)"]');
+            if (!form || form.dataset.livePreviewBound === 'true') return;
+            form.dataset.livePreviewBound = 'true';
+            form.addEventListener('input', updateJournalEditLivePreview);
+            form.addEventListener('change', updateJournalEditLivePreview);
+        }
+
         function editJournalLog(plantId, logId) {
             const plant = plants.find(item => String(item.id) === String(plantId));
             if (!plant || !Array.isArray(plant.logs)) return;
@@ -7964,6 +7998,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             });
             // The date field is intentionally hidden in edit mode; scroll to the visible
             // form heading instead of trying to scroll to that hidden input.
+            installJournalEditLivePreview();
+            updateJournalEditLivePreview();
             document.getElementById('journal-log-form-title')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
@@ -7984,6 +8020,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-type').value = 'Growth';
             document.getElementById('log-growth-stage').value = '';
             document.getElementById('log-text').value = '';
+            const originalPlant = plants.find(item => String(item.id) === String(document.getElementById('log-plant-id').value));
+            if (originalPlant) renderJournalLogs(originalPlant);
             document.querySelector('input[name="harvest-measurement"][value="weight"]').checked = true;
             document.getElementById('harvest-weight-value').value = '';
             document.getElementById('harvest-weight-unit').value = 'kg';
