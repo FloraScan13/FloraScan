@@ -3146,7 +3146,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <option value="Harvest">Harvest</option>
                                 <option value="Medium">Growth Medium</option>
                                 <option value="Problem">Problems / Disease</option>
+                                <option value="Location Change">Move to location</option>
                             </select>
+                        <div id="journal-edit-location-field">
+                            <label for="journal-plant-location" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Move to location</label>
+                            <div id="journal-plant-location-control" class="relative"><button type="button" id="journal-plant-location" aria-label="Move plant to location" aria-haspopup="listbox" aria-expanded="false" onclick="toggleJournalLocationMenu()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span id="journal-plant-location-label" class="text-slate-900 dark:text-slate-100" style="color:#294b34 !important;">Choose location</span><i class="fa-solid fa-chevron-down text-xs text-slate-400"></i></button><div id="journal-plant-location-menu" role="listbox" class="hidden absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg"></div></div>
+                        </div>
                         </div>
                         <div id="harvest-measurement-section" class="hidden rounded-xl border border-[#e8a7bd] bg-[#fff0f4] p-3 space-y-3">
                             <div>
@@ -3182,10 +3187,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <input type="number" id="harvest-number-value" min="1" step="1" inputmode="numeric" placeholder="e.g. 12" class="w-full px-3 py-2 rounded-lg bg-white border border-[#e8a7bd] text-sm text-slate-900">
                                 <p class="text-[11px] text-[#986b7b]">Enter the number of individual items picked.</p>
                             </div>
-                        </div>
-                        <div id="journal-edit-location-field">
-                            <label for="journal-plant-location" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Move to location</label>
-                            <div id="journal-plant-location-control" class="relative"><button type="button" id="journal-plant-location" aria-label="Move plant to location" aria-haspopup="listbox" aria-expanded="false" onclick="toggleJournalLocationMenu()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span id="journal-plant-location-label" class="text-slate-900 dark:text-slate-100" style="color:#294b34 !important;">Choose location</span><i class="fa-solid fa-chevron-down text-xs text-slate-400"></i></button><div id="journal-plant-location-menu" role="listbox" class="hidden absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg"></div></div>
                         </div>
                         <div id="growth-stage-section">
                             <label for="log-growth-stage" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Growth Stage <span class="text-rose-600">*</span></label>
@@ -6307,6 +6308,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!showSeeds) amountInput.value = '';
             const stageSection = document.getElementById('growth-stage-section');
             const stageSelect = document.getElementById('log-growth-stage');
+            if (stageSection) stageSection.classList.toggle('hidden', document.getElementById('log-type').value === 'Location Change');
+            if (stageSelect) stageSelect.required = document.getElementById('log-type').value !== 'Location Change';
             const failedInput = document.getElementById('log-failed-seed-amount');
             if (failedInput) failedInput.max = showSeeds ? String(availableSeeds) : '';
             const rootedInput = document.getElementById('log-cuttings-rooted-amount');
@@ -6650,6 +6653,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function toggleNutrientLibraryView() {
             const logType = document.getElementById('log-type').value;
+            const locationField = document.getElementById('journal-edit-location-field');
+            if (locationField) locationField.classList.toggle('hidden', logType !== 'Location Change');
             const librarySec = document.getElementById('nutrient-library-section');
             const tankSec = document.getElementById('tank-volume-section');
             const mediumSec = document.getElementById('growth-medium-section');
