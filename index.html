@@ -4788,10 +4788,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     });
                     nameDropdown.classList.remove('hidden');
                 }
-                if (getSuggestedVarieties(nameInput.value).length) {
-                    varietyInput.value = '';
-                    renderVarietySuggestions();
-                }
+                const savedVarieties = getSuggestedVarieties(nameInput.value);
+                // Prefill the variety field with the first variety saved for this plant.
+                // The user can still edit it or choose another saved suggestion.
+                varietyInput.value = savedVarieties[0] || '';
+                renderVarietySuggestions();
             });
 
             varietyInput.addEventListener('input', renderVarietySuggestions);
@@ -4804,8 +4805,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function selectPlantName(name, defaultKey) {
-            document.getElementById('plant-name').value = name;
+            const nameInput = document.getElementById('plant-name');
+            nameInput.value = name;
             document.getElementById('name-suggestions').classList.add('hidden');
+            nameInput.dispatchEvent(new Event('input', { bubbles: true }));
             if (defaultKey) renderIconPickerGrid(defaultKey);
             document.getElementById('plant-variety').focus();
         }
