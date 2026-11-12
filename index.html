@@ -6733,13 +6733,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const checkedBoxes = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]:checked'));
             if (!checkedBoxes.length) return;
             const selectedProducts = checkedBoxes.map(cb => {
-                const idx = brandObj.products.findIndex(p => p.name === cb.value);
-                const valInput = document.getElementById('dose-val-' + idx);
-                const unitInput = document.getElementById('dose-unit-' + idx);
+                const selectedBrandName = cb.dataset.brandName || brandName;
+                const selectedBrand = NUTRIENT_BRANDS_LIBRARY.find(b => b.brand === selectedBrandName);
+                if (!selectedBrand) return null;
+                const idx = Number.isInteger(Number(cb.dataset.productIndex))
+                    ? Number(cb.dataset.productIndex)
+                    : selectedBrand.products.findIndex(p => p.name === cb.value);
+                const product = selectedBrand.products[idx];
+                const doseKey = cb.dataset.doseKey || String(idx);
+                const valInput = document.getElementById('dose-val-' + doseKey);
+                const unitInput = document.getElementById('dose-unit-' + doseKey);
                 const customAmount = valInput ? valInput.value.trim() : '';
                 const customUnit = unitInput ? unitInput.value : 'ml';
-                return { product: brandObj.products[idx], amount: customAmount ? customAmount + ' ' + customUnit : brandObj.products[idx].dosage };
-            }).filter(item => item.product);
+                return product ? { brand: selectedBrand, product, amount: customAmount ? customAmount + ' ' + customUnit : product.dosage } : null;
+            }).filter(Boolean);
             if (!selectedProducts.length) return;
 
             const logTextarea = document.getElementById('log-text');
@@ -6769,14 +6776,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             // Merge selected products into this brand. Existing products from other brands
             // and unselected products from this brand remain intact; matching products update.
-            const existingProducts = savedBrands.get(brandName) || [];
             selectedProducts.forEach(item => {
+                const selectedBrandName = item.brand.brand;
+                const existingProducts = savedBrands.get(selectedBrandName) || [];
                 const productLine = item.product.name + ' (' + item.amount + ')';
                 const index = existingProducts.findIndex(line => line.match(/^(.*?)\s*\((.*?)\)\s*$/)?.[1].trim().toLowerCase() === item.product.name.toLowerCase());
                 if (index >= 0) existingProducts[index] = productLine;
                 else existingProducts.push(productLine);
+                savedBrands.set(selectedBrandName, existingProducts);
             });
-            savedBrands.set(brandName, existingProducts);
 
             const wateringCanSummary = getWateringCanSummary();
             if (wateringCanSummary === null) return;
@@ -7710,28 +7718,66 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         activeBlock = null;
                     }
                 });
-                const firstBlock = recordedBlocks.find(block => block.products.length);
-                if (firstBlock) {
-                    const brandSelect = document.getElementById('nutrient-brand-select');
-                    if (brandSelect) {
-                        brandSelect.value = firstBlock.brand.brand;
-                        handleNutrientBrandChange();
-                        firstBlock.products.forEach(savedProduct => {
-                            const productIndex = firstBlock.brand.products.findIndex(product =>
+                const productList = document.getElementById('nutrient-product-list');
+                const brandSelect = document.getElementById('nutrient-brand-select');
+                if (productList) {
+                    // In edit mode show every recorded brand together. The normal picker
+                    // remains a single-brand selector when creating a new feed entry.
+                    productList.innerHTML = '';
+                    recordedBlocks.filter(block => block.products.length).forEach((block, brandIndex) => {
+                        const heading = document.createElement('div');
+                        heading.className = 'px-2 py-1 mt-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-slate-700 rounded';
+                        heading.textContent = block.brand.brand;
+                        productList.appendChild(heading);
+                        block.products.forEach(savedProduct => {
+                            const productIndex = block.brand.products.findIndex(product =>
                                 product.name.trim().toLowerCase() === savedProduct.name.toLowerCase()
                             );
                             if (productIndex < 0) return;
-                            const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]'))
-                                .find(el => el.value.trim().toLowerCase() === savedProduct.name.toLowerCase());
-                            if (checkbox) checkbox.checked = true;
+                            const doseKey = brandIndex + '-' + productIndex;
+                            const row = document.createElement('div');
+                            row.className = 'flex items-center gap-2 px-2 py-1 border-b border-slate-100 dark:border-slate-700';
+                            const label = document.createElement('label');
+                            label.className = 'flex items-center gap-2 text-xs flex-1 min-w-0';
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.name = 'nutrient-product-check';
+                            checkbox.value = savedProduct.name;
+                            checkbox.checked = true;
+                            checkbox.dataset.brandName = block.brand.brand;
+                            checkbox.dataset.productIndex = String(productIndex);
+                            checkbox.dataset.doseKey = doseKey;
+                            const productName = document.createElement('span');
+                            productName.textContent = savedProduct.name;
+                            label.append(checkbox, productName);
                             const dosage = savedProduct.dosage.match(/^([0-9]*\.?[0-9]+)\s*(ml\s*\/\s*L|ml|tsp)$/i);
+                            const amount = document.createElement('input');
+                            amount.type = 'number';
+                            amount.step = '0.1';
+                            amount.min = '0';
+                            amount.id = 'dose-val-' + doseKey;
+                            amount.className = 'w-14 px-1.5 py-0.5 text-right rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[11px]';
+                            amount.value = dosage ? dosage[1] : '';
+                            amount.placeholder = 'Amt';
+                            const unit = document.createElement('select');
+                            unit.id = 'dose-unit-' + doseKey;
+                            unit.className = 'text-[10px] py-0.5 px-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900';
+                            [['ml','ml'],['ml/L','ml/L'],['tsp','tsp']].forEach(([value,labelText]) => {
+                                const option = document.createElement('option');
+                                option.value = value;
+                                option.textContent = labelText;
+                                unit.appendChild(option);
+                            });
                             if (dosage) {
-                                setInput('dose-val-' + productIndex, dosage[1]);
-                                setInput('dose-unit-' + productIndex, dosage[2].replace(/\s+/g, '').toLowerCase());
+                                const unitValue = dosage[2].replace(/\s+/g, '').toLowerCase();
+                                unit.value = unitValue === 'ml/l' ? 'ml/L' : unitValue;
                             }
+                            row.append(label, amount, unit);
+                            productList.appendChild(row);
                         });
-                    }
+                    });
                 }
+                if (brandSelect) brandSelect.value = recordedBlocks[0]?.brand.brand || '';
             }
             const hasRecordedNutrients = /(?:Mixed with:|Fed with:)/i.test(logText) &&
                 NUTRIENT_BRANDS_LIBRARY.some(brand => new RegExp('^' + brand.brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':\\s*$', 'im').test(logText));
