@@ -4672,50 +4672,95 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const nameDropdown = document.getElementById('name-suggestions');
             const varietyDropdown = document.getElementById('variety-suggestions');
 
+            // Combine the built-in reference list with this user's saved plants.
+            // Plant records are already persisted to local storage and, when configured,
+            // synced to the user's Supabase account, so personal suggestions survive reloads.
+            function getPlantSuggestionLibrary() {
+                const library = new Map();
+                const addPlant = (name, variety, defaultKey) => {
+                    const cleanName = String(name || '').trim();
+                    if (!cleanName) return;
+                    const key = cleanName.toLocaleLowerCase();
+                    if (!library.has(key)) library.set(key, {
+                        name: cleanName,
+                        defaultKey: defaultKey || 'cucumber',
+                        varieties: []
+                    });
+                    const entry = library.get(key);
+                    if (!entry.defaultKey && defaultKey) entry.defaultKey = defaultKey;
+                    const cleanVariety = String(variety || '').trim();
+                    if (cleanVariety && !entry.varieties.some(v => v.toLocaleLowerCase() === cleanVariety.toLocaleLowerCase())) {
+                        entry.varieties.push(cleanVariety);
+                    }
+                };
+
+                PLANT_DATABASE.forEach(item => {
+                    addPlant(item.name, '', item.defaultKey);
+                    (item.varieties || []).forEach(variety => addPlant(item.name, variety, item.defaultKey));
+                });
+                (Array.isArray(plants) ? plants : []).forEach(plant => {
+                    addPlant(plant.name, plant.variety, plant.iconKey || 'cucumber');
+                });
+                return [...library.values()];
+            }
+
             nameInput.addEventListener('input', () => {
-                const query = nameInput.value.trim().toLowerCase();
+                const query = nameInput.value.trim().toLocaleLowerCase();
                 if (!query) { nameDropdown.classList.add('hidden'); return; }
 
-                const matches = PLANT_DATABASE.filter(item => {
-                    const matchName = item.name.toLowerCase().includes(query);
-                    const matchVar = item.varieties.some(v => v.toLowerCase().includes(query));
-                    return matchName || matchVar;
-                });
+                const matches = getPlantSuggestionLibrary().filter(item =>
+                    item.name.toLocaleLowerCase().includes(query) ||
+                    item.varieties.some(v => v.toLocaleLowerCase().includes(query))
+                ).slice(0, 10);
 
+                nameDropdown.replaceChildren();
                 if (matches.length === 0) { nameDropdown.classList.add('hidden'); return; }
 
-                nameDropdown.innerHTML = matches.slice(0, 10).map(item => `
-                    <div onclick="selectPlantName('${item.name.replace(/'/g, "\\'")}', '${item.defaultKey}')" class="px-3.5 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-xs flex justify-between items-center border-b border-slate-100 dark:border-slate-700/50 last:border-0">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-lg crop-badge-container p-0.5 flex items-center justify-center flex-shrink-0">${MONOCHROME_VEG_SVGS[item.defaultKey] || MONOCHROME_VEG_SVGS.cucumber}</div>
-                            <span class="font-semibold text-slate-800 dark:text-slate-100">${item.name}</span>
-                        </div>
-                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono pl-2">${item.varieties.length} varieties</span>
-                    </div>
-                `).join('');
+                matches.forEach(item => {
+                    const option = document.createElement('button');
+                    option.type = 'button';
+                    option.className = 'w-full px-3.5 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-xs flex justify-between items-center border-b border-slate-100 dark:border-slate-700/50 last:border-0 text-left';
+                    const details = document.createElement('span');
+                    details.className = 'flex items-center space-x-2.5 min-w-0';
+                    const icon = document.createElement('span');
+                    icon.className = 'w-7 h-7 rounded-lg crop-badge-container p-0.5 flex items-center justify-center flex-shrink-0';
+                    icon.innerHTML = MONOCHROME_VEG_SVGS[item.defaultKey] || MONOCHROME_VEG_SVGS.cucumber;
+                    const label = document.createElement('span');
+                    label.className = 'font-semibold text-slate-800 dark:text-slate-100';
+                    label.textContent = item.name;
+                    details.append(icon, label);
+                    const count = document.createElement('span');
+                    count.className = 'text-[10px] text-emerald-600 dark:text-emerald-400 font-mono pl-2 flex-shrink-0';
+                    count.textContent = item.varieties.length + ' varieties';
+                    option.append(details, count);
+                    option.addEventListener('click', () => selectPlantName(item.name, item.defaultKey));
+                    nameDropdown.appendChild(option);
+                });
                 nameDropdown.classList.remove('hidden');
             });
 
             varietyInput.addEventListener('input', () => {
-                const query = varietyInput.value.trim().toLowerCase();
-                const selectedName = nameInput.value.trim().toLowerCase();
+                const query = varietyInput.value.trim().toLocaleLowerCase();
+                const selectedName = nameInput.value.trim().toLocaleLowerCase();
                 if (!query) { varietyDropdown.classList.add('hidden'); return; }
 
-                let pool = [];
-                const matchedPlant = PLANT_DATABASE.find(item => item.name.toLowerCase() === selectedName);
-                if (matchedPlant) pool = matchedPlant.varieties;
-                else PLANT_DATABASE.forEach(item => pool.push(...item.varieties));
+                const library = getPlantSuggestionLibrary();
+                const matchedPlant = library.find(item => item.name.toLocaleLowerCase() === selectedName);
+                let pool = matchedPlant ? matchedPlant.varieties : library.flatMap(item => item.varieties);
+                pool = [...new Map(pool.map(v => [v.toLocaleLowerCase(), v])).values()];
+                const matches = pool.filter(v => v.toLocaleLowerCase().includes(query)).slice(0, 10);
 
-                pool = [...new Set(pool)];
-                const matches = pool.filter(v => v.toLowerCase().includes(query));
-
+                varietyDropdown.replaceChildren();
                 if (matches.length === 0) { varietyDropdown.classList.add('hidden'); return; }
 
-                varietyDropdown.innerHTML = matches.slice(0, 10).map(varName => `
-                    <div onclick="selectVarietyName('${varName.replace(/'/g, "\\'")}')" class="px-3.5 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
-                        ${varName}
-                    </div>
-                `).join('');
+                matches.forEach(varName => {
+                    const option = document.createElement('button');
+                    option.type = 'button';
+                    option.className = 'w-full px-3.5 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-700/50 last:border-0 text-left';
+                    option.textContent = varName;
+                    option.addEventListener('click', () => selectVarietyName(varName));
+                    varietyDropdown.appendChild(option);
+                });
                 varietyDropdown.classList.remove('hidden');
             });
 
