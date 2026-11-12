@@ -9321,3 +9321,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         background-image: none !important;
     }
 </style>
+
+<style id="flora-hide-individual-plant-icons">
+    /* Hide crop-specific illustrations only; preserve Flora Scan branding and navigation icons. */
+    #icon-picker-grid,
+    #journal-icon-container,
+    #plants-grid .crop-badge-container,
+    .location-group-plants .crop-badge-container {
+        display: none !important;
+    }
+</style>
