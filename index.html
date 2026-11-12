@@ -3136,7 +3136,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <form onsubmit="handleJournalLogSubmit(event)" class="space-y-3">
                         <input type="hidden" id="log-plant-id">
                         <input type="hidden" id="log-edit-id">
-                        <div id="journal-edit-actions" class="hidden flex items-center justify-between rounded-lg px-3 py-2" style="background:#fce7ef;border:1px solid #edb5c9;"><span class="text-xs font-semibold" style="color:#963b5e;">Editing an existing entry</span><button type="button" onclick="cancelJournalLogEdit()" class="text-xs font-semibold underline" style="color:#963b5e;">Cancel edit</button></div>
+                        <div id="journal-edit-actions" class="hidden rounded-lg px-3 py-2" style="background:#fce7ef;border:1px solid #edb5c9;"><span class="text-xs font-semibold" style="color:#963b5e;">Editing an existing entry</span></div>
                         <div id="journal-edit-meta-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                             <select id="log-type" onchange="toggleNutrientLibraryView(); toggleGerminationSection()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
@@ -3350,6 +3350,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <i class="fa-solid fa-plus text-[10px]" style="color:#ffffff !important;"></i>
                                     <span style="color:#ffffff !important;">Add Selected Nutrients to Log</span>
                                 </button>
+                                <button type="button" id="cancel-nutrient-edit-button" onclick="cancelJournalLogEdit()" class="hidden px-3 py-1.5 rounded-lg text-[11px] font-semibold border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 transition">Cancel edit</button>
                             </div>
 
                                                 
@@ -7793,6 +7794,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-log-form-title').textContent = 'Edit Growth Log Entry';
             document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
             document.getElementById('journal-edit-actions').classList.remove('hidden');
+            document.getElementById('cancel-nutrient-edit-button')?.classList.remove('hidden');
             toggleNutrientLibraryView();
             const feedLines = logText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
             const feedHeaderIndex = feedLines.findIndex(line => /^(?:Mixed with:|Fed with:)$/i.test(line));
@@ -7894,6 +7896,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-log-form-title').textContent = 'Add Growth Log Entry';
             document.getElementById('journal-log-submit-button').textContent = 'Add Log Entry';
             document.getElementById('journal-edit-actions').classList.add('hidden');
+            document.getElementById('cancel-nutrient-edit-button')?.classList.add('hidden');
             document.getElementById('log-date').value = new Date().toISOString().slice(0, 10);
             document.getElementById('log-type').value = 'Growth';
             document.getElementById('log-growth-stage').value = '';
