@@ -3349,7 +3349,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <i class="fa-solid fa-plus text-[10px]" style="color:#ffffff !important;"></i>
                                     <span style="color:#ffffff !important;">Add Selected Nutrients to Log</span>
                                 </button>
-                                <button type="button" id="cancel-nutrient-edit-button" onclick="cancelJournalLogEdit()" class="hidden px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white transition" style="background:#C4557C !important; background-color:#C4557C !important; background-image:none !important; color:#ffffff !important; border:1px solid #C4557C !important;">Cancel edit</button>
                             </div>
 
                                                 
@@ -3371,7 +3370,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div id="journal-photo-preview" class="flex flex-wrap gap-2"></div>
                             </div>
                         </details>
-                        <div class="flex justify-end">
+                        <div class="flex justify-end gap-2">
+                            <button type="button" id="cancel-nutrient-edit-button" onclick="cancelJournalLogEdit()" class="hidden px-4 py-2 rounded-xl text-xs font-semibold text-white transition" style="background:#C4557C !important; background-color:#C4557C !important; background-image:none !important; color:#ffffff !important; border:1px solid #C4557C !important;">Cancel edit</button>
                             <button id="journal-log-submit-button" type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
                         </div>
                     </form>
