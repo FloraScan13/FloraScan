@@ -6893,6 +6893,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             ).join('\n');
             textarea.value = [otherLines.join('\n'), header, blocks].filter(Boolean).join('\n');
             resizeJournalLogTextarea();
+            if (document.getElementById('log-edit-id')?.value) updateJournalEditLivePreview();
         }
 
         function applyNutrientSelection() {
@@ -6967,6 +6968,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             ).join('\n');
             logTextarea.value = [retainedOtherText, header + nutrientBlocks].filter(Boolean).join('\\n');
             resizeJournalLogTextarea();
+            if (document.getElementById('log-edit-id')?.value) updateJournalEditLivePreview();
         }
 
         async function rewriteJournalPlantNfcTag() {
@@ -7833,8 +7835,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const form = document.querySelector('form[onsubmit="handleJournalLogSubmit(event)"]');
             if (!form || form.dataset.livePreviewBound === 'true') return;
             form.dataset.livePreviewBound = 'true';
-            form.addEventListener('input', updateJournalEditLivePreview);
-            form.addEventListener('change', updateJournalEditLivePreview);
+            const refreshEditPreview = (event) => {
+                // Nutrient checkboxes and dosage fields update the journal text without
+                // dispatching an input event on the textarea, so sync them here first.
+                if (document.getElementById('log-edit-id')?.value &&
+                    event.target?.closest('#nutrient-product-list') &&
+                    window.nutrientEditorActiveBrand) {
+                    syncNutrientBrandToLog(window.nutrientEditorActiveBrand);
+                }
+                updateJournalEditLivePreview();
+            };
+            form.addEventListener('input', refreshEditPreview);
+            form.addEventListener('change', refreshEditPreview);
         }
 
         function editJournalLog(plantId, logId) {
