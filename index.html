@@ -7598,9 +7598,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (perPlantMatch) setInput('volume-per-plant-unit', perPlantMatch[2]);
             toggleWateringCanFields();
             if (log.type === 'Feed') {
-                // logText has already been normalized to real newline characters above.
-                // Parse the saved feed block and restore each selected product and custom dose.
-                const normalizedFeedText = logText;
+                // Nutrient entries are stored with literal \\n separators; normalize
+                // them before parsing the selected brand, products and entered doses.
+                const normalizedFeedText = logText.replace(/\\\\n/g, '\\n');
                 const feedHeader = normalizedFeedText.match(/(?:Mixed with:|Fed with:)\\s*\\n([^\\n]+):/i);
                 if (feedHeader) {
                     const brandSelect = document.getElementById('nutrient-brand-select');
