@@ -1854,7 +1854,8 @@ textarea {
             #nfc-tap-overlay,
             #plant-qr-link-section,
             #plant-nfc-section,
-            #journal-nfc-tag-actions {
+            #journal-nfc-tag-actions,
+            #journal-qr-tag-actions {
                 display: none !important;
             }
         }
@@ -3115,6 +3116,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <div id="journal-nfc-tag-actions" class="contents">
                                     <button type="button" onclick="rewriteJournalPlantNfcTag()" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" class="inline-block w-4 h-4 object-contain" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /> Rewrite NFC Tag</button>
                                     <span id="journal-nfc-status" class="col-span-2 sm:col-span-1 text-xs text-slate-500" role="status"></span>
+                                </div>
+                                <div id="journal-qr-tag-actions" class="contents hidden">
+                                    <button type="button" onclick="startQrScan('journal-link')" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><i class="fa-solid fa-qrcode text-[#B0466C]"></i> Add QR Code</button>
+                                    <span id="journal-qr-status" class="col-span-2 sm:col-span-1 text-xs text-slate-500" role="status" aria-live="polite"></span>
                                 </div>
                             </div>
                         </div>
@@ -5867,9 +5872,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const rememberPreference = document.getElementById('setting-remember-scanner-preference');
             if (rememberPreference) rememberPreference.checked = appSettings.rememberScannerPreference !== false;
             const journalActions = document.getElementById('journal-nfc-tag-actions');
+            const journalQrActions = document.getElementById('journal-qr-tag-actions');
             const currentPlantId = document.getElementById('log-plant-id')?.value;
             const currentPlant = currentPlantId ? plants.find(item => String(item.id) === String(currentPlantId)) : null;
-            if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc' || !!String(currentPlant?.qrCodeValue || '').trim());
+            const hasQrCode = !!String(currentPlant?.qrCodeValue || '').trim();
+            if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc' || hasQrCode);
+            if (journalQrActions) journalQrActions.classList.toggle('hidden', preference !== 'qr' || hasQrCode);
             const headerScannerIcon = document.getElementById('header-scanner-mode-icon');
             if (headerScannerIcon) {
                 if (preference === 'none') {
@@ -6003,6 +6011,41 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function openScannedPlantCode(value, source) {
             const rawValue = String(value || '').trim();
             if (!rawValue) return false;
+
+            if (qrScanPurpose === 'journal-link') {
+                const plantId = document.getElementById('log-plant-id')?.value;
+                const journalPlant = plants.find(item => String(item.id) === String(plantId));
+                if (!journalPlant) {
+                    const status = document.getElementById('qr-scan-status');
+                    if (status) status.textContent = 'Could not find this plant. Close and reopen its journal.';
+                    return false;
+                }
+                const floraMatch = rawValue.match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
+                const alreadyLinkedPlant = floraMatch
+                    ? plants.find(item => String(item.id) === floraMatch[1] && String(item.id) !== String(journalPlant.id))
+                    : plants.find(item => String(item.qrCodeValue || '') === rawValue && String(item.id) !== String(journalPlant.id));
+                if (alreadyLinkedPlant) {
+                    const status = document.getElementById('qr-scan-status');
+                    if (status) status.textContent = 'This QR code is already linked to ' + alreadyLinkedPlant.name + '. Scan a different, unassigned code.';
+                    return false;
+                }
+                journalPlant.qrCodeValue = rawValue;
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                markFloraSyncPending();
+                const status = document.getElementById('journal-qr-status');
+                if (status) status.textContent = 'QR code linked. Syncing…';
+                stopQrCameraOnly();
+                const scanOverlay = document.getElementById('qr-scan-overlay');
+                if (scanOverlay) scanOverlay.classList.add('hidden');
+                qrScanPurpose = 'journal';
+                syncPlantToCloud(journalPlant).then(() => {
+                    if (status) status.textContent = 'QR code added to ' + journalPlant.name + '.';
+                    const qrActions = document.getElementById('journal-qr-tag-actions');
+                    if (qrActions) qrActions.classList.add('hidden');
+                    renderPlants();
+                });
+                return true;
+            }
 
             if (qrScanPurpose === 'link') {
                 const floraMatch = rawValue.match(/^FLORASCAN:([A-Za-z0-9_-]+)$/);
@@ -7176,6 +7219,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             cancelJournalLogEdit();
             const nfcTagActions = document.getElementById('journal-nfc-tag-actions');
             if (nfcTagActions) nfcTagActions.classList.toggle('hidden', getScannerPreference() !== 'nfc' || !!String(p.qrCodeValue || '').trim());
+            const qrTagActions = document.getElementById('journal-qr-tag-actions');
+            if (qrTagActions) qrTagActions.classList.toggle('hidden', getScannerPreference() !== 'qr' || !!String(p.qrCodeValue || '').trim());
+            const qrStatus = document.getElementById('journal-qr-status');
+            if (qrStatus) qrStatus.textContent = '';
             const journalLocationButton = document.getElementById('journal-plant-location');
             if (journalLocationButton) {
                 // Reset the outside-click dismissal state every time a journal opens,
