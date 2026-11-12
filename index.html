@@ -7597,34 +7597,36 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             setInput('volume-per-plant-amount', perPlantMatch?.[1]);
             if (perPlantMatch) setInput('volume-per-plant-unit', perPlantMatch[2]);
             toggleWateringCanFields();
-            if (/(?:^|\n)(?:Mixed with:|Fed with:)\s*\n/i.test(logText)) {
-                // Restore the saved nutrient selection from the feed description.
-                // logText is normalized above, so parse both real line breaks and legacy feed labels.
-                const feedLines = logText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-                const feedHeaderIndex = feedLines.findIndex(line => /^(?:Mixed with:|Fed with:)$/i.test(line));
-                if (feedHeaderIndex >= 0 && feedLines[feedHeaderIndex + 1]) {
-                    const brandName = feedLines[feedHeaderIndex + 1].replace(/:$/, '').trim();
-                    const brandSelect = document.getElementById('nutrient-brand-select');
-                    if (brandSelect && NUTRIENT_BRANDS_LIBRARY.some(brand => brand.brand === brandName)) {
-                        brandSelect.value = brandName;
-                        handleNutrientBrandChange();
-                        const brandObj = NUTRIENT_BRANDS_LIBRARY.find(brand => brand.brand === brandName);
-                        feedLines.slice(feedHeaderIndex + 2).forEach(line => {
-                            const item = line.replace(/^[•*-]\s*/, '').match(/^(.*?)\s*\((.*?)\)\s*$/);
-                            if (!item || !brandObj) return;
-                            const productName = item[1].trim();
-                            const index = brandObj.products.findIndex(product => product.name === productName);
-                            if (index < 0) return;
-                            const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]'))
-                                .find(el => el.value === productName);
-                            if (checkbox) checkbox.checked = true;
-                            const dosage = item[2].trim().match(/^([0-9]*\.?[0-9]+)\s*(ml\/L|ml|tsp)$/i);
-                            if (dosage) {
-                                setInput('dose-val-' + index, dosage[1]);
-                                setInput('dose-unit-' + index, dosage[2].toLowerCase());
-                            }
-                        });
-                    }
+            const feedLines = logText.split(/\\r?\\n/).map(line => line.trim()).filter(Boolean);
+            const feedHeaderIndex = feedLines.findIndex(line => /^(?:Mixed with:|Fed with:)$/i.test(line));
+            if (feedHeaderIndex >= 0 && feedLines[feedHeaderIndex + 1]) {
+                // Growth logs can contain nutrient details too. Populate the library
+                // before selecting a brand so the product checkboxes actually exist.
+                const librarySection = document.getElementById('nutrient-library-section');
+                if (librarySection) librarySection.classList.remove('hidden');
+                populateNutrientBrandOptions();
+                const brandName = feedLines[feedHeaderIndex + 1].replace(/:$/, '').trim();
+                const brandObj = NUTRIENT_BRANDS_LIBRARY.find(brand => brand.brand === brandName);
+                const brandSelect = document.getElementById('nutrient-brand-select');
+                if (brandObj && brandSelect) {
+                    brandSelect.value = brandObj.brand;
+                    handleNutrientBrandChange();
+                    feedLines.slice(feedHeaderIndex + 2).forEach(line => {
+                        const item = line.replace(/^[•*-]\\s*/, '').match(/^(.*?)\\s*\\((.*?)\\)\\s*$/);
+                        if (!item) return;
+                        const productName = item[1].trim();
+                        const productIndex = brandObj.products.findIndex(product => product.name.trim().toLowerCase() === productName.toLowerCase());
+                        if (productIndex < 0) return;
+                        const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]'))
+                            .find(el => el.value.trim().toLowerCase() === productName.toLowerCase());
+                        if (checkbox) checkbox.checked = true;
+                        const dosageText = item[2].trim();
+                        const dosage = dosageText.match(/^([0-9]*\\.?[0-9]+)\\s*(ml\\s*\\/\\s*L|ml|tsp)$/i);
+                        if (dosage) {
+                            setInput('dose-val-' + productIndex, dosage[1]);
+                            setInput('dose-unit-' + productIndex, dosage[2].replace(/\\s+/g, '').toLowerCase());
+                        }
+                    });
                 }
             }
             const harvestDetails = getHarvestLogDetails(log);
