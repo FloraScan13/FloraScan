@@ -6295,14 +6295,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (failedCuttingInput) failedCuttingInput.max = showCuttings ? String(availableCuttings) : '';
             if (!showCuttings && rootedInput) rootedInput.value = '';
             if (!showCuttings && failedCuttingInput) failedCuttingInput.value = '';
-            const recordingSeedOutcome = showSeeds && (amountInput.value.trim() !== '' || (failedInput && failedInput.value.trim() !== ''));
-            const recordingCuttingOutcome = showCuttings && ((rootedInput && rootedInput.value.trim() !== '') || (failedCuttingInput && failedCuttingInput.value.trim() !== ''));
-            const requiresGrowthStage = isGrowth || document.getElementById('log-type').value === 'Problem';
-            if (stageSection) stageSection.classList.toggle('hidden', !requiresGrowthStage || recordingSeedOutcome || recordingCuttingOutcome);
-            if (stageSelect) {
-                stageSelect.required = requiresGrowthStage && !(recordingSeedOutcome || recordingCuttingOutcome);
-                if (!requiresGrowthStage || recordingSeedOutcome || recordingCuttingOutcome) stageSelect.value = '';
-            }
+            // Every journal entry requires a growth stage, including feed, water,
+            // harvest, problem, and seed/cutting outcome logs.
+            if (stageSection) stageSection.classList.remove('hidden');
+            if (stageSelect) stageSelect.required = true;
         }
 
         function updateFeedReminderDateFromInterval() {
@@ -7644,8 +7640,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 document.getElementById('log-cuttings-rooted-amount').value.trim() !== '' ||
                 document.getElementById('log-failed-cutting-amount').value.trim() !== ''
             );
-            if ((type === 'Growth' || type === 'Problem') && !growthStage && !enteringSeedOutcome && !enteringCuttingOutcome) {
-                alert('Please select a growth stage: Cutting, Seedling, Vegetative or Flowering.');
+            if (!growthStage) {
+                alert('Please select a growth stage before saving this journal entry.');
                 document.getElementById('log-growth-stage').focus();
                 return;
             }
