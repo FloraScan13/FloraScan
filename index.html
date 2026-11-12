@@ -3001,7 +3001,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <div class="relative">
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Variety</label>
                         <input type="text" id="plant-variety" autocomplete="off" placeholder="e.g. Beth Alpha, Gardener's Delight" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                        <div id="variety-suggestions" class="autocomplete-dropdown hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden"></div>
+                        <div id="variety-suggestions" class="autocomplete-dropdown hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden" style="z-index:100;"></div>
                     </div>
                 </div>
 
@@ -4811,8 +4811,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             varietyInput.addEventListener('focus', () => renderVarietySuggestions(true));
 
             document.addEventListener('click', (e) => {
-                if (!nameInput.contains(e.target) && !nameDropdown.contains(e.target)) nameDropdown.classList.add('hidden');
-                if (!varietyInput.contains(e.target) && !varietyDropdown.contains(e.target)) varietyDropdown.classList.add('hidden');
+                if (!nameInput.contains(e.target) && !nameDropdown.contains(e.target)) {
+                    nameDropdown.classList.add('hidden');
+                }
+                // Keep saved variety suggestions open after the plant name is entered.
+                // They close when a variety is selected, the plant name is cleared,
+                // or the variety search no longer has matches.
             });
         }
 
