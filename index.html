@@ -4237,7 +4237,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         const { error: logError } = await supabaseClient.from('plant_logs').upsert({
                             id: log.id, plant_id: plant.id, user_id: currentUser.id,
                             date: log.date, type: log.type, text: serializeJournalLogText(log), photos: photoPaths, feed_reminder_date: log.feedReminderDate || null,
-                            feed_reminder_mode: log.feedReminderMode || 'once', feed_reminder_interval: log.feedReminderMode === 'repeat' ? (Number(log.feedReminderInterval) || null) : null, feed_reminder_unit: log.feedReminderUnit || 'days'
+                            feed_reminder_mode: log.feedReminderMode || 'once', feed_reminder_interval: log.feedReminderInterval !== '' && log.feedReminderInterval != null ? (Number(log.feedReminderInterval) || null) : null, feed_reminder_unit: log.feedReminderUnit || 'days'
                         });
                         if (logError) throw logError;
                         log.photoPaths = photoPaths;
@@ -4530,7 +4530,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     photos: Array.isArray(log.photoPaths) ? log.photoPaths : [],
                     feed_reminder_date: log.feedReminderDate || null,
                     feed_reminder_mode: log.feedReminderMode || 'once',
-                    feed_reminder_interval: log.feedReminderMode === 'repeat' ? (Number(log.feedReminderInterval) || null) : null,
+                    feed_reminder_interval: log.feedReminderInterval !== '' && log.feedReminderInterval != null ? (Number(log.feedReminderInterval) || null) : null,
                     feed_reminder_unit: log.feedReminderUnit || 'days'
                 });
                 if (error) throw error;
@@ -6360,16 +6360,33 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const unitInput = document.getElementById('feed-reminder-unit');
             const modeInput = document.getElementById('feed-reminder-mode');
             if (!amountInput || !unitInput) return;
-            amountInput.value = log.feedReminderInterval ?? '';
-            unitInput.value = log.feedReminderUnit === 'weeks' ? 'weeks' : 'days';
+            let savedInterval = log.feedReminderInterval ?? '';
+            let savedUnit = log.feedReminderUnit === 'weeks' ? 'weeks' : 'days';
+            const savedDate = String(log.feedReminderDate || '');
+            // Older Growth Logs may have saved the first reminder date but not
+            // the interval fields. Recover the interval from the log and reminder dates.
+            if ((savedInterval === '' || savedInterval == null) && savedDate && log.date) {
+                const start = new Date(log.date + 'T00:00:00');
+                const end = new Date(savedDate + 'T00:00:00');
+                const days = Math.round((end - start) / 86400000);
+                if (Number.isFinite(days) && days > 0) {
+                    if (days % 7 === 0) {
+                        savedInterval = days / 7;
+                        savedUnit = 'weeks';
+                    } else {
+                        savedInterval = days;
+                        savedUnit = 'days';
+                    }
+                }
+            }
+            amountInput.value = savedInterval;
+            unitInput.value = savedUnit;
             if (modeInput) modeInput.value = log.feedReminderMode === 'repeat' ? 'repeat' : 'once';
             updateFeedReminderModeUI();
 
-            // Keep the saved first reminder date; older feed logs may only have
-            // the interval, in which case recalculate it from the log date.
             const dateInput = document.getElementById('feed-reminder-date');
             if (dateInput) {
-                dateInput.value = log.feedReminderDate || '';
+                dateInput.value = savedDate;
                 if (!dateInput.value && amountInput.value) updateFeedReminderDateFromInterval();
             }
         }
@@ -8194,7 +8211,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     harvestUnit: harvestMeasurement === 'weight' ? harvestUnit : ''
                 } : {}),
                 text: type === 'Harvest' ? buildHarvestLogText(text, harvestMeasurement, harvestValue, harvestUnit, p.name) : text,
-                ...(feedReminderDate ? { feedReminderDate } : {}), ...(feedReminderMode === 'repeat' ? { feedReminderMode, feedReminderInterval: Number(feedReminderInterval), feedReminderUnit } : { feedReminderMode }), ...(photos.length ? { photos } : {}), ...(photoPaths.length ? { photoPaths } : {}) };
+                ...(feedReminderDate ? { feedReminderDate } : {}),
+                ...(type === 'Feed' ? {
+                    feedReminderMode,
+                    feedReminderInterval: feedReminderInterval !== '' ? Number(feedReminderInterval) : '',
+                    feedReminderUnit
+                } : {}),
+                ...(photos.length ? { photos } : {}), ...(photoPaths.length ? { photoPaths } : {}) };
             p.logs.unshift(newLog);
 
             localStorage.setItem('flora_plants', JSON.stringify(plants));
