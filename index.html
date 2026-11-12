@@ -7533,7 +7533,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const pattern = /^\s*(?:Watering can filled with|Filled tank with)\s+([\d.]+)\s+(.+?)(?:\s+pure water)?\.?\s*$/i;
             const match = lines.map(line => line.match(pattern)).find(Boolean);
             if (!match) return '';
-            return '<p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">Watering can: ' + escapeHtml(match[1] + ' ' + match[2]) + '</p>';
+            return '<p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">Watering can:</p>';
         }
 
         function formatGrowthLogText(text, type) {
