@@ -8005,8 +8005,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         type === 'Water' && tankAmount ? 'Watering can filled with ' + tankAmount + ' ' + tankUnit + ' pure water.' : '');
                     journalNotes = replaceDetailLine(journalNotes, /^Watered this plant with\b/i,
                         type === 'Water' && perPlantAmount ? 'Watered this plant with ' + perPlantAmount + ' ' + perPlantUnit + '.' : '');
-                    journalNotes = replaceDetailLine(journalNotes, /^Each plant fed with:/i,
-                        type === 'Feed' && wateringCanEnabled && perPlantAmount ? 'Each plant fed with: ' + perPlantAmount + ' ' + perPlantUnit + ' (includes runoff).' : '');
+                    // Keep the per-plant feed detail as the final line of the log.
+                    // Remove every old copy first so edits cannot leave duplicates.
+                    const eachPlantFedLine = type === 'Feed' && wateringCanEnabled && perPlantAmount
+                        ? 'Each plant fed with: ' + perPlantAmount + ' ' + perPlantUnit + ' (includes runoff).'
+                        : '';
+                    journalNotes = String(journalNotes || '')
+                        .split(/\r?\n/)
+                        .filter(line => !/^\s*Each plant fed with:/i.test(line))
+                        .join('\n')
+                        .trim();
+                    if (eachPlantFedLine) {
+                        journalNotes = journalNotes ? journalNotes + '\n' + eachPlantFedLine : eachPlantFedLine;
+                    }
 
                     // The feed watering-can fill is stored in its own summary line.
                     // Replace or remove that line on every edit so the journal reflects
