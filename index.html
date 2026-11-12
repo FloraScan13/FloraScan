@@ -4752,6 +4752,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             function renderVarietySuggestions(showAll = false) {
                 const query = varietyInput.value.trim().toLocaleLowerCase();
                 const selectedName = nameInput.value.trim();
+                const isMobileView = window.matchMedia('(max-width: 639px)').matches;
+                const normalizedName = selectedName.toLocaleLowerCase();
+                const exactLibraryPlant = getPlantSuggestionLibrary().some(item =>
+                    item.name.toLocaleLowerCase() === normalizedName
+                );
+                // On mobile, wait until a complete plant name from the library
+                // has been entered/selected before showing its variety choices.
+                if (isMobileView && (!selectedName || !exactLibraryPlant)) {
+                    varietyDropdown.classList.add('hidden');
+                    return;
+                }
                 const savedVarieties = getSuggestedVarieties(selectedName);
                 const matches = savedVarieties
                     .filter(value => showAll || !query || value.toLocaleLowerCase().includes(query)).slice(0, 10);
@@ -9385,5 +9396,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
   #journal-header-actions #journal-nfc-status:empty,
   #journal-header-actions #journal-unassign-tag-status:empty,
   #journal-header-actions #journal-qr-status:empty { display: none !important; }
+}
+</style>
+
+<style id="flora-mobile-variety-suggestions-after-plant-name">
+@media (max-width: 639px) {
+  #variety-suggestions { z-index: 9999 !important; max-height: 40vh; overflow-y: auto; }
 }
 </style>
