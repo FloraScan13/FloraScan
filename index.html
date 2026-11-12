@@ -7805,6 +7805,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             editJournalLog(plant.id, log.id || String(index));
         }
 
+        function moveWateringCanLineBeforeNutrients(text) {
+            const lines = String(text || '').split(/\r?\n/);
+            const wateringCanLines = lines.filter(line => /^\s*Watering Can:\s*/i.test(line));
+            if (!wateringCanLines.length) return lines.join('\n').trim();
+            const remaining = lines.filter(line => !/^\s*Watering Can:\s*/i.test(line));
+            const nutrientIndex = remaining.findIndex(line => /^\s*(?:Mixed with:|Fed with:)\s*$/i.test(line));
+            remaining.splice(nutrientIndex < 0 ? 0 : nutrientIndex, 0, ...wateringCanLines);
+            return remaining.join('\n').trim();
+        }
+
         function updateJournalEditLivePreview() {
             const editId = document.getElementById('log-edit-id')?.value;
             const plantId = document.getElementById('log-plant-id')?.value;
@@ -7838,6 +7848,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (perPlantAmount) details.push(`Each plant fed with: ${perPlantAmount} ${perPlantUnit} (includes runoff).`);
                 }
                 if (details.length) previewText = previewText ? previewText + '\n' + details.join('\n') : details.join('\n');
+                previewText = moveWateringCanLineBeforeNutrients(previewText);
                 const notesField = document.getElementById('log-text');
                 if (notesField && notesField.value !== previewText) {
                     notesField.value = previewText;
@@ -8210,6 +8221,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             wateringCanSummary || ''
                         );
                     }
+                    journalNotes = moveWateringCanLineBeforeNutrients(journalNotes);
                 }
                 existingLog.harvestMeasurement = type === 'Harvest' ? harvestMeasurement : '';
                 existingLog.harvestValue = type === 'Harvest' ? harvestValue : null;
