@@ -7598,27 +7598,21 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (perPlantMatch) setInput('volume-per-plant-unit', perPlantMatch[2]);
             toggleWateringCanFields();
             if (log.type === 'Feed') {
-                // Nutrient entries are stored with literal \\n separators; normalize
-                // them before parsing the selected brand, products and entered doses.
-                const normalizedFeedText = logText.replace(/\\\\n/g, '\\n');
-                const feedHeader = normalizedFeedText.match(/(?:Mixed with:|Fed with:)\\s*\\n([^\\n]+):/i);
-                if (feedHeader) {
+                const feedBlock = logText.match(/(?:Mixed with:|Fed with:)\s*\\n([^\\n]+):\s*\\n((?:[•*-] [^\\n]+\\n?)+)/i);
+                if (feedBlock) {
                     const brandSelect = document.getElementById('nutrient-brand-select');
-                    brandSelect.value = feedHeader[1].trim();
+                    brandSelect.value = feedBlock[1].trim();
                     handleNutrientBrandChange();
                     const brandObj = NUTRIENT_BRANDS_LIBRARY.find(b => b.brand === brandSelect.value);
                     if (brandObj) {
-                        const headerEnd = normalizedFeedText.indexOf(feedHeader[0]) + feedHeader[0].length;
-                        const remainingLines = normalizedFeedText.slice(headerEnd).split('\\n');
-                        remainingLines.forEach(line => {
-                            const item = line.trim().match(/^[•*-]\\s*(.*?)\\s*\\((.*?)\\)\\s*$/);
+                        feedBlock[2].split('\\n').filter(Boolean).forEach(line => {
+                            const item = line.replace(/^[•*-]\s*/, '').match(/^(.*?)\s*\\((.*?)\\)$/);
                             if (!item) return;
-                            const productName = item[1].trim();
-                            const index = brandObj.products.findIndex(product => product.name === productName);
+                            const index = brandObj.products.findIndex(product => product.name === item[1].trim());
                             if (index < 0) return;
-                            const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]')).find(el => el.value === productName);
+                            const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]')).find(el => el.value === item[1].trim());
                             if (checkbox) checkbox.checked = true;
-                            const dosage = item[2].trim().match(/^([0-9.]+)\\s*(ml\\/L|ml|tsp)$/i);
+                            const dosage = item[2].trim().match(/^([0-9.]+)\s*(ml\/L|ml|tsp)$/i);
                             if (dosage) {
                                 setInput('dose-val-' + index, dosage[1]);
                                 setInput('dose-unit-' + index, dosage[2]);
