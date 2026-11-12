@@ -4958,7 +4958,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }).sort((a, b) => a.name.localeCompare(b.name) || a.variety.localeCompare(b.variety));
         }
 
-        function editMyPlantLibraryEntry(index) {
+        async function editMyPlantLibraryEntry(index) {
             const rows = getPersonalPlantLibraryRows();
             const row = rows[index];
             if (!row) return;
@@ -4979,6 +4979,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const oldKey = row.name.toLocaleLowerCase();
             const sourceIndex = library.findIndex(item => item.name.toLocaleLowerCase() === oldKey);
             if (sourceIndex < 0) return;
+
+            // Apply the library edit to the corresponding plant records as well,
+            // so cards, journals and cloud copies all use the updated details.
+            const matchingPlants = (Array.isArray(plants) ? plants : []).filter(plant =>
+                String(plant.name || '').trim().toLocaleLowerCase() === oldKey &&
+                String(plant.variety || '').trim().toLocaleLowerCase() === row.variety.toLocaleLowerCase()
+            );
+            matchingPlants.forEach(plant => {
+                plant.name = cleanName;
+                plant.variety = cleanVariety;
+            });
+
             const source = library[sourceIndex];
             source.varieties = (source.varieties || []).filter(value =>
                 value.toLocaleLowerCase() !== row.variety.toLocaleLowerCase()
@@ -4986,10 +4998,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (cleanName.toLocaleLowerCase() === oldKey) {
                 if (cleanVariety && !source.varieties.some(value => value.toLocaleLowerCase() === cleanVariety.toLocaleLowerCase())) {
                     source.varieties.push(cleanVariety);
-                }
-                if (!cleanVariety && !source.varieties.length) source.varieties = [];
-                if (source.varieties.length) {
-                    // A blank variety represents a plant-only row; keep it only when no varieties remain.
                 }
             } else {
                 if (!source.varieties.length) library.splice(sourceIndex, 1);
@@ -4999,6 +5007,26 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     target.varieties.push(cleanVariety);
                 }
             }
+
+            if (matchingPlants.length) {
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                markFloraSyncPending();
+                const journalPlantId = document.getElementById('log-plant-id')?.value;
+                const openJournalPlant = matchingPlants.find(plant => String(plant.id) === String(journalPlantId));
+                if (openJournalPlant) {
+                    const journalName = document.getElementById('journal-name');
+                    const journalVariety = document.getElementById('journal-variety');
+                    const editName = document.getElementById('journal-edit-plant-name');
+                    const editVariety = document.getElementById('journal-edit-plant-variety');
+                    if (journalName) journalName.textContent = openJournalPlant.name;
+                    if (journalVariety) journalVariety.textContent = openJournalPlant.variety || 'Standard Variety';
+                    if (editName) editName.value = openJournalPlant.name;
+                    if (editVariety) editVariety.value = openJournalPlant.variety || '';
+                }
+                renderPlants();
+                await Promise.all(matchingPlants.map(plant => syncPlantToCloud(plant)));
+            }
+
             savePersonalPlantLibrary(library);
         }
 
