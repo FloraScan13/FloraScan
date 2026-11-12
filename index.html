@@ -7592,20 +7592,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const plantCount = Math.max(1, Number(plant.quantity) || 1);
 
                     // Read the water volume recorded for this log's tank/watering can.
+                    // Nutrient entries store tank volume as "Tank fill volume:".
+                    const tankFillMatch = content.match(/Tank fill volume:\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\b/i);
                     const canWaterMatch = content.match(/Watering can(?:\s*\(Includes runoff\))?:\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+water(?:\s+in\s+a)?/i)
                         || content.match(/(?:Filled tank with|Watering can filled with)\s*([\d.]+)\s*(Liters|Litres|Gallons|Milliliters|Millilitres|L|gal|ml)\s+(?:pure\s+)?water/i);
-                    const canWaterMl = canWaterMatch ? toMl(canWaterMatch[1], canWaterMatch[2]) : 0;
+                    const canWaterMl = tankFillMatch
+                        ? toMl(tankFillMatch[1], tankFillMatch[2])
+                        : canWaterMatch ? toMl(canWaterMatch[1], canWaterMatch[2]) : 0;
 
-                    // Tank entries count the entered tank volume exactly once.
-                    // Watering-can Feed entries retain the previous per-plant behavior:
-                    // multiply the applied per-plant amount by plant quantity when entered.
-                    const isWateringCanFeed = /Watering can(?:\s*\(Includes runoff\))?:/i.test(content);
-                    // Count the amount actually applied to plants when recorded.
-                    // Tank fill is only a fallback when no per-plant applied amount exists;
-                    // a full tank is not necessarily the amount used.
-                    const totalEntryWaterMl = perPlantMl > 0
-                        ? perPlantMl * plantCount
-                        : canWaterMl;
+                    // A nutrient tank fill is the mixed water volume, so count it
+                    // once in the water-used total. Otherwise use applied per-plant
+                    // volume when available, falling back to the recorded can volume.
+                    const totalEntryWaterMl = tankFillMatch
+                        ? canWaterMl
+                        : perPlantMl > 0
+                            ? perPlantMl * plantCount
+                            : canWaterMl;
                     if (totalEntryWaterMl > 0) waterMl += totalEntryWaterMl;
 
                     // Nutrient totals are the proportion of the mixed can actually applied:
