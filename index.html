@@ -2719,10 +2719,22 @@ textarea {
                 </button>
                 <div id="my-plant-library-content" hidden class="space-y-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                     <p class="text-sm text-slate-500 dark:text-slate-400">Your personal collection of plant names and varieties. Add a plant to grow your library and see it in Add Plant suggestions.</p>
+                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3 space-y-3">
+                        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Add a plant to your library</h4>
+                        <div>
+                            <label for="library-new-plant-name" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Plant name</label>
+                            <input id="library-new-plant-name" type="text" maxlength="80" placeholder="e.g. Tomato" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm">
+                        </div>
+                        <div>
+                            <label for="library-new-plant-variety" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Variety (optional)</label>
+                            <input id="library-new-plant-variety" type="text" maxlength="80" placeholder="e.g. Sungold" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm">
+                        </div>
+                        <button type="button" onclick="addPlantToPersonalLibrary()" class="w-full sm:w-auto px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i> Add to library</button>
+                    </div>
                     <div id="my-plant-library-list" class="space-y-2">
                         <p class="text-sm text-slate-500 dark:text-slate-400">Your saved plants will appear here.</p>
                     </div>
-                    <p class="text-[11px] text-slate-400 dark:text-slate-500">Suggestions are based on plants saved to your account or this device. Built-in plant suggestions remain available too.</p>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500">Only plants and varieties you add here or save with a plant record will appear as suggestions.</p>
                 </div>
             </div>
 
@@ -4903,6 +4915,39 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 newEntry.varieties.push(newVariety);
             }
             savePersonalPlantLibrary(library.filter(item => item.name && (item.varieties || []).length || item.name));
+        }
+
+        function addPlantToPersonalLibrary() {
+            const nameInput = document.getElementById('library-new-plant-name');
+            const varietyInput = document.getElementById('library-new-plant-variety');
+            if (!nameInput || !varietyInput) return;
+            const name = nameInput.value.trim();
+            const variety = varietyInput.value.trim();
+            if (!name) {
+                alert('Enter a plant name first.');
+                nameInput.focus();
+                return;
+            }
+
+            const library = getPersonalPlantLibrary();
+            let entry = library.find(item => String(item.name || '').trim().toLocaleLowerCase() === name.toLocaleLowerCase());
+            if (!entry) {
+                entry = { name, varieties: [] };
+                library.push(entry);
+            } else if (variety && (entry.varieties || []).some(value => String(value).trim().toLocaleLowerCase() === variety.toLocaleLowerCase())) {
+                alert('That plant and variety are already in your library.');
+                varietyInput.focus();
+                return;
+            }
+
+            if (variety) {
+                if (!Array.isArray(entry.varieties)) entry.varieties = [];
+                entry.varieties.push(variety);
+            }
+            savePersonalPlantLibrary(library);
+            nameInput.value = '';
+            varietyInput.value = '';
+            nameInput.focus();
         }
 
         function getPersonalPlantLibraryRows() {
