@@ -6318,10 +6318,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (failedCuttingInput) failedCuttingInput.max = showCuttings ? String(availableCuttings) : '';
             if (!showCuttings && rootedInput) rootedInput.value = '';
             if (!showCuttings && failedCuttingInput) failedCuttingInput.value = '';
-            // Every journal entry requires a growth stage, including feed, water,
-            // harvest, problem, and seed/cutting outcome logs.
-            if (stageSection) stageSection.classList.remove('hidden');
-            if (stageSelect) stageSelect.required = true;
+            // Location changes are handled by the location picker and do not need a growth stage.
+            const requiresGrowthStage = document.getElementById('log-type').value !== 'Location Change';
+            if (stageSection) stageSection.classList.toggle('hidden', !requiresGrowthStage);
+            if (stageSelect) stageSelect.required = requiresGrowthStage;
         }
 
         function updateFeedReminderDateFromInterval() {
