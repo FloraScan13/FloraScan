@@ -7597,7 +7597,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             setInput('volume-per-plant-amount', perPlantMatch?.[1]);
             if (perPlantMatch) setInput('volume-per-plant-unit', perPlantMatch[2]);
             toggleWateringCanFields();
-            if (log.type === 'Feed') {
+            if (/(?:^|\n)(?:Mixed with:|Fed with:)\s*\n/i.test(logText)) {
                 // Restore the saved nutrient selection from the feed description.
                 // logText is normalized above, so parse both real line breaks and legacy feed labels.
                 const feedLines = logText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
