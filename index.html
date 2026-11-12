@@ -7865,7 +7865,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             toggleGerminationSection();
             document.getElementById('journal-log-form-title').textContent = 'Edit Growth Log Entry';
             document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
-            document.getElementById('journal-edit-actions').classList.remove('hidden');
             document.getElementById('cancel-nutrient-edit-button')?.classList.remove('hidden');
             document.getElementById('add-selected-nutrients-button')?.classList.add('hidden');
             window.nutrientEditorActiveBrand = '';
@@ -7969,7 +7968,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (journalLocationSelect) journalLocationSelect.disabled = false;
             document.getElementById('journal-log-form-title').textContent = 'Add Growth Log Entry';
             document.getElementById('journal-log-submit-button').textContent = 'Add Log Entry';
-            document.getElementById('journal-edit-actions').classList.add('hidden');
             document.getElementById('cancel-nutrient-edit-button')?.classList.add('hidden');
             document.getElementById('add-selected-nutrients-button')?.classList.remove('hidden');
             window.nutrientEditorActiveBrand = '';
