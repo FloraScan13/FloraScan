@@ -8235,6 +8235,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     // Replace or remove that line on every edit so the journal reflects
                     // the current controls instead of retaining the previous fill amount.
                     if (type === 'Feed') {
+                        journalNotes = replaceDetailLine(
+                            journalNotes,
+                            /^Tank fill volume:\s*/i,
+                            tankAmount ? 'Tank fill volume: ' + tankAmount + ' ' + tankUnit + '.' : ''
+                        );
                         const wateringCanSummary = getWateringCanSummary();
                         if (wateringCanSummary === null) return;
                         journalNotes = replaceDetailLine(
@@ -8332,6 +8337,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     return;
                 }
                 const waterDetails = [];
+                if (type === 'Feed' && tankVol) waterDetails.push(`Tank fill volume: ${tankVol} ${tankUnit}.`);
                 if (type === 'Water' && tankVol) waterDetails.push(`Watering can filled with ${tankVol} ${tankUnit} pure water.`);
                 if (type === 'Feed' && wateringCanEnabled && perPlantAmount && !/Each plant fed with:/i.test(text)) {
                     waterDetails.push(`Each plant fed with: ${perPlantAmount} ${perPlantUnit} (includes runoff).`);
