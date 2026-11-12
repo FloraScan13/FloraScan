@@ -5093,7 +5093,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (event.target.closest('#my-plant-library-list .plant-library-row')) return;
             selectedMyPlantLibraryRow = null;
             renderMyPlantLibrary();
-        });
+        }, true);
 
         function setMyPlantLibraryLetter(letter) {
             myPlantLibraryLetterFilter = letter;
