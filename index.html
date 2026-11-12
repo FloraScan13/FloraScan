@@ -3137,7 +3137,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         <input type="hidden" id="log-plant-id">
                         <input type="hidden" id="log-edit-id">
                         <div id="journal-edit-actions" class="hidden flex items-center justify-between rounded-lg px-3 py-2" style="background:#fce7ef;border:1px solid #edb5c9;"><span class="text-xs font-semibold" style="color:#963b5e;">Editing an existing entry</span><button type="button" onclick="cancelJournalLogEdit()" class="text-xs font-semibold underline" style="color:#963b5e;">Cancel edit</button></div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div id="journal-edit-meta-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input type="date" id="log-date" required class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                             <select id="log-type" onchange="toggleNutrientLibraryView(); toggleGerminationSection()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                                 <option value="Growth">Growth Update</option>
@@ -3184,7 +3184,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <p class="text-[11px] text-[#986b7b]">Enter the number of individual items picked.</p>
                             </div>
                         </div>
-                        <div>
+                        <div id="journal-edit-location-field">
                             <label for="journal-plant-location" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Move to location</label>
                             <div id="journal-plant-location-control" class="relative"><button type="button" id="journal-plant-location" aria-label="Move plant to location" aria-haspopup="listbox" aria-expanded="false" onclick="toggleJournalLocationMenu()" class="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span id="journal-plant-location-label" class="text-slate-900 dark:text-slate-100" style="color:#294b34 !important;">Choose location</span><i class="fa-solid fa-chevron-down text-xs text-slate-400"></i></button><div id="journal-plant-location-menu" role="listbox" class="hidden absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg"></div></div>
                         </div>
@@ -7609,6 +7609,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const log = plant.logs.find((entry, index) => String(entry.id || index) === String(logId));
             if (!log) return;
             document.getElementById('log-plant-id').value = plant.id;
+            // Hide entry metadata only while editing an existing log.
+            ['journal-edit-meta-fields', 'journal-edit-location-field', 'growth-stage-section'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) field.classList.add('hidden');
+            });
             toggleGerminationSection();
             document.getElementById('log-edit-id').value = log.id || String(plant.logs.indexOf(log));
             const journalLocationSelect = document.getElementById('journal-plant-location');
@@ -7713,6 +7718,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function cancelJournalLogEdit() {
+            ['journal-edit-meta-fields', 'journal-edit-location-field', 'growth-stage-section'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) field.classList.remove('hidden');
+            });
             document.getElementById('log-edit-id').value = '';
             const journalLocationSelect = document.getElementById('journal-plant-location');
             if (journalLocationSelect) journalLocationSelect.disabled = false;
