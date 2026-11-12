@@ -7548,12 +7548,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             });
             return formatted;
         }
-            NUTRIENT_BRANDS_LIBRARY.forEach(item => {
-                const escapedBrand = escapeHtml(item.brand);
-                formatted = formatted.split(escapedBrand + ':').join('<strong>' + escapedBrand + ':</strong>');
-            });
-            return formatted;
-        }
         function getJournalUsageTotals(plant) {
             let waterMl = 0;
             const nutrientTotals = {};
