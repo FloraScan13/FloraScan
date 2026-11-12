@@ -5081,9 +5081,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         let myPlantLibraryLetterFilter = 'ALL';
+        let selectedMyPlantLibraryRow = null;
+
+        function selectMyPlantLibraryRow(index) {
+            selectedMyPlantLibraryRow = selectedMyPlantLibraryRow === index ? null : index;
+            renderMyPlantLibrary();
+        }
 
         function setMyPlantLibraryLetter(letter) {
             myPlantLibraryLetterFilter = letter;
+            selectedMyPlantLibraryRow = null;
             renderMyPlantLibrary();
         }
 
@@ -5134,14 +5141,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     '<div class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-1">' + escapeHtml(group.name) + '</div>' +
                     '<div class="space-y-0">' +
                         group.entries.map(row =>
-                            '<div class="flex items-center justify-between gap-1 py-0">' +
-                                '<span class="text-sm text-slate-600 dark:text-slate-300 min-w-0 truncate">' +
+                            '<div class="flex items-center justify-between gap-1 py-0 rounded-lg ' + (selectedMyPlantLibraryRow === row.rowIndex ? 'bg-emerald-50 dark:bg-emerald-900/20' : '') + '">' +
+                                '<button type="button" onclick="selectMyPlantLibraryRow(' + row.rowIndex + ')" aria-pressed="' + (selectedMyPlantLibraryRow === row.rowIndex) + '" class="text-left text-sm text-slate-600 dark:text-slate-300 min-w-0 flex-1 truncate px-1 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-600 rounded">' +
                                     (row.variety ? escapeHtml(row.variety) : '<span class="italic text-slate-400">No variety</span>') +
-                                '</span>' +
-                                '<span class="flex items-center gap-1 flex-shrink-0">' +
+                                '</button>' +
+                                (selectedMyPlantLibraryRow === row.rowIndex ? '<span class="flex items-center gap-1 flex-shrink-0">' +
                                     '<button type="button" onclick="editMyPlantLibraryEntry(' + row.rowIndex + ')" aria-label="Edit ' + escapeHtml(row.name) + (row.variety ? ' - ' + escapeHtml(row.variety) : '') + '" title="Edit" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-emerald-900 dark:text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-700"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>' +
                                     '<button type="button" onclick="deleteMyPlantLibraryEntry(' + row.rowIndex + ')" aria-label="Delete ' + escapeHtml(row.name) + (row.variety ? ' - ' + escapeHtml(row.variety) : '') + '" title="Delete" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-[#B0466C] dark:text-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-500"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>' +
-                                '</span>' +
+                                '</span>' : '') +
                             '</div>'
                         ).join('') +
                     '</div>' +
