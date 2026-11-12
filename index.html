@@ -7701,11 +7701,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!plant || !Array.isArray(plant.logs)) return;
             const log = plant.logs.find((entry, index) => String(entry.id || index) === String(logId));
             if (!log) return;
+            // Give legacy entries a stable ID before opening the editor. The submit
+            // handler can then target this exact record even if the log list is rerendered.
+            if (!log.id) {
+                log.id = 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                markFloraSyncPending();
+            }
             document.getElementById('log-plant-id').value = plant.id;
             // Refresh the dependent fields first; the refresh can show the growth-stage
             // section again, so edit-only visibility is applied after all form updates.
             toggleGerminationSection();
-            document.getElementById('log-edit-id').value = log.id || String(plant.logs.indexOf(log));
+            document.getElementById('log-edit-id').value = String(log.id);
             const journalLocationSelect = document.getElementById('journal-plant-location');
             if (journalLocationSelect) journalLocationSelect.disabled = true;
             const journalLocationMenu = document.getElementById('journal-plant-location-menu');
@@ -7907,12 +7914,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (editId) {
                 const plant = plants.find(item => String(item.id) === String(plantId));
                 if (!plant || !Array.isArray(plant.logs)) return;
-                const existingLog = plant.logs.find((entry, index) => String(entry.id || index) === String(editId));
-                if (!existingLog) {
-                    alert('Could not find that growth log. Please close and reopen the journal, then try again.');
+                const matchingLogs = plant.logs.filter(entry => String(entry.id || '') === String(editId));
+                if (matchingLogs.length !== 1) {
+                    alert('Could not identify the original growth log uniquely. No new entry has been created. Please close and reopen the journal, then try editing again.');
                     return;
                 }
-                if (!existingLog.id) existingLog.id = 'log_' + Date.now();
+                const existingLog = matchingLogs[0];
                 existingLog.date = date;
                 existingLog.type = type;
                 existingLog.growthStage = growthStage;
