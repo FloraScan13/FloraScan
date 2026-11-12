@@ -7677,15 +7677,21 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 existingLog.feedReminderMode = type === 'Feed' ? document.getElementById('feed-reminder-mode').value : 'once';
                 existingLog.feedReminderInterval = type === 'Feed' && document.getElementById('feed-reminder-interval').value ? Number(document.getElementById('feed-reminder-interval').value) : '';
                 existingLog.feedReminderUnit = type === 'Feed' ? document.getElementById('feed-reminder-unit').value : 'days';
-                await saveFeedReminder(plant, existingLog);
+                // Persist the edited log (including its reminder fields) before syncing
+                // the separate email-reminder record. This keeps the journal badge visible
+                // after a reload, even when the reminder table update is delayed.
                 localStorage.setItem('flora_plants', JSON.stringify(plants));
                 markFloraSyncPending();
                 const synced = await syncLogToCloud(plantId, existingLog);
+                const reminderSaved = await saveFeedReminder(plant, existingLog);
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
                 renderJournalLogs(plant);
                 renderPlants();
                 cancelJournalLogEdit();
                 if (supabaseClient && currentUser && navigator.onLine && synced === false) {
                     alert('Your growth log edit was saved on this device, but cloud sync failed. It will retry when sync is available.');
+                } else if (!reminderSaved) {
+                    alert('Your growth log was updated, but the feed reminder could not be fully saved. Please check the reminder date and try again.');
                 } else {
                     alert('Growth log updated successfully.');
                 }
