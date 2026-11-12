@@ -6891,7 +6891,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const blocks = Array.from(saved.entries()).map(([savedBrand, items]) =>
                 savedBrand + ':\n' + items.map(item => '• ' + item).join('\n')
             ).join('\n');
-            textarea.value = [otherLines.join('\\n'), header, blocks].filter(Boolean).join('\\n');
+            textarea.value = [otherLines.join('\n'), header, blocks].filter(Boolean).join('\n');
             resizeJournalLogTextarea();
         }
 
