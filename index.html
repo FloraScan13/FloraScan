@@ -7598,26 +7598,34 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (perPlantMatch) setInput('volume-per-plant-unit', perPlantMatch[2]);
             toggleWateringCanFields();
             if (log.type === 'Feed') {
-                const feedBlock = logText.match(/(?:Mixed with:|Fed with:)\s*\\n([^\\n]+):\s*\\n((?:[•*-] [^\\n]+\\n?)+)/i);
-                if (feedBlock) {
+                // The saved journal text may contain real newlines or escaped "\\n" sequences.
+                // Normalize both formats, then restore the original brand, products and doses.
+                const normalizedFeedText = String(log.text || '').replace(/\\\\n/g, '\n');
+                const feedMatch = normalizedFeedText.match(/(?:Mixed with:|Fed with:)\\s*\\n([^\\n:]+):\\s*\\n([\\s\\S]*)/i);
+                if (feedMatch) {
+                    const brandName = feedMatch[1].trim();
                     const brandSelect = document.getElementById('nutrient-brand-select');
-                    brandSelect.value = feedBlock[1].trim();
-                    handleNutrientBrandChange();
-                    const brandObj = NUTRIENT_BRANDS_LIBRARY.find(b => b.brand === brandSelect.value);
-                    if (brandObj) {
-                        feedBlock[2].split('\\n').filter(Boolean).forEach(line => {
-                            const item = line.replace(/^[•*-]\s*/, '').match(/^(.*?)\s*\\((.*?)\\)$/);
-                            if (!item) return;
-                            const index = brandObj.products.findIndex(product => product.name === item[1].trim());
-                            if (index < 0) return;
-                            const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]')).find(el => el.value === item[1].trim());
-                            if (checkbox) checkbox.checked = true;
-                            const dosage = item[2].trim().match(/^([0-9.]+)\s*(ml\/L|ml|tsp)$/i);
-                            if (dosage) {
-                                setInput('dose-val-' + index, dosage[1]);
-                                setInput('dose-unit-' + index, dosage[2]);
-                            }
-                        });
+                    if (brandSelect) {
+                        brandSelect.value = brandName;
+                        handleNutrientBrandChange();
+                        const brandObj = NUTRIENT_BRANDS_LIBRARY.find(b => b.brand === brandName);
+                        if (brandObj) {
+                            feedMatch[2].split(/\\r?\\n/).forEach(line => {
+                                const item = line.trim().match(/^[•*-]\\s*(.*?)\\s*\\((.*?)\\)\\s*$/);
+                                if (!item) return;
+                                const productName = item[1].trim();
+                                const productIndex = brandObj.products.findIndex(product => product.name === productName);
+                                if (productIndex < 0) return;
+                                const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]'))
+                                    .find(el => el.value === productName);
+                                if (checkbox) checkbox.checked = true;
+                                const dosage = item[2].trim().match(/^([0-9]+(?:[.,][0-9]+)?)\\s*(ml\\/L|ml|tsp)$/i);
+                                if (dosage) {
+                                    setInput('dose-val-' + productIndex, dosage[1].replace(',', '.'));
+                                    setInput('dose-unit-' + productIndex, dosage[2].toLowerCase());
+                                }
+                            });
+                        }
                     }
                 }
             }
