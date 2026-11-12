@@ -9341,7 +9341,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     align-items: stretch !important;
   }
   #journal-header-actions > #journal-nfc-unassign-row,
-  #journal-header-actions > #journal-qr-tag-actions,
+  #journal-header-actions > #journal-qr-tag-actions:not(.hidden),
   #journal-header-actions #journal-nfc-tag-actions:not(.hidden),
   #journal-header-actions #journal-unassign-tag-actions:not(.hidden) {
     display: contents !important;
