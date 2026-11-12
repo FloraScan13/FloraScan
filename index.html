@@ -6118,7 +6118,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function startQrScan(purpose = 'journal') {
             if (getScannerPreference() !== 'qr') return;
-            qrScanPurpose = purpose === 'link' ? 'link' : 'journal';
+            qrScanPurpose = ['link', 'journal-link'].includes(purpose) ? purpose : 'journal';
             const chooser = document.getElementById('scan-options-overlay');
             if (chooser) chooser.classList.add('hidden');
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
