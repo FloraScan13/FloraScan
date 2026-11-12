@@ -4236,7 +4236,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         }
                         const { error: logError } = await supabaseClient.from('plant_logs').upsert({
                             id: log.id, plant_id: plant.id, user_id: currentUser.id,
-                            date: log.date, type: log.type, text: log.text, photos: photoPaths, feed_reminder_date: log.feedReminderDate || null,
+                            date: log.date, type: log.type, text: serializeJournalLogText(log), photos: photoPaths, feed_reminder_date: log.feedReminderDate || null,
                             feed_reminder_mode: log.feedReminderMode || 'once', feed_reminder_interval: log.feedReminderMode === 'repeat' ? (Number(log.feedReminderInterval) || null) : null, feed_reminder_unit: log.feedReminderUnit || 'days'
                         });
                         if (logError) throw logError;
@@ -4397,7 +4397,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             logs: await Promise.all((dbLogs || []).filter(l => l.plant_id === p.id).map(async l => {
                                 const photoPaths = Array.isArray(l.photos) ? l.photos : [];
                                 const photoUrls = await Promise.all(photoPaths.map(createJournalPhotoUrl));
-                                return { ...l, feedReminderDate: l.feed_reminder_date || '', feedReminderMode: l.feed_reminder_mode || 'once', feedReminderInterval: l.feed_reminder_interval || '', feedReminderUnit: l.feed_reminder_unit || 'days', photos: photoUrls.filter(Boolean), photoPaths };
+                                return { ...restoreJournalLogStage(l), feedReminderDate: l.feed_reminder_date || '', feedReminderMode: l.feed_reminder_mode || 'once', feedReminderInterval: l.feed_reminder_interval || '', feedReminderUnit: l.feed_reminder_unit || 'days', photos: photoUrls.filter(Boolean), photoPaths };
                             }))
                         })));
                         localStorage.setItem('flora_plants', JSON.stringify(plants));
@@ -4495,6 +4495,25 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
+        // Keep growth stage in the existing plant_logs.text field so this works
+        // with databases that do not yet have a dedicated growth_stage column.
+        function serializeJournalLogText(log) {
+            const cleanText = String(log.text || '').replace(/\n?<!-- FloraScanGrowthStage:[^>]* -->/g, '');
+            const stage = String(log.growthStage || '').trim();
+            return stage ? cleanText + (cleanText ? '\n' : '') + '<!-- FloraScanGrowthStage:' + stage.replace(/-->/g, '') + ' -->' : cleanText;
+        }
+
+        function restoreJournalLogStage(log) {
+            const text = String(log.text || '');
+            const marker = text.match(/<!-- FloraScanGrowthStage:([^>]*) -->/);
+            const growthStage = log.growth_stage || log.growthStage || (marker ? marker[1].trim() : '');
+            return {
+                ...log,
+                growthStage,
+                text: text.replace(/\n?<!-- FloraScanGrowthStage:[^>]* -->/g, '').trimEnd()
+            };
+        }
+
         async function syncLogToCloud(plantId, log) {
             if (!supabaseClient || !currentUser || !navigator.onLine) {
                 markFloraSyncPending();
@@ -4507,7 +4526,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     user_id: currentUser.id,
                     date: log.date,
                     type: log.type,
-                    text: log.text,
+                    text: serializeJournalLogText(log),
                     photos: Array.isArray(log.photoPaths) ? log.photoPaths : [],
                     feed_reminder_date: log.feedReminderDate || null,
                     feed_reminder_mode: log.feedReminderMode || 'once',
