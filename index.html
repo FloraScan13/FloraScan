@@ -4722,13 +4722,39 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const nameDropdown = document.getElementById('name-suggestions');
             const varietyDropdown = document.getElementById('variety-suggestions');
 
-            // Suggestions come exclusively from this user's saved plant library.
+            // Curated starter suggestions combined with varieties saved by this user.
+            const suggestedVarietiesByPlant = [
+                { match: ['tomato'], varieties: ["Gardener's Delight", 'Sungold', 'Moneymaker', 'Roma', 'Black Cherry', 'Costoluto Fiorentino'] },
+                { match: ['cucumber', 'gherkin'], varieties: ['Marketmore', 'Beth Alpha', 'Diva', 'Passandra', 'Crystal Lemon'] },
+                { match: ['pepper', 'chilli', 'chili'], varieties: ['California Wonder', 'Corno di Toro', 'Jalapeño', 'Cayenne', 'Hungarian Wax'] },
+                { match: ['carrot'], varieties: ['Nantes 2', 'Chantenay Red Cored', 'Autumn King 2', 'Purple Haze', 'Amsterdam Forcing'] },
+                { match: ['radish'], varieties: ['French Breakfast', 'Cherry Belle', 'Sparkler', 'Black Spanish'] },
+                { match: ['turnip'], varieties: ['Purple Top Milan', 'Snowball', 'Golden Ball'] },
+                { match: ['spinach'], varieties: ['Giant Winter', 'Perpetual Spinach', 'Medania', 'Matador'] },
+                { match: ['lettuce', 'salad', 'leafy green'], varieties: ['Little Gem', 'Marvel of Four Seasons', 'Lollo Rossa', 'Red Salad Bowl'] },
+                { match: ['kale'], varieties: ['Nero di Toscana', 'Red Russian', 'Dwarf Green Curled'] },
+                { match: ['onion'], varieties: ['Sturon', 'Red Baron', 'Ailsa Craig', 'Senshyu Yellow'] },
+                { match: ['garlic'], varieties: ['Solent Wight', 'Early Purple Wight'] },
+                { match: ['leek'], varieties: ['Musselburgh', 'Blue Solaise', 'Bandit'] },
+                { match: ['apple'], varieties: ['Discovery', 'Cox Orange Pippin', 'Egremont Russet', 'James Grieve'] },
+                { match: ['pear'], varieties: ['Conference', 'Concorde', 'Williams Bon Chretien'] },
+                { match: ['fig'], varieties: ['Brown Turkey', 'Brunswick', 'White Marseilles'] },
+                { match: ['strawberry'], varieties: ['Elsanta', 'Cambridge Favourite', 'Mara des Bois', 'Florence'] },
+                { match: ['raspberry'], varieties: ['Glen Ample', 'Autumn Bliss', 'Polka', 'Malling Jewel'] },
+                { match: ['blueberry'], varieties: ['Duke', 'Bluecrop', 'Chandler'] },
+                { match: ['aubergine', 'eggplant'], varieties: ['Black Beauty', 'Moneymaker', 'Listada de Gandia'] },
+                { match: ['sweetcorn', 'maize', 'corn'], varieties: ['Swift', 'Golden Bantam', 'Lark', 'Incredible'] },
+                { match: ['bean', 'beans'], varieties: ['Blue Lake', 'Cobra', 'Borlotto', 'Purple Teepee'] },
+                { match: ['pea', 'peas'], varieties: ['Kelvedon Wonder', 'Meteor', 'Hurst Green Shaft', 'Sugar Snap'] },
+                { match: ['brussels sprout', 'sprout'], varieties: ['Brilliant', 'Crispus', 'Bosworth'] },
+                { match: ['basil'], varieties: ['Genovese', 'Greek', 'Thai'] }
+            ];
+
             function getPlantSuggestionLibrary() {
                 return getPersonalPlantLibrary()
                     .filter(plant => String(plant.name || '').trim())
                     .map(plant => ({
                         name: String(plant.name).trim(),
-                        defaultKey: 'cucumber',
                         varieties: [...new Map((plant.varieties || [])
                             .map(value => String(value || '').trim())
                             .filter(Boolean)
@@ -4736,54 +4762,24 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     }));
             }
 
-            nameInput.addEventListener('input', () => {
-                const query = nameInput.value.trim().toLocaleLowerCase();
-                if (!query) { nameDropdown.classList.add('hidden'); return; }
+            function getSuggestedVarieties(plantName) {
+                const normalized = String(plantName || '').trim().toLocaleLowerCase();
+                const builtIn = suggestedVarietiesByPlant.find(item =>
+                    item.match.some(term => normalized === term || normalized.includes(term))
+                )?.varieties || [];
+                const saved = getPlantSuggestionLibrary().find(item =>
+                    item.name.toLocaleLowerCase() === normalized
+                )?.varieties || [];
+                return [...new Map([...builtIn, ...saved].map(value => [value.toLocaleLowerCase(), value])).values()];
+            }
 
-                const matches = getPlantSuggestionLibrary().filter(item =>
-                    item.name.toLocaleLowerCase().includes(query) ||
-                    item.varieties.some(value => value.toLocaleLowerCase().includes(query))
-                ).slice(0, 10);
-
-                nameDropdown.replaceChildren();
-                if (!matches.length) { nameDropdown.classList.add('hidden'); return; }
-
-                matches.forEach(item => {
-                    const option = document.createElement('button');
-                    option.type = 'button';
-                    option.className = 'w-full px-3.5 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-xs flex justify-between items-center border-b border-slate-100 dark:border-slate-700/50 last:border-0 text-left';
-                    const details = document.createElement('span');
-                    details.className = 'flex items-center space-x-2.5 min-w-0';
-                    const icon = document.createElement('span');
-                    icon.className = 'w-7 h-7 rounded-lg crop-badge-container p-0.5 flex items-center justify-center flex-shrink-0';
-                    icon.innerHTML = MONOCHROME_VEG_SVGS.cucumber;
-                    const label = document.createElement('span');
-                    label.className = 'font-semibold text-slate-800 dark:text-slate-100';
-                    label.textContent = item.name;
-                    details.append(icon, label);
-                    const count = document.createElement('span');
-                    count.className = 'text-[10px] text-emerald-600 dark:text-emerald-400 font-mono pl-2 flex-shrink-0';
-                    count.textContent = item.varieties.length + ' varieties';
-                    option.append(details, count);
-                    option.addEventListener('click', () => selectPlantName(item.name));
-                    nameDropdown.appendChild(option);
-                });
-                nameDropdown.classList.remove('hidden');
-            });
-
-            varietyInput.addEventListener('input', () => {
+            function renderVarietySuggestions() {
                 const query = varietyInput.value.trim().toLocaleLowerCase();
-                const selectedName = nameInput.value.trim().toLocaleLowerCase();
-                if (!query) { varietyDropdown.classList.add('hidden'); return; }
-
-                const library = getPlantSuggestionLibrary();
-                const matchedPlant = library.find(item => item.name.toLocaleLowerCase() === selectedName);
-                let pool = matchedPlant ? matchedPlant.varieties : library.flatMap(item => item.varieties);
-                pool = [...new Map(pool.map(value => [value.toLocaleLowerCase(), value])).values()];
-                const matches = pool.filter(value => value.toLocaleLowerCase().includes(query)).slice(0, 10);
-
+                const selectedName = nameInput.value.trim();
+                const matches = getSuggestedVarieties(selectedName)
+                    .filter(value => !query || value.toLocaleLowerCase().includes(query)).slice(0, 10);
                 varietyDropdown.replaceChildren();
-                if (!matches.length) { varietyDropdown.classList.add('hidden'); return; }
+                if (!selectedName || !matches.length) { varietyDropdown.classList.add('hidden'); return; }
 
                 matches.forEach(varName => {
                     const option = document.createElement('button');
@@ -4794,7 +4790,43 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     varietyDropdown.appendChild(option);
                 });
                 varietyDropdown.classList.remove('hidden');
+            }
+
+            nameInput.addEventListener('input', () => {
+                const query = nameInput.value.trim().toLocaleLowerCase();
+                if (!query) { nameDropdown.classList.add('hidden'); varietyDropdown.classList.add('hidden'); return; }
+
+                const matches = getPlantSuggestionLibrary().filter(item =>
+                    item.name.toLocaleLowerCase().includes(query) ||
+                    item.varieties.some(value => value.toLocaleLowerCase().includes(query))
+                ).slice(0, 10);
+                nameDropdown.replaceChildren();
+                if (!matches.length) nameDropdown.classList.add('hidden');
+                else {
+                    matches.forEach(item => {
+                        const option = document.createElement('button');
+                        option.type = 'button';
+                        option.className = 'w-full px-3.5 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-xs flex justify-between items-center border-b border-slate-100 dark:border-slate-700/50 last:border-0 text-left';
+                        const label = document.createElement('span');
+                        label.className = 'font-semibold text-slate-800 dark:text-slate-100';
+                        label.textContent = item.name;
+                        const count = document.createElement('span');
+                        count.className = 'text-[10px] text-emerald-600 dark:text-emerald-400 font-mono pl-2 flex-shrink-0';
+                        count.textContent = item.varieties.length + ' saved varieties';
+                        option.append(label, count);
+                        option.addEventListener('click', () => selectPlantName(item.name));
+                        nameDropdown.appendChild(option);
+                    });
+                    nameDropdown.classList.remove('hidden');
+                }
+                if (getSuggestedVarieties(nameInput.value).length) {
+                    varietyInput.value = '';
+                    renderVarietySuggestions();
+                }
             });
+
+            varietyInput.addEventListener('input', renderVarietySuggestions);
+            varietyInput.addEventListener('focus', renderVarietySuggestions);
 
             document.addEventListener('click', (e) => {
                 if (!nameInput.contains(e.target) && !nameDropdown.contains(e.target)) nameDropdown.classList.add('hidden');
