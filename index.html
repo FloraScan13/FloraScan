@@ -7975,7 +7975,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 document.getElementById('nutrient-watering-can-enabled').checked = false;
                 setInput('watering-can-fill', '');
             }
-            const waterFillMatch = logText.match(/Watering can filled with ([0-9.]+) (Liters|Gallons|Milliliters) pure water/i);
+            const waterFillMatch = logText.match(/Tank fill volume:\s*([0-9.]+)\s*(Liters|Gallons|Milliliters)/i)
+                || logText.match(/Watering can filled with ([0-9.]+) (Liters|Gallons|Milliliters) pure water/i);
             setInput('tank-volume-amount', waterFillMatch?.[1]);
             if (waterFillMatch) setInput('tank-volume-unit', waterFillMatch[2]);
             const perPlantMatch = logText.match(/(?:Each plant fed with:|Watered this plant with) ([0-9.]+) (Milliliters|Liters|Gallons)/i);
