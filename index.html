@@ -6762,7 +6762,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const checkbox = Array.from(productList.querySelectorAll('input[name="nutrient-product-check"]'))
                     .find(input => input.value.trim().toLowerCase() === product.name.trim().toLowerCase());
                 if (checkbox) checkbox.checked = false;
-                setInput('dose-val-' + index, '');
+                const amountInput = document.getElementById('dose-val-' + index);
+                if (amountInput) amountInput.value = '';
                 const unit = document.getElementById('dose-unit-' + index);
                 if (unit) unit.value = 'ml';
             });
@@ -6777,7 +6778,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (checkbox) checkbox.checked = true;
                 const dosage = saved.dosage.match(/^([0-9]*\.?[0-9]+)\s*(ml\s*\/\s*L|ml|tsp)$/i);
                 if (dosage) {
-                    setInput('dose-val-' + productIndex, dosage[1]);
+                    const amountInput = document.getElementById('dose-val-' + productIndex);
+                    if (amountInput) amountInput.value = dosage[1];
                     const unit = document.getElementById('dose-unit-' + productIndex);
                     if (unit) {
                         const unitValue = dosage[2].replace(/\s+/g, '').toLowerCase();
