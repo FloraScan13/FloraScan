@@ -4798,8 +4798,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 renderVarietySuggestions(true);
             });
 
-            varietyInput.addEventListener('input', renderVarietySuggestions);
-            varietyInput.addEventListener('focus', renderVarietySuggestions);
+            // Show all saved varieties as soon as the plant name is entered
+            // or the variety field receives focus; typing filters the list.
+            varietyInput.addEventListener('input', () => renderVarietySuggestions(false));
+            varietyInput.addEventListener('focus', () => renderVarietySuggestions(true));
 
             document.addEventListener('click', (e) => {
                 if (!nameInput.contains(e.target) && !nameDropdown.contains(e.target)) nameDropdown.classList.add('hidden');
