@@ -3182,7 +3182,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <div class="flex gap-2"><button type="button" onclick="saveJournalPlantDetails()" class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">Save changes</button><button type="button" onclick="toggleJournalPlantDetailsEdit(false)" class="px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold">Cancel</button></div>
                                 </div>
                             </div>
-                            <div class="w-full grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 mt-1 pt-2 border-t border-slate-200 dark:border-slate-700">
+                            <div id="journal-header-actions" class="w-full grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 mt-1 pt-2 border-t border-slate-200 dark:border-slate-700">
                                 <button type="button" onclick="duplicatePlantJournal(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Create a new journal using this plant's details"><i class="fa-solid fa-copy text-emerald-700"></i> Duplicate Plant</button>
                                 <button type="button" onclick="downloadPlantJournalPDF(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Export this plant journal as a PDF"><i class="fa-solid fa-file-pdf text-black" aria-hidden="true"></i> Download PDF</button>
                                 <div id="journal-nfc-unassign-row" class="col-span-2 sm:col-span-1" style="display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; align-items:center; gap:8px; width:auto; min-width:0; flex:0 0 auto;">
@@ -9330,4 +9330,26 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     .location-group-plants .crop-badge-container {
         display: none !important;
     }
+</style>
+
+
+<style id="flora-mobile-equal-journal-header-buttons">
+@media (max-width: 639px) {
+  #journal-header-actions { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; align-items:stretch !important; }
+  #journal-header-actions > #journal-nfc-unassign-row,
+  #journal-header-actions > #journal-qr-tag-actions { display:contents !important; }
+  #journal-header-actions #journal-nfc-tag-actions,
+  #journal-header-actions #journal-unassign-tag-actions { display:contents !important; }
+  #journal-header-actions > button,
+  #journal-header-actions #journal-nfc-tag-actions > button,
+  #journal-header-actions #journal-unassign-tag-actions > button,
+  #journal-header-actions #journal-qr-tag-actions > button {
+    width:100% !important; min-width:0 !important; height:42px !important; min-height:42px !important;
+    box-sizing:border-box !important; justify-content:center !important; white-space:normal !important;
+    padding:8px 6px !important; font-size:11px !important; line-height:1.2 !important;
+  }
+  #journal-header-actions #journal-nfc-status,
+  #journal-header-actions #journal-unassign-tag-status,
+  #journal-header-actions #journal-qr-status { grid-column:1 / -1 !important; }
+}
 </style>
