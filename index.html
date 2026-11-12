@@ -3121,6 +3121,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <button type="button" onclick="startQrScan('journal-link')" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><i class="fa-solid fa-qrcode text-[#B0466C]"></i> Add QR Code</button>
                                     <span id="journal-qr-status" class="col-span-2 sm:col-span-1 text-xs text-slate-500" role="status" aria-live="polite"></span>
                                 </div>
+                                <div id="journal-unassign-tag-actions" class="contents hidden">
+                                    <button type="button" onclick="unassignJournalPlantTag()" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-rose-50 text-[#B0466C] border border-rose-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><i class="fa-solid fa-link-slash"></i> Unassign tag</button>
+                                    <span id="journal-unassign-tag-status" class="col-span-2 sm:col-span-1 text-xs text-slate-500" role="status" aria-live="polite"></span>
+                                </div>
                             </div>
                         </div>
                         <p id="journal-initial-notes" class="text-xs text-slate-600 dark:text-slate-400 italic pt-1"></p>
@@ -5877,6 +5881,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const currentPlant = currentPlantId ? plants.find(item => String(item.id) === String(currentPlantId)) : null;
             const hasQrCode = !!String(currentPlant?.qrCodeValue || '').trim();
             const hasNfcTag = !!currentPlant?.nfcTagLinked;
+            const unassignActions = document.getElementById('journal-unassign-tag-actions');
+            if (unassignActions) unassignActions.classList.toggle('hidden', !(hasQrCode || hasNfcTag));
             if (journalActions) journalActions.classList.toggle('hidden', preference !== 'nfc' || hasQrCode);
             const nfcButtonLabel = document.getElementById('journal-nfc-button-label');
             if (nfcButtonLabel) nfcButtonLabel.textContent = hasNfcTag ? 'Rewrite NFC Tag' : 'Add NFC Tag';
@@ -7033,6 +7039,47 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (document.getElementById('log-edit-id')?.value) updateJournalEditLivePreview();
         }
 
+        async function unassignJournalPlantTag() {
+            const plantId = document.getElementById('log-plant-id')?.value;
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            const status = document.getElementById('journal-unassign-tag-status');
+            if (!plant) {
+                if (status) status.textContent = 'Could not find this plant. Close and reopen its journal.';
+                return;
+            }
+            const hasQrCode = !!String(plant.qrCodeValue || '').trim();
+            const hasNfcTag = !!plant.nfcTagLinked;
+            if (!hasQrCode && !hasNfcTag) {
+                if (status) status.textContent = 'There is no assigned tag to remove.';
+                return;
+            }
+            const tagName = hasQrCode && hasNfcTag ? 'QR code and NFC tag' : (hasQrCode ? 'QR code' : 'NFC tag');
+            if (!confirm('Unassign the ' + tagName + ' from ' + plant.name + '? The physical NFC tag will not be erased.')) return;
+
+            if (hasQrCode) delete plant.qrCodeValue;
+            if (hasNfcTag) delete plant.nfcTagLinked;
+            localStorage.setItem('flora_plants', JSON.stringify(plants));
+            markFloraSyncPending();
+            if (status) status.textContent = 'Tag assignment removed. Syncing…';
+            await syncPlantToCloud(plant);
+
+            const preference = getScannerPreference();
+            const nfcActions = document.getElementById('journal-nfc-tag-actions');
+            const qrActions = document.getElementById('journal-qr-tag-actions');
+            const unassignActions = document.getElementById('journal-unassign-tag-actions');
+            if (nfcActions) nfcActions.classList.toggle('hidden', preference !== 'nfc');
+            if (qrActions) qrActions.classList.toggle('hidden', preference !== 'qr');
+            if (unassignActions) unassignActions.classList.add('hidden');
+            const nfcButtonLabel = document.getElementById('journal-nfc-button-label');
+            if (nfcButtonLabel) nfcButtonLabel.textContent = 'Add NFC Tag';
+            const tagTypeRow = document.getElementById('journal-tag-type-row');
+            if (tagTypeRow) tagTypeRow.classList.add('hidden');
+            const tagTypeLabel = document.getElementById('journal-tag-type');
+            if (tagTypeLabel) tagTypeLabel.textContent = '';
+            if (status) status.textContent = 'Tag unassigned from ' + plant.name + '.';
+            renderPlants();
+        }
+
         async function rewriteJournalPlantNfcTag() {
             if (getScannerPreference() !== 'nfc') return;
             const status = document.getElementById('journal-nfc-status');
@@ -7237,6 +7284,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (nfcButtonLabel) nfcButtonLabel.textContent = p.nfcTagLinked ? 'Rewrite NFC Tag' : 'Add NFC Tag';
             const qrTagActions = document.getElementById('journal-qr-tag-actions');
             if (qrTagActions) qrTagActions.classList.toggle('hidden', getScannerPreference() !== 'qr' || !!String(p.qrCodeValue || '').trim() || !!p.nfcTagLinked);
+            const unassignTagActions = document.getElementById('journal-unassign-tag-actions');
+            if (unassignTagActions) unassignTagActions.classList.toggle('hidden', !(String(p.qrCodeValue || '').trim() || p.nfcTagLinked));
+            const unassignTagStatus = document.getElementById('journal-unassign-tag-status');
+            if (unassignTagStatus) unassignTagStatus.textContent = '';
             const qrStatus = document.getElementById('journal-qr-status');
             if (qrStatus) qrStatus.textContent = '';
             const journalLocationButton = document.getElementById('journal-plant-location');
