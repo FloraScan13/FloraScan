@@ -9321,3 +9321,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         background-image: none !important;
     }
 </style>
+
+
+<style id="flora-no-plant-icons">
+    /* Keep the interface text-led: hide crop illustrations, icon picker, and decorative leaf marks. */
+    .crop-badge-container,
+    #icon-picker-grid,
+    #journal-icon-container,
+    #mobile-welcome-screen .welcome-mark,
+    #mobile-refresh-screen .refresh-mark,
+    #tab-plants > i {
+        display: none !important;
+    }
+</style>
