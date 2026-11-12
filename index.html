@@ -5860,7 +5860,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                         </div>
                         <div class="p-5 flex space-x-4 items-center" style="background-color: #f7f6f0;">
-                            <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
+                            <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${String(p.qrCodeValue || '').trim() ? '<i class="scan-tag-icon fa-solid fa-qrcode text-3xl text-slate-600 dark:text-slate-300" title="QR code tag" aria-label="QR code tag"></i>' : (p.nfcTagLinked ? '<img class="scan-tag-icon w-9 h-9 object-contain" src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC tag" title="NFC tag" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" />' : svgMarkup)}</div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
 
@@ -9326,8 +9326,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     /* Hide crop-specific illustrations only; preserve Flora Scan branding and navigation icons. */
     #icon-picker-grid,
     #journal-icon-container,
-    #plants-grid .crop-badge-container,
-    .location-group-plants .crop-badge-container {
+    #plants-grid .crop-badge-container:not(:has(.scan-tag-icon)),
+    .location-group-plants .crop-badge-container:not(:has(.scan-tag-icon)) {
         display: none !important;
     }
 </style>
