@@ -6722,24 +6722,53 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return { product: brandObj.products[idx], amount: customAmount ? customAmount + ' ' + customUnit : brandObj.products[idx].dosage };
             }).filter(item => item.product);
             if (!selectedProducts.length) return;
+
             const logTextarea = document.getElementById('log-text');
             const currentText = logTextarea.value.split(String.fromCharCode(92) + 'n').join('\n').trim();
-            const nutrientLines = selectedProducts.map(item => '• ' + item.product.name + ' (' + item.amount + ')');
-            const brandBlock = brandName + ':\n' + nutrientLines.join('\n');
+            const lines = currentText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+            const brandNames = new Set(NUTRIENT_BRANDS_LIBRARY.map(brand => brand.brand.toLowerCase()));
+            const savedBrands = new Map();
+            const otherLines = [];
+            let activeBrand = null;
+
+            // Read and retain every existing brand/product block instead of replacing it.
+            lines.forEach(line => {
+                if (/^Watering Can:\s*/i.test(line) || /^(?:Mixed with:|Fed with:)$/i.test(line)) return;
+                const brandHeader = line.match(/^(.*?):\s*$/);
+                if (brandHeader && brandNames.has(brandHeader[1].toLowerCase())) {
+                    activeBrand = NUTRIENT_BRANDS_LIBRARY.find(brand => brand.brand.toLowerCase() === brandHeader[1].toLowerCase()).brand;
+                    if (!savedBrands.has(activeBrand)) savedBrands.set(activeBrand, []);
+                    return;
+                }
+                if (activeBrand && /^[•*-]\s*/.test(line)) {
+                    savedBrands.get(activeBrand).push(line.replace(/^[•*-]\s*/, ''));
+                } else {
+                    activeBrand = null;
+                    otherLines.push(line);
+                }
+            });
+
+            // Merge selected products into this brand. Existing products from other brands
+            // and unselected products from this brand remain intact; matching products update.
+            const existingProducts = savedBrands.get(brandName) || [];
+            selectedProducts.forEach(item => {
+                const productLine = item.product.name + ' (' + item.amount + ')';
+                const index = existingProducts.findIndex(line => line.match(/^(.*?)\s*\((.*?)\)\s*$/)?.[1].trim().toLowerCase() === item.product.name.toLowerCase());
+                if (index >= 0) existingProducts[index] = productLine;
+                else existingProducts.push(productLine);
+            });
+            savedBrands.set(brandName, existingProducts);
+
             const wateringCanSummary = getWateringCanSummary();
             if (wateringCanSummary === null) return;
-            const existingPrefix = currentText
-                .replace(/^Watering Can:\s*[^\n]+\n?/i, '')
-                .replace(/^Mixed with:\s*\n?/i, '')
-                .replace(/^Fed with:\s*\n?/i, '')
-                .trim();
             const header = wateringCanSummary
                 ? wateringCanSummary + '\nMixed with:\n'
                 : 'Fed with:\n';
-            const retainedText = existingPrefix && !/^[^\n]+:\s*\n[•*-]/.test(existingPrefix)
-                ? existingPrefix + '\n'
-                : '';
-            logTextarea.value = retainedText + header + brandBlock;
+            const retainedOtherText = otherLines.join('\n');
+            const nutrientBlocks = Array.from(savedBrands.entries()).map(([savedBrand, products]) =>
+                savedBrand + ':\n' + products.map(product => '• ' + product).join('\n')
+            ).join('\n');
+            logTextarea.value = [retainedOtherText, header + nutrientBlocks].filter(Boolean).join('\n');
         }
 
         async function rewriteJournalPlantNfcTag() {
