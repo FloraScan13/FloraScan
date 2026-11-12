@@ -7854,14 +7854,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-text').value = log.type === 'Harvest' ? stripHarvestLogLine(log.text) : (log.text || '');
             document.getElementById('feed-reminder-date').value = log.feedReminderDate || '';
             restoreFeedReminderInterval(log);
-            // In edit mode expose the saved schedule controls immediately so the
-            // existing values are visible in their original input fields.
+            // Restore the saved schedule values above, but keep the schedule panel
+            // collapsed on opening edit mode. The Feed Schedule toggle remains available
+            // so users can expand it and adjust the retained settings when needed.
             const feedScheduleSection = document.getElementById('feed-reminder-section');
             const feedScheduleToggle = document.getElementById('feed-reminder-toggle');
-            if (log.type === 'Feed' && feedScheduleSection) {
-                feedScheduleSection.classList.remove('hidden');
-                if (feedScheduleToggle) feedScheduleToggle.setAttribute('aria-expanded', 'true');
-            }
+            if (feedScheduleSection) feedScheduleSection.classList.add('hidden');
+            if (feedScheduleToggle) feedScheduleToggle.setAttribute('aria-expanded', 'false');
             toggleGerminationSection();
             document.getElementById('journal-log-form-title').textContent = 'Edit Growth Log Entry';
             document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
