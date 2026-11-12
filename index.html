@@ -7967,10 +7967,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (type === 'Water' || type === 'Feed') {
                     const replaceDetailLine = (source, pattern, replacementLine) => {
                         const lines = String(source || '').split(/\r?\n/);
-                        const matchingIndex = lines.findIndex(line => pattern.test(line.trim()));
-                        if (matchingIndex >= 0) {
-                            if (replacementLine) lines[matchingIndex] = replacementLine;
-                            else lines.splice(matchingIndex, 1);
+                        const matchingIndexes = [];
+                        lines.forEach((line, index) => {
+                            if (pattern.test(line.trim())) matchingIndexes.push(index);
+                        });
+                        if (matchingIndexes.length) {
+                            // Replace the first matching detail and remove any duplicates
+                            // left by earlier saves, so repeated edits stay idempotent.
+                            const firstIndex = matchingIndexes[0];
+                            if (replacementLine) lines[firstIndex] = replacementLine;
+                            for (let i = matchingIndexes.length - 1; i >= (replacementLine ? 1 : 0); i--) {
+                                lines.splice(matchingIndexes[i], 1);
+                            }
                         } else if (replacementLine) {
                             lines.push(replacementLine);
                         }
@@ -7997,7 +8005,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         type === 'Water' && tankAmount ? 'Watering can filled with ' + tankAmount + ' ' + tankUnit + ' pure water.' : '');
                     journalNotes = replaceDetailLine(journalNotes, /^Watered this plant with\b/i,
                         type === 'Water' && perPlantAmount ? 'Watered this plant with ' + perPlantAmount + ' ' + perPlantUnit + '.' : '');
-                    journalNotes = replaceDetailLine(journalNotes, /^Each plant fed with:\b/i,
+                    journalNotes = replaceDetailLine(journalNotes, /^Each plant fed with:/i,
                         type === 'Feed' && wateringCanEnabled && perPlantAmount ? 'Each plant fed with: ' + perPlantAmount + ' ' + perPlantUnit + ' (includes runoff).' : '');
 
                     // The feed watering-can fill is stored in its own summary line.
