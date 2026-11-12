@@ -5070,7 +5070,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         async function saveOutdoorLocationPostcode(location, rawPostcode) {
             if (!plantLocations.includes(location) || locationTypes[location] !== 'outdoor') return;
-            const postcode = String(rawPostcode || '').trim().toUpperCase().replace(/\\s+/g, ' ');
+            const postcode = String(rawPostcode || '').trim().toUpperCase().replace(/\s+/g, ' ');
             if (!postcode) {
                 delete locationPostcodes[location];
                 delete locationCoordinates[location];
@@ -6885,7 +6885,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                     // Add this week's rainfall to the running total already recorded in this plant's journal.
                     // Each journal is calculated independently so the same location-wide rainfall is not double-counted across plants.
-                    const weeklyRainfallPattern = /Rainfall for (\\d{4}-\\d{2}-\\d{2}) to (\\d{4}-\\d{2}-\\d{2}): ([\\d.]+) mm total/;
+                    const weeklyRainfallPattern = /Rainfall for (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2}): ([\d.]+) mm total/;
                     const previousWeeks = plant.logs
                         .filter(log => log.type === 'Weather')
                         .map(log => {
@@ -7009,7 +7009,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (setupSection && setupTitle && setupText) {
                 setupTitle.textContent = plantLocation ? escapeHtml(plantLocation) + ' setup' : 'Location setup';
                 setupText.textContent = sharedLocationDetails
-                    .split(/\\r?\\n|\\s*[;•]\\s*/)
+                    .split(/\\r?\\n|\s*[;•]\s*/)
                     .map(detail => detail.trim())
                     .filter(Boolean)
                     .join('\\n');
@@ -7575,11 +7575,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const logText = String(log.text || '').replace(/\\n/g, '\n');
             // Restore values that were previously entered in the journal form.
             const setInput = (id, value) => { const el = document.getElementById(id); if (el) el.value = value || ''; };
-            setInput('log-germinated-amount', log.germinatedAmount || (logText.match(/Germination recorded: (\\d+)/i) || [])[1]);
-            setInput('log-failed-seed-amount', log.failedSeedAmount || (logText.match(/Failed germination recorded: (\\d+)/i) || [])[1]);
-            setInput('log-cuttings-rooted-amount', log.rootedCuttingsAmount || (logText.match(/(\\d+) cuttings? ha(?:s|ve) rooted/i) || [])[1]);
-            setInput('log-failed-cutting-amount', log.failedCuttingsAmount || (logText.match(/Failed rooting recorded: (\\d+)/i) || [])[1]);
-            const mediumMatch = logText.match(/\\(Growing medium changed from .*? to (.*?)\\.\\)/i);
+            setInput('log-germinated-amount', log.germinatedAmount || (logText.match(/Germination recorded: (\d+)/i) || [])[1]);
+            setInput('log-failed-seed-amount', log.failedSeedAmount || (logText.match(/Failed germination recorded: (\d+)/i) || [])[1]);
+            setInput('log-cuttings-rooted-amount', log.rootedCuttingsAmount || (logText.match(/(\d+) cuttings? ha(?:s|ve) rooted/i) || [])[1]);
+            setInput('log-failed-cutting-amount', log.failedCuttingsAmount || (logText.match(/Failed rooting recorded: (\d+)/i) || [])[1]);
+            const mediumMatch = logText.match(/\\(Growing medium changed from .*? to (.*?)\.\\)/i);
             setInput('log-growth-medium', log.growthMedium || (mediumMatch || [])[1]);
             const wateringCanMatch = logText.match(/Watering Can: ([0-9.]+) (L|gal|ml) water/i);
             if (wateringCanMatch) {
@@ -7598,7 +7598,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (perPlantMatch) setInput('volume-per-plant-unit', perPlantMatch[2]);
             toggleWateringCanFields();
             if (log.type === 'Feed') {
-                const feedBlock = logText.match(/(?:Mixed with:|Fed with:)\\s*\\n([^\\n]+):\\s*\\n((?:[•*-] [^\\n]+\\n?)+)/i);
+                const feedBlock = logText.match(/(?:Mixed with:|Fed with:)\s*\\n([^\\n]+):\s*\\n((?:[•*-] [^\\n]+\\n?)+)/i);
                 if (feedBlock) {
                     const brandSelect = document.getElementById('nutrient-brand-select');
                     brandSelect.value = feedBlock[1].trim();
@@ -7606,13 +7606,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const brandObj = NUTRIENT_BRANDS_LIBRARY.find(b => b.brand === brandSelect.value);
                     if (brandObj) {
                         feedBlock[2].split('\\n').filter(Boolean).forEach(line => {
-                            const item = line.replace(/^[•*-]\\s*/, '').match(/^(.*?)\\s*\\((.*?)\\)$/);
+                            const item = line.replace(/^[•*-]\s*/, '').match(/^(.*?)\s*\\((.*?)\\)$/);
                             if (!item) return;
                             const index = brandObj.products.findIndex(product => product.name === item[1].trim());
                             if (index < 0) return;
                             const checkbox = Array.from(document.querySelectorAll('input[name="nutrient-product-check"]')).find(el => el.value === item[1].trim());
                             if (checkbox) checkbox.checked = true;
-                            const dosage = item[2].trim().match(/^([0-9.]+)\\s*(ml\\/L|ml|tsp)$/i);
+                            const dosage = item[2].trim().match(/^([0-9.]+)\s*(ml\/L|ml|tsp)$/i);
                             if (dosage) {
                                 setInput('dose-val-' + index, dosage[1]);
                                 setInput('dose-unit-' + index, dosage[2]);
@@ -7630,7 +7630,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('log-text').value = log.type === 'Harvest' ? stripHarvestLogLine(log.text) : (log.text || '');
             document.getElementById('feed-reminder-date').value = log.feedReminderDate || '';
             restoreFeedReminderInterval(log);
-            document.getElementById('log-growth-medium').value = '';
             toggleGerminationSection();
             document.getElementById('journal-log-form-title').textContent = 'Edit Growth Log Entry';
             document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
