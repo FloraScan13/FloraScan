@@ -3486,117 +3486,38 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     </div>
 
     <script>
-        // FloraScan's original, self-contained botanical icon collection.
-        // Every illustration is generated as inline SVG: no image URLs, network requests, or permissions.
-        const FLORA_ICON_SPECS = [
-            ["cucumber","Cucumber",["cucumber","gherkin","pickle"],"long","vine"],
-            ["tomato","Tomato",["tomato","cherry tomato"],"round","star"],
-            ["pepper","Pepper",["pepper","chilli","chili","capsicum"],"bell","crown"],
-            ["carrot","Carrot",["carrot"],"root","frond"],
-            ["radish","Radish",["radish"],"rootRound","frond"],
-            ["beetroot","Beetroot",["beetroot","beet"],"rootRound","heart"],
-            ["turnip","Turnip",["turnip","swede","rutabaga"],"rootRound","fan"],
-            ["parsnip","Parsnip",["parsnip"],"root","frond"],
-            ["lettuce","Lettuce",["lettuce","salad"],"rosette","ruffle"],
-            ["spinach","Spinach",["spinach"],"leaf","vein"],
-            ["kale","Kale",["kale"],"leaf","ruffle"],
-            ["chard","Chard",["chard","swiss chard"],"leaf","stripe"],
-            ["cabbage","Cabbage",["cabbage"],"round","layer"],
-            ["broccoli","Broccoli",["broccoli"],"tree","cluster"],
-            ["cauliflower","Cauliflower",["cauliflower"],"tree","cloud"],
-            ["kohlrabi","Kohlrabi",["kohlrabi"],"bulb","rays"],
-            ["onion","Onion",["onion"],"bulb","rings"],
-            ["garlic","Garlic",["garlic"],"clove","rays"],
-            ["leek","Leek",["leek"],"stalk","stripe"],
-            ["spring-onion","Spring onion",["spring onion","scallion"],"stalk","stripe"],
-            ["potato","Potato",["potato"],"tuber","eyes"],
-            ["sweet-potato","Sweet potato",["sweet potato"],"root","rings"],
-            ["aubergine","Aubergine",["aubergine","eggplant"],"pear","crown"],
-            ["courgette","Courgette",["courgette","zucchini"],"long","star"],
-            ["pumpkin","Pumpkin",["pumpkin"],"pumpkin","ribs"],
-            ["squash","Squash",["squash","marrow"],"round","ribs"],
-            ["sweetcorn","Sweetcorn",["sweetcorn","sweet corn","maize","corn"],"cob","kernels"],
-            ["peas","Peas",["pea","peas","mange tout","sugar snap"],"pod","seeds"],
-            ["broad-bean","Broad bean",["broad bean","fava"],"pod","seeds"],
-            ["runner-bean","Runner bean",["runner bean"],"pod","seeds"],
-            ["bean","French bean",["bean","beans","green bean"],"pod","seeds"],
-            ["fennel","Fennel",["fennel"],"bulb","frond"],
-            ["celery","Celery",["celery"],"stalk","stripe"],
-            ["asparagus","Asparagus",["asparagus"],"spear","scales"],
-            ["artichoke","Artichoke",["artichoke"],"bud","scales"],
-            ["strawberry","Strawberry",["strawberry"],"berry","seeds"],
-            ["raspberry","Raspberry",["raspberry"],"cluster","seeds"],
-            ["blueberry","Blueberry",["blueberry"],"berry","crown"],
-            ["blackberry","Blackberry",["blackberry"],"cluster","seeds"],
-            ["grape","Grape",["grape"],"cluster","berries"],
-            ["fig","Fig",["fig"],"pear","seeds"],
-            ["apple","Apple",["apple"],"round","star"],
-            ["pear","Pear",["pear"],"pear","leaf"],
-            ["plum","Plum",["plum","damson"],"berry","bloom"],
-            ["herb","Herbs",["herb","basil","mint","parsley","coriander","cilantro","thyme","oregano","sage","rosemary","chives","dill"],"sprig","vein"]
+        // High-contrast, Monochrome / Black & White Vegetable Vector SVG Artwork
+        // Clean, consistent Garden Fresh line-art icons.
+        // Real crop photographs served from Wikimedia Commons. Individual file licences and attribution are available on each linked Commons file page.
+        const MONOCHROME_VEG_SVGS = {
+            cucumber: `<img src="./assets/assets%3Aplants%3Acucumber.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            tomato: `<img src="./assets/assets%3Aplants%3Atomato.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            pepper: `<img src="./assets/assets%3Aplants%3Apepper.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            carrot: `<img src="./assets/assets%3Aplants%3Acarrot.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            greens: `<img src="./assets/assets%3Aplants%3Agreens.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            onion: `<img src="./assets/assets%3Aplants%3Aonion.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            fig: `<img src="./assets/assets%3Aplants%3Afruit.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            berries: `<img src="./assets/assets%3Aplants%3Aberries.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            eggplant: `<img src="./assets/assets%3Aplants%3Aeggplant.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            corn: `<img src="./assets/assets%3Aplants%3Acorn.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            beans: `<img src="./assets/assets%3Aplants%3Abeans.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`,
+            sprouts: `<img src="./assets/assets%3Aplants%3Asprouts.svg" alt="" class="w-full h-full object-contain" aria-hidden="true" />`
+        };;
+
+        const CROP_ICON_LIBRARY = [
+            { key: "cucumber", label: "Cucumber / Gherkin" },
+            { key: "tomato", label: "Tomato / Nightshade" },
+            { key: "pepper", label: "Peppers / Chillies" },
+            { key: "carrot", label: "Carrots / Radish / Turnips" },
+            { key: "greens", label: "Leafy Greens / Salad / Spinach" },
+            { key: "onion", label: "Alliums / Onion / Garlic / Leeks" },
+            { key: "fig", label: "Fig / Tree Fruit / Apples / Pears" },
+            { key: "berries", label: "Berries / Strawberries / Raspberries" },
+            { key: "eggplant", label: "Aubergine / Eggplant" },
+            { key: "corn", label: "Sweetcorn / Maize" },
+            { key: "beans", label: "Beans / Peas / Legumes" },
+            { key: "sprouts", label: "Sprouts / Seedlings / Herbs / Microgreens" }
         ];
-
-        function floraIconSvg(spec) {
-            const [key, label, terms, shape, pattern] = spec;
-            const silhouettes = {
-                long:"M31 23 C42 9 67 12 73 31 C79 50 63 79 48 87 C34 80 20 52 25 35 C26 30 28 26 31 23Z",
-                round:"M50 25 C63 15 80 27 79 47 C78 66 64 81 50 83 C34 81 21 65 21 48 C21 29 37 17 50 25Z",
-                bell:"M37 26 C40 18 60 18 63 27 C66 38 79 48 73 66 C68 82 34 84 27 67 C20 50 33 39 37 26Z",
-                root:"M37 22 C46 16 59 17 65 25 C69 43 58 66 50 88 C41 68 29 44 33 29Z",
-                rootRound:"M50 28 C70 18 81 36 72 55 C66 69 56 76 50 84 C42 75 28 65 27 49 C26 31 38 22 50 28Z",
-                rosette:"M50 49 C26 12 12 35 36 55 C5 50 10 79 42 65 C27 91 57 98 58 68 C77 91 96 70 66 56 C97 42 81 17 57 43 C61 10 39 10 50 49Z",
-                leaf:"M50 13 C82 22 87 58 50 86 C14 60 18 23 50 13Z",
-                tree:"M50 18 C39 8 26 19 31 32 C13 28 9 48 25 55 C14 69 30 82 42 70 L42 88 L58 88 L58 70 C72 84 89 67 75 55 C92 42 78 27 67 32 C72 17 58 9 50 18Z",
-                bulb:"M50 29 C72 18 82 40 69 59 C62 70 56 79 50 87 C44 78 38 69 31 59 C18 40 28 18 50 29Z",
-                clove:"M50 25 C69 22 75 42 65 58 C60 70 55 80 50 87 C44 77 37 65 34 53 C29 37 37 25 50 25Z",
-                stalk:"M39 24 C39 13 44 9 50 9 C56 9 61 14 61 24 L65 88 L35 88Z",
-                tuber:"M24 47 C26 24 48 16 67 25 C85 34 82 63 63 76 C42 89 21 70 24 47Z",
-                pear:"M50 14 C61 14 61 32 67 41 C83 63 71 85 50 87 C28 86 17 65 33 43 C41 32 39 15 50 14Z",
-                pumpkin:"M50 23 C62 14 75 24 78 39 C91 43 88 68 75 73 C65 89 55 80 50 83 C44 80 34 89 25 73 C11 66 11 44 23 39 C27 24 39 14 50 23Z",
-                cob:"M40 13 C32 25 32 72 50 88 C68 72 68 25 60 13Z",
-                pod:"M25 28 C43 13 70 19 77 39 C84 58 60 80 36 76 C19 72 14 43 25 28Z",
-                spear:"M50 10 C63 24 64 40 57 54 L57 88 L43 88 L43 54 C36 40 37 24 50 10Z",
-                bud:"M50 12 C30 18 22 42 31 59 C38 72 62 72 69 59 C78 42 70 18 50 12Z",
-                berry:"M50 27 C68 19 81 36 74 57 C69 76 56 85 50 87 C42 80 30 68 26 53 C20 34 35 21 50 27Z",
-                cluster:"M50 29 C34 12 19 26 29 42 C9 46 16 68 34 66 C36 87 62 87 66 67 C87 71 93 47 72 42 C81 25 62 13 50 29Z",
-                sprig:"M50 14 C49 36 50 59 50 88"
-            };
-            const leafBits = '<path d="M50 15 Q32 7 27 25 Q39 30 50 20 M50 18 Q69 4 76 22 Q65 31 50 23" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>';
-            let details = '';
-            if (pattern === 'vein' || pattern === 'leaf' || pattern === 'frond') details = '<path d="M50 27 Q49 53 50 78 M50 42 Q37 34 32 29 M50 53 Q63 42 68 35 M50 65 Q39 59 34 52 M50 68 Q61 59 66 51" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>';
-            else if (pattern === 'stripe' || pattern === 'ribs' || pattern === 'rings') details = '<path d="M36 31 Q50 38 64 31 M31 45 Q50 54 69 45 M34 60 Q50 69 66 60 M42 74 Q50 78 58 74" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
-            else if (pattern === 'seeds' || pattern === 'kernels' || pattern === 'berries' || pattern === 'cluster') details = Array.from({length:8},(_,i)=>{const x=37+(i%3)*13,y=39+Math.floor(i/3)*13;return '<circle cx="'+x+'" cy="'+y+'" r="2.3" fill="currentColor"/>';}).join('');
-            else if (pattern === 'crown' || pattern === 'star' || pattern === 'frond') details = '<path d="M42 25 L37 14 L49 21 L58 11 L58 24 L69 18 L62 30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
-            else details = '<path d="M50 29 Q35 47 50 72 Q65 47 50 29Z M50 35 L50 69" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
-            const body = shape === 'sprig'
-                ? '<path d="'+silhouettes[shape]+'" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M50 36 Q30 20 25 35 Q34 48 50 42 M50 54 Q70 37 76 51 Q69 65 50 60 M50 70 Q32 59 29 72" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>'
-                : '<path d="'+(silhouettes[shape] || silhouettes.round)+'" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/>';
-            return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="'+label+' botanical illustration" class="w-full h-full" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">'+leafBits+body+'<g>'+details+'</g><path d="M50 85 Q48 91 44 94 M50 85 Q53 91 57 94" stroke="currentColor" stroke-width="2" opacity=".65"/></svg>';
-        }
-
-        const CROP_ICON_LIBRARY = FLORA_ICON_SPECS.map(([key,label,terms]) => ({ key, label, terms }));
-        const MONOCHROME_VEG_SVGS = Object.fromEntries(FLORA_ICON_SPECS.map(spec => [spec[0], floraIconSvg(spec)]));
-        // Keep saved records using the original twelve keys visually compatible.
-        Object.assign(MONOCHROME_VEG_SVGS, {
-            eggplant: MONOCHROME_VEG_SVGS.aubergine,
-            corn: MONOCHROME_VEG_SVGS.sweetcorn,
-            beans: MONOCHROME_VEG_SVGS.bean,
-            greens: MONOCHROME_VEG_SVGS.lettuce,
-            berries: MONOCHROME_VEG_SVGS.strawberry
-        });
-
-        function matchFloraIcon(plantName) {
-            const name = String(plantName || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-            if (!name) return 'sprig';
-            const ranked = CROP_ICON_LIBRARY.map(item => {
-                const score = item.terms.reduce((best, term) => {
-                    const needle = term.toLowerCase();
-                    return name === needle ? Math.max(best, 100) : name.includes(needle) ? Math.max(best, 80 + needle.length) : needle.includes(name) && name.length > 3 ? Math.max(best, 35 + name.length) : best;
-                }, 0);
-                return { key: item.key, score };
-            }).sort((a,b) => b.score - a.score);
-            return ranked[0] && ranked[0].score > 0 ? ranked[0].key : 'sprig';
-        }
 
         const COLOR_NAME_PALETTE = [
             { name: "Ruby Red", hex: "#dc2626" },
@@ -4774,7 +4695,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const grid = document.getElementById('icon-picker-grid');
             grid.innerHTML = CROP_ICON_LIBRARY.map(item => {
                 const isSelected = item.key === selectedKey;
-                const svgMarkup = MONOCHROME_VEG_SVGS[item.key] || MONOCHROME_VEG_SVGS.sprig;
+                const svgMarkup = MONOCHROME_VEG_SVGS[item.key] || MONOCHROME_VEG_SVGS.cucumber;
                 return `
                     <button type="button" onclick="selectCropIcon('${item.key}', '${item.label.replace(/'/g, "\\'")}')" 
                         title="${item.label}"
@@ -4884,7 +4805,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function selectPlantName(name, defaultKey) {
             document.getElementById('plant-name').value = name;
             document.getElementById('name-suggestions').classList.add('hidden');
-            renderIconPickerGrid(defaultKey || matchFloraIcon(name));
+            if (defaultKey) renderIconPickerGrid(defaultKey);
             document.getElementById('plant-variety').focus();
         }
 
@@ -5901,7 +5822,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             emptyEl.classList.add('hidden');
 
             const cardMarkup = (p, groupLocation) => {
-                const svgMarkup = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS[matchFloraIcon(p.name)] || MONOCHROME_VEG_SVGS.sprig;
+                const svgMarkup = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
                 // Use the actual rendered group heading as the key, so every card in a group gets the same details.
                 const plantLocation = (groupLocation || p.location || '').trim();
                 const savedDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
@@ -6298,7 +6219,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-notes').value = p.notes || '';
             document.getElementById('form-color-hex').value = p.hex || '#16a34a';
             
-            renderIconPickerGrid(p.iconKey || matchFloraIcon(p.name));
+            renderIconPickerGrid(p.iconKey || 'cucumber');
 
             document.getElementById('plant-modal').classList.remove('hidden');
         }
@@ -6790,7 +6711,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 seedsPerPot: document.getElementById('plant-multisow').checked && document.getElementById('plant-quantity-type').value === 'seeds' ? Math.max(1, parseInt(document.getElementById('plant-multisow-seeds-per-pot').value, 10) || 1) : 0,
                 remainingSeeds: 0,
                 remainingCuttings: 0,
-                iconKey: document.getElementById('plant-icon-key').value || matchFloraIcon(document.getElementById('plant-name').value),
+                iconKey: document.getElementById('plant-icon-key').value,
                 hex: document.getElementById('form-color-hex').value,
                 date: document.getElementById('plant-date').value,
                 medium: document.getElementById('plant-medium').value,
@@ -7901,7 +7822,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
 
             const iconContainer = document.getElementById('journal-icon-container');
-            iconContainer.innerHTML = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS[matchFloraIcon(p.name)] || MONOCHROME_VEG_SVGS.sprig;
+            iconContainer.innerHTML = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
 
             // Open the journal even if an optional nutrient UI control is unavailable.
             try { toggleNutrientLibraryView(); toggleGerminationSection(); } catch (error) { console.warn('Journal controls could not be refreshed:', error); }
