@@ -2684,6 +2684,21 @@ textarea {
                 </div>
             </div>
 
+            <!-- Personal Plant Library -->
+            <div id="my-plant-library-settings" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-book-open text-emerald-600"></i><span>My Plant Library</span></h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Your personal collection of plant names and varieties. Add a plant to grow your library and see it in Add Plant suggestions.</p>
+                    </div>
+                    <span id="my-plant-library-count" class="text-xs font-semibold rounded-full px-3 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">0 plants</span>
+                </div>
+                <div id="my-plant-library-list" class="space-y-2">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Your saved plants will appear here.</p>
+                </div>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500">Suggestions are based on plants saved to your account or this device. Built-in plant suggestions remain available too.</p>
+            </div>
+
             <!-- Supabase Cloud Connection & Authentication -->
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-5">
                 <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
@@ -3762,6 +3777,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             localStorage.setItem('flora_location_view_modes', JSON.stringify(plantLocationViewModes));
 
             renderPlants();
+            renderMyPlantLibrary();
             setupAutocomplete();
             const logDateInput = document.getElementById('log-date');
             if (logDateInput) logDateInput.valueAsDate = new Date();
@@ -4796,7 +4812,42 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
+        function renderMyPlantLibrary() {
+            const list = document.getElementById('my-plant-library-list');
+            const count = document.getElementById('my-plant-library-count');
+            if (!list || !count) return;
+
+            const library = new Map();
+            (Array.isArray(plants) ? plants : []).forEach(plant => {
+                const name = String(plant.name || '').trim();
+                if (!name) return;
+                const key = name.toLocaleLowerCase();
+                if (!library.has(key)) library.set(key, { name, varieties: new Set() });
+                const variety = String(plant.variety || '').trim();
+                if (variety) library.get(key).varieties.add(variety);
+            });
+
+            const entries = [...library.values()].sort((a, b) => a.name.localeCompare(b.name));
+            const varietyCount = entries.reduce((total, item) => total + item.varieties.size, 0);
+            count.textContent = entries.length + ' ' + (entries.length === 1 ? 'plant' : 'plants') + ' · ' + varietyCount + ' ' + (varietyCount === 1 ? 'variety' : 'varieties');
+
+            if (!entries.length) {
+                list.innerHTML = '<div class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-5 text-center"><i class="fa-solid fa-seedling text-2xl text-emerald-600"></i><p class="mt-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Your library is ready to grow</p><p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Add your first plant and its name and variety will be collected here.</p></div>';
+                return;
+            }
+
+            list.innerHTML = entries.map(item => {
+                const varieties = [...item.varieties].sort((a, b) => a.localeCompare(b));
+                return '<div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">' +
+                    '<div class="flex items-center justify-between gap-2"><span class="text-sm font-semibold text-slate-800 dark:text-slate-100">' + escapeHtml(item.name) + '</span>' +
+                    '<span class="text-[10px] text-slate-500 dark:text-slate-400">' + varieties.length + ' ' + (varieties.length === 1 ? 'variety' : 'varieties') + '</span></div>' +
+                    (varieties.length ? '<div class="flex flex-wrap gap-1.5 mt-2">' + varieties.map(v => '<span class="inline-flex rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-[11px] text-slate-600 dark:text-slate-300">' + escapeHtml(v) + '</span>').join('') + '</div>' : '<p class="mt-1 text-xs text-slate-400">No variety recorded yet</p>') +
+                    '</div>';
+            }).join('');
+        }
+
         function switchTab(tabId) {
+            if (tabId === 'settings') renderMyPlantLibrary();
             // On mobile, dismiss an open Plant Journal when navigating to Settings.
             if (tabId === 'settings' && window.matchMedia('(max-width: 767px)').matches) {
                 const journalModal = document.getElementById('journal-modal');
@@ -6402,6 +6453,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (initialMediumLog) await syncLogToCloud(plantData.id, initialMediumLog);
 
             renderPlants();
+            renderMyPlantLibrary();
             closePlantModal();
             // Keep the user on the plant list after saving instead of leaving them on Settings.
             switchTab('plants');
