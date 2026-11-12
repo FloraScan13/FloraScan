@@ -5088,6 +5088,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             renderMyPlantLibrary();
         }
 
+        document.addEventListener('click', function(event) {
+            if (selectedMyPlantLibraryRow === null) return;
+            if (event.target.closest('#my-plant-library-list .plant-library-row')) return;
+            selectedMyPlantLibraryRow = null;
+            renderMyPlantLibrary();
+        });
+
         function setMyPlantLibraryLetter(letter) {
             myPlantLibraryLetterFilter = letter;
             selectedMyPlantLibraryRow = null;
@@ -5141,7 +5148,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     '<div class="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-1">' + escapeHtml(group.name) + '</div>' +
                     '<div class="space-y-0">' +
                         group.entries.map(row =>
-                            '<div class="flex items-center justify-between gap-1 py-0 rounded-lg ' + (selectedMyPlantLibraryRow === row.rowIndex ? 'bg-emerald-50 dark:bg-emerald-900/20' : '') + '">' +
+                            '<div class="plant-library-row flex items-center justify-between gap-1 py-0 rounded-lg ' + (selectedMyPlantLibraryRow === row.rowIndex ? 'bg-emerald-50 dark:bg-emerald-900/20' : '') + '">' +
                                 '<button type="button" onclick="selectMyPlantLibraryRow(' + row.rowIndex + ')" aria-pressed="' + (selectedMyPlantLibraryRow === row.rowIndex) + '" class="text-left text-sm text-slate-600 dark:text-slate-300 min-w-0 flex-1 truncate px-1 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-600 rounded">' +
                                     (row.variety ? escapeHtml(row.variety) : '<span class="italic text-slate-400">No variety</span>') +
                                 '</button>' +
