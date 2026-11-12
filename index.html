@@ -3149,7 +3149,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <div class="flex-1 space-y-2">
                         <div class="flex flex-wrap items-start justify-between gap-3">
                             <div class="min-w-0 flex flex-col items-start gap-2">
-                                <div class="flex flex-wrap items-center gap-2"><h4 id="journal-name" class="text-xl font-bold">Plant Name</h4><a id="journal-rhs-guide-link" href="https://www.rhs.org.uk/advice/advice-search" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" title="Find RHS growing advice for this plant"><i class="fa-solid fa-book-open" aria-hidden="true"></i><span>RHS growing guide</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px]" aria-hidden="true"></i></a></div>
+                                <div class="flex flex-wrap items-center gap-2"><h4 id="journal-name" class="text-xl font-bold">Plant Name</h4></div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                 <span id="journal-variety" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">Variety</span>
                                 <button type="button" id="journal-feed-reminder" onclick="manageJournalFeedReminder()" title="Manage feed schedule" style="height:24px;min-height:24px;max-height:24px;padding-top:0;padding-bottom:0;box-sizing:border-box;line-height:16px" class="hidden inline-flex items-center gap-1 text-xs px-2.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border-0 whitespace-nowrap hover:bg-[#c6537b]/25"><i class="fa-regular fa-bell"></i><span id="journal-feed-reminder-label"></span></button>
@@ -4828,15 +4828,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             });
         }
 
-        function updateJournalRhsGuideLink(plantName) {
-            const link = document.getElementById('journal-rhs-guide-link');
-            if (!link) return;
-            const name = String(plantName || '').trim();
-            const baseUrl = 'https://www.rhs.org.uk/advice/advice-search';
-            const searchTerm = name ? 'how to grow ' + name : '';
-            link.href = searchTerm ? baseUrl + '?query=' + encodeURIComponent(searchTerm) : baseUrl;
-            link.setAttribute('aria-label', name ? 'Find the RHS growing guide for ' + name : 'Find RHS growing guides');
-        }
 
         function selectPlantName(name, defaultKey) {
             const nameInput = document.getElementById('plant-name');
@@ -5059,7 +5050,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const editName = document.getElementById('journal-edit-plant-name');
                     const editVariety = document.getElementById('journal-edit-plant-variety');
                     if (journalName) journalName.textContent = openJournalPlant.name;
-                    updateJournalRhsGuideLink(openJournalPlant.name);
+
                     if (journalVariety) journalVariety.textContent = openJournalPlant.variety || 'Standard Variety';
                     if (editName) editName.value = openJournalPlant.name;
                     if (editVariety) editVariety.value = openJournalPlant.variety || '';
@@ -7636,7 +7627,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             markFloraSyncPending();
             await syncPlantToCloud(plant);
             document.getElementById('journal-name').textContent = plant.name;
-            updateJournalRhsGuideLink(plant.name);
+
             document.getElementById('journal-variety').textContent = plant.variety || 'Standard Variety';
             document.getElementById('journal-plant-details-editor').classList.add('hidden');
             renderPlants();
@@ -7808,7 +7799,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 journalMultisowSummary.classList.toggle('hidden', !(p.multisow));
             }
             document.getElementById('journal-name').textContent = p.name;
-            updateJournalRhsGuideLink(p.name);
+
             document.getElementById('journal-variety').textContent = p.variety || 'Standard Variety';
             const journalFeedReminder = (Array.isArray(p.logs) ? p.logs : [])
                 .filter(log => log.type === 'Feed' && log.feedReminderDate)
