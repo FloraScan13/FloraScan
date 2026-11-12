@@ -2686,7 +2686,7 @@ textarea {
 
             <!-- Personal Plant Library -->
             <div id="my-plant-library-settings" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <button id="my-plant-library-toggle" type="button" onclick="var panel=document.getElementById('my-plant-library-content'); var icon=document.getElementById('my-plant-library-chevron'); var open=panel.style.display==='none'; panel.style.setProperty('display',open?'block':'none','important'); this.setAttribute('aria-expanded',open?'true':'false'); if(icon) icon.style.transform=open?'rotate(180deg)':'rotate(0deg)';" aria-expanded="false" aria-controls="my-plant-library-content" class="w-full flex items-center justify-between gap-3 text-left cursor-pointer">
+                <button id="my-plant-library-toggle" type="button" aria-expanded="false" aria-controls="my-plant-library-content" class="w-full flex items-center justify-between gap-3 text-left cursor-pointer">
                     <span class="min-w-0">
                         <span class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-book-open text-emerald-600"></i><span>My Plant Library</span></span>
                         <span class="block text-sm text-slate-500 dark:text-slate-400 mt-1">Your saved plant names and varieties</span>
@@ -2696,7 +2696,7 @@ textarea {
                         <i id="my-plant-library-chevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform" aria-hidden="true"></i>
                     </span>
                 </button>
-                <div id="my-plant-library-content" style="display:none !important" class="space-y-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <div id="my-plant-library-content" hidden class="space-y-3 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                     <p class="text-sm text-slate-500 dark:text-slate-400">Your personal collection of plant names and varieties. Add a plant to grow your library and see it in Add Plant suggestions.</p>
                     <div id="my-plant-library-list" class="space-y-2">
                         <p class="text-sm text-slate-500 dark:text-slate-400">Your saved plants will appear here.</p>
@@ -2704,6 +2704,23 @@ textarea {
                     <p class="text-[11px] text-slate-400 dark:text-slate-500">Suggestions are based on plants saved to your account or this device. Built-in plant suggestions remain available too.</p>
                 </div>
             </div>
+
+            <script>
+                // Bind directly after the library markup is parsed.
+                (() => {
+                    const button = document.getElementById('my-plant-library-toggle');
+                    const panel = document.getElementById('my-plant-library-content');
+                    const chevron = document.getElementById('my-plant-library-chevron');
+                    if (!button || !panel || button.dataset.toggleBound === 'true') return;
+                    button.dataset.toggleBound = 'true';
+                    button.addEventListener('click', () => {
+                        const willOpen = panel.hasAttribute('hidden');
+                        panel.toggleAttribute('hidden', !willOpen);
+                        button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                        if (chevron) chevron.style.transform = willOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+                    });
+                })();
+            </script>
 
             <!-- Supabase Cloud Connection & Authentication -->
             <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-5">
