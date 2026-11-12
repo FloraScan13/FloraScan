@@ -7754,7 +7754,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             const productName = document.createElement('span');
                             productName.textContent = savedProduct.name;
                             label.append(checkbox, productName);
-                            const dosage = savedProduct.dosage.match(/^([0-9]*\\.?[0-9]+)\\s*(ml\\s*\\/\\s*L|ml|tsp)$/i);
+                            const dosage = savedProduct.dosage.match(/^([0-9]*\.?[0-9]+)\s*(ml\s*\/\s*L|ml|tsp)$/i);
                             const amount = document.createElement('input');
                             amount.type = 'number';
                             amount.step = '0.1';
@@ -7773,7 +7773,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 unit.appendChild(option);
                             });
                             if (dosage) {
-                                const unitValue = dosage[2].replace(/\\s+/g, '').toLowerCase();
+                                const unitValue = dosage[2].replace(/\s+/g, '').toLowerCase();
                                 unit.value = unitValue === 'ml/l' ? 'ml/L' : unitValue;
                             }
                             row.append(label, amount, unit);
