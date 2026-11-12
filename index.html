@@ -4833,8 +4833,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!link) return;
             const name = String(plantName || '').trim();
             const baseUrl = 'https://www.rhs.org.uk/advice/advice-search';
-            link.href = name ? baseUrl + '?query=' + encodeURIComponent(name) : baseUrl;
-            link.setAttribute('aria-label', name ? 'Find RHS growing advice for ' + name : 'Find RHS growing advice');
+            const searchTerm = name ? 'how to grow ' + name : '';
+            link.href = searchTerm ? baseUrl + '?query=' + encodeURIComponent(searchTerm) : baseUrl;
+            link.setAttribute('aria-label', name ? 'Find the RHS growing guide for ' + name : 'Find RHS growing guides');
         }
 
         function selectPlantName(name, defaultKey) {
