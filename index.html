@@ -7609,11 +7609,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const log = plant.logs.find((entry, index) => String(entry.id || index) === String(logId));
             if (!log) return;
             document.getElementById('log-plant-id').value = plant.id;
-            // Hide entry metadata only while editing an existing log.
-            ['journal-edit-meta-fields', 'journal-edit-location-field', 'growth-stage-section'].forEach(id => {
-                const field = document.getElementById(id);
-                if (field) field.classList.add('hidden');
-            });
+            // Refresh the dependent fields first; the refresh can show the growth-stage
+            // section again, so edit-only visibility is applied after all form updates.
             toggleGerminationSection();
             document.getElementById('log-edit-id').value = log.id || String(plant.logs.indexOf(log));
             const journalLocationSelect = document.getElementById('journal-plant-location');
@@ -7714,7 +7711,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 );
                 stageSelect.value = matchingStage ? matchingStage.value : '';
             }
-            document.getElementById('log-date').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Apply the edit-only hidden fields last because toggleGerminationSection()
+            // can reveal the growth-stage section during its refresh.
+            ['journal-edit-meta-fields', 'journal-edit-location-field', 'growth-stage-section'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) field.classList.add('hidden');
+            });
+            // The date field is intentionally hidden in edit mode; scroll to the visible
+            // form heading instead of trying to scroll to that hidden input.
+            document.getElementById('journal-log-form-title')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function cancelJournalLogEdit() {
