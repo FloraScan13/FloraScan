@@ -6721,7 +6721,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function handleNutrientBrandChange() {
             const brandName = document.getElementById('nutrient-brand-select').value;
             const productList = document.getElementById('nutrient-product-list');
-            
+
+            // In edit mode, save the brand currently displayed into the journal text
+            // before switching the picker to another brand.
+            if (document.getElementById('log-edit-id')?.value && window.nutrientEditorActiveBrand) {
+                syncNutrientBrandToLog(window.nutrientEditorActiveBrand);
+            }
+            window.nutrientEditorActiveBrand = brandName || '';
+
             if (!brandName) {
                 productList.innerHTML = `<p class="text-[11px] text-slate-400 italic px-1">Select a brand first</p>`;
                 return;
@@ -6813,6 +6820,56 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     }
                 }
             });
+        }
+
+        function syncNutrientBrandToLog(brandName) {
+            const brand = NUTRIENT_BRANDS_LIBRARY.find(item => item.brand === brandName);
+            const textarea = document.getElementById('log-text');
+            const list = document.getElementById('nutrient-product-list');
+            if (!brand || !textarea || !list) return;
+
+            const products = Array.from(list.querySelectorAll('input[name="nutrient-product-check"]:checked'))
+                .map(checkbox => {
+                    const index = brand.products.findIndex(item =>
+                        item.name.trim().toLowerCase() === checkbox.value.trim().toLowerCase()
+                    );
+                    if (index < 0) return null;
+                    const amount = document.getElementById('dose-val-' + index)?.value.trim() || '';
+                    const unit = document.getElementById('dose-unit-' + index)?.value || 'ml';
+                    return checkbox.value.trim() + ' (' + (amount ? amount + ' ' + unit : brand.products[index].dosage) + ')';
+                }).filter(Boolean);
+
+            const lines = String(textarea.value || '').replace(/\\n/g, '\n')
+                .split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+            const brandLookup = new Map(NUTRIENT_BRANDS_LIBRARY.map(item => [item.brand.toLowerCase(), item.brand]));
+            const saved = new Map();
+            const otherLines = [];
+            let currentBrand = null;
+
+            lines.forEach(line => {
+                if (/^(?:Mixed with:|Fed with:)$/i.test(line)) return;
+                const header = line.match(/^(.*?):\s*$/);
+                const matched = header ? brandLookup.get(header[1].toLowerCase()) : null;
+                if (matched) {
+                    currentBrand = matched;
+                    if (!saved.has(currentBrand)) saved.set(currentBrand, []);
+                } else if (currentBrand && /^[•*-]\s*/.test(line)) {
+                    saved.get(currentBrand).push(line.replace(/^[•*-]\s*/, ''));
+                } else {
+                    currentBrand = null;
+                    otherLines.push(line);
+                }
+            });
+
+            // The currently selected brand is authoritative: unchecked products are removed.
+            if (products.length) saved.set(brandName, products);
+            else saved.delete(brandName);
+
+            const header = lines.find(line => /^(?:Mixed with:|Fed with:)$/i.test(line)) || 'Fed with:';
+            const blocks = Array.from(saved.entries()).map(([savedBrand, items]) =>
+                savedBrand + ':\n' + items.map(item => '• ' + item).join('\n')
+            ).join('\n');
+            textarea.value = [otherLines.join('\n'), header, blocks].filter(Boolean).join('\n');
         }
 
         function applyNutrientSelection() {
@@ -7795,6 +7852,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-log-submit-button').textContent = 'Save Changes';
             document.getElementById('journal-edit-actions').classList.remove('hidden');
             document.getElementById('cancel-nutrient-edit-button')?.classList.remove('hidden');
+            document.getElementById('add-selected-nutrients-button')?.classList.add('hidden');
+            window.nutrientEditorActiveBrand = '';
             toggleNutrientLibraryView();
             const feedLines = logText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
             const feedHeaderIndex = feedLines.findIndex(line => /^(?:Mixed with:|Fed with:)$/i.test(line));
@@ -7897,6 +7956,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('journal-log-submit-button').textContent = 'Add Log Entry';
             document.getElementById('journal-edit-actions').classList.add('hidden');
             document.getElementById('cancel-nutrient-edit-button')?.classList.add('hidden');
+            document.getElementById('add-selected-nutrients-button')?.classList.remove('hidden');
+            window.nutrientEditorActiveBrand = '';
             document.getElementById('log-date').value = new Date().toISOString().slice(0, 10);
             document.getElementById('log-type').value = 'Growth';
             document.getElementById('log-growth-stage').value = '';
@@ -7963,6 +8024,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 existingLog.date = date;
                 existingLog.type = type;
                 existingLog.growthStage = growthStage;
+                // Commit the brand currently open in the picker. Other brands were
+                // committed as the user switched between them, so Save Changes is enough.
+                if (type === 'Feed' && window.nutrientEditorActiveBrand) {
+                    syncNutrientBrandToLog(window.nutrientEditorActiveBrand);
+                }
                 let journalNotes = document.getElementById('log-text').value;
                 // Update volume details in-place when editing Water/Feed entries. The edit
                 // form loads these values from the saved text, so replace the old summary
