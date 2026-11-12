@@ -4722,34 +4722,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const nameDropdown = document.getElementById('name-suggestions');
             const varietyDropdown = document.getElementById('variety-suggestions');
 
-            // Curated starter suggestions combined with varieties saved by this user.
-            const suggestedVarietiesByPlant = [
-                { match: ['tomato'], varieties: ["Gardener's Delight", 'Sungold', 'Moneymaker', 'Roma', 'Black Cherry', 'Costoluto Fiorentino'] },
-                { match: ['cucumber', 'gherkin'], varieties: ['Marketmore', 'Beth Alpha', 'Diva', 'Passandra', 'Crystal Lemon'] },
-                { match: ['pepper', 'chilli', 'chili'], varieties: ['California Wonder', 'Corno di Toro', 'Jalapeño', 'Cayenne', 'Hungarian Wax'] },
-                { match: ['carrot'], varieties: ['Nantes 2', 'Chantenay Red Cored', 'Autumn King 2', 'Purple Haze', 'Amsterdam Forcing'] },
-                { match: ['radish'], varieties: ['French Breakfast', 'Cherry Belle', 'Sparkler', 'Black Spanish'] },
-                { match: ['turnip'], varieties: ['Purple Top Milan', 'Snowball', 'Golden Ball'] },
-                { match: ['spinach'], varieties: ['Giant Winter', 'Perpetual Spinach', 'Medania', 'Matador'] },
-                { match: ['lettuce', 'salad', 'leafy green'], varieties: ['Little Gem', 'Marvel of Four Seasons', 'Lollo Rossa', 'Red Salad Bowl'] },
-                { match: ['kale'], varieties: ['Nero di Toscana', 'Red Russian', 'Dwarf Green Curled'] },
-                { match: ['onion'], varieties: ['Sturon', 'Red Baron', 'Ailsa Craig', 'Senshyu Yellow'] },
-                { match: ['garlic'], varieties: ['Solent Wight', 'Early Purple Wight'] },
-                { match: ['leek'], varieties: ['Musselburgh', 'Blue Solaise', 'Bandit'] },
-                { match: ['apple'], varieties: ['Discovery', 'Cox Orange Pippin', 'Egremont Russet', 'James Grieve'] },
-                { match: ['pear'], varieties: ['Conference', 'Concorde', 'Williams Bon Chretien'] },
-                { match: ['fig'], varieties: ['Brown Turkey', 'Brunswick', 'White Marseilles'] },
-                { match: ['strawberry'], varieties: ['Elsanta', 'Cambridge Favourite', 'Mara des Bois', 'Florence'] },
-                { match: ['raspberry'], varieties: ['Glen Ample', 'Autumn Bliss', 'Polka', 'Malling Jewel'] },
-                { match: ['blueberry'], varieties: ['Duke', 'Bluecrop', 'Chandler'] },
-                { match: ['aubergine', 'eggplant'], varieties: ['Black Beauty', 'Moneymaker', 'Listada de Gandia'] },
-                { match: ['sweetcorn', 'maize', 'corn'], varieties: ['Swift', 'Golden Bantam', 'Lark', 'Incredible'] },
-                { match: ['bean', 'beans'], varieties: ['Blue Lake', 'Cobra', 'Borlotto', 'Purple Teepee'] },
-                { match: ['pea', 'peas'], varieties: ['Kelvedon Wonder', 'Meteor', 'Hurst Green Shaft', 'Sugar Snap'] },
-                { match: ['brussels sprout', 'sprout'], varieties: ['Brilliant', 'Crispus', 'Bosworth'] },
-                { match: ['basil'], varieties: ['Genovese', 'Greek', 'Thai'] }
-            ];
-
             function getPlantSuggestionLibrary() {
                 return getPersonalPlantLibrary()
                     .filter(plant => String(plant.name || '').trim())
@@ -4764,13 +4736,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             function getSuggestedVarieties(plantName) {
                 const normalized = String(plantName || '').trim().toLocaleLowerCase();
-                const builtIn = suggestedVarietiesByPlant.find(item =>
-                    item.match.some(term => normalized === term || normalized.includes(term))
-                )?.varieties || [];
-                const saved = getPlantSuggestionLibrary().find(item =>
+                if (!normalized) return [];
+                return getPlantSuggestionLibrary().find(item =>
                     item.name.toLocaleLowerCase() === normalized
                 )?.varieties || [];
-                return [...new Map([...builtIn, ...saved].map(value => [value.toLocaleLowerCase(), value])).values()];
             }
 
             function renderVarietySuggestions() {
