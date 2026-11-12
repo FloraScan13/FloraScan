@@ -7563,7 +7563,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             return '<span class="inline-flex items-center space-x-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border border-[#c6537b]/40 whitespace-nowrap"><i class="fa-regular fa-bell"></i><span>Repeat feed · ' + escapeHtml(reminderLabel) + '</span></span>';
                         })() : ''}
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="editJournalLog('${p.id}', '${log.id || originalIndex}')" aria-label="Edit growth log" title="Edit entry" class="text-emerald-700 hover:text-emerald-900 p-1"><i class="fa-solid fa-pen"></i></button>
+                            <button type="button" onclick="editJournalLogByIndex('${encodeURIComponent(String(p.id))}', ${originalIndex})" aria-label="Edit growth log" title="Edit entry" class="text-emerald-700 hover:text-emerald-900 p-1"><i class="fa-solid fa-pen"></i></button>
                             <button type="button" onclick="deleteJournalLog('${p.id}', '${log.id || originalIndex}')" aria-label="Delete growth log" title="Delete entry" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </div>
@@ -7601,6 +7601,27 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 console.error('Could not delete journal photo:', error);
                 alert('The photo could not be fully deleted from cloud storage. Please try again.');
             }
+        }
+
+        // Resolve the timeline entry by its current array index. This avoids fragile
+        // inline-handler arguments when IDs contain punctuation, and remains reliable
+        // after a log has been edited and re-rendered.
+        function editJournalLogByIndex(encodedPlantId, logIndex) {
+            let plantId;
+            try { plantId = decodeURIComponent(String(encodedPlantId)); }
+            catch (_) { plantId = String(encodedPlantId); }
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            const index = Number(logIndex);
+            if (!plant || !Array.isArray(plant.logs) || !Number.isInteger(index) || index < 0) {
+                console.warn('Could not resolve the journal entry selected for editing.');
+                return;
+            }
+            const log = plant.logs[index];
+            if (!log) {
+                alert('This growth log is no longer available. Please refresh the journal and try again.');
+                return;
+            }
+            editJournalLog(plant.id, log.id || String(index));
         }
 
         function editJournalLog(plantId, logId) {
