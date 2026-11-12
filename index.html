@@ -4966,11 +4966,41 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             savePersonalPlantLibrary(library);
         }
 
-        function deleteMyPlantLibraryEntry(index) {
+        async function deleteMyPlantLibraryEntry(index) {
             const library = getPersonalPlantLibrary();
             const entry = library[index];
             if (!entry) return;
-            if (!confirm('Remove "' + entry.name + '" from My Plant Library? Your existing plant records will not be deleted or changed.')) return;
+
+            const matchingPlants = (Array.isArray(plants) ? plants : []).filter(plant =>
+                String(plant.name || '').trim().toLocaleLowerCase() === entry.name.trim().toLocaleLowerCase()
+            );
+            const recordCount = matchingPlants.length;
+            const warning = recordCount
+                ? 'WARNING: Deleting "' + entry.name + '" from My Plant Library will also permanently delete ' +
+                    recordCount + ' matching plant ' + (recordCount === 1 ? 'record and its journal' : 'records and their journals') +
+                    ', including their journal entries, reminders and associated photos. This cannot be undone.\n\n' +
+                    'Choose OK to delete the library entry and all matching plant records, or Cancel to keep everything.'
+                : 'Delete "' + entry.name + '" from My Plant Library? There are no matching plant records to delete.';
+            if (!confirm(warning)) return;
+
+            // Remove matching plant records locally and queue their IDs for cloud deletion.
+            const deletedIds = matchingPlants.map(plant => plant.id);
+            if (deletedIds.length) {
+                const deletedIdSet = new Set(deletedIds.map(String));
+                plants = plants.filter(plant => !deletedIdSet.has(String(plant.id)));
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                deletedIds.forEach(id => markFloraSyncPending('plant-delete', id));
+
+                const openJournalPlantId = document.getElementById('log-plant-id')?.value;
+                if (openJournalPlantId && deletedIdSet.has(String(openJournalPlantId))) closeJournalModal();
+
+                const cloudResults = await Promise.all(deletedIds.map(id => deletePlantFromCloud(id)));
+                if (cloudResults.some(result => result === false)) {
+                    alert('The plant records were removed from this device, but some cloud cleanup failed. Their cloud journals and/or photos may still be present. Please check your connection and sync again.');
+                }
+                renderPlants();
+            }
+
             library.splice(index, 1);
             savePersonalPlantLibrary(library);
         }
