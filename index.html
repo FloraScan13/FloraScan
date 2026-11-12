@@ -4949,53 +4949,85 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             savePersonalPlantLibrary(library.filter(item => item.name && (item.varieties || []).length || item.name));
         }
 
+        function getPersonalPlantLibraryRows() {
+            return getPersonalPlantLibrary().flatMap(item => {
+                const varieties = (item.varieties || []).slice();
+                return varieties.length
+                    ? varieties.map(variety => ({ name: item.name, variety }))
+                    : [{ name: item.name, variety: '' }];
+            }).sort((a, b) => a.name.localeCompare(b.name) || a.variety.localeCompare(b.variety));
+        }
+
         function editMyPlantLibraryEntry(index) {
-            // The list is displayed alphabetically, so resolve the same sorted index.
-            const library = getPersonalPlantLibrary().slice().sort((a, b) => a.name.localeCompare(b.name));
-            const entry = library[index];
-            if (!entry) return;
-            const name = window.prompt('Edit plant name:', entry.name);
+            const rows = getPersonalPlantLibraryRows();
+            const row = rows[index];
+            if (!row) return;
+            const library = getPersonalPlantLibrary();
+            const name = window.prompt('Edit plant name:', row.name);
             if (name === null) return;
             const cleanName = name.trim();
             if (!cleanName) { alert('Plant name cannot be empty.'); return; }
-            const varietiesText = window.prompt('Edit varieties (separate multiple varieties with commas):', (entry.varieties || []).join(', '));
-            if (varietiesText === null) return;
-            const varieties = [...new Map(varietiesText.split(',').map(v => v.trim()).filter(Boolean).map(v => [v.toLocaleLowerCase(), v])).values()];
-            const duplicate = library.some((item, i) => i !== index && item.name.toLocaleLowerCase() === cleanName.toLocaleLowerCase());
-            if (duplicate) { alert('A library entry with that plant name already exists.'); return; }
-            library[index] = { name: cleanName, varieties };
+            const varietyText = window.prompt('Edit variety:', row.variety);
+            if (varietyText === null) return;
+            const cleanVariety = varietyText.trim();
+
+            const duplicate = rows.some((item, i) => i !== index &&
+                item.name.toLocaleLowerCase() === cleanName.toLocaleLowerCase() &&
+                item.variety.toLocaleLowerCase() === cleanVariety.toLocaleLowerCase());
+            if (duplicate) { alert('That plant and variety already exist in your library.'); return; }
+
+            const oldKey = row.name.toLocaleLowerCase();
+            const sourceIndex = library.findIndex(item => item.name.toLocaleLowerCase() === oldKey);
+            if (sourceIndex < 0) return;
+            const source = library[sourceIndex];
+            source.varieties = (source.varieties || []).filter(value =>
+                value.toLocaleLowerCase() !== row.variety.toLocaleLowerCase()
+            );
+            if (cleanName.toLocaleLowerCase() === oldKey) {
+                if (cleanVariety && !source.varieties.some(value => value.toLocaleLowerCase() === cleanVariety.toLocaleLowerCase())) {
+                    source.varieties.push(cleanVariety);
+                }
+                if (!cleanVariety && !source.varieties.length) source.varieties = [];
+                if (source.varieties.length) {
+                    // A blank variety represents a plant-only row; keep it only when no varieties remain.
+                }
+            } else {
+                if (!source.varieties.length) library.splice(sourceIndex, 1);
+                let target = library.find(item => item.name.toLocaleLowerCase() === cleanName.toLocaleLowerCase());
+                if (!target) { target = { name: cleanName, varieties: [] }; library.push(target); }
+                if (cleanVariety && !target.varieties.some(value => value.toLocaleLowerCase() === cleanVariety.toLocaleLowerCase())) {
+                    target.varieties.push(cleanVariety);
+                }
+            }
             savePersonalPlantLibrary(library);
         }
 
         async function deleteMyPlantLibraryEntry(index) {
-            // Match the alphabetical order used by renderMyPlantLibrary().
-            const library = getPersonalPlantLibrary().slice().sort((a, b) => a.name.localeCompare(b.name));
-            const entry = library[index];
-            if (!entry) return;
-
+            const rows = getPersonalPlantLibraryRows();
+            const row = rows[index];
+            if (!row) return;
+            const label = row.name + (row.variety ? ' — ' + row.variety : '');
             const matchingPlants = (Array.isArray(plants) ? plants : []).filter(plant =>
-                String(plant.name || '').trim().toLocaleLowerCase() === entry.name.trim().toLocaleLowerCase()
+                String(plant.name || '').trim().toLocaleLowerCase() === row.name.trim().toLocaleLowerCase() &&
+                (!row.variety || String(plant.variety || '').trim().toLocaleLowerCase() === row.variety.trim().toLocaleLowerCase())
             );
             const recordCount = matchingPlants.length;
             const warning = recordCount
-                ? 'WARNING: Deleting "' + entry.name + '" from My Plant Library will also permanently delete ' +
+                ? 'WARNING: Deleting "' + label + '" from My Plant Library will also permanently delete ' +
                     recordCount + ' matching plant ' + (recordCount === 1 ? 'record and its journal' : 'records and their journals') +
                     ', including their journal entries, reminders and associated photos. This cannot be undone.\n\n' +
-                    'Choose OK to delete the library entry and all matching plant records, or Cancel to keep everything.'
-                : 'Delete "' + entry.name + '" from My Plant Library? There are no matching plant records to delete.';
+                    'Choose OK to delete this library entry and matching plant records, or Cancel to keep everything.'
+                : 'Delete "' + label + '" from My Plant Library?' + (row.variety ? ' Other varieties of ' + row.name + ' will remain.' : ' There are no matching plant records to delete.');
             if (!confirm(warning)) return;
 
-            // Remove matching plant records locally and queue their IDs for cloud deletion.
             const deletedIds = matchingPlants.map(plant => plant.id);
             if (deletedIds.length) {
                 const deletedIdSet = new Set(deletedIds.map(String));
                 plants = plants.filter(plant => !deletedIdSet.has(String(plant.id)));
                 localStorage.setItem('flora_plants', JSON.stringify(plants));
                 deletedIds.forEach(id => markFloraSyncPending('plant-delete', id));
-
                 const openJournalPlantId = document.getElementById('log-plant-id')?.value;
                 if (openJournalPlantId && deletedIdSet.has(String(openJournalPlantId))) closeJournalModal();
-
                 const cloudResults = await Promise.all(deletedIds.map(id => deletePlantFromCloud(id)));
                 if (cloudResults.some(result => result === false)) {
                     alert('The plant records were removed from this device, but some cloud cleanup failed. Their cloud journals and/or photos may still be present. Please check your connection and sync again.');
@@ -5003,7 +5035,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 renderPlants();
             }
 
-            library.splice(index, 1);
+            const library = getPersonalPlantLibrary();
+            const libraryIndex = library.findIndex(item => item.name.toLocaleLowerCase() === row.name.toLocaleLowerCase());
+            if (libraryIndex >= 0) {
+                if (row.variety) {
+                    library[libraryIndex].varieties = (library[libraryIndex].varieties || []).filter(value =>
+                        value.toLocaleLowerCase() !== row.variety.toLocaleLowerCase()
+                    );
+                    if (!library[libraryIndex].varieties.length) library.splice(libraryIndex, 1);
+                } else {
+                    library.splice(libraryIndex, 1);
+                }
+            }
             savePersonalPlantLibrary(library);
         }
 
@@ -5012,25 +5055,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const count = document.getElementById('my-plant-library-count');
             if (!list || !count) return;
 
-            const entries = getPersonalPlantLibrary().slice().sort((a, b) => a.name.localeCompare(b.name));
-            const varietyCount = entries.reduce((total, item) => total + (item.varieties || []).length, 0);
-            count.textContent = entries.length + ' ' + (entries.length === 1 ? 'plant' : 'plants') + ' · ' + varietyCount + ' ' + (varietyCount === 1 ? 'variety' : 'varieties');
+            const rows = getPersonalPlantLibraryRows();
+            const plantCount = new Set(rows.map(row => row.name.toLocaleLowerCase())).size;
+            count.textContent = rows.length + ' ' + (rows.length === 1 ? 'entry' : 'entries') + ' · ' + plantCount + ' ' + (plantCount === 1 ? 'plant' : 'plants');
 
-            if (!entries.length) {
+            if (!rows.length) {
                 list.innerHTML = '<div class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-5 text-center"><i class="fa-solid fa-seedling text-2xl text-emerald-600"></i><p class="mt-2 text-sm font-semibold text-slate-700 dark:text-slate-200">Your library is ready to grow</p><p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Add a plant to your library from this section or save a plant record to seed it.</p></div>';
                 return;
             }
 
-            list.innerHTML = entries.map((item, index) => {
-                const varieties = (item.varieties || []).slice().sort((a, b) => a.localeCompare(b));
-                return '<div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">' +
-                    '<div class="flex flex-wrap items-center justify-between gap-2"><span class="text-sm font-semibold text-slate-800 dark:text-slate-100">' + escapeHtml(item.name) + '</span>' +
-                    '<div class="flex items-center gap-2"><span class="text-[10px] text-slate-500 dark:text-slate-400">' + varieties.length + ' ' + (varieties.length === 1 ? 'variety' : 'varieties') + '</span>' +
-                    '<button type="button" onclick="editMyPlantLibraryEntry(' + index + ')" class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline px-1 py-1" aria-label="Edit ' + escapeHtml(item.name) + '">Edit</button>' +
-                    '<button type="button" onclick="deleteMyPlantLibraryEntry(' + index + ')" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline px-1 py-1" aria-label="Delete ' + escapeHtml(item.name) + '">Delete</button></div></div>' +
-                    (varieties.length ? '<div class="flex flex-wrap gap-1.5 mt-2">' + varieties.map(v => '<span class="inline-flex rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-[11px] text-slate-600 dark:text-slate-300">' + escapeHtml(v) + '</span>').join('') + '</div>' : '<p class="mt-1 text-xs text-slate-400">No variety recorded yet</p>') +
-                    '</div>';
-            }).join('');
+            list.innerHTML = rows.map((row, index) =>
+                '<div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">' +
+                    '<div class="flex flex-wrap items-center justify-between gap-2"><div class="min-w-0"><span class="text-sm font-semibold text-slate-800 dark:text-slate-100">' + escapeHtml(row.name) + '</span>' +
+                    (row.variety ? '<span class="ml-2 inline-flex rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-[11px] text-slate-600 dark:text-slate-300">' + escapeHtml(row.variety) + '</span>' : '<p class="mt-1 text-xs text-slate-400">No variety recorded</p>') + '</div>' +
+                    '<div class="flex items-center gap-2"><button type="button" onclick="editMyPlantLibraryEntry(' + index + ')" class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline px-1 py-1" aria-label="Edit ' + escapeHtml(row.name + (row.variety ? ' ' + row.variety : '')) + '">Edit</button>' +
+                    '<button type="button" onclick="deleteMyPlantLibraryEntry(' + index + ')" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline px-1 py-1" aria-label="Delete ' + escapeHtml(row.name + (row.variety ? ' ' + row.variety : '')) + '">Delete</button></div></div>' +
+                '</div>'
+            ).join('');
         }
 
         function switchTab(tabId) {
