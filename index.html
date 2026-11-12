@@ -3136,7 +3136,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <form onsubmit="handleJournalLogSubmit(event)" class="space-y-3">
                         <input type="hidden" id="log-plant-id">
                         <input type="hidden" id="log-edit-id">
-                        <div id="journal-edit-actions" class="hidden rounded-lg px-3 py-2" style="background:#fce7ef;border:1px solid #edb5c9;"><span class="text-xs font-semibold" style="color:#963b5e;">Editing an existing entry</span></div>
                         <div id="journal-edit-meta-fields" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input type="date" id="log-date" required onchange="updateFeedReminderDateFromInterval()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                             <select id="log-type" onchange="toggleNutrientLibraryView(); toggleGerminationSection()" class="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
