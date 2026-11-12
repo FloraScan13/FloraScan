@@ -4796,12 +4796,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     });
                     nameDropdown.classList.remove('hidden');
                 }
-                const savedVarieties = getSuggestedVarieties(nameInput.value);
-                // Prefill the variety field with the first variety saved for this plant.
-                // The user can still edit it or choose another saved suggestion.
-                varietyInput.value = savedVarieties[0] || '';
-                // Open the dropdown with every saved variety for this plant,
-                // while keeping the first saved variety visible in the input.
+                // Show saved varieties as choices, but leave the field empty
+                // until the user explicitly selects one.
+                varietyInput.value = '';
                 renderVarietySuggestions(true);
             });
 
