@@ -7170,6 +7170,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             setActiveNavigationTab('plants');
 
             document.getElementById('log-plant-id').value = p.id;
+            // A journal may be closed while an entry is in edit mode. Reset that
+            // transient form state on every reopen so the edit-only hidden classes
+            // cannot carry over and leave the journal options inaccessible.
+            cancelJournalLogEdit();
             const nfcTagActions = document.getElementById('journal-nfc-tag-actions');
             if (nfcTagActions) nfcTagActions.classList.toggle('hidden', getScannerPreference() !== 'nfc' || !!String(p.qrCodeValue || '').trim());
             const journalLocationButton = document.getElementById('journal-plant-location');
