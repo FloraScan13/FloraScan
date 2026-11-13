@@ -10618,6 +10618,58 @@ body.plant-growing-modal-open { overflow: hidden !important; }
     #plant-medium-dropdown[open] #plant-medium-options::before,
     #plant-setup-dropdown[open] #plant-setup-options::before { left: 14px; top: 16px; }
 }
+
+/* Match the Plant Journal close tab: 28px header/wave line with the pink X tab extending 6px below it. */
+#plant-medium-dropdown[open] #plant-medium-options,
+#plant-setup-dropdown[open] #plant-setup-options {
+    isolation: isolate !important;
+    padding-top: 54px !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options::before,
+#plant-setup-dropdown[open] #plant-setup-options::before {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 28px !important;
+    background: #fffef9 !important;
+    z-index: 4 !important;
+    pointer-events: none !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options::after,
+#plant-setup-dropdown[open] #plant-setup-options::after {
+    top: 22px !important;
+    height: 6px !important;
+    z-index: 5 !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-close,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-close {
+    position: absolute !important;
+    top: 0 !important;
+    right: 16px !important;
+    z-index: 6 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    flex: 0 0 24px !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 0 8px 8px !important;
+    background: rgb(196, 85, 124) !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 5px #fffef9 !important;
+    line-height: 1 !important;
+}
 </style>
 <script id="plant-growing-selection-modal-controls">
 (function () {
