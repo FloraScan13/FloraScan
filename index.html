@@ -10803,3 +10803,29 @@ body.plant-growing-modal-open { overflow: hidden !important; }
     background-color: #FFFEF9 !important;
 }
 </style>
+
+
+<script id="plant-growing-modal-backdrop-dismiss">
+(function () {
+    const pairs = [
+        ['plant-medium-dropdown', 'plant-medium-options'],
+        ['plant-setup-dropdown', 'plant-setup-options']
+    ];
+
+    document.addEventListener('click', function (event) {
+        pairs.forEach(([dropdownId, panelId]) => {
+            const dropdown = document.getElementById(dropdownId);
+            const panel = document.getElementById(panelId);
+            if (!dropdown?.open || !panel) return;
+
+            const rect = panel.getBoundingClientRect();
+            const insidePanel = event.clientX >= rect.left &&
+                event.clientX <= rect.right &&
+                event.clientY >= rect.top &&
+                event.clientY <= rect.bottom;
+
+            if (!insidePanel) dropdown.open = false;
+        });
+    });
+})();
+</script>
