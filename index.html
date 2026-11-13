@@ -6537,15 +6537,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             updateMultisowLabels();
             toggleMultisowFields();
             document.getElementById('plant-date').value = p.date || '';
-            const mediumSelect = document.getElementById('plant-medium');
             const savedMedium = p.medium || '';
-            if (savedMedium && !Array.from(mediumSelect.options).some(option => option.value === savedMedium)) {
-                const legacyOption = document.createElement('option');
-                legacyOption.value = savedMedium;
-                legacyOption.textContent = savedMedium + ' (saved value)';
-                mediumSelect.add(legacyOption);
-            }
-            mediumSelect.value = savedMedium;
+            if (window.setSelectedPlantMediums) window.setSelectedPlantMediums(savedMedium);
             const savedSetups = Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : []); document.querySelectorAll('#plant-setup-options input[name="plant-setup-option"]').forEach(input => { input.checked = savedSetups.includes(input.value); });
             renderPlantLocationControls(p.location || '');
             document.getElementById('plant-notes').value = p.notes || '';
@@ -7048,7 +7041,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 customIconUrl: editId ? (plants.find(p => String(p.id) === String(editId))?.customIconUrl || '') : '',
                 hex: document.getElementById('form-color-hex').value,
                 date: document.getElementById('plant-date').value,
-                medium: document.getElementById('plant-medium').value,
+                medium: (window.getSelectedPlantMediums ? window.getSelectedPlantMediums() : []).join(' · '),
                 setup: Array.from(document.querySelectorAll('#plant-setup-options input[name="plant-setup-option"]:checked')).map(input => input.value),
                 location: document.getElementById('plant-location').value,
                 notes: document.getElementById('plant-notes').value,
@@ -9926,9 +9919,28 @@ document.addEventListener('click', function(event) {
     const label = document.getElementById('plant-medium-selected-label');
     if (!select || !dropdown || !list || !label) return;
 
+    function selectedValues() {
+        return Array.from(list.querySelectorAll('input[name="plant-medium-option"]:checked')).map(input => input.value);
+    }
+
     function syncLabel() {
-        const option = select.options[select.selectedIndex];
-        label.textContent = option ? option.textContent : 'Choose a growing medium…';
+        const values = selectedValues();
+        label.textContent = values.length ? values.join(', ') : 'Choose a growing medium…';
+    }
+
+    function makeOption(option) {
+        const row = document.createElement('label');
+        row.className = 'flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'plant-medium-option';
+        checkbox.value = option.value;
+        checkbox.className = 'h-4 w-4 shrink-0 accent-emerald-600';
+        checkbox.addEventListener('change', syncLabel);
+        const text = document.createElement('span');
+        text.textContent = option.textContent;
+        row.append(checkbox, text);
+        return row;
     }
 
     function buildOptions() {
@@ -9951,30 +9963,30 @@ document.addEventListener('click', function(event) {
         });
     }
 
-    function makeOption(option) {
-        const item = document.createElement('button');
-        item.type = 'button';
-        item.className = 'w-full min-h-9 flex items-center rounded-lg px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300';
-        item.setAttribute('role', 'option');
-        item.dataset.value = option.value;
-        item.textContent = option.textContent;
-        item.setAttribute('aria-selected', option.value === select.value ? 'true' : 'false');
-        if (option.value === select.value) {
-            item.classList.add('bg-slate-200', 'dark:bg-slate-700', 'font-semibold');
-        }
-        item.addEventListener('click', function () {
-            select.value = option.value;
-            select.dispatchEvent(new Event('change', { bubbles: true }));
-            syncLabel();
-            dropdown.open = false;
+    window.getSelectedPlantMediums = function () {
+        return selectedValues();
+    };
+
+    window.setSelectedPlantMediums = function (saved) {
+        const values = Array.isArray(saved) ? saved : String(saved || '').split(' · ').filter(Boolean);
+        values.forEach(value => {
+            if (!Array.from(select.options).some(option => option.value === value)) {
+                const legacyOption = document.createElement('option');
+                legacyOption.value = value;
+                legacyOption.textContent = value + ' (saved value)';
+                select.add(legacyOption);
+            }
         });
-        return item;
-    }
+        buildOptions();
+        list.querySelectorAll('input[name="plant-medium-option"]').forEach(input => {
+            input.checked = values.includes(input.value);
+        });
+        syncLabel();
+    };
 
     dropdown.addEventListener('toggle', function () {
-        if (dropdown.open) buildOptions();
+        if (dropdown.open) syncLabel();
     });
-    select.addEventListener('change', syncLabel);
     document.addEventListener('click', function (event) {
         if (dropdown.open && !dropdown.contains(event.target)) dropdown.open = false;
     });
@@ -9984,8 +9996,8 @@ document.addEventListener('click', function(event) {
             document.getElementById('plant-medium-trigger').focus();
         }
     });
-    syncLabel();
     buildOptions();
+    syncLabel();
 })();
 </script>
 </body>
