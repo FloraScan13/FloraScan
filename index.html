@@ -10362,7 +10362,7 @@ document.addEventListener('click', function(event) {
             label.textContent = heading;
             const hint = document.createElement('p');
             hint.className = 'text-xs text-slate-500 dark:text-slate-400 mb-2';
-            hint.textContent = 'Or enter your own option here — no extra checkbox needed.';
+            hint.remove();
             const input = document.createElement('input');
             input.type = 'text';
             input.id = id;
