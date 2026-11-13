@@ -5868,9 +5868,32 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             emptyEl.classList.add('hidden');
 
+        async function refreshPlantCardPhoto(image) {
+            if (!image || image.dataset.refreshAttempted === 'true') {
+                if (image) image.outerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-regular fa-image text-2xl" aria-hidden="true"></i></div>';
+                return;
+            }
+            image.dataset.refreshAttempted = 'true';
+            const plant = plants.find(item => String(item.id) === String(image.dataset.plantId));
+            if (!plant || !plant.customIconPath) {
+                image.outerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-regular fa-image text-2xl" aria-hidden="true"></i></div>';
+                return;
+            }
+            try {
+                const freshUrl = await createJournalPhotoUrl(plant.customIconPath);
+                if (!freshUrl) throw new Error('Could not refresh plant photo URL.');
+                plant.customIconUrl = freshUrl;
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                image.src = freshUrl;
+            } catch (error) {
+                console.error('Could not refresh plant card photo:', error);
+                image.outerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-regular fa-image text-2xl" aria-hidden="true"></i></div>';
+            }
+        }
+
             const cardMarkup = (p, groupLocation) => {
                 const svgMarkup = p.customIconUrl
-                    ? '<img src="' + escapeHtml(p.customIconUrl) + '" alt="' + escapeHtml(p.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">'
+                    ? '<img src="' + escapeHtml(p.customIconUrl) + '" data-plant-id="' + escapeHtml(p.id) + '" onerror="refreshPlantCardPhoto(this)" alt="' + escapeHtml(p.name) + ' plant photo" style="display:block;width:100%;height:100%;object-fit:cover;border:0;box-shadow:none;" class="rounded-xl">'
                     : '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-regular fa-image text-2xl" aria-hidden="true"></i></div>';
                 // Use the actual rendered group heading as the key, so every card in a group gets the same details.
                 const plantLocation = (groupLocation || p.location || '').trim();
@@ -9534,6 +9557,29 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             </div>
         </div>
     </div>
+<style id="plant-photo-icons-no-frame">
+    /* Custom plant photos display edge-to-edge without the old icon badge frame. */
+    .plant-photo-no-frame {
+        border: 0 !important;
+        outline: 0;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+    #journal-icon-container.plant-photo-no-frame:focus,
+    #journal-icon-container.plant-photo-no-frame:focus-visible {
+        outline: 2px solid #c6537b !important;
+        outline-offset: 3px;
+    }
+    .plant-photo-no-frame img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+</style>
 </body>
 </html>
 
@@ -9686,26 +9732,4 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
   #variety-suggestions { z-index: 9999 !important; max-height: 40vh; overflow-y: auto; }
 }
 </style>
-<style id="plant-photo-icons-no-frame">
-    /* Custom plant photos display edge-to-edge without the old icon badge frame. */
-    .plant-photo-no-frame {
-        border: 0 !important;
-        outline: 0;
-        box-shadow: none !important;
-        background: transparent !important;
-        padding: 0 !important;
-    }
-    #journal-icon-container.plant-photo-no-frame:focus,
-    #journal-icon-container.plant-photo-no-frame:focus-visible {
-        outline: 2px solid #c6537b !important;
-        outline-offset: 3px;
-    }
-    .plant-photo-no-frame img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border: 0 !important;
-        box-shadow: none !important;
-    }
-</style>
+
