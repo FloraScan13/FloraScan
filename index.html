@@ -3174,6 +3174,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <p id="plant-multisow-help" class="text-[11px] text-slate-500 mt-1">Total seeds sown is calculated automatically: number of pots × seeds per pot.</p>
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Date Planted / Sown</label>
+                        <input type="date" id="plant-date" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-location">Growing Location</label>
+                        <select id="plant-location" required aria-required="true" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                            <option value="">Choose a location</option>
+                        </select>
+                    
+                    </div>
                     <div class="sm:col-span-2">
                         <div class="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
                             <div>
@@ -3297,17 +3308,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                         </div>
                         <p class="text-[11px] text-slate-500 mt-1"></p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Date Planted / Sown</label>
-                        <input type="date" id="plant-date" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-location">Growing Location</label>
-                        <select id="plant-location" required aria-required="true" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                            <option value="">Choose a location</option>
-                        </select>
-                    
                     </div>
                 </div>
 
