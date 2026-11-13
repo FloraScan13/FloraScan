@@ -10029,3 +10029,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 }
 </style>
 
+<style id="journal-header-mobile-use-full-right-space">
+@media (max-width: 639px) {
+    /* Extend the action grid into the same 96px of left-side space on both sides.
+       The earlier width:100% mobile rule was cancelling the expanded width. */
+    #journal-header-actions {
+        width: calc(100% + 96px) !important;
+        max-width: none !important;
+        margin-left: -96px !important;
+        box-sizing: border-box !important;
+    }
+    #journal-header-actions::before {
+        left: 0 !important;
+        right: 0 !important;
+    }
+}
+</style>
+
