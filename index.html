@@ -10829,3 +10829,72 @@ body.plant-growing-modal-open { overflow: hidden !important; }
     });
 })();
 </script>
+
+
+<style id="plant-picker-fixed-header-scroll-layout">
+/* Keep the close tab and wave in the non-scrolling modal frame. Only the options body scrolls. */
+#plant-medium-dropdown[open] #plant-medium-options,
+#plant-setup-dropdown[open] #plant-setup-options {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    padding-top: 42px !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-scroll-area,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-scroll-area {
+    display: block !important;
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    scrollbar-width: thin;
+    padding-bottom: 2px !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-close,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-close {
+    position: absolute !important;
+    top: 0 !important;
+    right: 16px !important;
+    flex: 0 0 auto !important;
+}
+</style>
+
+<script id="plant-picker-fixed-header-scroll-structure">
+(function () {
+    const panels = [
+        ['plant-medium-dropdown', 'plant-medium-options'],
+        ['plant-setup-dropdown', 'plant-setup-options']
+    ];
+
+    function structurePanel(panel) {
+        if (!panel) return;
+        let scroller = panel.querySelector(':scope > .plant-picker-scroll-area');
+        if (!scroller) {
+            scroller = document.createElement('div');
+            scroller.className = 'plant-picker-scroll-area';
+            panel.appendChild(scroller);
+        }
+
+        // Move all option content into the scrolling body, leaving the close tab
+        // and the decorative wave/header attached to the stationary modal frame.
+        Array.from(panel.children).forEach(child => {
+            if (child !== scroller && !child.classList.contains('plant-picker-close')) {
+                scroller.appendChild(child);
+            }
+        });
+    }
+
+    panels.forEach(([dropdownId, panelId]) => {
+        const dropdown = document.getElementById(dropdownId);
+        const panel = document.getElementById(panelId);
+        if (!dropdown || !panel) return;
+
+        structurePanel(panel);
+        const observer = new MutationObserver(() => structurePanel(panel));
+        observer.observe(panel, { childList: true });
+        dropdown.addEventListener('toggle', () => {
+            if (dropdown.open) structurePanel(panel);
+        });
+    });
+})();
+</script>
