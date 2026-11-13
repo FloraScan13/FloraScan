@@ -3155,9 +3155,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">2. Select Growing Setup</label>
-                                <p id="plant-setup-help" class="mb-1 text-xs text-slate-500 dark:text-slate-400">Choose a growing setup, then tick as many options as apply.</p>
+                                <p id="plant-setup-help" class="mb-1 text-xs text-slate-500 dark:text-slate-400">Setup, then tick as many options as apply.</p>
                                 <details id="plant-setup-dropdown" class="w-full">
-                                    <summary class="w-full flex cursor-pointer list-none items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span>Choose a growing setup</span><i class="fa-solid fa-chevron-down text-slate-500" aria-hidden="true"></i></summary>
+                                    <summary class="w-full flex cursor-pointer list-none items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span>Setup</span><i class="fa-solid fa-chevron-down text-slate-500" aria-hidden="true"></i></summary>
                                 <div id="plant-setup-options" class="mt-2 w-full max-h-64 overflow-y-auto rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 space-y-3" role="group" aria-describedby="plant-setup-help">
                                     <fieldset><legend class="text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">Pots, containers and fabric planters</legend><div class="flex flex-col gap-2">
                                         <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Standard round pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Standard round pot</span></label>
@@ -10389,7 +10389,7 @@ document.addEventListener('click', function(event) {
                 .filter(input => input.value !== 'Other').map(input => input.value);
             const custom = setupInput?.value.trim();
             if (custom) values.push(custom);
-            setupSummary.textContent = values.length ? values.join(', ') : 'Choose a growing setup';
+            setupSummary.textContent = values.length ? values.join(', ') : 'Setup';
         }
     };
 
