@@ -10415,6 +10415,8 @@ document.addEventListener('click', function(event) {
     const originalSet = window.setSelectedPlantMediums;
     window.setSelectedPlantMediums = function (saved) {
         if (originalSet) originalSet(saved);
+        // The original renderer rebuilds the medium list, so re-add the custom row afterwards.
+        addOtherOption(mediumList, 'medium', 'plant-medium-other', 'Enter your growing medium');
         const values = Array.isArray(saved) ? saved : String(saved || '').split(' · ').filter(Boolean);
         const other = mediumList.querySelector('input[name="plant-medium-option"][value="Other"]');
         if (other) other.checked = values.includes('Other');
