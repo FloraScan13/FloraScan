@@ -7931,15 +7931,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             ].join('\n');
             const url = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
             const opened = window.open(url, '_blank', 'noopener,noreferrer');
-            if (!opened) {
-                if (navigator.clipboard?.writeText) {
-                    navigator.clipboard.writeText(prompt).then(
-                        () => alert('Your growing-guide request has been copied. Paste it into your AI assistant.'),
-                        () => alert('Your browser blocked the new tab. Please allow pop-ups for Flora Scan and try again.')
-                    );
-                } else {
-                    alert('Your browser blocked the new tab. Please allow pop-ups for Flora Scan and try again.');
-                }
+            if (!opened && navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(prompt).catch(() => {});
             }
         }
 
