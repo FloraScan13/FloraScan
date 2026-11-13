@@ -3203,8 +3203,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                             <span id="plant-medium-selected-label">Medium</span>
                                             <i class="fa-solid fa-chevron-down text-slate-500" aria-hidden="true"></i>
                                         </summary>
-                                        <div id="plant-medium-options" class="plant-picker-panel mt-2 w-full max-h-64 overflow-y-auto rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 space-y-3" role="listbox" aria-label="Growing medium options">
-                                            <button type="button" class="plant-picker-close" aria-label="Close growing medium options" onclick="this.closest('details').open=false"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+                                        <div id="plant-medium-options" class="plant-picker-panel mt-2 w-full max-h-64 overflow-y-auto rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 space-y-3" role="listbox" aria-label="Growing medium options"></div>
                                     </details>
 
                                 </div>
@@ -10053,6 +10052,17 @@ document.addEventListener('click', function(event) {
 
     function buildOptions() {
         list.replaceChildren();
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'plant-picker-close';
+        closeButton.setAttribute('aria-label', 'Close growing medium options');
+        closeButton.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+        closeButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            dropdown.open = false;
+        });
+        list.appendChild(closeButton);
         Array.from(select.children).forEach(group => {
             if (group.tagName === 'OPTGROUP') {
                 const section = document.createElement('section');
