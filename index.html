@@ -10521,3 +10521,12 @@ body.plant-growing-modal-open { overflow: hidden !important; }
     });
 })();
 </script>
+
+
+<style id="plant-growing-modal-hide-underlying-trigger">
+/* Hide the original field trigger while its selection panel is open. */
+#plant-medium-dropdown[open] > summary,
+#plant-setup-dropdown[open] > summary {
+    display: none !important;
+}
+</style>
