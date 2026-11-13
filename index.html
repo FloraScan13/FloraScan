@@ -9615,8 +9615,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 @media (max-width: 639px) {
     #journal-header-actions {
         display: grid !important;
-        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         width: 100% !important;
+        align-items: stretch !important;
     }
     #journal-header-actions > button,
     #journal-header-actions button {
@@ -9637,6 +9638,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     #journal-nfc-unassign-row {
         flex-direction: column !important;
         align-items: stretch !important;
+        width: 100% !important;
+        grid-column: auto !important;
     }
     #journal-nfc-tag-actions button,
     #journal-unassign-tag-actions button,
@@ -9647,8 +9650,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     }
     #journal-amount-editor > div > .flex,
     #journal-plant-details-editor > div:last-child {
-        display: flex !important;
-        flex-direction: column !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         align-items: stretch !important;
         width: 100% !important;
     }
