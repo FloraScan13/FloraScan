@@ -3169,9 +3169,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                     </details>
                     <div class="flex flex-col items-center gap-2 flex-shrink-0">
-                        <button type="button" id="journal-icon-container" onclick="openJournalPlantIconModal()" aria-label="Edit plant photo" title="Click to edit plant photo" class="w-20 h-20 rounded-2xl plant-photo-no-frame flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c6537b]">
-                            <!-- Plant photo rendered dynamically -->
-                        </button>
+                        <div class="relative h-20 w-20">
+                            <button type="button" id="journal-icon-container" onclick="openJournalPlantIconModal()" aria-label="Edit plant photo" title="Click to edit plant photo" class="absolute inset-0 h-full w-full rounded-2xl plant-photo-no-frame flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c6537b]">
+                                <!-- Plant photo rendered dynamically -->
+                            </button>
+                            <span aria-hidden="true" class="pointer-events-none absolute bottom-0 right-0 z-10 flex h-6 w-6 translate-x-1 translate-y-1 items-center justify-center rounded-full border-2 border-white bg-[#c6537b] text-white shadow-sm">
+                                <i class="fa-solid fa-camera text-[10px]"></i>
+                            </span>
+                        </div>
                         <input id="journal-icon-file-input" type="file" accept="image/*" class="hidden" onchange="handleJournalPlantIconFile(this)">
                     </div>
                     <div class="flex-1 space-y-2">
