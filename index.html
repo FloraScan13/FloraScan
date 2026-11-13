@@ -3144,7 +3144,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                     </details>
                     <div class="flex flex-col items-center gap-2 flex-shrink-0">
-                        <button type="button" id="journal-icon-container" onclick="openJournalPlantIconModal()" aria-label="Edit plant photo" title="Click to edit plant photo" class="w-20 h-20 rounded-2xl crop-badge-container p-2 flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c6537b]">
+                        <button type="button" id="journal-icon-container" onclick="openJournalPlantIconModal()" aria-label="Edit plant photo" title="Click to edit plant photo" class="w-20 h-20 rounded-2xl plant-photo-no-frame flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c6537b]">
                             <!-- Plant photo rendered dynamically -->
                         </button>
                         <input id="journal-icon-file-input" type="file" accept="image/*" class="hidden" onchange="handleJournalPlantIconFile(this)">
@@ -5909,7 +5909,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                         </div>
                         <div class="p-5 flex space-x-4 items-center" style="background-color: #f7f6f0;">
-                            <div class="w-16 h-16 rounded-2xl crop-badge-container p-2 flex items-center justify-center flex-shrink-0 shadow-sm">${svgMarkup}</div>
+                            <div class="w-16 h-16 flex items-center justify-center flex-shrink-0 ${p.customIconUrl ? 'plant-photo-no-frame' : 'rounded-2xl crop-badge-container p-2 shadow-sm'}">${svgMarkup}</div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
 
@@ -9685,4 +9685,27 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 @media (max-width: 639px) {
   #variety-suggestions { z-index: 9999 !important; max-height: 40vh; overflow-y: auto; }
 }
+</style>
+<style id="plant-photo-icons-no-frame">
+    /* Custom plant photos display edge-to-edge without the old icon badge frame. */
+    .plant-photo-no-frame {
+        border: 0 !important;
+        outline: 0;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+    #journal-icon-container.plant-photo-no-frame:focus,
+    #journal-icon-container.plant-photo-no-frame:focus-visible {
+        outline: 2px solid #c6537b !important;
+        outline-offset: 3px;
+    }
+    .plant-photo-no-frame img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
 </style>
