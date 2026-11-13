@@ -1962,6 +1962,29 @@ textarea {
         outline: none !important;
         box-shadow: none !important;
     }
+
+        /* Give the opened Growing Medium menu the same soft surface and readable palette as Growing Setup. */
+        #plant-medium {
+            color-scheme: light;
+        }
+        #plant-medium option,
+        #plant-medium optgroup {
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        #plant-medium option {
+            padding: 8px 12px;
+        }
+        #plant-medium option:checked {
+            background: #e2e8f0 linear-gradient(0deg, #e2e8f0 0%, #e2e8f0 100%);
+            color: #1e293b;
+        }
+        #plant-medium:focus,
+        #plant-medium:focus-visible {
+            outline: none;
+            border-color: #cbd5e1;
+            box-shadow: 0 0 0 2px rgba(148, 163, 184, .16);
+        }
 </style>
     <!-- Browser address-bar favicon uses the same leaf as the app shortcut: ./leaf-icon-v2.svg -->
 <style>
