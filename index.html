@@ -3254,10 +3254,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Initial Notes & Care Guide</label>
-                    <textarea id="plant-notes" rows="3" placeholder="Nutrient routine, sun exposure, pruning tips..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
-                </div>
+                <textarea id="plant-notes" class="hidden" aria-hidden="true"></textarea>
 
                 <div class="flex justify-end space-x-3 pt-2">
                     <button type="button" onclick="closePlantModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400  dark: transition">Cancel</button>
