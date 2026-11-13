@@ -7936,7 +7936,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     'extension.usu.edu', 'extension.illinois.edu'
                 ]);
                 const typeLabels = { growing: 'Growing guide', care: 'Care advice', plant: 'Plant profile' };
-                list.innerHTML = references.map(reference => {
+                // Always put growing guides first, including when references come from cache.
+                const sortedReferences = references.slice().sort((a, b) => {
+                    const rank = value => value === 'growing' ? 0 : value === 'care' ? 1 : 2;
+                    return rank(a && a.match_type) - rank(b && b.match_type);
+                });
+                list.innerHTML = sortedReferences.map(reference => {
                     const title = String(reference.article_title || 'Plant information');
                     const url = String(reference.article_url || '');
                     let safeUrl = '';
