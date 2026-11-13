@@ -4973,7 +4973,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-icon-key').value = selectedKey;
             const currentItem = CROP_ICON_LIBRARY.find(i => i.key === selectedKey);
             if (currentItem) {
-                document.getElementById('selected-icon-name-display').textContent = currentItem.label;
+                const selectedIconNameDisplay = document.getElementById('selected-icon-name-display');
+                if (selectedIconNameDisplay) selectedIconNameDisplay.textContent = currentItem.label;
             }
         }
 
