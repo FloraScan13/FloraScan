@@ -3217,6 +3217,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                             <div id="journal-header-actions" class="w-full grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 mt-1 pt-2 border-t border-slate-200 dark:border-slate-700">
                                 <button type="button" onclick="duplicatePlantJournal(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white  text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Create a new journal using this plant's details"><i class="fa-solid fa-copy text-emerald-700"></i> Duplicate Plant</button>
+                                <button type="button" onclick="openAiGrowingGuide()" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-[#fdf0f4] text-[#963d5d] border border-[#e8a7bd] px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Open a personalised growing guide in ChatGPT"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Growing Guide</button>
                                 <button type="button" onclick="downloadPlantJournalPDF(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white  text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Export this plant journal as a PDF"><i class="fa-solid fa-file-pdf text-black" aria-hidden="true"></i> Download PDF</button>
                                 <div id="journal-nfc-unassign-row" class="col-span-2 sm:col-span-1" style="display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; align-items:center; gap:8px; width:auto; min-width:0; flex:0 0 auto;">
                                     <div id="journal-nfc-tag-actions" class="min-w-0" style="flex:1 1 0%; min-width:0;">
@@ -7892,6 +7893,53 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             } catch (error) {
                 console.warn('Weekly outdoor rainfall could not be recorded:', error);
+            }
+        }
+
+        function openAiGrowingGuide() {
+            const plantId = document.getElementById('log-plant-id')?.value;
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            if (!plant) {
+                alert('Please close and reopen this plant journal, then try again.');
+                return;
+            }
+
+            const details = [
+                plant.date ? 'Recorded planting date: ' + plant.date : '',
+                plant.medium ? 'Growing medium: ' + plant.medium : '',
+                plant.location ? 'Garden location: ' + plant.location : '',
+                plant.notes ? 'My notes: ' + plant.notes : ''
+            ].filter(Boolean);
+            const prompt = [
+                'Create a practical, personalised growing guide for the plant in my Flora Scan journal.',
+                '',
+                'PLANT',
+                'Name: ' + String(plant.name || 'Unknown plant'),
+                'Variety: ' + String(plant.variety || 'Not specified'),
+                ...details,
+                '',
+                'Make the guide specific to this plant and named variety wherever reliable information exists. Cover:',
+                '- sowing and propagation, planting out and timing',
+                '- ideal light, soil / growing medium, spacing and support',
+                '- watering, feeding and ongoing care',
+                '- pruning, common pests and diseases, and prevention',
+                '- signs of problems and practical troubleshooting',
+                '- when and how to harvest, including ways to extend cropping where relevant',
+                '- a simple month-by-month seasonal checklist',
+                '',
+                'Tailor seasonal advice to my local climate. If my region is not known and it materially affects the advice, ask me where I garden rather than guessing. Clearly distinguish variety-specific facts from general plant advice. Include links to reliable horticultural sources for important recommendations, and do not invent citations. Finish with a short checklist I can follow.'
+            ].join('\\n');
+            const url = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
+            const opened = window.open(url, '_blank', 'noopener,noreferrer');
+            if (!opened) {
+                if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(prompt).then(
+                        () => alert('Your growing-guide request has been copied. Paste it into your AI assistant.'),
+                        () => alert('Your browser blocked the new tab. Please allow pop-ups for Flora Scan and try again.')
+                    );
+                } else {
+                    alert('Your browser blocked the new tab. Please allow pop-ups for Flora Scan and try again.');
+                }
             }
         }
 
