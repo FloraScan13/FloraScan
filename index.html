@@ -4233,15 +4233,86 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         // Fetch plants from Supabase Cloud or Local Storage Fallback
         const JOURNAL_PHOTO_BUCKET = 'journal-photos';
+        const JOURNAL_PHOTO_SIGNED_URL_TTL = 60 * 60 * 24 * 7;
+        const JOURNAL_PHOTO_URL_CACHE_KEY = 'flora_journal_photo_url_cache_v1';
+        const JOURNAL_PHOTO_URL_REFRESH_BUFFER = 15 * 60 * 1000;
+        const journalPhotoUrlRequests = new Map();
 
-        async function createJournalPhotoUrl(path) {
-            if (!supabaseClient || !path || path.startsWith('data:') || path.startsWith('blob:')) return path;
-            const { data, error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).createSignedUrl(path, 60 * 60 * 24 * 7);
-            if (error) {
-                console.error('Could not create journal photo URL:', error);
-                return '';
+        function getJournalPhotoUrlCache() {
+            try {
+                const cache = JSON.parse(localStorage.getItem(JOURNAL_PHOTO_URL_CACHE_KEY) || '{}');
+                return cache && typeof cache === 'object' && !Array.isArray(cache) ? cache : {};
+            } catch (_) {
+                return {};
             }
-            return data.signedUrl;
+        }
+
+        function getJournalPhotoUrlCacheId(path) {
+            // Keep cached private URLs isolated by Supabase project and signed-in account.
+            return [appSettings.supabaseUrl || '', currentUser?.id || 'signed-out', path].join('|');
+        }
+
+        function clearJournalPhotoUrlCache(path) {
+            if (!path) return;
+            try {
+                const cache = getJournalPhotoUrlCache();
+                delete cache[getJournalPhotoUrlCacheId(path)];
+                localStorage.setItem(JOURNAL_PHOTO_URL_CACHE_KEY, JSON.stringify(cache));
+            } catch (_) {
+                // URL caching is an optimisation; storage failures must not block photo changes.
+            }
+        }
+
+        async function createJournalPhotoUrl(path, forceRefresh = false) {
+            if (!supabaseClient || !path || path.startsWith('data:') || path.startsWith('blob:')) return path;
+
+            const cacheId = getJournalPhotoUrlCacheId(path);
+            const now = Date.now();
+            if (!forceRefresh) {
+                const cached = getJournalPhotoUrlCache()[cacheId];
+                if (cached && cached.url && Number(cached.expiresAt) > now + JOURNAL_PHOTO_URL_REFRESH_BUFFER) {
+                    return cached.url;
+                }
+                if (journalPhotoUrlRequests.has(cacheId)) return journalPhotoUrlRequests.get(cacheId);
+            }
+
+            const request = (async () => {
+                const { data, error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET)
+                    .createSignedUrl(path, JOURNAL_PHOTO_SIGNED_URL_TTL);
+                if (error) {
+                    console.error('Could not create journal photo URL:', error);
+                    return '';
+                }
+
+                const signedUrl = data.signedUrl;
+                try {
+                    const cache = getJournalPhotoUrlCache();
+                    // Drop expired entries and cap the cache so it remains small on long-lived devices.
+                    Object.keys(cache).forEach(key => {
+                        if (!cache[key] || Number(cache[key].expiresAt) <= now) delete cache[key];
+                    });
+                    cache[cacheId] = {
+                        url: signedUrl,
+                        expiresAt: now + JOURNAL_PHOTO_SIGNED_URL_TTL * 1000
+                    };
+                    const keys = Object.keys(cache);
+                    if (keys.length > 500) {
+                        keys.sort((a, b) => Number(cache[a]?.expiresAt || 0) - Number(cache[b]?.expiresAt || 0));
+                        keys.slice(0, keys.length - 500).forEach(key => delete cache[key]);
+                    }
+                    localStorage.setItem(JOURNAL_PHOTO_URL_CACHE_KEY, JSON.stringify(cache));
+                } catch (_) {
+                    // Continue with the signed URL even when browser storage is unavailable.
+                }
+                return signedUrl;
+            })();
+
+            journalPhotoUrlRequests.set(cacheId, request);
+            try {
+                return await request;
+            } finally {
+                if (journalPhotoUrlRequests.get(cacheId) === request) journalPhotoUrlRequests.delete(cacheId);
+            }
         }
 
         async function uploadJournalPhoto(dataUrl, plantId, logId, index) {
@@ -4254,6 +4325,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 upsert: true
             });
             if (error) throw error;
+            // A path may be overwritten when a photo is changed; do not keep its old signed URL.
+            clearJournalPhotoUrlCache(path);
             return path;
         }
 
@@ -4575,6 +4648,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!safePaths.length) return;
             const { error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).remove(safePaths);
             if (error) throw error;
+            safePaths.forEach(clearJournalPhotoUrlCache);
         }
 
         async function deletePlantFromCloud(plantId) {
@@ -5910,7 +5984,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return;
             }
             try {
-                const freshUrl = await createJournalPhotoUrl(plant.customIconPath);
+                const freshUrl = await createJournalPhotoUrl(plant.customIconPath, true);
                 if (!freshUrl) throw new Error('Could not refresh plant photo URL.');
                 plant.customIconUrl = freshUrl;
                 localStorage.setItem('flora_plants', JSON.stringify(plants));
