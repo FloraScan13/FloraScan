@@ -3144,10 +3144,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                     </details>
                     <div class="flex flex-col items-center gap-2 flex-shrink-0">
-                        <div id="journal-icon-container" class="w-20 h-20 rounded-2xl crop-badge-container p-2 flex items-center justify-center">
+                        <button type="button" id="journal-icon-container" onclick="toggleJournalPlantIconEditor()" aria-label="Edit plant photo" title="Click to edit plant photo" class="w-20 h-20 rounded-2xl crop-badge-container p-2 flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c6537b]">
                             <!-- Plant photo rendered dynamically -->
-                        </div>
-                        <div class="flex items-center gap-1">
+                        </button>
+                        <div id="journal-icon-edit-controls" class="hidden items-center gap-1">
                             <button type="button" onclick="document.getElementById('journal-icon-file-input').click()" class="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50" title="Add or change plant photo"><i class="fa-solid fa-camera mr-1"></i><span id="journal-icon-change-label">Add photo</span></button>
                             <button type="button" id="journal-icon-remove-button" onclick="removeJournalPlantIcon()" class="hidden rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-600 shadow-sm hover:bg-slate-50" title="Remove plant photo"><i class="fa-solid fa-xmark"></i></button>
                         </div>
@@ -8430,6 +8430,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             `).join('');
         }
 
+        function toggleJournalPlantIconEditor() {
+            const controls = document.getElementById('journal-icon-edit-controls');
+            if (controls) {
+                controls.classList.toggle('hidden');
+                controls.classList.toggle('flex');
+            }
+        }
+
+        function hideJournalPlantIconEditor() {
+            const controls = document.getElementById('journal-icon-edit-controls');
+            if (controls) {
+                controls.classList.add('hidden');
+                controls.classList.remove('flex');
+            }
+        }
+
         function updateJournalPlantIconControls(plant) {
             const changeLabel = document.getElementById('journal-icon-change-label');
             const removeButton = document.getElementById('journal-icon-remove-button');
@@ -8469,6 +8485,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const container = document.getElementById('journal-icon-container');
                 if (container) container.innerHTML = '<img src="' + escapeHtml(photoUrl) + '" alt="' + escapeHtml(plant.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">';
                 updateJournalPlantIconControls(plant);
+                hideJournalPlantIconEditor();
                 renderPlants();
             } catch (error) {
                 console.error('Could not update plant journal photo:', error);
