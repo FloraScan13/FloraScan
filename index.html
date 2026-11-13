@@ -10371,8 +10371,12 @@ document.addEventListener('click', function(event) {
             input.autocomplete = 'off';
             input.className = 'w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-sm';
             panel.append(label, hint, input);
-            list.appendChild(panel);
             input.addEventListener('input', syncPlantOtherFields);
+        }
+        // Keep the custom-entry field at the very top, even after the medium
+        // options are rebuilt when an existing plant is loaded.
+        if (list.firstElementChild !== panel) {
+            list.insertBefore(panel, list.firstElementChild);
         }
     }
 
