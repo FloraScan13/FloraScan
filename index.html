@@ -229,9 +229,9 @@
         body[data-accent="rose"] { --flora-50:#fff1f2; --flora-100:#ffe4e6; --flora-400:#fb7185; --flora-500:#f43f5e; --flora-600:#e11d48; --flora-700:#be123c; --flora-800:#9f1239; --flora-900:#881337; }
         body[data-accent="amber"] { --flora-50:#fffbeb; --flora-100:#fef3c7; --flora-400:#fbbf24; --flora-500:#f59e0b; --flora-600:#d97706; --flora-700:#b45309; --flora-800:#92400e; --flora-900:#78350f; }
         body[data-accent] [class~="bg-emerald-600"] { background-color: var(--flora-600) !important; }
-        body[data-accent] [class~="hover:bg-emerald-700"]:hover { background-color: var(--flora-700) !important; }
+        body[data-accent] [class~=""]:hover { background-color: var(--flora-700) !important; }
         body[data-accent] [class~="bg-emerald-700"] { background-color: var(--flora-700) !important; }
-        body[data-accent] [class~="hover:bg-emerald-800"]:hover { background-color: var(--flora-800) !important; }
+        body[data-accent] [class~=""]:hover { background-color: var(--flora-800) !important; }
         body[data-accent] [class~="text-emerald-600"] { color: var(--flora-600) !important; }
         body[data-accent] [class~="text-emerald-700"] { color: var(--flora-700) !important; }
         body[data-accent] [class~="text-emerald-800"] { color: var(--flora-800) !important; }
@@ -694,7 +694,7 @@ textarea {
         button.bg-emerald-600, button[class~="bg-emerald-600"] {
             background-color: #31583b !important;
         }
-        button.hover\:bg-emerald-700:hover, button[class~="hover:bg-emerald-700"]:hover {
+        button.hover\:bg-emerald-700:hover, button[class~=""]:hover {
             background-color: #24462e !important;
         }
         input, select, textarea {
@@ -2557,15 +2557,15 @@ textarea {
                 <i class="fa-solid fa-seedling"></i>
                 <span>Plants</span>
             </button>
-            <button onclick="switchTab('scanner')" id="tab-scanner" class="flex-1 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 hover:text-slate-900" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:4px;">
+            <button onclick="switchTab('scanner')" id="tab-scanner" class="flex-1 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-400 " style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:4px;">
                 <span id="scanner-tab-icon" style="display:flex; width:100%; align-items:center; justify-content:center; text-align:center;"><i class="fa-solid fa-qrcode"></i></span>
                 <span id="scanner-tab-label" style="display:block; width:100%; text-align:center;">QR Scan</span>
             </button>
-            <button onclick="openAddPlantModal()" id="tab-add-plant" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
+            <button onclick="openAddPlantModal()" id="tab-add-plant" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 ">
                 <i class="fa-solid fa-plus"></i>
                 <span>Add Plant</span>
             </button>
-            <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
+            <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 ">
                 <i class="fa-solid fa-sliders"></i>
                 <span>Settings</span>
             </button>
@@ -2602,7 +2602,7 @@ textarea {
                 </div>
                 <h3 class="text-lg font-semibold mb-1" style="color: #963D5D;">No plants added yet</h3>
                 <p class="text-sm mb-6 max-w-sm mx-auto" style="color: #8F5368;">This location is ready to grow. Add your first plant here to start tracking its progress.</p>
-                <button onclick="openAddPlantModal()" class="inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm hover:shadow transition" style="background-color: #C4557C; --tw-ring-color: rgba(196,85,124,.45);">
+                <button onclick="openAddPlantModal()" class="inline-flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm  transition" style="background-color: #C4557C; --tw-ring-color: rgba(196,85,124,.45);">
                     <i class="fa-solid fa-plus"></i>
                     Add Your First Plant
                 </button>
@@ -2661,7 +2661,7 @@ textarea {
                         <option value="qr">QR code scanning</option>
                         <option value="none">No scanner</option>
                     </select>
-                    <button id="save-scanner-preference-btn" type="button" onclick="saveScannerPreference()" class="flex-shrink-0 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition shadow-sm">Save preference</button>
+                    <button id="save-scanner-preference-btn" type="button" onclick="saveScannerPreference()" class="flex-shrink-0 px-5 py-2.5 rounded-xl bg-emerald-600  text-white text-sm font-semibold transition shadow-sm">Save preference</button>
                 </div>
                 <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                     <input id="setting-remember-scanner-preference" type="checkbox" checked onchange="scannerPreferenceChanged()" class="rounded border-slate-300 focus:ring-2" style="accent-color:#C4557C;">
@@ -2688,7 +2688,7 @@ textarea {
                     </div>
                 </div>
                 <div class="flex justify-end pt-2">
-                    <button onclick="saveBrandingSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">
+                    <button onclick="saveBrandingSettings()" class="bg-emerald-600  text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">
                         Save Profile Preferences
                     </button>
                 </div>
@@ -2709,7 +2709,7 @@ textarea {
                     <div class="flex flex-col sm:flex-row gap-2">
                         <input id="new-plant-location" type="text" maxlength="80" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="New location name" onkeydown="if(event.key==='Enter'){event.preventDefault();addPlantLocation();}">
                         <select id="new-plant-location-type" aria-label="Location type" class="px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm"><option value="indoor">Indoor</option><option value="outdoor">Outdoor</option></select>
-                        <button type="button" onclick="addPlantLocation()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition"><i class="fa-solid fa-plus mr-1"></i> Add Location</button>
+                        <button type="button" onclick="addPlantLocation()" class="bg-emerald-600  text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow transition"><i class="fa-solid fa-plus mr-1"></i> Add Location</button>
                     </div>
                 </div>
             </div>
@@ -2754,7 +2754,7 @@ textarea {
                             <label for="library-new-plant-variety" class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Variety (optional)</label>
                             <input id="library-new-plant-variety" type="text" maxlength="80" placeholder="e.g. Sungold" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm">
                         </div>
-                        <button type="button" onclick="addPlantToPersonalLibrary()" class="w-full sm:w-auto px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i> Add to library</button>
+                        <button type="button" onclick="addPlantToPersonalLibrary()" class="w-full sm:w-auto px-4 py-2 rounded-lg bg-emerald-700  text-white text-sm font-semibold"><i class="fa-solid fa-plus mr-1"></i> Add to library</button>
                     </div>
                     <div id="my-plant-library-az" class="flex flex-wrap gap-1.5" aria-label="Filter plant library alphabetically"></div>
                     <div id="my-plant-library-list" class="space-y-2">
@@ -2811,7 +2811,7 @@ textarea {
                     </div>
                     <div class="flex items-center justify-between pt-1">
                         <p class="text-[11px] text-slate-400">If unconfigured, Flora Scan seamlessly operates using local storage.</p>
-                        <button onclick="saveSupabaseCredentials()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition">
+                        <button onclick="saveSupabaseCredentials()" class="bg-emerald-700  text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition">
                             Connect Supabase
                         </button>
                     </div>
@@ -2834,15 +2834,15 @@ textarea {
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1">
-                            <button onclick="handleSupabaseLogin()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                            <button onclick="handleSupabaseLogin()" class="bg-emerald-600  text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
                                 <i class="fa-solid fa-right-to-bracket"></i>
                                 <span>Sign In</span>
                             </button>
-                            <button onclick="handleSupabaseSignUp()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                            <button onclick="handleSupabaseSignUp()" class="bg-slate-800  text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
                                 <i class="fa-solid fa-user-plus"></i>
                                 <span>Register Account</span>
                             </button>
-                            <button type="button" onclick="handleSupabasePasswordReset()" class="text-emerald-700 hover:text-emerald-900 underline text-xs font-semibold px-2 py-2">
+                            <button type="button" onclick="handleSupabasePasswordReset()" class="text-emerald-700  underline text-xs font-semibold px-2 py-2">
                                 Forgot password?
                             </button>
                         </div>
@@ -2860,10 +2860,10 @@ textarea {
                             </div>
                         </div>
                         <div class="flex flex-wrap items-center gap-2 pl-12 sm:pl-0">
-                            <button onclick="handleSupabaseChangePassword()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap">
+                            <button onclick="handleSupabaseChangePassword()" class="bg-emerald-600  text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap">
                                 Change Password
                             </button>
-                            <button onclick="handleSupabaseSignOut()" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap">
+                            <button onclick="handleSupabaseSignOut()" class="bg-slate-200  dark:bg-slate-800 dark: text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap">
                                 Sign Out
                             </button>
                         </div>
@@ -2940,7 +2940,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             </div>
             <form id="app-feedback-form" onsubmit="sendAppFeedback(event)" class="p-5">
                 <textarea id="app-feedback-message" rows="5" class="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800" placeholder="Write your feedback or comments..." required></textarea>
-                <button type="submit" class="mt-3 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-800 transition flex items-center justify-center gap-2">
+                <button type="submit" class="mt-3 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white  transition flex items-center justify-center gap-2">
                     <i class="fa-regular fa-paper-plane" aria-hidden="true"></i>
                     <span>Submit feedback</span>
                 </button>
@@ -3005,7 +3005,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     <div id="plant-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="relative bg-white dark:bg-slate-800 max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-8">
             <div class="absolute top-3 right-3 z-10">
-                <button type="button" onclick="closePlantModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#e4eadf] hover:bg-[#d8e4d2] text-[#31583b] transition" aria-label="Close plant form"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="closePlantModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#e4eadf]  text-[#31583b] transition" aria-label="Close plant form"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="plant-form" onsubmit="handlePlantSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
                 <h3 id="modal-title" class="hidden">Add New Plant</h3>
@@ -3041,7 +3041,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <div id="plant-qr-link-section" class="p-4 rounded-xl space-y-3 bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
                     <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300"><i class="fa-solid fa-qrcode"></i><span>LINK A QR CODE</span></div>
                     <p class="text-xs text-emerald-800/80 dark:text-emerald-200/80">Scan here to assign its unique ID to this new plant.</p>
-                    <button type="button" onclick="startQrScan('link')" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 text-sm font-semibold transition"><i class="fa-solid fa-camera mr-1"></i> Scan QR Code</button>
+                    <button type="button" onclick="startQrScan('link')" class="w-full rounded-xl bg-emerald-600  text-white py-2.5 text-sm font-semibold transition"><i class="fa-solid fa-camera mr-1"></i> Scan QR Code</button>
                     <p id="plant-qr-link-status" class="text-xs text-emerald-700 dark:text-emerald-300" role="status" aria-live="polite">No QR code linked yet.</p>
                 </div>
 
@@ -3049,7 +3049,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-4 h-4 object-contain inline-flex items-center justify-center" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /><span>Plant NFC Tag</span></div>
                     <p class="text-xs text-slate-500 dark:text-slate-400">For a new plant, write the tag here first, then select Save Plant. The tag will open this plant's journal after it has been saved.</p>
                     <input type="hidden" id="form-color-hex" value="#16a34a">
-                    <button type="button" onclick="writePlantNfcTag()" class="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 text-sm font-semibold"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-4 h-4 mr-2 object-contain align-middle inline-flex items-center justify-center" style="filter: brightness(0) invert(1);" />Write NFC Tag</button>
+                    <button type="button" onclick="writePlantNfcTag()" class="w-full rounded-xl bg-emerald-600  text-white py-2.5 text-sm font-semibold"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="NFC logo" class="inline-block w-4 h-4 mr-2 object-contain align-middle inline-flex items-center justify-center" style="filter: brightness(0) invert(1);" />Write NFC Tag</button>
                     <p id="plant-nfc-status" class="text-xs text-slate-500" role="status">Use a compatible Android phone with NFC enabled.</p>
                 </div>
 
@@ -3115,8 +3115,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" onclick="closePlantModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition">Cancel</button>
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Plant</button>
+                    <button type="button" onclick="closePlantModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400  dark: transition">Cancel</button>
+                    <button type="submit" class="bg-emerald-600  text-white px-5 py-2 rounded-xl text-sm font-semibold shadow transition">Save Plant</button>
                 </div>
             </form>
         </div>
@@ -3155,7 +3155,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     <div id="journal-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white dark:bg-slate-800 max-w-2xl w-full rounded-2xl shadow-xl overflow-hidden my-8">
             <div id="journal-header" class="px-4 py-2 bg-white text-slate-800 flex items-center justify-end border-b border-slate-200">
-                <button onclick="closeJournalModal()" class="text-slate-500 hover:text-slate-800 text-base leading-none p-1" aria-label="Close journal"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="closeJournalModal()" class="text-slate-500  text-base leading-none p-1" aria-label="Close journal"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
                 <!-- Summary Card -->
@@ -3185,7 +3185,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <div class="flex flex-wrap items-center gap-2"><h4 id="journal-name" class="text-xl font-bold">Plant Name</h4></div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                 <span id="journal-variety" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">Variety</span>
-                                <button type="button" id="journal-feed-reminder" onclick="manageJournalFeedReminder()" title="Manage feed schedule" style="height:24px;min-height:24px;max-height:24px;padding-top:0;padding-bottom:0;box-sizing:border-box;line-height:16px" class="hidden inline-flex items-center gap-1 text-xs px-2.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border-0 whitespace-nowrap hover:bg-[#c6537b]/25"><i class="fa-regular fa-bell"></i><span id="journal-feed-reminder-label"></span></button>
+                                <button type="button" id="journal-feed-reminder" onclick="manageJournalFeedReminder()" title="Manage feed schedule" style="height:24px;min-height:24px;max-height:24px;padding-top:0;padding-bottom:0;box-sizing:border-box;line-height:16px" class="hidden inline-flex items-center gap-1 text-xs px-2.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border-0 whitespace-nowrap "><i class="fa-regular fa-bell"></i><span id="journal-feed-reminder-label"></span></button>
                                 </div>
                                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
                                     <div><strong class="text-slate-800 dark:text-slate-200">Planted:</strong> <span id="journal-date">-</span></div>
@@ -3203,7 +3203,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                                 <option value="cuttings">Cuttings</option>
                                             </select>
                                             <button type="button" onclick="saveJournalPlantQuantity()" class="px-3 py-2 rounded-lg text-xs font-semibold text-white" style="background:#C4557C;">Save amount</button>
-                                            <button type="button" onclick="document.getElementById('journal-amount-editor').classList.add('hidden')" class="px-3 py-2 rounded-lg text-xs font-semibold border border-pink-200 bg-white text-slate-700 hover:bg-pink-100">Cancel</button>
+                                            <button type="button" onclick="document.getElementById('journal-amount-editor').classList.add('hidden')" class="px-3 py-2 rounded-lg text-xs font-semibold border border-pink-200 bg-white text-slate-700 ">Cancel</button>
                                         </div>
                                         <p id="journal-multisow-summary" class="hidden text-[11px]" style="color:#9b6478;"></p>
                                         <p class="text-[11px]" style="color:#9b6478;">Update how many plants, seeds, or cuttings this journal tracks. Multisown seed totals are calculated from pots / plugs × seeds per pot / plug.</p>
@@ -3212,24 +3212,24 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <div id="journal-plant-details-editor" class="hidden mt-3 space-y-2">
                                     <div><label for="journal-edit-plant-name" class="block text-xs font-semibold mb-1">Plant name</label><input id="journal-edit-plant-name" type="text" maxlength="100" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm" placeholder="Plant name"></div>
                                     <div><label for="journal-edit-plant-variety" class="block text-xs font-semibold mb-1">Variety</label><input id="journal-edit-plant-variety" type="text" maxlength="100" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm" placeholder="Variety"></div>
-                                    <div class="flex gap-2"><button type="button" onclick="saveJournalPlantDetails()" class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">Save changes</button><button type="button" onclick="toggleJournalPlantDetailsEdit(false)" class="px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold">Cancel</button></div>
+                                    <div class="flex gap-2"><button type="button" onclick="saveJournalPlantDetails()" class="px-3 py-2 rounded-lg bg-emerald-600  text-white text-xs font-semibold">Save changes</button><button type="button" onclick="toggleJournalPlantDetailsEdit(false)" class="px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold">Cancel</button></div>
                                 </div>
                             </div>
                             <div id="journal-header-actions" class="w-full grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 mt-1 pt-2 border-t border-slate-200 dark:border-slate-700">
-                                <button type="button" onclick="duplicatePlantJournal(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Create a new journal using this plant's details"><i class="fa-solid fa-copy text-emerald-700"></i> Duplicate Plant</button>
-                                <button type="button" onclick="downloadPlantJournalPDF(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Export this plant journal as a PDF"><i class="fa-solid fa-file-pdf text-black" aria-hidden="true"></i> Download PDF</button>
+                                <button type="button" onclick="duplicatePlantJournal(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white  text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Create a new journal using this plant's details"><i class="fa-solid fa-copy text-emerald-700"></i> Duplicate Plant</button>
+                                <button type="button" onclick="downloadPlantJournalPDF(document.getElementById('log-plant-id').value)" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white  text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap" title="Export this plant journal as a PDF"><i class="fa-solid fa-file-pdf text-black" aria-hidden="true"></i> Download PDF</button>
                                 <div id="journal-nfc-unassign-row" class="col-span-2 sm:col-span-1" style="display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; align-items:center; gap:8px; width:auto; min-width:0; flex:0 0 auto;">
                                     <div id="journal-nfc-tag-actions" class="min-w-0" style="flex:1 1 0%; min-width:0;">
-                                        <button type="button" onclick="rewriteJournalPlantNfcTag()" class="inline-flex w-full min-w-0 justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" class="inline-block w-4 h-4 object-contain" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /><span id="journal-nfc-button-label">Add NFC Tag</span></button>
+                                        <button type="button" onclick="rewriteJournalPlantNfcTag()" class="inline-flex w-full min-w-0 justify-center items-center gap-1.5 sm:gap-2 bg-white  text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/NFC_logo.svg" alt="" class="inline-block w-4 h-4 object-contain" style="filter: brightness(0) saturate(100%) invert(24%) sepia(13%) saturate(1115%) hue-rotate(79deg) brightness(93%) contrast(89%);" /><span id="journal-nfc-button-label">Add NFC Tag</span></button>
                                         <span id="journal-nfc-status" class="block mt-1 text-xs text-slate-500" role="status"></span>
                                     </div>
                                     <div id="journal-unassign-tag-actions" class="min-w-0 hidden" style="flex:0 0 auto; min-width:0;">
-                                        <button type="button" onclick="unassignJournalPlantTag()" class="inline-flex w-full sm:w-auto min-w-0 justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-rose-50 text-[#B0466C] border border-rose-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><i class="fa-solid fa-link-slash"></i> Unassign tag</button>
+                                        <button type="button" onclick="unassignJournalPlantTag()" class="inline-flex w-full sm:w-auto min-w-0 justify-center items-center gap-1.5 sm:gap-2 bg-white  text-[#B0466C] border border-rose-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><i class="fa-solid fa-link-slash"></i> Unassign tag</button>
                                         <span id="journal-unassign-tag-status" class="block mt-1 text-xs text-slate-500" role="status" aria-live="polite"></span>
                                     </div>
                                 </div>
                                 <div id="journal-qr-tag-actions" class="contents hidden">
-                                    <button type="button" onclick="startQrScan('journal-link')" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><i class="fa-solid fa-qrcode text-[#B0466C]"></i> Add QR Code</button>
+                                    <button type="button" onclick="startQrScan('journal-link')" class="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 sm:gap-2 bg-white  text-slate-700 border border-slate-200 px-2 sm:px-3 py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition shadow-sm whitespace-nowrap"><i class="fa-solid fa-qrcode text-[#B0466C]"></i> Add QR Code</button>
                                     <span id="journal-qr-status" class="col-span-2 sm:col-span-1 text-xs text-slate-500" role="status" aria-live="polite"></span>
                                 </div>
                             </div>
@@ -3459,10 +3459,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
 
                             <div class="flex items-center justify-end gap-2 pt-1 flex-wrap">
-                                <button type="button" id="feed-reminder-toggle" aria-expanded="false" aria-controls="feed-reminder-inputs" onclick="toggleFeedReminderInputs()" style="color:#ffffff !important;" class="hidden inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">
+                                <button type="button" id="feed-reminder-toggle" aria-expanded="false" aria-controls="feed-reminder-inputs" onclick="toggleFeedReminderInputs()" style="color:#ffffff !important;" class="hidden inline-flex items-center gap-1.5 bg-emerald-700  text-white px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">
                                     <i class="fa-regular fa-bell"></i><span style="color:#ffffff !important;">Feed Schedule</span>
                                 </button>
-                                <button id="add-selected-nutrients-button" type="button" onclick="applyNutrientSelection()" style="color:#ffffff !important;" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-[11px] font-semibold transition flex items-center space-x-1">
+                                <button id="add-selected-nutrients-button" type="button" onclick="applyNutrientSelection()" style="color:#ffffff !important;" class="bg-emerald-700  text-white px-3 py-1.5 rounded-lg text-[11px] font-semibold transition flex items-center space-x-1">
                                     <i class="fa-solid fa-plus text-[10px]" style="color:#ffffff !important;"></i>
                                     <span style="color:#ffffff !important;">Add Selected Nutrients to Log</span>
                                 </button>
@@ -3478,7 +3478,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div>
                                 <input id="journal-photo-input" type="file" accept="image/*" multiple onchange="previewJournalPhotos()" class="block w-full text-xs text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-100 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-emerald-800">
                                 <input id="journal-camera-input" type="file" accept="image/*" capture="environment" onchange="addJournalCameraPhoto()" class="hidden">
-                                <button type="button" onclick="document.getElementById('journal-camera-input').click()" class="mt-2 inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-semibold shadow transition">
+                                <button type="button" onclick="document.getElementById('journal-camera-input').click()" class="mt-2 inline-flex items-center gap-2 rounded-xl bg-emerald-600  text-white px-4 py-2 text-xs font-semibold shadow transition">
                                     <i class="fa-solid fa-camera"></i><span>Take Photo</span>
                                 </button>
                             </div>
@@ -3489,7 +3489,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </details>
                         <div class="flex justify-end gap-2">
                             <button type="button" id="cancel-nutrient-edit-button" onclick="cancelJournalLogEdit()" class="hidden px-4 py-2 rounded-xl text-xs font-semibold text-white transition" style="background:#C4557C !important; background-color:#C4557C !important; background-image:none !important; color:#ffffff !important; border:1px solid #C4557C !important;">Cancel edit</button>
-                            <button id="journal-log-submit-button" type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
+                            <button id="journal-log-submit-button" type="submit" class="bg-emerald-600  text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">Add Log Entry</button>
                         </div>
                     </form>
                 </div>
@@ -4746,7 +4746,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return `
                     <button type="button" onclick="selectCropIcon('${item.key}', '${item.label.replace(/'/g, "\\'")}')" 
                         title="${item.label}"
-                        class="p-1.5 rounded-xl flex items-center justify-center aspect-square transition crop-badge-container ${isSelected ? 'ring-2 ring-emerald-500' : 'hover:bg-white/70'}">
+                        class="p-1.5 rounded-xl flex items-center justify-center aspect-square transition crop-badge-container ${isSelected ? 'ring-2 ring-emerald-500' : ''}">
                         <div class="w-8 h-8">${svgMarkup}</div>
                     </button>
                 `;
@@ -4819,7 +4819,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 matches.forEach(varName => {
                     const option = document.createElement('button');
                     option.type = 'button';
-                    option.className = 'w-full px-3.5 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-700/50 last:border-0 text-left';
+                    option.className = 'w-full px-3.5 py-2  dark: cursor-pointer text-xs font-medium text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-700/50 last:border-0 text-left';
                     option.textContent = varName;
                     option.addEventListener('click', () => selectVarietyName(varName));
                     varietyDropdown.appendChild(option);
@@ -4841,7 +4841,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     matches.forEach(item => {
                         const option = document.createElement('button');
                         option.type = 'button';
-                        option.className = 'w-full px-3.5 py-2 hover:bg-emerald-50 dark:hover:bg-slate-700 cursor-pointer text-xs flex justify-between items-center border-b border-slate-100 dark:border-slate-700/50 last:border-0 text-left';
+                        option.className = 'w-full px-3.5 py-2  dark: cursor-pointer text-xs flex justify-between items-center border-b border-slate-100 dark:border-slate-700/50 last:border-0 text-left';
                         const label = document.createElement('span');
                         label.className = 'font-semibold text-slate-800 dark:text-slate-100';
                         label.textContent = item.name;
@@ -4894,7 +4894,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             ['plants', 'scanner', 'add-plant', 'settings'].forEach(t => {
                 const tab = document.getElementById(`tab-${t}`);
                 if (!tab) return;
-                tab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 hover:text-slate-900";
+                tab.className = "flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 text-slate-600 dark:text-slate-400 ";
                 tab.setAttribute('aria-current', 'false');
             });
             const activeTab = document.getElementById(`tab-${tabId}`);
@@ -5427,7 +5427,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <input type="text" maxlength="80" value="${escapeHtml(location)}" aria-label="Location name" data-location="${escapeHtml(location)}" onchange="renamePlantLocation(this.dataset.location, this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" class="min-w-0 flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium" />
                             <div class="flex items-center gap-2">
                                 <select aria-label="Type for ${escapeHtml(location)}" onchange="setPlantLocationType(this.dataset.location, this.value)" data-location="${escapeHtml(location)}" class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs"><option value="indoor" ${locationTypes[location] !== 'outdoor' ? 'selected' : ''}>Indoor</option><option value="outdoor" ${locationTypes[location] === 'outdoor' ? 'selected' : ''}>Outdoor</option></select>
-                                <button type="button" onclick="removePlantLocation(${index})" class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/40 dark:hover:text-red-300" aria-label="Delete location" title="Delete location"><i class="fa-solid fa-xmark"></i></button>
+                                <button type="button" onclick="removePlantLocation(${index})" class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-500   dark: dark:" aria-label="Delete location" title="Delete location"><i class="fa-solid fa-xmark"></i></button>
                             </div>
                         </div>
                         ${locationTypes[location] === 'outdoor' ? `
@@ -5435,7 +5435,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <label class="block text-xs font-medium text-slate-600 dark:text-slate-300">Postcode for local weather</label>
                                 <div class="mt-1 flex items-center gap-2">
                                     <input type="text" value="${escapeHtml(locationPostcodes[location] || '')}" maxlength="12" autocomplete="postal-code" placeholder="e.g. WR14 2XX" data-location="${escapeHtml(location)}" onchange="saveOutdoorLocationPostcode(this.dataset.location, this.value)" ${locationPostcodeLocks[location] === false ? '' : 'disabled'} class="min-w-0 flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60" />
-                                    <button type="button" onclick="toggleOutdoorPostcodeLock('${escapeHtml(location)}')" class="flex h-9 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 ${locationPostcodeLocks[location] === false ? 'text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'}" aria-label="${locationPostcodeLocks[location] === false ? 'Lock postcode input' : 'Unlock postcode input'}" title="${locationPostcodeLocks[location] === false ? 'Lock postcode input' : 'Unlock postcode input'}"><i class="fa-solid ${locationPostcodeLocks[location] === false ? 'fa-lock-open' : 'fa-lock'}"></i></button>
+                                    <button type="button" onclick="toggleOutdoorPostcodeLock('${escapeHtml(location)}')" class="flex h-9 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 ${locationPostcodeLocks[location] === false ? 'text-amber-600  dark:' : 'text-slate-500  dark:'}" aria-label="${locationPostcodeLocks[location] === false ? 'Lock postcode input' : 'Unlock postcode input'}" title="${locationPostcodeLocks[location] === false ? 'Lock postcode input' : 'Unlock postcode input'}"><i class="fa-solid ${locationPostcodeLocks[location] === false ? 'fa-lock-open' : 'fa-lock'}"></i></button>
                                 </div>
                             </div>
                             <p class="text-[11px] text-slate-500 dark:text-slate-400">${locationCoordinates[location] ? 'Postcode saved · coordinates ready for scheduled weather' : 'Enter a UK postcode to set the weather location.'}</p>
@@ -5712,9 +5712,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!rows) return;
             rows.innerHTML = window.locationDetailDraft.map((detail, index) => `
                 <div data-detail-row="${index}" ondragover="handleLocationDetailDragOver(event)" ondrop="handleLocationDetailDrop(event, ${index})" ondragend="handleLocationDetailDragEnd(event)" ontouchstart="handleLocationDetailTouchStart(event, ${index})" ontouchmove="handleLocationDetailTouchMove(event)" ontouchend="handleLocationDetailTouchEnd(event)" class="location-detail-row flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-2.5 transition-all">
-                    <button type="button" draggable="true" ondragstart="handleLocationDetailDragStart(event, ${index})" class="location-detail-drag-handle flex h-10 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-transparent hover:text-slate-400 dark:hover:bg-transparent dark:hover:text-slate-400 cursor-grab active:cursor-grabbing select-none" aria-label="Drag to reorder detail" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></button>
+                    <button type="button" draggable="true" ondragstart="handleLocationDetailDragStart(event, ${index})" class="location-detail-drag-handle flex h-10 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-400   dark: dark: cursor-grab active:cursor-grabbing select-none" aria-label="Drag to reorder detail" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></button>
                     <input type="text" value="${escapeHtml(detail)}" maxlength="180" data-detail-index="${index}" oninput="window.locationDetailDraft[Number(this.dataset.detailIndex)] = this.value" class="min-w-0 flex-1 px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm" placeholder="e.g. Grow light, 100W">
-                    <button type="button" onclick="removeLocationDetailRow(${index})" class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/40" aria-label="Delete detail" title="Delete detail"><i class="fa-solid fa-xmark"></i></button>
+                    <button type="button" onclick="removeLocationDetailRow(${index})" class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-500   dark:" aria-label="Delete detail" title="Delete detail"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `).join('') || '<p class="text-sm text-slate-500 dark:text-slate-400">No details yet. Add one below.</p>';
         }
@@ -5828,13 +5828,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <section class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 shadow-2xl p-5 max-h-[85vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="location-detail-editor-title">
                     <div class="flex items-start justify-between gap-3 mb-2">
                         <div><h3 id="location-detail-editor-title" class="text-lg font-bold text-slate-900 dark:text-white">Setup details</h3><p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${escapeHtml(location)} · Add each item in its own box.</p></div>
-                        <button type="button" onclick="document.getElementById('location-detail-editor-modal').remove()" class="h-9 w-9 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Close editor"><i class="fa-solid fa-xmark"></i></button>
+                        <button type="button" onclick="document.getElementById('location-detail-editor-modal').remove()" class="h-9 w-9 rounded-lg  dark:" aria-label="Close editor"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <div id="location-detail-editor-rows" class="space-y-2 my-4"></div>
-                    <button type="button" onclick="addLocationDetailRow()" class="w-full rounded-xl border border-dashed border-emerald-400 px-4 py-2.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-slate-800"><i class="fa-solid fa-plus mr-1"></i> Add detail</button>
+                    <button type="button" onclick="addLocationDetailRow()" class="w-full rounded-xl border border-dashed border-emerald-400 px-4 py-2.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300  dark:"><i class="fa-solid fa-plus mr-1"></i> Add detail</button>
                     <div class="flex justify-end gap-2 mt-5">
                         <button type="button" onclick="document.getElementById('location-detail-editor-modal').remove()" class="rounded-xl border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm font-semibold">Cancel</button>
-                        <button type="button" onclick="saveLocationDetailEditor()" class="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-sm font-semibold">Save details</button>
+                        <button type="button" onclick="saveLocationDetailEditor()" class="rounded-xl bg-emerald-600  text-white px-4 py-2 text-sm font-semibold">Save details</button>
                     </div>
                 </section>`;
             document.body.appendChild(modal);
@@ -5946,7 +5946,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     return '<span class="inline-flex items-center justify-center mt-1 text-[#c6537b] text-lg" title="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '" aria-label="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '"><i class="fa-solid fa-bell"></i></span>';
                 })() : '';
                 return `
-                    <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="plant-card relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition flex flex-col cursor-pointer" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
+                    <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="plant-card relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm   dark: focus:outline-none focus:ring-2 focus:ring-emerald-500 transition flex flex-col cursor-pointer" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
                         <div class="flex items-center justify-between p-3.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
                             <div class="min-w-0 pr-2">
                                 <div class="flex items-center gap-2 min-w-0">
@@ -6003,7 +6003,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 ${isOutdoor && locationDetailsVisibility[location] === true ? '<span id="outdoor-weather-' + locationIndex + '" data-location="' + escapeHtml(location) + '" class="text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap" aria-live="polite">Loading postcode weather…</span>' : ''}
                             </div>
                             <div class="location-group-actions flex flex-shrink-0 items-center gap-1.5">
-                                <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" class="location-icon-button h-9 w-9 min-h-0 p-0 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200" aria-label="${locationDetailsVisibility[location] !== true ? 'Show location details' : 'Hide location details'}" title="${locationDetailsVisibility[location] !== true ? 'Show details' : 'Hide details'}"><i class="fa-regular ${locationDetailsVisibility[location] !== true ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                                <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" class="location-icon-button h-9 w-9 min-h-0 p-0 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600  dark: text-slate-700 dark:text-slate-200" aria-label="${locationDetailsVisibility[location] !== true ? 'Show location details' : 'Hide location details'}" title="${locationDetailsVisibility[location] !== true ? 'Show details' : 'Hide details'}"><i class="fa-regular ${locationDetailsVisibility[location] !== true ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
                                 <div class="location-view-toggle inline-flex items-center gap-0.5 rounded-xl p-0.5" role="group" aria-label="${escapeHtml(location)} plant view">
                                     <button type="button" onclick="setLocationPlantView(this.dataset.location, 'grid')" data-location="${escapeHtml(location)}" aria-label="Grid view for ${escapeHtml(location)}" aria-pressed="${activeGrid ? 'true' : 'false'}" title="Grid view" class="location-view-button ${activeGrid ? 'is-active' : ''}"><i class="fa-solid fa-grip" aria-hidden="true"></i></button>
                                     <button type="button" onclick="setLocationPlantView(this.dataset.location, 'list')" data-location="${escapeHtml(location)}" aria-label="List view for ${escapeHtml(location)}" aria-pressed="${!activeGrid ? 'true' : 'false'}" title="List view" class="location-view-button ${!activeGrid ? 'is-active' : ''}"><i class="fa-solid fa-list" aria-hidden="true"></i></button>
@@ -6011,7 +6011,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 </div>
                         </div>
 
-                        ${locationDetails[location] && locationDetailsVisibility[location] === true ? `<div class="location-group-details mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300"><div class="whitespace-pre-line">${escapeHtml(String(locationDetails[location]).replace(/\\n/g, '\n'))}</div><div class="flex justify-end mt-2"><button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold" style="background:#c6537b;color:#ffffff;border:1px solid #c6537b" onmouseover="this.style.backgroundColor='#a63d65';this.style.color='#ffffff'" onmouseout="this.style.backgroundColor='#c6537b';this.style.color='#ffffff'" aria-label="Edit location details" title="Edit details"><i class="fa-solid fa-pen-to-square"></i><span>Edit details</span></button></div></div>` : (!locationDetails[location] ? `<div class="mb-3"><button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 dark:border-slate-600 px-3 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-slate-800"><i class="fa-solid fa-pen-to-square"></i><span>Add details</span></button></div>` : '')}
+                        ${locationDetails[location] && locationDetailsVisibility[location] === true ? `<div class="location-group-details mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300"><div class="whitespace-pre-line">${escapeHtml(String(locationDetails[location]).replace(/\\n/g, '\n'))}</div><div class="flex justify-end mt-2"><button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold" style="background:#c6537b;color:#ffffff;border:1px solid #c6537b" onmouseover="this.style.backgroundColor='#a63d65';this.style.color='#ffffff'" onmouseout="this.style.backgroundColor='#c6537b';this.style.color='#ffffff'" aria-label="Edit location details" title="Edit details"><i class="fa-solid fa-pen-to-square"></i><span>Edit details</span></button></div></div>` : (!locationDetails[location] ? `<div class="mb-3"><button type="button" onclick="editLocationDetails(this.dataset.location)" data-location="${escapeHtml(location)}" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 dark:border-slate-600 px-3 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300  dark:"><i class="fa-solid fa-pen-to-square"></i><span>Add details</span></button></div>` : '')}
                         
                         <div class="location-group-plants grid grid-cols-1 ${activeGrid ? 'md:grid-cols-2' : 'is-list-view'} gap-3 sm:gap-4">${cards.map(plant => cardMarkup(plant, location)).join('')}</div>
                     </section>`;
@@ -7369,7 +7369,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!brandObj) return;
 
             productList.innerHTML = brandObj.products.map((p, i) => `
-                <div class="p-1.5 hover:bg-emerald-50 dark:hover:bg-slate-700/50 rounded flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
+                <div class="p-1.5  dark: rounded flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-100 dark:border-slate-700/50 last:border-0">
                     <label class="flex items-start space-x-2 cursor-pointer text-xs flex-1 min-w-0">
                         <input type="checkbox" name="nutrient-product-check" value="${p.name}" class="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
                         <div class="min-w-0">
@@ -7858,7 +7858,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     locationLabel.style.setProperty('color', '#294b34', 'important');
                 }
                 if (locationMenu) {
-                    locationMenu.innerHTML = plantLocations.map(location => '<button type="button" role="option" onclick="selectJournalLocation(\'' + escapeHtml(location).replace(/\\'/g, '&#39;') + '\')" class="block w-full text-left px-3.5 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700">' + escapeHtml(location) + '</button>').join('');
+                    locationMenu.innerHTML = plantLocations.map(location => '<button type="button" role="option" onclick="selectJournalLocation(\'' + escapeHtml(location).replace(/\\'/g, '&#39;') + '\')" class="block w-full text-left px-3.5 py-2.5 text-sm  dark:">' + escapeHtml(location) + '</button>').join('');
                 }
                 journalLocationButton.disabled = false;
                 journalLocationButton.setAttribute('aria-expanded', 'false');
@@ -8464,12 +8464,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             return '<span class="inline-flex items-center space-x-1 text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#c6537b]/15 text-[#c6537b] dark:bg-[#c6537b]/25 dark:text-[#f2a6c1] border border-[#c6537b]/40 whitespace-nowrap"><i class="fa-regular fa-bell"></i><span>Repeat feed · ' + escapeHtml(reminderLabel) + '</span></span>';
                         })() : ''}
                         <details class="relative">
-                            <summary aria-label="Growth log options" title="More options" class="list-none cursor-pointer rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-slate-100 [&::-webkit-details-marker]:hidden">
+                            <summary aria-label="Growth log options" title="More options" class="list-none cursor-pointer rounded-lg p-2 text-slate-500  dark:  dark: [&::-webkit-details-marker]:hidden">
                                 <i class="fa-solid fa-ellipsis-vertical"></i>
                             </summary>
                             <div class="absolute right-0 top-full z-30 mt-1 min-w-36 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-                                <button type="button" onclick="this.closest('details').open=false; editJournalLogByIndex('${encodeURIComponent(String(p.id))}', ${originalIndex})" class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-pen w-4"></i> Edit</button>
-                                <button type="button" onclick="this.closest('details').open=false; deleteJournalLog('${p.id}', '${log.id || originalIndex}')" class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm font-medium text-[#B0466C] hover:bg-[#B0466C]/10 dark:hover:bg-[#B0466C]/20"><i class="fa-regular fa-trash-can w-4 text-[#B0466C]"></i> Delete</button>
+                                <button type="button" onclick="this.closest('details').open=false; editJournalLogByIndex('${encodeURIComponent(String(p.id))}', ${originalIndex})" class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200  dark:"><i class="fa-solid fa-pen w-4"></i> Edit</button>
+                                <button type="button" onclick="this.closest('details').open=false; deleteJournalLog('${p.id}', '${log.id || originalIndex}')" class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm font-medium text-[#B0466C]  dark:"><i class="fa-regular fa-trash-can w-4 text-[#B0466C]"></i> Delete</button>
                             </div>
                         </details>
                     </div>
@@ -9540,7 +9540,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-800" onclick="event.stopPropagation()">
             <div class="mb-4 flex items-center justify-between">
                 <h3 id="journal-icon-modal-title" class="text-lg font-bold text-slate-900 dark:text-white">Edit plant photo</h3>
-                <button type="button" onclick="closeJournalPlantIconModal()" aria-label="Close" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="closeJournalPlantIconModal()" aria-label="Close" class="rounded-lg p-2 text-slate-500  dark:"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="mb-3 text-sm text-slate-600 dark:text-slate-300">Choose a new photo or adjust the square crop with the zoom slider.</p>
             <div id="journal-icon-crop-viewport" class="mx-auto mb-4 h-64 w-64 max-w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style="touch-action:none;" onpointerdown="startJournalIconCropDrag(event)" onpointermove="moveJournalIconCropDrag(event)" onpointerup="endJournalIconCropDrag(event)" onpointercancel="endJournalIconCropDrag(event)">
@@ -9551,12 +9551,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             <label for="journal-icon-zoom" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Zoom / crop</label>
             <input id="journal-icon-zoom" type="range" min="1" max="3" step="0.05" value="1" oninput="updateJournalIconCropPreview()" class="mb-4 w-full">
             <div class="mt-4 flex items-center gap-2">
-                <button type="button" id="journal-icon-change-action" onclick="document.getElementById('journal-icon-file-input').click()" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-2 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-camera mr-1"></i><span id="journal-icon-change-action-label">Add photo</span></button>
-                <button type="button" onclick="closeJournalPlantIconModal()" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-2 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700">Cancel</button>
-                <button type="button" onclick="saveJournalPlantIconCrop()" class="min-w-0 flex-1 rounded-xl bg-[#c6537b] px-2 py-2.5 text-sm font-semibold text-white hover:opacity-90">Save photo</button>
+                <button type="button" id="journal-icon-change-action" onclick="document.getElementById('journal-icon-file-input').click()" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-2 py-2.5 text-sm font-semibold text-slate-700  dark:border-slate-600 dark:text-slate-100 dark:"><i class="fa-solid fa-camera mr-1"></i><span id="journal-icon-change-action-label">Add photo</span></button>
+                <button type="button" onclick="closeJournalPlantIconModal()" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-2 py-2.5 text-sm font-semibold text-slate-600  dark:border-slate-600 dark:text-slate-200 dark:">Cancel</button>
+                <button type="button" onclick="saveJournalPlantIconCrop()" class="min-w-0 flex-1 rounded-xl bg-[#c6537b] px-2 py-2.5 text-sm font-semibold text-white ">Save photo</button>
             </div>
             <div class="mt-2 flex justify-end">
-                <button type="button" id="journal-icon-delete-action" onclick="removeJournalPlantIcon()" class="hidden rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300"><i class="fa-regular fa-trash-can mr-2"></i>Delete photo</button>
+                <button type="button" id="journal-icon-delete-action" onclick="removeJournalPlantIcon()" class="hidden rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700  dark:border-rose-900 dark:text-rose-300"><i class="fa-regular fa-trash-can mr-2"></i>Delete photo</button>
             </div>
         </div>
     </div>
@@ -9790,3 +9790,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 }
 </style>
 
+
+
+<style id="flora-disable-rollover-effects">
+@media (hover: hover) {
+  html body *:hover {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    outline-offset: initial !important;
+  }
+}
+</style>
