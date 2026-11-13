@@ -10504,12 +10504,25 @@ body.plant-growing-modal-open { overflow: hidden !important; }
             details.open = false;
             details.querySelector('summary')?.focus();
         });
-        details.appendChild(done);
+        const options = details.querySelector('#plant-medium-options, #plant-setup-options');
+        if (options) options.appendChild(done);
         details.addEventListener('toggle', () => {
             const anyOpen = pairs.some(item => item.details.open);
             document.body.classList.toggle('plant-growing-modal-open', anyOpen);
         });
     });
+
+    // The medium options are rebuilt when restoring an existing plant; keep Done inside the panel.
+    if (typeof window.setSelectedPlantMediums === 'function') {
+        const originalSetMediums = window.setSelectedPlantMediums;
+        window.setSelectedPlantMediums = function (saved) {
+            originalSetMediums(saved);
+            const details = document.getElementById('plant-medium-dropdown');
+            const options = document.getElementById('plant-medium-options');
+            const done = details?.querySelector('.plant-growing-done');
+            if (options && done && done.parentElement !== options) options.appendChild(done);
+        };
+    }
 
     document.addEventListener('keydown', event => {
         if (event.key !== 'Escape') return;
@@ -10528,5 +10541,30 @@ body.plant-growing-modal-open { overflow: hidden !important; }
 #plant-medium-dropdown[open] > summary,
 #plant-setup-dropdown[open] > summary {
     display: none !important;
+}
+</style>
+
+
+<style id="plant-growing-done-button-inside-panel">
+/* Keep Done as the final, sticky control inside the selection panel itself. */
+#plant-medium-dropdown[open] #plant-medium-options .plant-growing-done,
+#plant-setup-dropdown[open] #plant-setup-options .plant-growing-done {
+    position: sticky !important;
+    z-index: 3 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    transform: none !important;
+    display: flex !important;
+    width: 100% !important;
+    min-height: 46px !important;
+    margin: 14px 0 0 !important;
+    padding: 10px 16px !important;
+    justify-content: center !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: #c6537b !important;
+    color: #fff !important;
+    font-weight: 650 !important;
+    box-shadow: 0 -5px 14px rgba(255, 254, 249, .95) !important;
 }
 </style>
