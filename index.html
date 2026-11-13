@@ -7948,7 +7948,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 journalMultisowSummary.classList.toggle('hidden', !(p.multisow));
             }
             document.getElementById('journal-name').textContent = p.name;
-            loadJournalPlantReferences(p);
 
             document.getElementById('journal-variety').textContent = p.variety || 'Standard Variety';
             const journalFeedReminder = (Array.isArray(p.logs) ? p.logs : [])
