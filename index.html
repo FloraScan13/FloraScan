@@ -7878,8 +7878,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             iconContainer.innerHTML = p.customIconUrl
                 ? '<img src="' + escapeHtml(p.customIconUrl) + '" alt="' + escapeHtml(p.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">'
                 : '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-regular fa-image text-2xl" aria-hidden="true"></i></div>';
-            updateJournalPlantIconControls(p);
-
             // Open the journal even if an optional nutrient UI control is unavailable.
             try { toggleNutrientLibraryView(); toggleGerminationSection(); } catch (error) { console.warn('Journal controls could not be refreshed:', error); }
             renderJournalLogs(p);
