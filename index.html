@@ -3122,7 +3122,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                             <div>
                                 <label for="plant-setup" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">2. Select Growing Setup</label>
-                                <select id="plant-setup" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                <p id="plant-setup-help" class="mb-1 text-xs text-slate-500 dark:text-slate-400">Select as many as apply, e.g. AutoPot system and Grow tent. On a computer, hold Ctrl (Windows) or Command (Mac) while clicking.</p>
+                                <select id="plant-setup" multiple size="6" aria-describedby="plant-setup-help" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                                     <option value="">Choose a growing setup…</option>
                                     <optgroup label="Pots, containers and fabric planters">
                                         <option>Standard round pot</option><option>Square pot</option><option>Fabric pot</option><option>Air pot / air-pruning pot</option><option>Root-training pot</option><option>Living-soil bed / fabric bed</option><option>Container / pot</option><option>Seed tray</option><option>Cell tray / plug tray</option><option>Propagation tray with humidity dome</option><option>Grow bag</option><option>Hanging basket</option><option>Window box</option><option>Self-watering planter</option><option>Sub-irrigated planter (SIP)</option><option>AutoPot system</option><option>Wicking planter</option><option>Deep water culture bucket / Oxypot</option>
@@ -6446,7 +6447,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 mediumSelect.add(legacyOption);
             }
             mediumSelect.value = savedMedium;
-            document.getElementById('plant-setup').value = p.setup || '';
+            Array.from(document.getElementById('plant-setup').options).forEach(option => { option.selected = (Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : [])).includes(option.value); });
             renderPlantLocationControls(p.location || '');
             document.getElementById('plant-notes').value = p.notes || '';
             document.getElementById('form-color-hex').value = p.hex || '#16a34a';
@@ -6949,7 +6950,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 hex: document.getElementById('form-color-hex').value,
                 date: document.getElementById('plant-date').value,
                 medium: document.getElementById('plant-medium').value,
-                setup: document.getElementById('plant-setup').value,
+                setup: Array.from(document.getElementById('plant-setup').selectedOptions).map(option => option.value),
                 location: document.getElementById('plant-location').value,
                 notes: document.getElementById('plant-notes').value,
                 logs: []
@@ -6989,7 +6990,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 // Also record the medium chosen during plant creation as a separate journal entry.
                 const initialMedium = String(plantData.medium || '').trim();
-                const initialSetup = String(plantData.setup || '').trim();
+                const initialSetup = (Array.isArray(plantData.setup) ? plantData.setup : (plantData.setup ? [plantData.setup] : [])).map(value => String(value).trim()).filter(Boolean).join(', ');
                 if (initialMedium || initialSetup) {
                     initialMediumLog = {
                         id: 'log_' + (Date.now() + 1),
@@ -8072,7 +8073,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             }
             document.getElementById('journal-date').textContent = p.date || 'Not specified';
-            document.getElementById('journal-medium').textContent = [p.medium, p.setup].filter(Boolean).join(' · ') || 'Not specified';
+            document.getElementById('journal-medium').textContent = [p.medium, (Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : [])).join(', ')].filter(Boolean).join(' · ') || 'Not specified';
             const tagTypeRow = document.getElementById('journal-tag-type-row');
             const tagTypeLabel = document.getElementById('journal-tag-type');
             const linkedTagType = String(p.qrCodeValue || '').trim() ? 'QR code' : (p.nfcTagLinked ? 'NFC' : '');
