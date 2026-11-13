@@ -3097,71 +3097,43 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         <input type="date" id="plant-date" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Growing Medium / Setup</label>
-                        <input type="text" id="plant-medium" list="plant-medium-library" autocomplete="off" placeholder="Search or type a growing medium / setup…" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                        <datalist id="plant-medium-library">
-                            <option value="Garden soil"></option>
-                            <option value="Topsoil"></option>
-                            <option value="Loam"></option>
-                            <option value="Sandy soil"></option>
-                            <option value="Clay soil"></option>
-                            <option value="Silt soil"></option>
-                            <option value="Chalky soil"></option>
-                            <option value="Peaty soil"></option>
-                            <option value="Compost"></option>
-                            <option value="Multi-purpose compost"></option>
-                            <option value="Seed-starting compost"></option>
-                            <option value="Potting mix"></option>
-                            <option value="Raised-bed mix"></option>
-                            <option value="Leaf mould"></option>
-                            <option value="Manure-enriched soil"></option>
-                            <option value="No-dig bed"></option>
-                            <option value="Hugelkultur bed"></option>
-                            <option value="Coco coir"></option>
-                            <option value="Coco coir and perlite"></option>
-                            <option value="Peat-free potting mix"></option>
-                            <option value="Peat-based mix"></option>
-                            <option value="Perlite"></option>
-                            <option value="Vermiculite"></option>
-                            <option value="Pumice"></option>
-                            <option value="LECA / clay pebbles"></option>
-                            <option value="Expanded clay aggregate"></option>
-                            <option value="Rockwool / stonewool"></option>
-                            <option value="Oasis / propagation foam"></option>
-                            <option value="Rice hulls"></option>
-                            <option value="Pine bark / orchid bark"></option>
-                            <option value="Sphagnum moss"></option>
-                            <option value="Live moss"></option>
-                            <option value="Sand"></option>
-                            <option value="Gravel"></option>
-                            <option value="Biochar blend"></option>
-                            <option value="Worm castings blend"></option>
-                            <option value="Hydroponics – nutrient solution (DWC)"></option>
-                            <option value="Hydroponics – deep water culture (DWC)"></option>
-                            <option value="Hydroponics – nutrient film technique (NFT)"></option>
-                            <option value="Hydroponics – ebb and flow / flood and drain"></option>
-                            <option value="Hydroponics – drip system"></option>
-                            <option value="Hydroponics – Dutch bucket / Bato bucket"></option>
-                            <option value="Hydroponics – kratky method"></option>
-                            <option value="Hydroponics – wick system"></option>
-                            <option value="Aeroponics"></option>
-                            <option value="Aquaponics"></option>
-                            <option value="Fogponics"></option>
-                            <option value="Wicking bed"></option>
-                            <option value="Self-watering planter"></option>
-                            <option value="AutoPot system"></option>
-                            <option value="Sub-irrigated planter (SIP)"></option>
-                            <option value="Grow bag"></option>
-                            <option value="Container / pot"></option>
-                            <option value="Raised bed"></option>
-                            <option value="Vertical garden"></option>
-                            <option value="Living wall"></option>
-                            <option value="Greenhouse border"></option>
-                            <option value="Polytunnel bed"></option>
-                            <option value="In-ground planting"></option>
-                            <option value="Straw bale growing"></option>
-                            <option value="Mushroom substrate"></option>
-                        </datalist>
+                        <div class="space-y-3">
+                            <div>
+                                <label for="plant-medium" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">1. Select Growing Medium</label>
+                                <select id="plant-medium" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                    <option value="">Choose a growing medium…</option>
+                                    <optgroup label="Soil and compost">
+                                        <option>Garden soil</option><option>Topsoil</option><option>Loam</option><option>Sandy soil</option><option>Clay soil</option><option>Silt soil</option><option>Chalky soil</option><option>Peaty soil</option><option>Compost</option><option>Multi-purpose compost</option><option>Seed-starting compost</option><option>Potting mix</option><option>Raised-bed mix</option><option>Leaf mould</option><option>Manure-enriched soil</option><option>No-dig bed mix</option><option>Hugelkultur mix</option>
+                                    </optgroup>
+                                    <optgroup label="Soilless and specialist media">
+                                        <option>Coco coir</option><option>Coco coir and perlite</option><option>Peat-free potting mix</option><option>Peat-based mix</option><option>Perlite</option><option>Vermiculite</option><option>Pumice</option><option>LECA / clay pebbles</option><option>Expanded clay aggregate</option><option>Rockwool / stonewool</option><option>Oasis / propagation foam</option><option>Rice hulls</option><option>Pine bark / orchid bark</option><option>Sphagnum moss</option><option>Live moss</option><option>Sand</option><option>Gravel</option><option>Biochar blend</option><option>Worm castings blend</option><option>Straw</option><option>Mushroom substrate</option>
+                                    </optgroup>
+                                    <optgroup label="Water-based growing">
+                                        <option>Hydroponic nutrient solution</option><option>Aquaponic water / media</option><option>Fogponic growing medium</option>
+                                    </optgroup>
+                                    <option value="Other">Other (specify in plant notes)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="plant-setup" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">2. Select Growing Setup</label>
+                                <select id="plant-setup" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                    <option value="">Choose a growing setup…</option>
+                                    <optgroup label="Containers and planters">
+                                        <option>Container / pot</option><option>Seed tray</option><option>Cell tray / plug tray</option><option>Grow bag</option><option>Hanging basket</option><option>Window box</option><option>Self-watering planter</option><option>Sub-irrigated planter (SIP)</option><option>AutoPot system</option><option>Wicking planter</option>
+                                    </optgroup>
+                                    <optgroup label="Beds and outdoor growing">
+                                        <option>In-ground planting</option><option>Raised bed</option><option>Wicking bed</option><option>Hugelkultur bed</option><option>Straw bale growing</option><option>Greenhouse border</option><option>Polytunnel bed</option><option>Cold frame</option><option>Cloche</option><option>Orchard / tree planting</option><option>Wildflower meadow</option>
+                                    </optgroup>
+                                    <optgroup label="Indoor and vertical growing">
+                                        <option>Indoor shelf / grow rack</option><option>Grow tent</option><option>Vertical garden</option><option>Living wall</option><option>Wall-mounted planter</option><option>Hydroponic tower</option><option>Microgreens tray</option>
+                                    </optgroup>
+                                    <optgroup label="Hydroponic and soilless systems">
+                                        <option>Deep water culture (DWC)</option><option>Nutrient film technique (NFT)</option><option>Ebb and flow / flood and drain</option><option>Drip hydroponics</option><option>Dutch / Bato bucket</option><option>Kratky method</option><option>Wick hydroponics</option><option>Aeroponics</option><option>Aquaponics</option><option>Fogponics</option>
+                                    </optgroup>
+                                    <option>Other / custom setup</option>
+                                </select>
+                            </div>
+                        </div>
                         <p class="text-[11px] text-slate-500 mt-1">Choose a suggestion or type your own. Includes soil, compost, soilless media, hydroponic methods and growing systems.</p>
                     </div>
                     <div>
@@ -6456,7 +6428,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             updateMultisowLabels();
             toggleMultisowFields();
             document.getElementById('plant-date').value = p.date || '';
-            document.getElementById('plant-medium').value = p.medium || '';
+            const mediumSelect = document.getElementById('plant-medium');
+            const savedMedium = p.medium || '';
+            if (savedMedium && !Array.from(mediumSelect.options).some(option => option.value === savedMedium)) {
+                const legacyOption = document.createElement('option');
+                legacyOption.value = savedMedium;
+                legacyOption.textContent = savedMedium + ' (saved value)';
+                mediumSelect.add(legacyOption);
+            }
+            mediumSelect.value = savedMedium;
+            document.getElementById('plant-setup').value = p.setup || '';
             renderPlantLocationControls(p.location || '');
             document.getElementById('plant-notes').value = p.notes || '';
             document.getElementById('form-color-hex').value = p.hex || '#16a34a';
@@ -6959,6 +6940,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 hex: document.getElementById('form-color-hex').value,
                 date: document.getElementById('plant-date').value,
                 medium: document.getElementById('plant-medium').value,
+                setup: document.getElementById('plant-setup').value,
                 location: document.getElementById('plant-location').value,
                 notes: document.getElementById('plant-notes').value,
                 logs: []
@@ -6998,12 +6980,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 // Also record the medium chosen during plant creation as a separate journal entry.
                 const initialMedium = String(plantData.medium || '').trim();
-                if (initialMedium) {
+                const initialSetup = String(plantData.setup || '').trim();
+                if (initialMedium || initialSetup) {
                     initialMediumLog = {
                         id: 'log_' + (Date.now() + 1),
                         date: plantData.date || localToday,
                         type: 'Medium',
-                        text: 'Initial growing medium / setup: ' + initialMedium
+                        text: 'Initial growing medium: ' + (initialMedium || 'Not specified') + (initialSetup ? ' · Growing setup: ' + initialSetup : '')
                     };
                     plantData.logs.unshift(initialMediumLog);
                 }
@@ -8080,7 +8063,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             }
             document.getElementById('journal-date').textContent = p.date || 'Not specified';
-            document.getElementById('journal-medium').textContent = p.medium || 'Not specified';
+            document.getElementById('journal-medium').textContent = [p.medium, p.setup].filter(Boolean).join(' · ') || 'Not specified';
             const tagTypeRow = document.getElementById('journal-tag-type-row');
             const tagTypeLabel = document.getElementById('journal-tag-type');
             const linkedTagType = String(p.qrCodeValue || '').trim() ? 'QR code' : (p.nfcTagLinked ? 'NFC' : '');
