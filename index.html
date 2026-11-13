@@ -3144,13 +3144,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                     </details>
                     <div class="flex flex-col items-center gap-2 flex-shrink-0">
-                        <button type="button" id="journal-icon-container" onclick="toggleJournalPlantIconEditor()" aria-label="Edit plant photo" title="Click to edit plant photo" class="w-20 h-20 rounded-2xl crop-badge-container p-2 flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c6537b]">
+                        <button type="button" id="journal-icon-container" onclick="openJournalPlantIconModal()" aria-label="Edit plant photo" title="Click to edit plant photo" class="w-20 h-20 rounded-2xl crop-badge-container p-2 flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#c6537b]">
                             <!-- Plant photo rendered dynamically -->
                         </button>
-                        <div id="journal-icon-edit-controls" class="hidden items-center gap-1">
-                            <button type="button" onclick="document.getElementById('journal-icon-file-input').click()" class="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50" title="Add or change plant photo"><i class="fa-solid fa-camera mr-1"></i><span id="journal-icon-change-label">Add photo</span></button>
-                            <button type="button" id="journal-icon-remove-button" onclick="removeJournalPlantIcon()" class="hidden rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-600 shadow-sm hover:bg-slate-50" title="Remove plant photo"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
                         <input id="journal-icon-file-input" type="file" accept="image/*" class="hidden" onchange="handleJournalPlantIconFile(this)">
                     </div>
                     <div class="flex-1 space-y-2">
@@ -8430,47 +8426,85 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             `).join('');
         }
 
-        function toggleJournalPlantIconEditor() {
-            const controls = document.getElementById('journal-icon-edit-controls');
-            if (controls) {
-                controls.classList.toggle('hidden');
-                controls.classList.toggle('flex');
-            }
-        }
+        let pendingJournalPlantIconImage = null;
 
-        function hideJournalPlantIconEditor() {
-            const controls = document.getElementById('journal-icon-edit-controls');
-            if (controls) {
-                controls.classList.add('hidden');
-                controls.classList.remove('flex');
-            }
-        }
-
-        function updateJournalPlantIconControls(plant) {
-            const changeLabel = document.getElementById('journal-icon-change-label');
-            const removeButton = document.getElementById('journal-icon-remove-button');
-            if (changeLabel) changeLabel.textContent = plant && plant.customIconUrl ? 'Change photo' : 'Add photo';
-            if (removeButton) removeButton.classList.toggle('hidden', !(plant && plant.customIconUrl));
-        }
-
-        async function handleJournalPlantIconFile(input) {
-            const file = input && input.files && input.files[0];
-            if (!file) return;
+        function openJournalPlantIconModal() {
+            const modal = document.getElementById('journal-plant-icon-modal');
             const plantId = document.getElementById('log-plant-id').value;
             const plant = plants.find(item => String(item.id) === String(plantId));
-            if (!plant) { alert('Please reopen the plant journal and try again.'); input.value = ''; return; }
+            if (!modal || !plant) return;
+            pendingJournalPlantIconImage = null;
+            const image = document.getElementById('journal-icon-crop-image');
+            const empty = document.getElementById('journal-icon-crop-empty');
+            document.getElementById('journal-icon-zoom').value = '1';
+            image.style.transform = 'scale(1)';
+            if (plant.customIconUrl) {
+                image.onload = () => { image.classList.remove('hidden'); empty.classList.add('hidden'); updateJournalIconCropPreview(); };
+                image.onerror = () => { image.classList.add('hidden'); empty.classList.remove('hidden'); };
+                image.crossOrigin = 'anonymous';
+                image.src = plant.customIconUrl;
+                if (image.complete && image.naturalWidth) { image.classList.remove('hidden'); empty.classList.add('hidden'); }
+            } else {
+                image.removeAttribute('src');
+                image.classList.add('hidden');
+                empty.classList.remove('hidden');
+            }
+            document.getElementById('journal-icon-delete-action').classList.toggle('hidden', !plant.customIconUrl);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeJournalPlantIconModal() {
+            const modal = document.getElementById('journal-plant-icon-modal');
+            if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+            pendingJournalPlantIconImage = null;
+        }
+
+        function updateJournalIconCropPreview() {
+            const image = document.getElementById('journal-icon-crop-image');
+            const zoom = Number(document.getElementById('journal-icon-zoom').value || 1);
+            image.style.transform = 'scale(' + zoom + ')';
+        }
+
+        function handleJournalPlantIconFile(input) {
+            const file = input && input.files && input.files[0];
+            if (!file) return;
             if (!file.type || !file.type.startsWith('image/')) { alert('Please choose an image file.'); input.value = ''; return; }
+            const reader = new FileReader();
+            reader.onload = () => {
+                const image = document.getElementById('journal-icon-crop-image');
+                pendingJournalPlantIconImage = String(reader.result || '');
+                image.onload = () => { image.classList.remove('hidden'); document.getElementById('journal-icon-crop-empty').classList.add('hidden'); updateJournalIconCropPreview(); };
+                image.src = pendingJournalPlantIconImage;
+                document.getElementById('journal-icon-zoom').value = '1';
+                document.getElementById('journal-icon-delete-action').classList.add('hidden');
+            };
+            reader.onerror = () => alert('Could not read that image.');
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        async function saveJournalPlantIconCrop() {
+            const plantId = document.getElementById('log-plant-id').value;
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            const image = document.getElementById('journal-icon-crop-image');
+            if (!plant || !image || !image.naturalWidth) { alert('Choose a photo before saving.'); return; }
             try {
-                const dataUrl = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(String(reader.result || ''));
-                    reader.onerror = () => reject(new Error('Could not read that image.'));
-                    reader.readAsDataURL(file);
-                });
+                const side = Math.min(image.naturalWidth, image.naturalHeight);
+                const zoom = Math.max(1, Number(document.getElementById('journal-icon-zoom').value || 1));
+                const cropSide = side / zoom;
+                const sx = (image.naturalWidth - cropSide) / 2;
+                const sy = (image.naturalHeight - cropSide) / 2;
+                const canvas = document.createElement('canvas');
+                canvas.width = 640;
+                canvas.height = 640;
+                const context = canvas.getContext('2d');
+                context.drawImage(image, sx, sy, cropSide, cropSide, 0, 0, 640, 640);
+                const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
                 let photoPath = '';
-                let photoUrl = dataUrl;
+                let photoUrl = croppedDataUrl;
                 if (supabaseClient && currentUser && navigator.onLine) {
-                    photoPath = await uploadJournalPhoto(dataUrl, plant.id, 'plant-icon', 0);
+                    photoPath = await uploadJournalPhoto(croppedDataUrl, plant.id, 'plant-icon', 0);
                     photoUrl = await createJournalPhotoUrl(photoPath);
                     if (!photoUrl) throw new Error('The uploaded photo could not be displayed.');
                 }
@@ -8480,18 +8514,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 markFloraSyncPending();
                 if (supabaseClient && currentUser && navigator.onLine) {
                     const synced = await syncPlantToCloud(plant);
-                    if (!synced) throw new Error('The new plant photo could not be synced.');
+                    if (!synced) throw new Error('The plant photo could not be synced.');
                 }
                 const container = document.getElementById('journal-icon-container');
                 if (container) container.innerHTML = '<img src="' + escapeHtml(photoUrl) + '" alt="' + escapeHtml(plant.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">';
-                updateJournalPlantIconControls(plant);
-                hideJournalPlantIconEditor();
                 renderPlants();
+                closeJournalPlantIconModal();
             } catch (error) {
-                console.error('Could not update plant journal photo:', error);
-                alert('The plant photo could not be updated: ' + (error && error.message ? error.message : 'Please try again.'));
-            } finally {
-                input.value = '';
+                console.error('Could not save plant photo crop:', error);
+                alert('The plant photo could not be saved: ' + (error && error.message ? error.message : 'Please try again.'));
             }
         }
 
@@ -8512,8 +8543,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
                 const container = document.getElementById('journal-icon-container');
                 if (container) container.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-regular fa-image text-2xl" aria-hidden="true"></i></div>';
-                updateJournalPlantIconControls(plant);
                 renderPlants();
+                closeJournalPlantIconModal();
             } catch (error) {
                 console.error('Could not remove plant journal photo:', error);
                 alert('The plant photo could not be removed: ' + (error && error.message ? error.message : 'Please try again.'));
@@ -9420,6 +9451,29 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             box-shadow: 0 0 0 3px rgba(198,83,123,.14) !important;
         }
     </style>
+    <div id="journal-plant-icon-modal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/60 p-4" onclick="if(event.target===this) closeJournalPlantIconModal()" role="dialog" aria-modal="true" aria-labelledby="journal-icon-modal-title">
+        <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-800" onclick="event.stopPropagation()">
+            <div class="mb-4 flex items-center justify-between">
+                <h3 id="journal-icon-modal-title" class="text-lg font-bold text-slate-900 dark:text-white">Edit plant photo</h3>
+                <button type="button" onclick="closeJournalPlantIconModal()" aria-label="Close" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="mb-3 text-sm text-slate-600 dark:text-slate-300">Choose a new photo or adjust the square crop with the zoom slider.</p>
+            <div class="mx-auto mb-4 h-64 w-64 max-w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                <img id="journal-icon-crop-image" alt="Plant photo crop preview" class="hidden h-full w-full object-cover" style="transform:scale(1);">
+                <div id="journal-icon-crop-empty" class="text-center text-sm text-slate-400"><i class="fa-regular fa-image mb-2 text-3xl"></i><div>No photo selected</div></div>
+            </div>
+            <label for="journal-icon-zoom" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Zoom / crop</label>
+            <input id="journal-icon-zoom" type="range" min="1" max="3" step="0.05" value="1" oninput="updateJournalIconCropPreview()" class="mb-4 w-full">
+            <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="document.getElementById('journal-icon-file-input').click()" class="flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-camera mr-2"></i>Change photo</button>
+                <button type="button" id="journal-icon-delete-action" onclick="removeJournalPlantIcon()" class="rounded-xl border border-rose-200 px-3 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300"><i class="fa-regular fa-trash-can mr-2"></i>Delete photo</button>
+            </div>
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="button" onclick="closeJournalPlantIconModal()" class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700">Cancel</button>
+                <button type="button" onclick="saveJournalPlantIconCrop()" class="rounded-xl bg-[#c6537b] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">Save crop</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 
