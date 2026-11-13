@@ -8406,83 +8406,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 <div class="no-print" style="margin-top:24px"><button onclick="window.print()" style="background:#15803d;color:white;border:0;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer">Print / Save as PDF</button> <button onclick="window.close()" style="padding:10px 16px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer">Close</button><p style="color:#64748b;font-size:12px">In the print dialog, choose “Save as PDF” as the destination to download your journal.</p></div>
 <script>window.addEventListener('load', () => setTimeout(() => window.print(), 350));<\/script>
 </body>
-<script id="plant-custom-growing-options">
-(function () {
-    const mediumList = document.getElementById('plant-medium-options');
-    const setupList = document.getElementById('plant-setup-options');
-    if (!mediumList || !setupList) return;
 
-    function addOtherOption(list, name, id, placeholder) {
-        let row = list.querySelector('[data-custom-option="' + name + '"]');
-        if (!row) {
-            row = document.createElement('label');
-            row.dataset.customOption = name;
-            row.className = 'flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer';
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.name = name === 'medium' ? 'plant-medium-option' : 'plant-setup-option';
-            checkbox.value = 'Other';
-            checkbox.className = 'h-4 w-4 shrink-0 accent-emerald-600';
-            const caption = document.createElement('span');
-            caption.textContent = 'Other / type your own';
-            row.append(checkbox, caption);
-            list.appendChild(row);
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.id = id;
-            input.maxLength = 180;
-            input.placeholder = placeholder;
-            input.setAttribute('aria-label', placeholder);
-            input.className = 'mt-2 w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm';
-            input.hidden = true;
-            list.appendChild(input);
-            checkbox.addEventListener('change', syncPlantOtherFields);
-            input.addEventListener('input', syncPlantOtherFields);
-        }
-    }
-
-    window.syncPlantOtherFields = function () {
-        [['medium', 'plant-medium-other'], ['setup', 'plant-setup-other']].forEach(([name, id]) => {
-            const list = name === 'medium' ? mediumList : setupList;
-            const checkbox = list.querySelector('input[name="' + (name === 'medium' ? 'plant-medium-option' : 'plant-setup-option') + '"][value="Other"]');
-            const input = document.getElementById(id);
-            if (!checkbox || !input) return;
-            input.hidden = !checkbox.checked;
-            if (!checkbox.checked) input.value = '';
-        });
-        const mediumLabel = document.getElementById('plant-medium-selected-label');
-        if (mediumLabel && window.getSelectedPlantMediums) {
-            const values = window.getSelectedPlantMediums().filter(value => value !== 'Other');
-            const custom = document.getElementById('plant-medium-other')?.value.trim();
-            if (custom) values.push(custom);
-            mediumLabel.textContent = values.length ? values.join(', ') : 'Choose a growing medium…';
-        }
-        const setupSummary = setupList.closest('details')?.querySelector('summary span');
-        if (setupSummary) {
-            const values = Array.from(setupList.querySelectorAll('input[name="plant-setup-option"]:checked')).filter(input => input.value !== 'Other').map(input => input.value);
-            const custom = document.getElementById('plant-setup-other')?.value.trim();
-            if (custom) values.push(custom);
-            setupSummary.textContent = values.length ? values.join(', ') : 'Choose a growing setup';
-        }
-    };
-
-    addOtherOption(mediumList, 'medium', 'plant-medium-other', 'Enter your growing medium');
-    addOtherOption(setupList, 'setup', 'plant-setup-other', 'Enter your growing setup');
-
-    const originalSet = window.setSelectedPlantMediums;
-    window.setSelectedPlantMediums = function (saved) {
-        if (originalSet) originalSet(saved);
-        const values = Array.isArray(saved) ? saved : String(saved || '').split(' · ').filter(Boolean);
-        const other = mediumList.querySelector('input[name="plant-medium-option"][value="Other"]');
-        if (other) other.checked = values.includes('Other');
-        window.syncPlantOtherFields();
-    };
-    mediumList.addEventListener('change', window.syncPlantOtherFields);
-    setupList.addEventListener('change', window.syncPlantOtherFields);
-    window.syncPlantOtherFields();
-})();
-</script>
 </html>`);
             printWindow.document.close();
         }
@@ -10423,3 +10347,81 @@ document.addEventListener('click', function(event) {
 }
 </style>
 
+
+<script id="plant-custom-growing-options">
+(function () {
+    const mediumList = document.getElementById('plant-medium-options');
+    const setupList = document.getElementById('plant-setup-options');
+    if (!mediumList || !setupList) return;
+
+    function addOtherOption(list, name, id, placeholder) {
+        let row = list.querySelector('[data-custom-option="' + name + '"]');
+        if (!row) {
+            row = document.createElement('label');
+            row.dataset.customOption = name;
+            row.className = 'flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = name === 'medium' ? 'plant-medium-option' : 'plant-setup-option';
+            checkbox.value = 'Other';
+            checkbox.className = 'h-4 w-4 shrink-0 accent-emerald-600';
+            const caption = document.createElement('span');
+            caption.textContent = 'Other / type your own';
+            row.append(checkbox, caption);
+            list.appendChild(row);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = id;
+            input.maxLength = 180;
+            input.placeholder = placeholder;
+            input.setAttribute('aria-label', placeholder);
+            input.className = 'mt-2 w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm';
+            input.hidden = true;
+            list.appendChild(input);
+            checkbox.addEventListener('change', syncPlantOtherFields);
+            input.addEventListener('input', syncPlantOtherFields);
+        }
+    }
+
+    window.syncPlantOtherFields = function () {
+        [['medium', 'plant-medium-other'], ['setup', 'plant-setup-other']].forEach(([name, id]) => {
+            const list = name === 'medium' ? mediumList : setupList;
+            const checkbox = list.querySelector('input[name="' + (name === 'medium' ? 'plant-medium-option' : 'plant-setup-option') + '"][value="Other"]');
+            const input = document.getElementById(id);
+            if (!checkbox || !input) return;
+            input.hidden = !checkbox.checked;
+            if (!checkbox.checked) input.value = '';
+        });
+        const mediumLabel = document.getElementById('plant-medium-selected-label');
+        if (mediumLabel && window.getSelectedPlantMediums) {
+            const values = window.getSelectedPlantMediums().filter(value => value !== 'Other');
+            const custom = document.getElementById('plant-medium-other')?.value.trim();
+            if (custom) values.push(custom);
+            mediumLabel.textContent = values.length ? values.join(', ') : 'Choose a growing medium…';
+        }
+        const setupSummary = setupList.closest('details')?.querySelector('summary span');
+        if (setupSummary) {
+            const values = Array.from(setupList.querySelectorAll('input[name="plant-setup-option"]:checked')).filter(input => input.value !== 'Other').map(input => input.value);
+            const custom = document.getElementById('plant-setup-other')?.value.trim();
+            if (custom) values.push(custom);
+            setupSummary.textContent = values.length ? values.join(', ') : 'Choose a growing setup';
+        }
+    };
+
+    addOtherOption(mediumList, 'medium', 'plant-medium-other', 'Enter your growing medium');
+    addOtherOption(setupList, 'setup', 'plant-setup-other', 'Enter your growing setup');
+
+    const originalSet = window.setSelectedPlantMediums;
+    window.setSelectedPlantMediums = function (saved) {
+        if (originalSet) originalSet(saved);
+        const values = Array.isArray(saved) ? saved : String(saved || '').split(' · ').filter(Boolean);
+        const other = mediumList.querySelector('input[name="plant-medium-option"][value="Other"]');
+        if (other) other.checked = values.includes('Other');
+        window.syncPlantOtherFields();
+    };
+    mediumList.addEventListener('change', window.syncPlantOtherFields);
+    setupList.addEventListener('change', window.syncPlantOtherFields);
+    window.syncPlantOtherFields();
+})();
+</script>
