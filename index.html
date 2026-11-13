@@ -7928,7 +7928,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 '- a simple month-by-month seasonal checklist',
                 '',
                 'Tailor seasonal advice to my local climate. If my region is not known and it materially affects the advice, ask me where I garden rather than guessing. Clearly distinguish variety-specific facts from general plant advice. Include links to reliable horticultural sources for important recommendations, and do not invent citations. Finish with a short checklist I can follow.'
-            ].join('\\n');
+            ].join('\n');
             const url = 'https://chatgpt.com/?q=' + encodeURIComponent(prompt);
             const opened = window.open(url, '_blank', 'noopener,noreferrer');
             if (!opened) {
