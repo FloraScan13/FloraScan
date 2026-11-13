@@ -8520,6 +8520,49 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     background: #B0466C !important;
     color: #fff !important;
 }
+
+/* Keep the decorative header and close tab pinned while the options list scrolls. */
+#plant-medium-dropdown[open] #plant-medium-options,
+#plant-setup-dropdown[open] #plant-setup-options {
+    background-color: #fffef9 !important;
+    background-image:
+      linear-gradient(#fffef9, #fffef9),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat, no-repeat !important;
+    background-position: top left, 14px 22px !important;
+    background-size: 100% 28px, calc(100% - 28px) 6px !important;
+    background-attachment: scroll, scroll !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options::before,
+#plant-setup-dropdown[open] #plant-setup-options::before,
+#plant-medium-dropdown[open] #plant-medium-options::after,
+#plant-setup-dropdown[open] #plant-setup-options::after {
+    content: none !important;
+    display: none !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-close,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-close {
+    position: sticky !important;
+    top: 0 !important;
+    float: right !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-top: -54px !important;
+    margin-bottom: 20px !important;
+    margin-right: 0 !important;
+    z-index: 10 !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    border-radius: 0 0 8px 8px !important;
+    background: rgb(196, 85, 124) !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 5px #fffef9 !important;
+}
 </style>
 </body>
 
