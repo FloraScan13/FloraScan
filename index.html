@@ -3098,7 +3098,71 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Growing Medium / Setup</label>
-                        <input type="text" id="plant-medium" placeholder="e.g. AutoPot / Wicking Bed / Soil" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <input type="text" id="plant-medium" list="plant-medium-library" autocomplete="off" placeholder="Search or type a growing medium / setup…" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                        <datalist id="plant-medium-library">
+                            <option value="Garden soil"></option>
+                            <option value="Topsoil"></option>
+                            <option value="Loam"></option>
+                            <option value="Sandy soil"></option>
+                            <option value="Clay soil"></option>
+                            <option value="Silt soil"></option>
+                            <option value="Chalky soil"></option>
+                            <option value="Peaty soil"></option>
+                            <option value="Compost"></option>
+                            <option value="Multi-purpose compost"></option>
+                            <option value="Seed-starting compost"></option>
+                            <option value="Potting mix"></option>
+                            <option value="Raised-bed mix"></option>
+                            <option value="Leaf mould"></option>
+                            <option value="Manure-enriched soil"></option>
+                            <option value="No-dig bed"></option>
+                            <option value="Hugelkultur bed"></option>
+                            <option value="Coco coir"></option>
+                            <option value="Coco coir and perlite"></option>
+                            <option value="Peat-free potting mix"></option>
+                            <option value="Peat-based mix"></option>
+                            <option value="Perlite"></option>
+                            <option value="Vermiculite"></option>
+                            <option value="Pumice"></option>
+                            <option value="LECA / clay pebbles"></option>
+                            <option value="Expanded clay aggregate"></option>
+                            <option value="Rockwool / stonewool"></option>
+                            <option value="Oasis / propagation foam"></option>
+                            <option value="Rice hulls"></option>
+                            <option value="Pine bark / orchid bark"></option>
+                            <option value="Sphagnum moss"></option>
+                            <option value="Live moss"></option>
+                            <option value="Sand"></option>
+                            <option value="Gravel"></option>
+                            <option value="Biochar blend"></option>
+                            <option value="Worm castings blend"></option>
+                            <option value="Hydroponics – nutrient solution (DWC)"></option>
+                            <option value="Hydroponics – deep water culture (DWC)"></option>
+                            <option value="Hydroponics – nutrient film technique (NFT)"></option>
+                            <option value="Hydroponics – ebb and flow / flood and drain"></option>
+                            <option value="Hydroponics – drip system"></option>
+                            <option value="Hydroponics – Dutch bucket / Bato bucket"></option>
+                            <option value="Hydroponics – kratky method"></option>
+                            <option value="Hydroponics – wick system"></option>
+                            <option value="Aeroponics"></option>
+                            <option value="Aquaponics"></option>
+                            <option value="Fogponics"></option>
+                            <option value="Wicking bed"></option>
+                            <option value="Self-watering planter"></option>
+                            <option value="AutoPot system"></option>
+                            <option value="Sub-irrigated planter (SIP)"></option>
+                            <option value="Grow bag"></option>
+                            <option value="Container / pot"></option>
+                            <option value="Raised bed"></option>
+                            <option value="Vertical garden"></option>
+                            <option value="Living wall"></option>
+                            <option value="Greenhouse border"></option>
+                            <option value="Polytunnel bed"></option>
+                            <option value="In-ground planting"></option>
+                            <option value="Straw bale growing"></option>
+                            <option value="Mushroom substrate"></option>
+                        </datalist>
+                        <p class="text-[11px] text-slate-500 mt-1">Choose a suggestion or type your own. Includes soil, compost, soilless media, hydroponic methods and growing systems.</p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-location">Growing Location</label>
