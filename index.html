@@ -625,11 +625,32 @@ textarea {
             order: 1; flex: 0 0 auto; min-width: 0; padding: 0 !important;
             gap: 0 !important; background: transparent !important;
         }
-        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div:not(.crop-badge-container) { display: none !important; }
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div:not(.crop-badge-container):not(.plant-photo-no-frame) { display: none !important; }
         .location-group-plants.is-list-view .plant-card .crop-badge-container {
             width: 2.5rem !important; height: 2.5rem !important; padding: .25rem !important;
             border-radius: 13px !important; background: #eaf0e4 !important;
             border: 1px solid #dce5d6 !important; box-shadow: none !important;
+        }
+        .location-group-plants.is-list-view .plant-card .plant-photo-no-frame {
+            display: flex !important;
+            flex: 0 0 2.5rem !important;
+            width: 2.5rem !important;
+            min-width: 2.5rem !important;
+            max-width: 2.5rem !important;
+            height: 2.5rem !important;
+            min-height: 2.5rem !important;
+            padding: 0 !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+        }
+        .location-group-plants.is-list-view .plant-card .plant-photo-no-frame img {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
         }
         .location-group-plants.is-list-view .plant-card > div:last-child { display: none !important; }
         .location-group-plants.is-list-view .plant-card details[open] { position: relative !important; z-index: 10000 !important; }
@@ -640,6 +661,10 @@ textarea {
         @media (max-width: 420px) {
             .location-group-plants.is-list-view .plant-card { gap: .55rem !important; padding: .5rem !important; }
             .location-group-plants.is-list-view .plant-card .crop-badge-container { width: 2.35rem !important; height: 2.35rem !important; }
+            .location-group-plants.is-list-view .plant-card .plant-photo-no-frame {
+                flex-basis: 2.35rem !important; width: 2.35rem !important; min-width: 2.35rem !important;
+                max-width: 2.35rem !important; height: 2.35rem !important; min-height: 2.35rem !important;
+            }
         }
         /* Keep plant action menus visible above neighbouring cards in both layouts. */
         #plants-grid > div { overflow: visible !important; }
