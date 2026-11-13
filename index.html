@@ -9424,11 +9424,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 </style>
 
 <style id="flora-hide-individual-plant-icons">
-    /* Hide crop-specific illustrations only; preserve Flora Scan branding and navigation icons. */
-    #icon-picker-grid,
-    #journal-icon-container,
-    #plants-grid .crop-badge-container,
-    .location-group-plants .crop-badge-container {
+    /* Keep the old crop illustration picker hidden, but show plant photo containers. */
+    #icon-picker-grid {
         display: none !important;
     }
 </style>
