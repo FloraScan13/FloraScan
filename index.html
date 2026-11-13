@@ -8425,6 +8425,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         let pendingJournalPlantIconImage = null;
+        let journalIconCropOffsetX = 0;
+        let journalIconCropOffsetY = 0;
+        let journalIconCropDragStart = null;
 
         function openJournalPlantIconModal() {
             const modal = document.getElementById('journal-plant-icon-modal');
@@ -8435,7 +8438,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const image = document.getElementById('journal-icon-crop-image');
             const empty = document.getElementById('journal-icon-crop-empty');
             document.getElementById('journal-icon-zoom').value = '1';
-            image.style.transform = 'scale(1)';
+            journalIconCropOffsetX = 0;
+            journalIconCropOffsetY = 0;
+            journalIconCropDragStart = null;
+            image.style.transform = 'translate3d(0px,0px,0) scale(1)';
             if (plant.customIconUrl) {
                 image.onload = () => { image.classList.remove('hidden'); empty.classList.add('hidden'); updateJournalIconCropPreview(); };
                 image.onerror = () => { image.classList.add('hidden'); empty.classList.remove('hidden'); };
@@ -8458,10 +8464,57 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             pendingJournalPlantIconImage = null;
         }
 
+        function getJournalIconCropLimits() {
+            const image = document.getElementById('journal-icon-crop-image');
+            const viewport = document.getElementById('journal-icon-crop-viewport');
+            const width = viewport ? viewport.clientWidth : 256;
+            const height = viewport ? viewport.clientHeight : 256;
+            if (!image || !image.naturalWidth || !image.naturalHeight) return { x: 0, y: 0 };
+            const zoom = Math.max(1, Number(document.getElementById('journal-icon-zoom').value || 1));
+            const baseScale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+            return {
+                x: Math.max(0, (image.naturalWidth * baseScale * zoom - width) / 2),
+                y: Math.max(0, (image.naturalHeight * baseScale * zoom - height) / 2)
+            };
+        }
+
         function updateJournalIconCropPreview() {
             const image = document.getElementById('journal-icon-crop-image');
-            const zoom = Number(document.getElementById('journal-icon-zoom').value || 1);
-            image.style.transform = 'scale(' + zoom + ')';
+            if (!image) return;
+            const zoom = Math.max(1, Number(document.getElementById('journal-icon-zoom').value || 1));
+            const limits = getJournalIconCropLimits();
+            journalIconCropOffsetX = Math.max(-limits.x, Math.min(limits.x, journalIconCropOffsetX));
+            journalIconCropOffsetY = Math.max(-limits.y, Math.min(limits.y, journalIconCropOffsetY));
+            image.style.transform = 'translate3d(' + journalIconCropOffsetX + 'px,' + journalIconCropOffsetY + 'px,0) scale(' + zoom + ')';
+        }
+
+        function startJournalIconCropDrag(event) {
+            const image = document.getElementById('journal-icon-crop-image');
+            if (!image || !image.naturalWidth || event.button !== 0) return;
+            event.preventDefault();
+            journalIconCropDragStart = {
+                pointerId: event.pointerId,
+                x: event.clientX,
+                y: event.clientY,
+                offsetX: journalIconCropOffsetX,
+                offsetY: journalIconCropOffsetY
+            };
+            if (event.currentTarget && event.currentTarget.setPointerCapture) {
+                event.currentTarget.setPointerCapture(event.pointerId);
+            }
+        }
+
+        function moveJournalIconCropDrag(event) {
+            if (!journalIconCropDragStart || journalIconCropDragStart.pointerId !== event.pointerId) return;
+            event.preventDefault();
+            journalIconCropOffsetX = journalIconCropDragStart.offsetX + event.clientX - journalIconCropDragStart.x;
+            journalIconCropOffsetY = journalIconCropDragStart.offsetY + event.clientY - journalIconCropDragStart.y;
+            updateJournalIconCropPreview();
+        }
+
+        function endJournalIconCropDrag(event) {
+            if (!journalIconCropDragStart || (event && event.pointerId !== journalIconCropDragStart.pointerId)) return;
+            journalIconCropDragStart = null;
         }
 
         function handleJournalPlantIconFile(input) {
@@ -8473,6 +8526,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const image = document.getElementById('journal-icon-crop-image');
                 pendingJournalPlantIconImage = String(reader.result || '');
                 image.onload = () => { image.classList.remove('hidden'); document.getElementById('journal-icon-crop-empty').classList.add('hidden'); updateJournalIconCropPreview(); };
+                journalIconCropOffsetX = 0;
+                journalIconCropOffsetY = 0;
                 image.src = pendingJournalPlantIconImage;
                 document.getElementById('journal-icon-zoom').value = '1';
                 document.getElementById('journal-icon-delete-action').classList.add('hidden');
@@ -8488,16 +8543,22 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const image = document.getElementById('journal-icon-crop-image');
             if (!plant || !image || !image.naturalWidth) { alert('Choose a photo before saving.'); return; }
             try {
-                const side = Math.min(image.naturalWidth, image.naturalHeight);
+                const viewport = document.getElementById('journal-icon-crop-viewport');
+                const viewportWidth = viewport ? viewport.clientWidth : 256;
+                const viewportHeight = viewport ? viewport.clientHeight : 256;
                 const zoom = Math.max(1, Number(document.getElementById('journal-icon-zoom').value || 1));
-                const cropSide = side / zoom;
-                const sx = (image.naturalWidth - cropSide) / 2;
-                const sy = (image.naturalHeight - cropSide) / 2;
+                const baseScale = Math.max(viewportWidth / image.naturalWidth, viewportHeight / image.naturalHeight);
+                const cropWidth = viewportWidth / (baseScale * zoom);
+                const cropHeight = viewportHeight / (baseScale * zoom);
+                const limitsX = Math.max(0, (image.naturalWidth - cropWidth) / 2);
+                const limitsY = Math.max(0, (image.naturalHeight - cropHeight) / 2);
+                const sx = Math.max(0, Math.min(image.naturalWidth - cropWidth, limitsX - journalIconCropOffsetX / (baseScale * zoom)));
+                const sy = Math.max(0, Math.min(image.naturalHeight - cropHeight, limitsY - journalIconCropOffsetY / (baseScale * zoom)));
                 const canvas = document.createElement('canvas');
                 canvas.width = 640;
                 canvas.height = 640;
                 const context = canvas.getContext('2d');
-                context.drawImage(image, sx, sy, cropSide, cropSide, 0, 0, 640, 640);
+                context.drawImage(image, sx, sy, cropWidth, cropHeight, 0, 0, 640, 640);
                 const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
                 let photoPath = '';
                 let photoUrl = croppedDataUrl;
@@ -9456,10 +9517,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 <button type="button" onclick="closeJournalPlantIconModal()" aria-label="Close" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="mb-3 text-sm text-slate-600 dark:text-slate-300">Choose a new photo or adjust the square crop with the zoom slider.</p>
-            <div class="mx-auto mb-4 h-64 w-64 max-w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                <img id="journal-icon-crop-image" alt="Plant photo crop preview" class="hidden h-full w-full object-cover" style="transform:scale(1);">
-                <div id="journal-icon-crop-empty" class="text-center text-sm text-slate-400"><i class="fa-regular fa-image mb-2 text-3xl"></i><div>No photo selected</div></div>
+            <div id="journal-icon-crop-viewport" class="mx-auto mb-4 h-64 w-64 max-w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style="touch-action:none;" onpointerdown="startJournalIconCropDrag(event)" onpointermove="moveJournalIconCropDrag(event)" onpointerup="endJournalIconCropDrag(event)" onpointercancel="endJournalIconCropDrag(event)">
+                <img id="journal-icon-crop-image" alt="Plant photo crop preview — drag to reposition" draggable="false" class="hidden h-full w-full object-cover pointer-events-none" style="transform:translate3d(0,0,0) scale(1);transform-origin:center center;">
+                <div id="journal-icon-crop-empty" class="text-center text-sm text-slate-400 pointer-events-none"><i class="fa-regular fa-image mb-2 text-3xl"></i><div>No photo selected</div></div>
             </div>
+            <p class="mb-3 text-center text-xs text-slate-500 dark:text-slate-400">Drag the photo to reposition it inside the square.</p>
             <label for="journal-icon-zoom" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Zoom / crop</label>
             <input id="journal-icon-zoom" type="range" min="1" max="3" step="0.05" value="1" oninput="updateJournalIconCropPreview()" class="mb-4 w-full">
             <div class="flex flex-wrap gap-2">
