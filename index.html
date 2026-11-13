@@ -10348,44 +10348,6 @@ document.addEventListener('click', function(event) {
     const setupList = document.getElementById('plant-setup-options');
     if (!mediumList || !setupList) return;
 
-    function addSearchBox(list, placeholder) {
-        const dropdown = list.closest('details');
-        if (!dropdown) return;
-        let search = dropdown.querySelector('[data-growing-search]');
-        if (!search) {
-            search = document.createElement('input');
-            search.type = 'search';
-            search.dataset.growingSearch = 'true';
-            search.placeholder = placeholder;
-            search.autocomplete = 'off';
-            search.setAttribute('aria-label', placeholder);
-            search.className = 'mt-2 mb-2 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm text-slate-900';
-            search.style.setProperty('background-color', '#FFFEF9', 'important');
-            search.style.setProperty('color', '#1e293b', 'important');
-            const status = document.createElement('p');
-            status.className = 'hidden px-1 py-2 text-xs text-slate-500';
-            status.textContent = 'No matching options.';
-            status.dataset.growingSearchEmpty = 'true';
-            dropdown.insertBefore(search, list);
-            dropdown.insertBefore(status, list);
-            search.addEventListener('input', () => {
-                const query = search.value.trim().toLocaleLowerCase();
-                const rows = Array.from(list.querySelectorAll('label')).filter(row => row.querySelector('input[type="checkbox"]'));
-                let visible = 0;
-                rows.forEach(row => {
-                    const matches = !query || row.textContent.toLocaleLowerCase().includes(query);
-                    row.style.display = matches ? '' : 'none';
-                    if (matches) visible++;
-                });
-                list.querySelectorAll(':scope > fieldset, :scope > section').forEach(group => {
-                    const groupRows = Array.from(group.querySelectorAll('label')).filter(row => row.querySelector('input[type="checkbox"]'));
-                    group.style.display = groupRows.some(row => row.style.display !== 'none') ? '' : 'none';
-                });
-                status.classList.toggle('hidden', visible > 0);
-            });
-        }
-    }
-
     function addCustomField(list, name, id, placeholder, heading) {
         let panel = list.querySelector('[data-custom-option="' + name + '"]');
         if (!panel) {
@@ -10433,15 +10395,12 @@ document.addEventListener('click', function(event) {
 
     addCustomField(mediumList, 'medium', 'plant-medium-other', 'Other', 'Add your own growing medium');
     addCustomField(setupList, 'setup', 'plant-setup-other', 'Other', 'Add your own growing setup');
-    addSearchBox(mediumList, 'Search growing medium...');
-    addSearchBox(setupList, 'Search growing setup...');
 
     const originalSet = window.setSelectedPlantMediums;
     window.setSelectedPlantMediums = function (saved) {
         if (originalSet) originalSet(saved);
         // The original renderer rebuilds the medium list, so restore the custom-entry field.
         addCustomField(mediumList, 'medium', 'plant-medium-other', 'Other', 'Add your own growing medium');
-        addSearchBox(mediumList, 'Search growing medium...');
         window.syncPlantOtherFields();
     };
     mediumList.addEventListener('change', window.syncPlantOtherFields);
