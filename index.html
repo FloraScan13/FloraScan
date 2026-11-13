@@ -9903,6 +9903,30 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
 
 
+<style id="dropdown-no-rollover-pink-ticks">
+    /* Keep both growing dropdowns visually still on hover; use pink checked boxes. */
+    #plant-medium-dropdown #plant-medium-options label,
+    #plant-medium-dropdown #plant-medium-options label:hover,
+    #plant-setup-dropdown #plant-setup-options label,
+    #plant-setup-dropdown #plant-setup-options label:hover {
+        background: transparent !important;
+        transition: none !important;
+    }
+    #plant-medium-dropdown #plant-medium-options input[type="checkbox"],
+    #plant-setup-dropdown #plant-setup-options input[type="checkbox"] {
+        accent-color: #ec4899 !important;
+    }
+    #plant-medium-dropdown > summary:hover,
+    #plant-medium-dropdown > summary:focus,
+    #plant-medium-dropdown > summary:active,
+    #plant-setup-dropdown > summary:hover,
+    #plant-setup-dropdown > summary:focus,
+    #plant-setup-dropdown > summary:active {
+        filter: none !important;
+        box-shadow: none !important;
+        transition: none !important;
+    }
+</style>
 <script id="plant-setup-click-outside">
 document.addEventListener('click', function(event) {
     const dropdown = document.getElementById('plant-setup-dropdown');
@@ -9930,7 +9954,7 @@ document.addEventListener('click', function(event) {
 
     function makeOption(option) {
         const row = document.createElement('label');
-        row.className = 'flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800';
+        row.className = 'flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer';
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.name = 'plant-medium-option';
