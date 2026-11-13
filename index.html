@@ -8429,26 +8429,43 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const photo = log && Array.isArray(log.photos) ? log.photos[photoIndex] : '';
             if (!photo) return;
             try {
-                // Keep a separate storage object for the plant icon so deleting the journal entry photo cannot break it.
-                let photoPath = '';
-                if (supabaseClient && currentUser && navigator.onLine) {
+                // Prefer the journal photo's existing Storage path.
+                let photoPath = Array.isArray(log.photoPaths) ? log.photoPaths[photoIndex] : '';
+                if (!photoPath && (photo.startsWith('data:') || photo.startsWith('blob:')) && supabaseClient && currentUser && navigator.onLine) {
                     photoPath = await uploadJournalPhoto(photo, plant.id, 'plant-icon', 0);
+                } else if (!photoPath && /^https?:\/\//i.test(photo) && supabaseClient && currentUser && navigator.onLine) {
+                    const response = await fetch(photo);
+                    if (!response.ok) throw new Error('Could not read the journal photo for cloud storage.');
+                    const blob = await response.blob();
+                    const path = currentUser.id + '/' + plant.id + '/plant-icon/0.jpg';
+                    const { error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).upload(path, blob, {
+                        contentType: blob.type || 'image/jpeg',
+                        upsert: true
+                    });
+                    if (error) throw error;
+                    photoPath = path;
                 }
+
                 plant.customIconPath = photoPath || '';
-                plant.customIconUrl = photoPath ? (await createJournalPhotoUrl(photoPath)) : photo;
+                plant.customIconUrl = photoPath ? await createJournalPhotoUrl(photoPath) : photo;
+                if (!plant.customIconUrl) throw new Error('Could not create a display URL for this photo.');
+
                 localStorage.setItem('flora_plants', JSON.stringify(plants));
                 markFloraSyncPending();
                 if (supabaseClient && currentUser && navigator.onLine) {
                     const synced = await syncPlantToCloud(plant);
-                    if (!synced) throw new Error('The plant icon could not be synced.');
+                    if (!synced) throw new Error('The plant icon could not be synced to your account.');
                 }
+
                 renderPlants();
                 const iconContainer = document.getElementById('journal-icon-container');
-                if (iconContainer) iconContainer.innerHTML = '<img src="' + escapeHtml(plant.customIconUrl) + '" alt="' + escapeHtml(plant.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">';
-                alert('Plant icon updated from your journal photo.');
+                if (iconContainer) {
+                    iconContainer.innerHTML = '<img src="' + escapeHtml(plant.customIconUrl) + '" alt="' + escapeHtml(plant.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">';
+                }
+                alert('Plant icon updated. It will now appear on the plant card and in this journal.');
             } catch (error) {
                 console.error('Could not set plant icon:', error);
-                alert('The photo could not be saved as the plant icon. Please try again.');
+                alert('The plant icon could not be updated: ' + (error && error.message ? error.message : 'Please try again.'));
             }
         }
 
@@ -8461,7 +8478,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             const photoPath = Array.isArray(log.photoPaths) ? log.photoPaths[photoIndex] : null;
             try {
-                if (photoPath && typeof photoPath === 'string' && !photoPath.startsWith('data:') && !photoPath.startsWith('blob:')) {
+                if (photoPath && plant.customIconPath === photoPath) {
+                    // Keep this Storage object while it is being used as the plant icon.
+                } else if (photoPath && typeof photoPath === 'string' && !photoPath.startsWith('data:') && !photoPath.startsWith('blob:')) {
                     if (!supabaseClient || !currentUser || !navigator.onLine) {
                         alert('Connect to the internet and sign in before deleting a cloud photo.');
                         return;
