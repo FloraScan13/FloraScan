@@ -3235,6 +3235,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                         </div>
                         <p id="journal-initial-notes" class="text-xs text-slate-600 dark:text-slate-400 italic pt-1"></p>
+                        <section id="journal-reference-section" class="mt-3 rounded-xl border border-rose-100 dark:border-slate-700 bg-rose-50/60 dark:bg-slate-900/40 p-3">
+                            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#a94769] dark:text-pink-300"><i class="fa-solid fa-book-open"></i><span>Plant references</span></div>
+                            <p id="journal-reference-status" class="mt-2 text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite">Checking for RHS plant information…</p>
+                            <div id="journal-reference-list" class="mt-2 space-y-2"></div>
+                        </section>
                     </div>
                 </div>
 
@@ -7894,6 +7899,46 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
+        async function loadJournalPlantReferences(plant) {
+            const status = document.getElementById('journal-reference-status');
+            const list = document.getElementById('journal-reference-list');
+            if (!status || !list) return;
+            list.innerHTML = '';
+            if (!supabaseClient || !currentUser || !navigator.onLine) {
+                status.textContent = 'Sign in and connect to the internet to load verified RHS references.';
+                return;
+            }
+            status.textContent = 'Looking for verified RHS plant articles…';
+            try {
+                const { data, error } = await supabaseClient.functions.invoke('plant-rhs-references', {
+                    body: { plantId: plant.id, plantName: plant.name, variety: plant.variety || '' }
+                });
+                if (error) throw error;
+                if (data && data.error) throw new Error(data.error);
+                const references = Array.isArray(data && data.references) ? data.references : [];
+                if (!references.length) {
+                    status.textContent = (data && data.message) || 'No sufficiently specific RHS plant article was found. Try again later.';
+                    return;
+                }
+                status.textContent = 'Verified RHS information for ' + (plant.name || 'this plant') + (data.cached ? ' · saved result' : '');
+                list.innerHTML = references.map(reference => {
+                    const title = String(reference.article_title || 'RHS plant information');
+                    const url = String(reference.article_url || '');
+                    let safeUrl = '';
+                    try {
+                        const parsed = new URL(url);
+                        if (parsed.protocol === 'https:' && (parsed.hostname === 'rhs.org.uk' || parsed.hostname === 'www.rhs.org.uk')) safeUrl = parsed.href;
+                    } catch (_) {}
+                    if (!safeUrl) return '';
+                    return '<a href="' + escapeHtml(safeUrl) + '" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between gap-3 rounded-lg border border-rose-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-[#a94769] dark:text-pink-300 hover:bg-rose-50 dark:hover:bg-slate-700"><span>' + escapeHtml(title) + '</span><i class="fa-solid fa-arrow-up-right-from-square flex-shrink-0"></i></a>';
+                }).join('');
+                if (!list.innerHTML) status.textContent = 'No safe RHS article links were available.';
+            } catch (error) {
+                console.warn('Plant RHS references could not be loaded:', error);
+                status.textContent = error && error.message ? error.message : 'RHS references could not be loaded right now.';
+            }
+        }
+
         function openJournalModal(id) {
             const p = plants.find(item => item.id === id);
             if (!p) return;
@@ -7947,6 +7992,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 journalMultisowSummary.classList.toggle('hidden', !(p.multisow));
             }
             document.getElementById('journal-name').textContent = p.name;
+            loadJournalPlantReferences(p);
 
             document.getElementById('journal-variety').textContent = p.variety || 'Standard Variety';
             const journalFeedReminder = (Array.isArray(p.logs) ? p.logs : [])
