@@ -8564,65 +8564,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     box-shadow: 0 0 0 5px #fffef9 !important;
 }
 </style>
-<style id="plant-growing-picker-sticky-header-fix">
-/* The header is its own sticky child of the scrollable modal panel. */
-#plant-medium-dropdown[open] #plant-medium-options,
-#plant-setup-dropdown[open] #plant-setup-options {
-    overflow-y: auto !important;
-    padding: 0 16px 16px !important;
-    scroll-padding-top: 48px !important;
-}
-#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-sticky-header,
-#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-sticky-header {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 20 !important;
-    display: flex !important;
-    justify-content: flex-end !important;
-    align-items: flex-start !important;
-    width: calc(100% + 32px) !important;
-    height: 42px !important;
-    min-height: 42px !important;
-    box-sizing: border-box !important;
-    margin: 0 -16px 12px !important;
-    padding: 0 16px !important;
-    background: #fffef9 !important;
-}
-#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-sticky-header::after,
-#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-sticky-header::after {
-    content: "" !important;
-    position: absolute !important;
-    left: 14px !important;
-    right: 14px !important;
-    bottom: 8px !important;
-    height: 6px !important;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 6px no-repeat !important;
-    pointer-events: none !important;
-}
-#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-sticky-header .plant-picker-close,
-#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-sticky-header .plant-picker-close {
-    position: relative !important;
-    top: 0 !important;
-    right: auto !important;
-    z-index: 2 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 24px !important;
-    min-width: 24px !important;
-    max-width: 24px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    max-height: 34px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 0 0 8px 8px !important;
-    background: rgb(196, 85, 124) !important;
-    color: #fff !important;
-    box-shadow: 0 0 0 5px #fffef9 !important;
-}
-</style>
 </body>
 
 </html>`);
@@ -10216,8 +10157,6 @@ document.addEventListener('click', function(event) {
 
     function buildOptions() {
         list.replaceChildren();
-        const header = document.createElement('div');
-        header.className = 'plant-picker-sticky-header';
         const closeButton = document.createElement('button');
         closeButton.type = 'button';
         closeButton.className = 'plant-picker-close';
@@ -10228,8 +10167,7 @@ document.addEventListener('click', function(event) {
             event.stopPropagation();
             dropdown.open = false;
         });
-        header.appendChild(closeButton);
-        list.appendChild(header);
+        list.appendChild(closeButton);
         Array.from(select.children).forEach(group => {
             if (group.tagName === 'OPTGROUP') {
                 const section = document.createElement('section');
@@ -10606,10 +10544,8 @@ document.addEventListener('click', function(event) {
         }
         // Keep the custom-entry field at the very top, even after the medium
         // options are rebuilt when an existing plant is loaded.
-        const stickyHeader = list.querySelector(':scope > .plant-picker-sticky-header');
-        if (panel.previousElementSibling !== stickyHeader) {
-            if (stickyHeader) stickyHeader.after(panel);
-            else list.insertBefore(panel, list.firstElementChild);
+        if (list.firstElementChild !== panel) {
+            list.insertBefore(panel, list.firstElementChild);
         }
     }
 
@@ -10633,14 +10569,6 @@ document.addEventListener('click', function(event) {
         }
     };
 
-    // Put the setup close button in a dedicated sticky header, separate from scrolling options.
-    const setupClose = setupList.querySelector(':scope > .plant-picker-close');
-    if (setupClose) {
-        const header = document.createElement('div');
-        header.className = 'plant-picker-sticky-header';
-        header.appendChild(setupClose);
-        setupList.insertBefore(header, setupList.firstChild);
-    }
     addCustomField(mediumList, 'medium', 'plant-medium-other', 'Other', 'Add your own growing medium');
     addCustomField(setupList, 'setup', 'plant-setup-other', 'Other', 'Add your own growing setup');
 
