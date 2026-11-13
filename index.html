@@ -9879,8 +9879,8 @@ function togglePlantSetupDropdown() {
     const panel = document.getElementById('plant-setup-options');
     const button = document.getElementById('plant-setup-toggle');
     if (!panel || !button) return;
-    const opening = panel.classList.contains('hidden');
-    panel.classList.toggle('hidden', !opening);
+    const opening = panel.hidden;
+    panel.hidden = !opening;
     button.setAttribute('aria-expanded', String(opening));
 }
 function updatePlantSetupDropdownLabel() {
