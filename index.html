@@ -711,6 +711,26 @@ textarea {
         @media (max-width: 640px) {
             main { padding-top: 0 !important; }
             #main-navigation-tabs { gap: 4px !important; }
+            /* Keep Add Plant centred on initial mobile load, regardless of inherited button styles. */
+            #main-navigation-tabs #tab-add-plant {
+                display: flex !important;
+                flex: 1 1 0% !important;
+                align-items: center !important;
+                justify-content: center !important;
+                flex-direction: row !important;
+                gap: 6px !important;
+                margin: 0 !important;
+                padding: 10px 6px !important;
+                text-align: center !important;
+            }
+            #main-navigation-tabs #tab-add-plant i,
+            #main-navigation-tabs #tab-add-plant span {
+                display: inline-block !important;
+                flex: 0 0 auto !important;
+                width: auto !important;
+                margin: 0 !important;
+                text-align: center !important;
+            }
             #main-navigation-tabs button { padding: 10px 6px !important; }
             #plants-grid { gap: 12px !important; }
 
