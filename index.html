@@ -8459,6 +8459,68 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 <footer>Exported from Flora Scan on ${generated}.</footer>
 <div class="no-print" style="margin-top:24px"><button onclick="window.print()" style="background:#15803d;color:white;border:0;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer">Print / Save as PDF</button> <button onclick="window.close()" style="padding:10px 16px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer">Close</button><p style="color:#64748b;font-size:12px">In the print dialog, choose “Save as PDF” as the destination to download your journal.</p></div>
 <script>window.addEventListener('load', () => setTimeout(() => window.print(), 350));<\/script>
+<style id="plant-growing-selection-modal-journal-header">
+/* Put the Plant Journal-style header on the actual full-screen growing selector panels. */
+#plant-medium-dropdown[open] #plant-medium-options,
+#plant-setup-dropdown[open] #plant-setup-options {
+    position: fixed !important;
+    isolation: isolate !important;
+    padding-top: 54px !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options::before,
+#plant-setup-dropdown[open] #plant-setup-options::before {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    inset: 0 0 auto 0 !important;
+    height: 28px !important;
+    background: #fffef9 !important;
+    z-index: 4 !important;
+    pointer-events: none !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options::after,
+#plant-setup-dropdown[open] #plant-setup-options::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    top: 22px !important;
+    left: 14px !important;
+    right: 14px !important;
+    height: 6px !important;
+    z-index: 5 !important;
+    pointer-events: none !important;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 6px no-repeat !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-close,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-close {
+    position: absolute !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    top: 0 !important;
+    right: 16px !important;
+    z-index: 6 !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 0 8px 8px !important;
+    background: rgb(196, 85, 124) !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 5px #fffef9 !important;
+    line-height: 1 !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-close:hover,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-close:hover {
+    background: #B0466C !important;
+    color: #fff !important;
+}
+</style>
 </body>
 
 </html>`);
