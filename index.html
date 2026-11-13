@@ -8495,18 +8495,38 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             journalIconCropOffsetY = 0;
             journalIconCropDragStart = null;
             image.style.transform = 'translate3d(0px,0px,0) scale(1)';
+            const changeActionLabel = document.getElementById('journal-icon-change-action-label');
+            const deleteAction = document.getElementById('journal-icon-delete-action');
+            const setChangePhotoLabel = hasPhoto => {
+                if (changeActionLabel) changeActionLabel.textContent = hasPhoto ? 'Change photo' : 'Add photo';
+                if (deleteAction) deleteAction.classList.toggle('hidden', !hasPhoto);
+            };
+            setChangePhotoLabel(false);
             if (plant.customIconUrl) {
-                image.onload = () => { image.classList.remove('hidden'); empty.classList.add('hidden'); updateJournalIconCropPreview(); };
-                image.onerror = () => { image.classList.add('hidden'); empty.classList.remove('hidden'); };
+                image.onload = () => {
+                    image.classList.remove('hidden');
+                    empty.classList.add('hidden');
+                    updateJournalIconCropPreview();
+                    setChangePhotoLabel(true);
+                };
+                image.onerror = () => {
+                    image.classList.add('hidden');
+                    empty.classList.remove('hidden');
+                    setChangePhotoLabel(false);
+                };
                 image.crossOrigin = 'anonymous';
                 image.src = plant.customIconUrl;
-                if (image.complete && image.naturalWidth) { image.classList.remove('hidden'); empty.classList.add('hidden'); }
+                if (image.complete && image.naturalWidth) {
+                    image.classList.remove('hidden');
+                    empty.classList.add('hidden');
+                    setChangePhotoLabel(true);
+                }
             } else {
                 image.removeAttribute('src');
                 image.classList.add('hidden');
                 empty.classList.remove('hidden');
+                setChangePhotoLabel(false);
             }
-            document.getElementById('journal-icon-delete-action').classList.toggle('hidden', !plant.customIconUrl);
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
@@ -9531,7 +9551,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             <label for="journal-icon-zoom" class="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Zoom / crop</label>
             <input id="journal-icon-zoom" type="range" min="1" max="3" step="0.05" value="1" oninput="updateJournalIconCropPreview()" class="mb-4 w-full">
             <div class="flex flex-wrap gap-2">
-                <button type="button" onclick="document.getElementById('journal-icon-file-input').click()" class="flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-camera mr-2"></i>Change photo</button>
+                <button type="button" id="journal-icon-change-action" onclick="document.getElementById('journal-icon-file-input').click()" class="flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-camera mr-2"></i><span id="journal-icon-change-action-label">Change photo</span></button>
                 <button type="button" id="journal-icon-delete-action" onclick="removeJournalPlantIcon()" class="rounded-xl border border-rose-200 px-3 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300"><i class="fa-regular fa-trash-can mr-2"></i>Delete photo</button>
             </div>
             <div class="mt-4 flex justify-end gap-2">
