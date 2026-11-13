@@ -8452,7 +8452,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
 
                         <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${getJournalTankFillDisplay(log)}${formatGrowthLogText(log.text, log.type) ? '<p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">' + formatGrowthLogText(log.text, log.type) + '</p>' : ''}
-                        ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<div class="relative"><a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a><button type="button" onclick="setPlantIconFromJournalPhoto(\'' + p.id + '\', \'' + (log.id || originalIndex) + '\', ' + photoIndex + ')" title="Set as plant icon" aria-label="Set photo as plant icon" class="absolute bottom-1 left-1 rounded-md bg-white/95 text-slate-800 px-2 py-1 text-[10px] font-semibold shadow">Use as icon</button><button type="button" onclick="removeJournalLogPhoto(\'' + p.id + '\', \'' + (log.id || originalIndex) + '\', ' + photoIndex + ')" aria-label="Delete journal photo ' + (photoIndex + 1) + '" title="Delete photo" class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 text-white text-xs shadow"><i class="fa-solid fa-xmark"></i></button></div>').join('') + '</div>' : ''}
+                        ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<div class="relative"><a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a><button type="button" onclick="removeJournalLogPhoto(\'' + p.id + '\', \'' + (log.id || originalIndex) + '\', ' + photoIndex + ')" aria-label="Delete journal photo ' + (photoIndex + 1) + '" title="Delete photo" class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 text-white text-xs shadow"><i class="fa-solid fa-xmark"></i></button></div>').join('') + '</div>' : ''}
                     </div>
                     <div class="flex flex-col items-end gap-1 flex-shrink-0">
                         ${log.type === 'Feed' && log.feedReminderDate ? (() => {
@@ -8660,53 +8660,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             } catch (error) {
                 console.error('Could not remove plant journal photo:', error);
                 alert('The plant photo could not be removed: ' + (error && error.message ? error.message : 'Please try again.'));
-            }
-        }
-
-        async function setPlantIconFromJournalPhoto(plantId, logId, photoIndex) {
-            const plant = plants.find(item => String(item.id) === String(plantId));
-            if (!plant || !Array.isArray(plant.logs)) return;
-            const log = plant.logs.find((entry, index) => String(entry.id || index) === String(logId));
-            const photo = log && Array.isArray(log.photos) ? log.photos[photoIndex] : '';
-            if (!photo) return;
-            try {
-                // Prefer the journal photo's existing Storage path.
-                let photoPath = Array.isArray(log.photoPaths) ? log.photoPaths[photoIndex] : '';
-                if (!photoPath && (photo.startsWith('data:') || photo.startsWith('blob:')) && supabaseClient && currentUser && navigator.onLine) {
-                    photoPath = await uploadJournalPhoto(photo, plant.id, 'plant-icon', 0);
-                } else if (!photoPath && /^https?:\/\//i.test(photo) && supabaseClient && currentUser && navigator.onLine) {
-                    const response = await fetch(photo);
-                    if (!response.ok) throw new Error('Could not read the journal photo for cloud storage.');
-                    const blob = await response.blob();
-                    const path = currentUser.id + '/' + plant.id + '/plant-icon/0.jpg';
-                    const { error } = await supabaseClient.storage.from(JOURNAL_PHOTO_BUCKET).upload(path, blob, {
-                        contentType: blob.type || 'image/jpeg',
-                        upsert: true
-                    });
-                    if (error) throw error;
-                    photoPath = path;
-                }
-
-                plant.customIconPath = photoPath || '';
-                plant.customIconUrl = photoPath ? await createJournalPhotoUrl(photoPath) : photo;
-                if (!plant.customIconUrl) throw new Error('Could not create a display URL for this photo.');
-
-                localStorage.setItem('flora_plants', JSON.stringify(plants));
-                markFloraSyncPending();
-                if (supabaseClient && currentUser && navigator.onLine) {
-                    const synced = await syncPlantToCloud(plant);
-                    if (!synced) throw new Error('The plant icon could not be synced to your account.');
-                }
-
-                renderPlants();
-                const iconContainer = document.getElementById('journal-icon-container');
-                if (iconContainer) {
-                    iconContainer.innerHTML = '<img src="' + escapeHtml(plant.customIconUrl) + '" alt="' + escapeHtml(plant.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">';
-                }
-                alert('Plant icon updated. It will now appear on the plant card and in this journal.');
-            } catch (error) {
-                console.error('Could not set plant icon:', error);
-                alert('The plant icon could not be updated: ' + (error && error.message ? error.message : 'Please try again.'));
             }
         }
 
