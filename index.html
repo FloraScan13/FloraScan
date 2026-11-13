@@ -10400,14 +10400,14 @@ document.addEventListener('click', function(event) {
         }
     };
 
-    addCustomField(mediumList, 'medium', 'plant-medium-other', 'e.g. homemade compost and perlite', 'Add your own growing medium');
-    addCustomField(setupList, 'setup', 'plant-setup-other', 'e.g. self-watering raised bed', 'Add your own growing setup');
+    addCustomField(mediumList, 'medium', 'plant-medium-other', 'Other', 'Add your own growing medium');
+    addCustomField(setupList, 'setup', 'plant-setup-other', 'Other', 'Add your own growing setup');
 
     const originalSet = window.setSelectedPlantMediums;
     window.setSelectedPlantMediums = function (saved) {
         if (originalSet) originalSet(saved);
         // The original renderer rebuilds the medium list, so restore the custom-entry field.
-        addCustomField(mediumList, 'medium', 'plant-medium-other', 'e.g. homemade compost and perlite', 'Add your own growing medium');
+        addCustomField(mediumList, 'medium', 'plant-medium-other', 'Other', 'Add your own growing medium');
         window.syncPlantOtherFields();
     };
     mediumList.addEventListener('change', window.syncPlantOtherFields);
