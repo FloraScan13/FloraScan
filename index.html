@@ -8564,74 +8564,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 }
 </style>
 
-<script id="journal-growing-medium-setup-options">
-(function () {
-    function buildJournalPicker(sourceId, hostId, title, checkboxName) {
-        const source = document.getElementById(sourceId);
-        const host = document.getElementById(hostId);
-        if (!source || !host) return null;
-        const details = source.cloneNode(true);
-        details.removeAttribute('id');
-        details.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-        details.querySelectorAll('input[type="checkbox"]').forEach(input => {
-            input.name = checkboxName;
-            input.checked = false;
-        });
-        details.querySelectorAll('button').forEach(button => {
-            if (button.classList.contains('plant-growing-done')) button.remove();
-        });
-        const summary = details.querySelector('summary');
-        if (summary) {
-            const label = summary.querySelector('span') || summary;
-            label.textContent = title;
-        }
-        details.classList.add('w-full');
-        details.querySelectorAll('.plant-picker-panel').forEach(panel => {
-            panel.classList.add('max-h-64', 'overflow-y-auto');
-        });
-        host.replaceChildren(details);
-        const list = details.querySelector('.plant-picker-panel');
-        const other = list?.querySelector('input[type="text"]');
-        if (other) {
-            other.value = '';
-            other.removeAttribute('id');
-        }
-        const updateLabel = () => {
-            const values = Array.from(details.querySelectorAll('input[name="' + checkboxName + '"]:checked'))
-                .filter(input => input.value !== 'Other').map(input => input.value);
-            if (other?.value.trim()) values.push(other.value.trim());
-            const label = summary?.querySelector('span') || summary;
-            if (label) label.textContent = values.length ? values.join(', ') : title;
-        };
-        details.addEventListener('change', updateLabel);
-        other?.addEventListener('input', updateLabel);
-        details.addEventListener('toggle', () => {
-            if (details.open) {
-                document.querySelectorAll('#journal-medium-picker details, #journal-setup-picker details').forEach(item => {
-                    if (item !== details) item.open = false;
-                });
-            }
-        });
-        details._journalValues = () => {
-            const values = Array.from(details.querySelectorAll('input[name="' + checkboxName + '"]:checked'))
-                .filter(input => input.value !== 'Other').map(input => input.value);
-            if (other?.value.trim()) values.push(other.value.trim());
-            return [...new Set(values)];
-        };
-        updateLabel();
-        return details;
-    }
 
-    function init() {
-        const medium = buildJournalPicker('plant-medium-dropdown', 'journal-medium-picker', 'Growing medium', 'journal-medium-option');
-        const setup = buildJournalPicker('plant-setup-dropdown', 'journal-setup-picker', 'Growing setup', 'journal-setup-option');
-        window.getJournalMediumValues = () => medium?._journalValues() || [];
-        window.getJournalSetupValues = () => setup?._journalValues() || [];
-    }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
-    else init();
-})();
-</script>
 
 </body>
 
@@ -10296,6 +10229,74 @@ document.addEventListener('click', function(event) {
     });
     buildOptions();
     syncLabel();
+})();
+</script>
+<script id="journal-growing-medium-setup-options">
+(function () {
+    function buildJournalPicker(sourceId, hostId, title, checkboxName) {
+        const source = document.getElementById(sourceId);
+        const host = document.getElementById(hostId);
+        if (!source || !host) return null;
+        const details = source.cloneNode(true);
+        details.removeAttribute('id');
+        details.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+        details.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.name = checkboxName;
+            input.checked = false;
+        });
+        details.querySelectorAll('button').forEach(button => {
+            if (button.classList.contains('plant-growing-done')) button.remove();
+        });
+        const summary = details.querySelector('summary');
+        if (summary) {
+            const label = summary.querySelector('span') || summary;
+            label.textContent = title;
+        }
+        details.classList.add('w-full');
+        details.querySelectorAll('.plant-picker-panel').forEach(panel => {
+            panel.classList.add('max-h-64', 'overflow-y-auto');
+        });
+        host.replaceChildren(details);
+        const list = details.querySelector('.plant-picker-panel');
+        const other = list?.querySelector('input[type="text"]');
+        if (other) {
+            other.value = '';
+            other.removeAttribute('id');
+        }
+        const updateLabel = () => {
+            const values = Array.from(details.querySelectorAll('input[name="' + checkboxName + '"]:checked'))
+                .filter(input => input.value !== 'Other').map(input => input.value);
+            if (other?.value.trim()) values.push(other.value.trim());
+            const label = summary?.querySelector('span') || summary;
+            if (label) label.textContent = values.length ? values.join(', ') : title;
+        };
+        details.addEventListener('change', updateLabel);
+        other?.addEventListener('input', updateLabel);
+        details.addEventListener('toggle', () => {
+            if (details.open) {
+                document.querySelectorAll('#journal-medium-picker details, #journal-setup-picker details').forEach(item => {
+                    if (item !== details) item.open = false;
+                });
+            }
+        });
+        details._journalValues = () => {
+            const values = Array.from(details.querySelectorAll('input[name="' + checkboxName + '"]:checked'))
+                .filter(input => input.value !== 'Other').map(input => input.value);
+            if (other?.value.trim()) values.push(other.value.trim());
+            return [...new Set(values)];
+        };
+        updateLabel();
+        return details;
+    }
+
+    function init() {
+        const medium = buildJournalPicker('plant-medium-dropdown', 'journal-medium-picker', 'Growing medium', 'journal-medium-option');
+        const setup = buildJournalPicker('plant-setup-dropdown', 'journal-setup-picker', 'Growing setup', 'journal-setup-option');
+        window.getJournalMediumValues = () => medium?._journalValues() || [];
+        window.getJournalSetupValues = () => setup?._journalValues() || [];
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+    else init();
 })();
 </script>
 </body>
