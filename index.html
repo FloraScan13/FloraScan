@@ -9885,6 +9885,14 @@ document.addEventListener('click', function(event) {
 
 
 
+<script id="plant-setup-click-outside">
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('plant-setup-dropdown');
+    if (dropdown && dropdown.open && !dropdown.contains(event.target)) {
+        dropdown.open = false;
+    }
+});
+</script>
 </body>
 </html>
 
