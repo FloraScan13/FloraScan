@@ -3125,7 +3125,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <label for="plant-medium-trigger" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">1. Select Growing Medium</label>
                                 <div class="relative w-full">
                                     <select id="plant-medium" class="hidden" aria-hidden="true" tabindex="-1">
-                                    <option value="">Choose a growing medium…</option>
+                                    <option value="">Medium</option>
                                     <optgroup label="Soil, compost and living soils">
                                         <option>Garden soil</option><option>Topsoil</option><option>Loam</option><option>Sandy soil</option><option>Clay soil</option><option>Silt soil</option><option>Chalky soil</option><option>Peaty soil</option><option>Compost</option><option>Multi-purpose compost</option><option>Seed-starting compost</option><option>Potting mix</option><option>Light-mix soil</option><option>All-mix soil</option><option>Grow-mix soil</option><option>Bat-mix soil</option><option>Living soil</option><option>Super soil / amended living soil</option><option>Organic soil mix</option><option>Peat-free soil mix</option><option>Peat-based soil mix</option><option>Raised-bed mix</option><option>Leaf mould</option><option>Manure-enriched soil</option><option>No-dig bed mix</option><option>Hugelkultur mix</option><option>Worm-casting-enriched mix</option><option>Guanocast / guano-enriched mix</option>
                                     </optgroup>
@@ -3145,7 +3145,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     </select>
                                     <details id="plant-medium-dropdown" class="w-full relative">
                                         <summary id="plant-medium-trigger" class="w-full flex cursor-pointer list-none items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left">
-                                            <span id="plant-medium-selected-label">Choose a growing medium…</span>
+                                            <span id="plant-medium-selected-label">Medium</span>
                                             <i class="fa-solid fa-chevron-down text-slate-500" aria-hidden="true"></i>
                                         </summary>
                                         <div id="plant-medium-options" class="mt-2 w-full max-h-64 overflow-y-auto rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 space-y-3" role="listbox" aria-label="Growing medium options"></div>
@@ -9974,7 +9974,7 @@ document.addEventListener('click', function(event) {
 
     function syncLabel() {
         const values = selectedValues();
-        label.textContent = values.length ? values.join(', ') : 'Choose a growing medium…';
+        label.textContent = values.length ? values.join(', ') : 'Medium';
     }
 
     function makeOption(option) {
@@ -10381,7 +10381,7 @@ document.addEventListener('click', function(event) {
             const values = window.getSelectedPlantMediums().filter(value => value !== 'Other');
             const custom = mediumInput?.value.trim();
             if (custom) values.push(custom);
-            mediumLabel.textContent = values.length ? values.join(', ') : 'Choose a growing medium…';
+            mediumLabel.textContent = values.length ? values.join(', ') : 'Medium';
         }
         const setupSummary = setupList.closest('details')?.querySelector('summary span');
         if (setupSummary) {
