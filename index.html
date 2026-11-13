@@ -8429,8 +8429,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const photo = log && Array.isArray(log.photos) ? log.photos[photoIndex] : '';
             if (!photo) return;
             try {
-                let photoPath = Array.isArray(log.photoPaths) ? log.photoPaths[photoIndex] : '';
-                if (!photoPath && photo.startsWith('data:') && supabaseClient && currentUser && navigator.onLine) {
+                // Keep a separate storage object for the plant icon so deleting the journal entry photo cannot break it.
+                let photoPath = '';
+                if (supabaseClient && currentUser && navigator.onLine) {
                     photoPath = await uploadJournalPhoto(photo, plant.id, 'plant-icon', 0);
                 }
                 plant.customIconPath = photoPath || '';
