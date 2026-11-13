@@ -9552,7 +9552,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             <input id="journal-icon-zoom" type="range" min="1" max="3" step="0.05" value="1" oninput="updateJournalIconCropPreview()" class="mb-4 w-full">
             <div class="mt-4 flex items-center gap-2">
                 <button type="button" id="journal-icon-change-action" onclick="document.getElementById('journal-icon-file-input').click()" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-2 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700"><i class="fa-solid fa-camera mr-1"></i><span id="journal-icon-change-action-label">Add photo</span></button>
-                <button type="button" onclick="closeJournalPlantIconModal()" class="min-w-0 flex-1 rounded-xl px-2 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700">Cancel</button>
+                <button type="button" onclick="closeJournalPlantIconModal()" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-2 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700">Cancel</button>
                 <button type="button" onclick="saveJournalPlantIconCrop()" class="min-w-0 flex-1 rounded-xl bg-[#c6537b] px-2 py-2.5 text-sm font-semibold text-white hover:opacity-90">Save photo</button>
             </div>
             <div class="mt-2 flex justify-end">
