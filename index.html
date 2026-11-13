@@ -3181,7 +3181,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-location">Growing Location</label>
                         <select id="plant-location" required aria-required="true" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                            <option value="">Growing Location</option>
+                            <option value="">Choose a location</option>
                         </select>
                     
                     </div>
@@ -5670,7 +5670,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const currentFilter = filterSelect ? filterSelect.value : '';
             if (plantSelect) {
                 const selected = selectedLocation || plantSelect.value || '';
-                plantSelect.innerHTML = '<option value="">Growing Location</option>' + plantLocations.map(location =>
+                plantSelect.innerHTML = '<option value="">Choose a location</option>' + plantLocations.map(location =>
                     '<option value="' + escapeHtml(location) + '">' + escapeHtml(location) + '</option>'
                 ).join('');
                 plantSelect.value = plantLocations.includes(selected) ? selected : '';
