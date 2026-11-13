@@ -4270,6 +4270,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 // Upload current plant records and journal entries. Data-URL photos are uploaded first.
                 for (const plant of localPlants) {
                     if (deletedPlants.includes(plant.id)) continue;
+                    if (plant.customIconUrl && plant.customIconUrl.startsWith('data:') && !plant.customIconPath) {
+                        plant.customIconPath = await uploadJournalPhoto(plant.customIconUrl, plant.id, 'plant-icon', 0);
+                    }
                     const { error: plantError } = await supabaseClient.from('plants').upsert({
                         id: plant.id, user_id: currentUser.id, name: plant.name, variety: plant.variety,
                         quantity: Math.max(1, Number(plant.quantity) || 1),
@@ -4280,11 +4283,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     multisow_pots: plant.multisow ? Math.max(0, Number(plant.multisowPots) || 0) : 0,
                     multisow_container_type: plant.multisow ? (plant.multisowContainerType === 'plugs' ? 'plugs' : 'pots') : '',
                     seeds_per_pot: plant.multisow ? Math.max(0, Number(plant.seedsPerPot) || 0) : 0,
-                        icon_key: plant.iconKey, hex: plant.hex, date: plant.date, medium: plant.medium,
+                        icon_key: plant.iconKey, custom_icon_path: plant.customIconPath || null, hex: plant.hex, date: plant.date, medium: plant.medium,
                         notes: plant.notes, location: plant.location || '',
                         nfc_tag_linked: !!plant.nfcTagLinked, qr_code_value: plant.qrCodeValue || null
                     });
                     if (plantError) throw plantError;
+                    if (plant.customIconPath) plant.customIconUrl = await createJournalPhotoUrl(plant.customIconPath);
 
                     for (const log of (plant.logs || [])) {
                         if (deletedLogs.includes(log.id)) continue;
@@ -4449,6 +4453,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             remainingSeeds: Math.max(0, Number(p.remaining_seeds) || 0),
                             remainingCuttings: Math.max(0, Number(p.remaining_cuttings) || 0),
                             iconKey: p.icon_key,
+                            customIconPath: p.custom_icon_path || '',
+                            customIconUrl: p.custom_icon_path ? await createJournalPhotoUrl(p.custom_icon_path) : '',
                             hex: p.hex,
                             date: p.date,
                             medium: p.medium,
@@ -4478,6 +4484,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 return false;
             }
             try {
+                if (plant.customIconUrl && plant.customIconUrl.startsWith('data:') && !plant.customIconPath) {
+                    plant.customIconPath = await uploadJournalPhoto(plant.customIconUrl, plant.id, 'plant-icon', 0);
+                }
                 const { error } = await supabaseClient.from('plants').upsert({
                     id: plant.id,
                     user_id: currentUser.id,
@@ -4492,6 +4501,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     multisow_container_type: plant.multisow ? (plant.multisowContainerType === 'plugs' ? 'plugs' : 'pots') : '',
                     seeds_per_pot: plant.multisow ? Math.max(0, Number(plant.seedsPerPot) || 0) : 0,
                     icon_key: plant.iconKey,
+                    custom_icon_path: plant.customIconPath || null,
                     hex: plant.hex,
                     date: plant.date,
                     medium: plant.medium,
@@ -4506,6 +4516,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     markFloraSyncPending();
                     alert("Your plant was saved on this device, but cloud sync failed: " + error.message + ". Check that the plants table has a location column and that your Supabase policies allow updates.");
                     return false;
+                }
+                if (plant.customIconPath) {
+                    plant.customIconUrl = await createJournalPhotoUrl(plant.customIconPath);
+                    localStorage.setItem('flora_plants', JSON.stringify(plants));
                 }
                 updateSyncBadge('cloud', 'Cloud Synced');
                 return true;
@@ -5852,7 +5866,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             emptyEl.classList.add('hidden');
 
             const cardMarkup = (p, groupLocation) => {
-                const svgMarkup = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
+                const svgMarkup = p.customIconUrl
+                    ? '<img src="' + escapeHtml(p.customIconUrl) + '" alt="' + escapeHtml(p.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">'
+                    : (MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber);
                 // Use the actual rendered group heading as the key, so every card in a group gets the same details.
                 const plantLocation = (groupLocation || p.location || '').trim();
                 const savedDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
@@ -6742,6 +6758,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 remainingSeeds: 0,
                 remainingCuttings: 0,
                 iconKey: document.getElementById('plant-icon-key').value,
+                customIconPath: editId ? (plants.find(p => String(p.id) === String(editId))?.customIconPath || '') : '',
+                customIconUrl: editId ? (plants.find(p => String(p.id) === String(editId))?.customIconUrl || '') : '',
                 hex: document.getElementById('form-color-hex').value,
                 date: document.getElementById('plant-date').value,
                 medium: document.getElementById('plant-medium').value,
@@ -7854,7 +7872,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
 
             const iconContainer = document.getElementById('journal-icon-container');
-            iconContainer.innerHTML = MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber;
+            iconContainer.innerHTML = p.customIconUrl
+                ? '<img src="' + escapeHtml(p.customIconUrl) + '" alt="' + escapeHtml(p.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">'
+                : (MONOCHROME_VEG_SVGS[p.iconKey] || MONOCHROME_VEG_SVGS.cucumber);
 
             // Open the journal even if an optional nutrient UI control is unavailable.
             try { toggleNutrientLibraryView(); toggleGerminationSection(); } catch (error) { console.warn('Journal controls could not be refreshed:', error); }
@@ -8377,7 +8397,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
 
                         <p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">${getJournalTankFillDisplay(log)}${formatGrowthLogText(log.text, log.type) ? '<p class="text-slate-600 dark:text-slate-400 whitespace-pre-line">' + formatGrowthLogText(log.text, log.type) + '</p>' : ''}
-                        ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<div class="relative"><a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a><button type="button" onclick="removeJournalLogPhoto(\'' + p.id + '\', \'' + (log.id || originalIndex) + '\', ' + photoIndex + ')" aria-label="Delete journal photo ' + (photoIndex + 1) + '" title="Delete photo" class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 text-white text-xs shadow"><i class="fa-solid fa-xmark"></i></button></div>').join('') + '</div>' : ''}
+                        ${Array.isArray(log.photos) && log.photos.length ? '<div class="flex flex-wrap gap-2 pt-2">' + log.photos.map((photo, photoIndex) => '<div class="relative"><a href="' + photo + '" target="_blank" rel="noopener noreferrer" title="Open journal photo ' + (photoIndex + 1) + '"><img src="' + photo + '" alt="Plant journal photo ' + (photoIndex + 1) + '" loading="lazy" class="w-24 h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"></a><button type="button" onclick="setPlantIconFromJournalPhoto(\'' + p.id + '\', \' ' + (log.id || originalIndex) + '\', ' + photoIndex + ')" title="Set as plant icon" aria-label="Set photo as plant icon" class="absolute bottom-1 left-1 rounded-md bg-white/95 text-slate-800 px-2 py-1 text-[10px] font-semibold shadow">Use as icon</button><button type="button" onclick="removeJournalLogPhoto(\'' + p.id + '\', \'' + (log.id || originalIndex) + '\', ' + photoIndex + ')" aria-label="Delete journal photo ' + (photoIndex + 1) + '" title="Delete photo" class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 text-white text-xs shadow"><i class="fa-solid fa-xmark"></i></button></div>').join('') + '</div>' : ''}
                     </div>
                     <div class="flex flex-col items-end gap-1 flex-shrink-0">
                         ${log.type === 'Feed' && log.feedReminderDate ? (() => {
@@ -8400,6 +8420,35 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     </div>
                 </div>
             `).join('');
+        }
+
+        async function setPlantIconFromJournalPhoto(plantId, logId, photoIndex) {
+            const plant = plants.find(item => String(item.id) === String(plantId));
+            if (!plant || !Array.isArray(plant.logs)) return;
+            const log = plant.logs.find((entry, index) => String(entry.id || index) === String(logId));
+            const photo = log && Array.isArray(log.photos) ? log.photos[photoIndex] : '';
+            if (!photo) return;
+            try {
+                let photoPath = Array.isArray(log.photoPaths) ? log.photoPaths[photoIndex] : '';
+                if (!photoPath && photo.startsWith('data:') && supabaseClient && currentUser && navigator.onLine) {
+                    photoPath = await uploadJournalPhoto(photo, plant.id, 'plant-icon', 0);
+                }
+                plant.customIconPath = photoPath || '';
+                plant.customIconUrl = photoPath ? (await createJournalPhotoUrl(photoPath)) : photo;
+                localStorage.setItem('flora_plants', JSON.stringify(plants));
+                markFloraSyncPending();
+                if (supabaseClient && currentUser && navigator.onLine) {
+                    const synced = await syncPlantToCloud(plant);
+                    if (!synced) throw new Error('The plant icon could not be synced.');
+                }
+                renderPlants();
+                const iconContainer = document.getElementById('journal-icon-container');
+                if (iconContainer) iconContainer.innerHTML = '<img src="' + escapeHtml(plant.customIconUrl) + '" alt="' + escapeHtml(plant.name) + ' plant photo" class="w-full h-full object-cover rounded-xl">';
+                alert('Plant icon updated from your journal photo.');
+            } catch (error) {
+                console.error('Could not set plant icon:', error);
+                alert('The photo could not be saved as the plant icon. Please try again.');
+            }
         }
 
         async function removeJournalLogPhoto(plantId, logId, photoIndex) {
