@@ -5670,7 +5670,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const currentFilter = filterSelect ? filterSelect.value : '';
             if (plantSelect) {
                 const selected = selectedLocation || plantSelect.value || '';
-                plantSelect.innerHTML = '<option value="">Choose a location</option>' + plantLocations.map(location =>
+                plantSelect.innerHTML = '<option value="">Growing Location</option>' + plantLocations.map(location =>
                     '<option value="' + escapeHtml(location) + '">' + escapeHtml(location) + '</option>'
                 ).join('');
                 plantSelect.value = plantLocations.includes(selected) ? selected : '';
