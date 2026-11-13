@@ -6493,6 +6493,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.getElementById('plant-nfc-pending-id').value = '';
             document.getElementById('plant-qr-pending-value').value = '';
             document.getElementById('plant-form').reset();
+            window.syncPlantOtherFields?.();
             // Re-apply the saved scanner preference whenever the Add Plant modal opens.
             // This prevents the QR linking option from reappearing for NFC / no-scanner users.
             applyScannerPreference();
@@ -6541,10 +6542,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (window.setSelectedPlantMediums) window.setSelectedPlantMediums(savedMedium);
             const mediumOther = document.getElementById('plant-medium-other');
             if (mediumOther) mediumOther.value = p.mediumOther || '';
+            const mediumOtherChoice = document.querySelector('#plant-medium-options input[name="plant-medium-option"][value="Other"]');
+            if (mediumOtherChoice) mediumOtherChoice.checked = !!String(p.mediumOther || '').trim();
             const savedSetups = Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : []);
             document.querySelectorAll('#plant-setup-options input[name="plant-setup-option"]').forEach(input => { input.checked = savedSetups.includes(input.value); });
             const setupOther = document.getElementById('plant-setup-other');
             if (setupOther) setupOther.value = p.setupOther || '';
+            const setupOtherChoice = document.querySelector('#plant-setup-options input[name="plant-setup-option"][value="Other"]');
+            if (setupOtherChoice) setupOtherChoice.checked = !!String(p.setupOther || '').trim();
             window.syncPlantOtherFields?.();
             renderPlantLocationControls(p.location || '');
             document.getElementById('plant-notes').value = p.notes || '';
