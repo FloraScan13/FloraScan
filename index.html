@@ -8359,10 +8359,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (typeof window.refreshJournalGrowingPickers === 'function') {
                 window.refreshJournalGrowingPickers();
             }
-            // Seed the journal pickers with the plant's current values.
-            // This prevents an update to only the medium or setup from clearing the other field.
+            // Start both journal pickers completely blank: clear selections,
+            // custom "Other" values, and search text whenever the journal opens.
             if (typeof window.setJournalGrowingValues === 'function') {
-                window.setJournalGrowingValues(p.medium || '', p.setup || []);
+                window.setJournalGrowingValues('', []);
             }
             renderJournalLogs(p);
             document.getElementById('journal-modal').classList.remove('hidden');
@@ -9884,11 +9884,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
 
             if (type === 'Medium') {
-                if (!newMedium && !journalSetupValues.length) {
-                    alert('Please select at least one growing medium or setup option.');
-                    document.querySelector('#journal-medium-picker summary, #journal-setup-picker summary')?.focus();
-                    return;
-                }
                 const previousMedium = p.medium || 'Not specified';
                 const previousSetup = Array.isArray(p.setup) ? p.setup.join(', ') : (p.setup || 'Not specified');
                 p.medium = newMedium;
@@ -10534,6 +10529,15 @@ document.addEventListener('click', function(event) {
         window.setJournalGrowingValues = (mediumValues, setupValues) => {
             setValues(medium, 'plant-medium-option', mediumValues);
             setValues(setup, 'plant-setup-option', setupValues);
+            // Search is an input too; reset it and notify the filter handlers
+            // so every option is visible when either picker is opened.
+            [medium, setup].forEach(details => {
+                const search = details?.querySelector('.plant-picker-search');
+                if (search) {
+                    search.value = '';
+                    search.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
         };
         // The native controls are initialised by the Add Plant UI; move them only
         // when a journal is actually opened.
