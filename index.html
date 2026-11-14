@@ -11747,3 +11747,56 @@ html body #plant-setup-dropdown[open] > #plant-setup-options {
     padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
 }
 </style>
+
+
+<style id="plant-picker-modal-containing-block-fix">
+/* The host dialogs use backdrop-filter, which creates a containing block for fixed descendants.
+   Remove it while a picker is open so the panel is positioned against the browser viewport. */
+#plant-modal:has(#plant-medium-dropdown[open]),
+#plant-modal:has(#plant-setup-dropdown[open]),
+#journal-modal:has(.journal-growing-picker[open]) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+#plant-modal:has(#plant-medium-dropdown[open]) > div,
+#plant-modal:has(#plant-setup-dropdown[open]) > div,
+#journal-modal:has(.journal-growing-picker[open]) > div {
+    overflow: visible !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options,
+#plant-setup-dropdown[open] #plant-setup-options,
+.journal-growing-picker[open] .plant-picker-panel {
+    position: fixed !important;
+    top: 50vh !important;
+    left: 50vw !important;
+    right: auto !important;
+    bottom: auto !important;
+    inset: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(560px, calc(100vw - 28px)) !important;
+    max-width: calc(100vw - 28px) !important;
+    height: auto !important;
+    max-height: min(80dvh, 760px) !important;
+    min-height: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-scroll-area,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-scroll-area,
+.journal-growing-picker[open] .plant-picker-scroll-area {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+@media (max-width: 480px) {
+    #plant-medium-dropdown[open] #plant-medium-options,
+    #plant-setup-dropdown[open] #plant-setup-options,
+    .journal-growing-picker[open] .plant-picker-panel {
+        width: calc(100vw - 20px) !important;
+        max-width: calc(100vw - 20px) !important;
+        max-height: calc(100dvh - 20px) !important;
+    }
+}
+</style>
