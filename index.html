@@ -10688,6 +10688,43 @@ document.addEventListener('click', function(event) {
 }
 </style>
 
+
+<style id="journal-growing-picker-full-viewport-height">
+/* Keep the Journal medium/setup picker inside the usable viewport on phones and desktop. */
+html body .journal-growing-picker[open] > .plant-picker-panel {
+    position: fixed !important;
+    top: max(10px, env(safe-area-inset-top, 0px)) !important;
+    right: 10px !important;
+    bottom: max(10px, env(safe-area-inset-bottom, 0px)) !important;
+    left: 10px !important;
+    width: auto !important;
+    max-width: 560px !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+html body .journal-growing-picker[open] > .plant-picker-panel > .plant-picker-scroll-area {
+    min-height: 0 !important;
+    flex: 1 1 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+@media (max-width: 480px) {
+    html body .journal-growing-picker[open] > .plant-picker-panel {
+        padding: 52px 12px max(14px, env(safe-area-inset-bottom, 0px)) !important;
+        border-radius: 16px !important;
+    }
+}
+</style>
+
 </body>
 </html>
 
