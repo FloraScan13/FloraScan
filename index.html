@@ -2737,7 +2737,7 @@ textarea {
         </div>
 
         <!-- TAB 3: SETTINGS & SUPABASE CLOUD AUTH -->
-        <div id="view-settings" class="hidden space-y-6">
+        <div id="view-settings" class="hidden space-y-6" style="display: none;">
             <!-- Scanner Preference Settings -->
             <div id="scanner-preference-settings" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <h3 class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-qrcode text-emerald-600"></i><span>Scanner Preference</span></h3>
@@ -5551,7 +5551,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (view) view.classList.add('hidden');
             });
             const activeView = document.getElementById(`view-${tabId}`);
-            if (activeView) activeView.classList.remove('hidden');
+            if (activeView) {
+                activeView.classList.remove('hidden');
+                // Clear the initial inline display:none on Settings only when it is selected.
+                activeView.style.display = '';
+            }
             setActiveNavigationTab(tabId);
         }
 
@@ -6766,7 +6770,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             // Saving a scanner preference is a Settings action: keep the user on Settings
             // rather than navigating to the scanner or another view.
             const settingsView = document.getElementById('view-settings');
-            if (settingsView) settingsView.classList.remove('hidden');
+            if (settingsView) {
+                settingsView.classList.remove('hidden');
+                settingsView.style.display = '';
+            }
             const plantsView = document.getElementById('view-plants');
             if (plantsView) plantsView.classList.add('hidden');
             const scannerView = document.getElementById('view-scanner');
