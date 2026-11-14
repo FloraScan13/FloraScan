@@ -8682,44 +8682,49 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
 
 <style id="plant-picker-unified-option-spacing">
-/* Keep Growing Medium and Growing Setup option rows and section headings identical. */
-#plant-medium-options .plant-picker-scroll-area section,
-#plant-setup-options .plant-picker-scroll-area fieldset,
-#plant-setup-options .plant-picker-scroll-area section,
+/* Apply spacing to the actual option groups (the lists are not wrapped in a scroll-area element). */
+#plant-medium-options section,
+#plant-setup-options fieldset,
+#plant-setup-options section,
 .journal-growing-picker #plant-medium-options section,
 .journal-growing-picker #plant-setup-options fieldset,
 .journal-growing-picker #plant-setup-options section {
-    margin-block: 0 !important;
+    margin: 0 0 14px !important;
+    padding: 0 !important;
 }
-#plant-medium-options .plant-picker-scroll-area section > div,
-#plant-setup-options .plant-picker-scroll-area fieldset > div,
-#plant-setup-options .plant-picker-scroll-area section > div,
-.journal-growing-picker .plant-picker-scroll-area section > div,
-.journal-growing-picker .plant-picker-scroll-area fieldset > div {
+#plant-medium-options section > div,
+#plant-setup-options fieldset > div,
+#plant-setup-options section > div,
+.journal-growing-picker #plant-medium-options section > div,
+.journal-growing-picker #plant-setup-options fieldset > div,
+.journal-growing-picker #plant-setup-options section > div {
     display: flex !important;
     flex-direction: column !important;
-    row-gap: 4px !important;
+    gap: 6px !important;
 }
-#plant-medium-options .plant-picker-scroll-area label,
-#plant-setup-options .plant-picker-scroll-area label,
-.journal-growing-picker .plant-picker-scroll-area label {
+#plant-medium-options label,
+#plant-setup-options label,
+.journal-growing-picker #plant-medium-options label,
+.journal-growing-picker #plant-setup-options label {
     display: flex !important;
     align-items: center !important;
-    gap: 8px !important;
+    column-gap: 10px !important;
     box-sizing: border-box !important;
-    min-height: 28px !important;
+    min-height: 30px !important;
     margin: 0 !important;
-    padding: 4px 12px !important;
+    padding: 5px 10px !important;
     line-height: 1.4 !important;
 }
-#plant-medium-options .plant-picker-scroll-area section > h4,
-#plant-setup-options .plant-picker-scroll-area fieldset > legend,
-#plant-setup-options .plant-picker-scroll-area section > h4,
-.journal-growing-picker .plant-picker-scroll-area section > h4,
-.journal-growing-picker .plant-picker-scroll-area fieldset > legend {
+#plant-medium-options section > h4,
+#plant-setup-options fieldset > legend,
+#plant-setup-options section > h4,
+.journal-growing-picker #plant-medium-options section > h4,
+.journal-growing-picker #plant-setup-options fieldset > legend,
+.journal-growing-picker #plant-setup-options section > h4 {
     display: block !important;
     box-sizing: border-box !important;
-    margin-block: 12px !important;
+    width: 100% !important;
+    margin: 0 0 8px !important;
     padding: 0 !important;
     line-height: 1.4 !important;
 }
