@@ -6044,16 +6044,89 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         let editingLocationDetailsName = '';
 
+        const LOCATION_SETUP_OPTIONS = {
+            indoor: {
+                label: 'Inside growing',
+                groups: [
+                    ['Growing space', ['Grow tent', 'Grow room', 'Greenhouse', 'Windowsill']],
+                    ['Lighting', ['LED grow light', 'HPS grow light', 'CMH grow light', 'Light timer', 'Dimmable lighting']],
+                    ['Air movement & extraction', ['Oscillating fan', 'Clip-on fan', 'Inline extractor fan', 'Intake fan', 'Carbon filter', 'Ducting']],
+                    ['Climate control', ['Humidifier', 'Dehumidifier', 'Heater', 'Air conditioner', 'Temperature controller', 'Humidity controller']],
+                    ['Other equipment', ['CO₂ system', 'Environmental controller', 'Air circulation fan']]
+                ]
+            },
+            outdoor: {
+                label: 'Outside growing',
+                groups: [
+                    ['Irrigation', ['Drip irrigation', 'Drip lines', 'Soaker hose', 'Sprinkler system', 'Micro-sprinklers', 'Hand watering']],
+                    ['Water control', ['Water timer', 'Automatic irrigation controller', 'Rainwater collection', 'Water butt', 'Mains water connection']],
+                    ['Growing area', ['Raised bed', 'In-ground bed', 'Container area', 'Polytunnel', 'Cold frame', 'Greenhouse']],
+                    ['Protection & environment', ['Shade cloth', 'Frost protection', 'Windbreak', 'Rain cover']]
+                ]
+            }
+        };
+
         function renderLocationDetailEditorRows() {
             const rows = document.getElementById('location-detail-editor-rows');
-            if (!rows) return;
-            rows.innerHTML = window.locationDetailDraft.map((detail, index) => `
-                <div data-detail-row="${index}" ondragover="handleLocationDetailDragOver(event)" ondrop="handleLocationDetailDrop(event, ${index})" ondragend="handleLocationDetailDragEnd(event)" ontouchstart="handleLocationDetailTouchStart(event, ${index})" ontouchmove="handleLocationDetailTouchMove(event)" ontouchend="handleLocationDetailTouchEnd(event)" class="location-detail-row flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-2.5 transition-all">
-                    <button type="button" draggable="true" ondragstart="handleLocationDetailDragStart(event, ${index})" class="location-detail-drag-handle flex h-10 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-400   dark: dark: cursor-grab active:cursor-grabbing select-none" aria-label="Drag to reorder detail" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></button>
-                    <input type="text" value="${escapeHtml(detail)}" maxlength="180" data-detail-index="${index}" oninput="window.locationDetailDraft[Number(this.dataset.detailIndex)] = this.value" class="min-w-0 flex-1 px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-sm" placeholder="e.g. Grow light, 100W">
-                    <button type="button" onclick="removeLocationDetailRow(${index})" class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-slate-500   dark:" aria-label="Delete detail" title="Delete detail"><i class="fa-solid fa-xmark"></i></button>
+            if (!rows || !window.locationDetailDraft) return;
+            const draft = window.locationDetailDraft;
+            const config = LOCATION_SETUP_OPTIONS[draft.environment] || LOCATION_SETUP_OPTIONS.indoor;
+            rows.innerHTML = `
+                <div class="grid grid-cols-2 gap-2 mb-4" role="group" aria-label="Growing environment">
+                    <button type="button" onclick="setLocationSetupEnvironment('indoor')" aria-pressed="${draft.environment === 'indoor'}" class="rounded-xl border px-3 py-3 text-sm font-semibold ${draft.environment === 'indoor' ? 'border-[#c6537b] bg-[#fff0f4] text-[#81334f]' : 'border-slate-200 bg-white text-slate-600'}"><i class="fa-solid fa-house mr-2"></i>Inside</button>
+                    <button type="button" onclick="setLocationSetupEnvironment('outdoor')" aria-pressed="${draft.environment === 'outdoor'}" class="rounded-xl border px-3 py-3 text-sm font-semibold ${draft.environment === 'outdoor' ? 'border-[#c6537b] bg-[#fff0f4] text-[#81334f]' : 'border-slate-200 bg-white text-slate-600'}"><i class="fa-solid fa-sun mr-2"></i>Outside</button>
                 </div>
-            `).join('') || '<p class="text-sm text-slate-500 dark:text-slate-400">No details yet. Add one below.</p>';
+                <p class="text-xs text-slate-500 mb-3">Choose the equipment and setup used at this location.</p>
+                ${config.groups.map(([group, options]) => `
+                    <section class="mb-4">
+                        <h4 class="text-sm font-bold text-slate-700 mb-2">${group}</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            ${options.map(option => `
+                                <label class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
+                                    <input type="checkbox" class="h-4 w-4 accent-[#c6537b]" ${draft.selected.includes(option) ? 'checked' : ''} onchange="toggleLocationSetupOption(this.value, this.checked)" value="${escapeHtml(option)}">
+                                    <span>${escapeHtml(option)}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </section>
+                `).join('')}
+                <section class="border-t border-slate-200 pt-3 mt-2">
+                    <h4 class="text-sm font-bold text-slate-700 mb-2">Other equipment</h4>
+                    <div class="flex gap-2">
+                        <input id="location-detail-custom-input" type="text" maxlength="180" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Add your own item">
+                        <button type="button" onclick="addLocationSetupCustomItem()" class="rounded-xl bg-[#fff0f4] px-4 py-2 text-sm font-semibold text-[#a63d65]">Add</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        ${draft.custom.map((item, index) => `<span class="inline-flex items-center gap-2 rounded-full bg-[#fff0f4] px-3 py-1.5 text-sm text-[#81334f]">${escapeHtml(item)}<button type="button" onclick="removeLocationSetupCustomItem(${index})" aria-label="Remove ${escapeHtml(item)}">×</button></span>`).join('')}
+                    </div>
+                </section>`;
+        }
+
+        function setLocationSetupEnvironment(environment) {
+            if (!['indoor', 'outdoor'].includes(environment)) return;
+            window.locationDetailDraft.environment = environment;
+            window.locationDetailDraft.selected = [];
+            renderLocationDetailEditorRows();
+        }
+
+        function toggleLocationSetupOption(option, checked) {
+            const selected = window.locationDetailDraft.selected;
+            window.locationDetailDraft.selected = checked
+                ? [...new Set([...selected, option])]
+                : selected.filter(item => item !== option);
+        }
+
+        function addLocationSetupCustomItem() {
+            const input = document.getElementById('location-detail-custom-input');
+            const value = String(input?.value || '').trim();
+            if (!value) return;
+            if (!window.locationDetailDraft.custom.includes(value)) window.locationDetailDraft.custom.push(value);
+            renderLocationDetailEditorRows();
+        }
+
+        function removeLocationSetupCustomItem(index) {
+            window.locationDetailDraft.custom.splice(index, 1);
+            renderLocationDetailEditorRows();
         }
 
         let locationDetailDragIndex = null;
@@ -6127,18 +6200,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             renderLocationDetailEditorRows();
         }
 
-        function addLocationDetailRow() {
-            window.locationDetailDraft.push('');
-            renderLocationDetailEditorRows();
-            const rows = document.getElementById('location-detail-editor-rows');
-            const inputs = rows ? rows.querySelectorAll('input') : [];
-            if (inputs.length) inputs[inputs.length - 1].focus();
-        }
-
         async function saveLocationDetailEditor() {
             const location = editingLocationDetailsName;
-            const details = (window.locationDetailDraft || []).map(value => String(value || '').trim()).filter(Boolean);
-            if (details.length) locationDetails[location] = details.join('\n');
+            const draft = window.locationDetailDraft || { environment: 'indoor', selected: [], custom: [] };
+            const setup = {
+                environment: draft.environment,
+                selected: [...new Set(draft.selected || [])],
+                custom: [...new Set((draft.custom || []).map(item => String(item).trim()).filter(Boolean))]
+            };
+            const details = [...setup.selected, ...setup.custom];
+            const savedSetups = JSON.parse(localStorage.getItem('flora_plant_location_setups') || '{}') || {};
+            savedSetups[location] = setup;
+            localStorage.setItem('flora_plant_location_setups', JSON.stringify(savedSetups));
+            if (details.length) locationDetails[location] = details.join('\\n');
             else delete locationDetails[location];
             localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
             markFloraSyncPending('locations');
@@ -6148,30 +6222,34 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             renderPlants();
             if (supabaseClient && currentUser) {
                 const saved = await savePlantLocationsToCloud();
-                if (saved) alert('Details for ' + location + ' synced to your account.');
+                if (saved) alert('Setup for ' + location + ' synced to your account.');
             } else {
-                alert('Location details saved on this device only. Sign in to sync them across devices.');
+                alert('Location setup saved on this device only. Sign in to sync it across devices.');
             }
         }
 
         function editLocationDetails(location) {
             editingLocationDetailsName = location;
-            const current = String(locationDetails[location] || '').split(/\\n|\n/).map(value => value.trim()).filter(Boolean);
-            window.locationDetailDraft = [...current];
+            const savedSetups = JSON.parse(localStorage.getItem('flora_plant_location_setups') || '{}') || {};
+            const existing = savedSetups[location];
+            const legacyItems = String(locationDetails[location] || '').split(/\\n|\\r?\\n/).map(value => value.trim()).filter(Boolean);
+            const inferredEnvironment = locationTypes[location] === 'outdoor' ? 'outdoor' : 'indoor';
+            window.locationDetailDraft = existing
+                ? { environment: existing.environment || inferredEnvironment, selected: [...(existing.selected || [])], custom: [...(existing.custom || [])] }
+                : { environment: inferredEnvironment, selected: [], custom: legacyItems };
             const modal = document.createElement('div');
             modal.id = 'location-detail-editor-modal';
             modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4';
             modal.innerHTML = `
-                <section class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 shadow-2xl p-5 max-h-[85vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="location-detail-editor-title">
-                    <div class="flex items-start justify-between gap-3 mb-2">
-                        <div><h3 id="location-detail-editor-title" class="text-lg font-bold text-slate-900 dark:text-white">Setup details</h3><p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${escapeHtml(location)} · Add each item in its own box.</p></div>
-                        <button type="button" onclick="document.getElementById('location-detail-editor-modal').remove()" class="h-9 w-9 rounded-lg  dark:" aria-label="Close editor"><i class="fa-solid fa-xmark"></i></button>
+                <section class="w-full max-w-lg rounded-2xl bg-[#fffdfb] shadow-2xl border border-[#e8a7bd] p-5 max-h-[85vh] flex flex-col overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="location-detail-editor-title">
+                    <div class="flex items-start justify-between gap-3 mb-3 shrink-0">
+                        <div><h3 id="location-detail-editor-title" class="text-lg font-bold text-[#81334f]">Location setup</h3><p class="text-sm text-slate-500 mt-1">${escapeHtml(location)} · Select the equipment used here.</p></div>
+                        <button type="button" onclick="document.getElementById('location-detail-editor-modal').remove()" class="h-9 w-9 rounded-lg text-[#a63d65]" aria-label="Close editor"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                    <div id="location-detail-editor-rows" class="space-y-2 my-4"></div>
-                    <button type="button" onclick="addLocationDetailRow()" class="w-full rounded-xl border border-dashed border-emerald-400 px-4 py-2.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300  dark:"><i class="fa-solid fa-plus mr-1"></i> Add detail</button>
-                    <div class="flex justify-end gap-2 mt-5">
-                        <button type="button" onclick="document.getElementById('location-detail-editor-modal').remove()" class="rounded-xl border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm font-semibold">Cancel</button>
-                        <button type="button" onclick="saveLocationDetailEditor()" class="rounded-xl bg-emerald-600  text-white px-4 py-2 text-sm font-semibold">Save details</button>
+                    <div id="location-detail-editor-rows" class="min-h-0 flex-1 overflow-y-auto pr-1"></div>
+                    <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-[#f0cad8] shrink-0">
+                        <button type="button" onclick="document.getElementById('location-detail-editor-modal').remove()" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold">Cancel</button>
+                        <button type="button" onclick="saveLocationDetailEditor()" class="rounded-xl bg-[#c6537b] text-white px-4 py-2 text-sm font-semibold">Save setup</button>
                     </div>
                 </section>`;
             document.body.appendChild(modal);
