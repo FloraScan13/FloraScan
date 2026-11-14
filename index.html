@@ -6086,6 +6086,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     return new Set();
                 }
             })();
+            const draftInsideSelections = new Set(savedInsideSelections);
             modal.innerHTML = `
                 <div class="relative bg-[#fffef9] max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-8 border border-[#e1e1d5]" style="max-height:90vh;">
                     <div class="absolute top-0 left-0 right-0 z-10 h-7 px-[10px] flex items-start justify-end bg-[#fffef9]">
@@ -6128,24 +6129,33 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 `).join('')}
                             </div>
                         </section>
+                        <div class="sticky bottom-0 pt-4 pb-1 flex justify-end gap-2" style="background:#fffef9;border-top:1px solid #e1e1d5;">
+                            <button type="button" onclick="closePlantLocationDetailsModal()" class="rounded-lg px-4 py-2 text-sm font-semibold border" style="background:#fffef9;border-color:#d9ddcf;color:#426b47;">Cancel</button>
+                            <button type="button" id="save-plant-location-details" class="rounded-lg px-5 py-2 text-sm font-bold shadow-sm" style="background:#c6537b;color:#fff;border:1px solid #c6537b;"><i class="fa-solid fa-floppy-disk mr-1.5"></i>Save details</button>
+                        </div>
                     </div>
                 </div>`;
             modal.addEventListener('change', event => {
                 const checkbox = event.target.closest('.location-inside-option');
                 if (!checkbox) return;
                 const key = checkbox.dataset.section + '::' + checkbox.dataset.option;
-                if (checkbox.checked) savedInsideSelections.add(key);
-                else savedInsideSelections.delete(key);
-                try {
-                    const saved = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
-                    saved[location] = Array.from(savedInsideSelections);
-                    localStorage.setItem('flora_location_inside_options', JSON.stringify(saved));
-                } catch (error) {
-                    console.warn('Could not save location equipment selections', error);
-                }
+                if (checkbox.checked) draftInsideSelections.add(key);
+                else draftInsideSelections.delete(key);
                 const label = checkbox.closest('label');
                 label.style.background = checkbox.checked ? '#e4eadf' : '#fffef9';
                 label.style.borderColor = checkbox.checked ? '#8da687' : '#d9ddcf';
+            });
+            modal.querySelector('#save-plant-location-details').addEventListener('click', () => {
+                try {
+                    const saved = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
+                    saved[location] = Array.from(draftInsideSelections);
+                    localStorage.setItem('flora_location_inside_options', JSON.stringify(saved));
+                    renderPlants();
+                    closePlantLocationDetailsModal();
+                } catch (error) {
+                    console.error('Could not save location equipment selections', error);
+                    alert('Unable to save these location details. Please try again.');
+                }
             });
             modal.addEventListener('click', event => {
                 if (event.target === modal) closePlantLocationDetailsModal();
@@ -6385,6 +6395,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const cards = groups.get(location);
                 const activeGrid = getLocationPlantView(location) === 'grid';
                 const isOutdoor = locationTypes[location] === 'outdoor';
+                let selectedLocationEquipment = [];
+                try {
+                    const savedEquipment = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
+                    selectedLocationEquipment = Array.isArray(savedEquipment[location]) ? savedEquipment[location] : [];
+                } catch (error) {
+                    selectedLocationEquipment = [];
+                }
+                const selectedEquipmentLabels = selectedLocationEquipment.map(item => item.split('::').slice(1).join('::')).filter(Boolean);
                 return `
                     <section class="location-group col-span-full min-w-0 mb-3 p-3 sm:p-4" style="background-color: transparent !important; background-image: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;">
                         <div class="location-group-toolbar flex items-center justify-between gap-2 mb-3">
@@ -6402,6 +6420,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 </div>
 </div>
                         </div>
+                        ${selectedEquipmentLabels.length ? '<div class="location-equipment-summary mb-3 flex flex-wrap items-center gap-1.5 text-xs" aria-label="Saved equipment for ' + escapeHtml(location) + '"><span class="font-bold mr-1" style="color:#426b47;">Equipment:</span>' + selectedEquipmentLabels.map(item => '<span class="rounded-full px-2.5 py-1" style="background:#e4eadf;color:#31583b;border:1px solid #cbd8c4;">' + escapeHtml(item) + '</span>').join('') + '</div>' : ''}
 
                         ${locationDetails[location] && locationDetailsVisibility[location] === true ? `<div class="location-group-details mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300"><div class="whitespace-pre-line">${escapeHtml(String(locationDetails[location]).replace(/\\n/g, '\n'))}</div></div>` : (!locationDetails[location] ? `` : '')}
                         
