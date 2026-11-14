@@ -10347,10 +10347,10 @@ document.addEventListener('click', function(event) {
         const search = list?.querySelector('.plant-picker-search');
         if (!list || !search || search.dataset.bound === 'true') return;
         search.dataset.bound = 'true';
-        const normalize = value => String(value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase().trim();
+        const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().trim();
         const applyFilter = () => {
             const query = normalize(search.value);
-            const terms = query.split(/\\s+/).filter(Boolean);
+            const terms = query.split(/\s+/).filter(Boolean);
             const scroller = list.querySelector('.plant-picker-scroll-area') || list;
             scroller.querySelectorAll('label').forEach(label => {
                 const checkbox = label.querySelector('input[type="checkbox"]');
@@ -11225,11 +11225,11 @@ body.plant-growing-modal-open { overflow: hidden !important; }
             search.dataset.sharedSearchBound = 'true';
             const normalize = value => String(value || '')
                 .normalize('NFD')
-                .replace(/[\\u0300-\\u036f]/g, '')
+                .replace(/[\u0300-\u036f]/g, '')
                 .toLocaleLowerCase()
                 .trim();
             const applyFilter = () => {
-                const terms = normalize(search.value).split(/\\s+/).filter(Boolean);
+                const terms = normalize(search.value).split(/\s+/).filter(Boolean);
                 scroller.querySelectorAll('label').forEach(label => {
                     const checkbox = label.querySelector('input[type="checkbox"]');
                     if (!checkbox) return;
