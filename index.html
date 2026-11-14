@@ -5976,11 +5976,99 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             modal.setAttribute('aria-modal', 'true');
             modal.setAttribute('aria-labelledby', 'plant-location-details-title');
             const insideSections = [
-                { title: 'Monitoring & testing', options: ['Thermometer', 'Hygrometer', 'Digital temperature & humidity monitor', 'pH meter', 'EC / TDS meter', 'Water testing kit', 'CO₂ monitor', 'PAR / light meter'] },
-                { title: 'Temperature, humidity & CO₂', options: ['Humidifier', 'Dehumidifier', 'CO₂ controller', 'CO₂ regulator & bottle', 'CO₂ monitor', 'Heater', 'Air conditioner', 'Temperature controller'] },
-                { title: 'Extraction & air movement', options: ['Extractor fan', 'Intake fan', 'Carbon filter', 'Ducting', 'Air circulation fan', 'Fan speed controller', 'Silencer', 'Ducting accessories'] },
-                { title: 'Lighting', options: ['LED grow light', 'HPS grow light', 'Propagation light', 'Grow lamp', 'Reflector', 'Ballast / driver', 'Light timer', 'Lighting controller', 'Hanging kit'] },
-                { title: 'Grow space & tents', options: ['Grow tent', 'Propagation tent', 'Grow room sheeting', 'Reflective sheeting', 'Grow tent frame', 'Panda film / lightproof sheeting', 'Grow room tape', 'Tent accessories'] }
+                {
+                    title: 'Monitoring & testing',
+                    options: [
+                        'Digital temperature & humidity meter',
+                        'Probe temperature & humidity meter',
+                        'pH meter / pH pen',
+                        'EC meter',
+                        'pH / EC / temperature combo meter',
+                        'Soil and substrate moisture meter',
+                        'PAR / quantum light meter',
+                        'CO₂ monitor',
+                        'Measuring jugs and cups',
+                        'Nutrient measuring syringes',
+                        'Pipettes',
+                        'Digital scales',
+                        'Calibration and meter storage solutions'
+                    ]
+                },
+                {
+                    title: 'Temperature, humidity & CO₂',
+                    options: [
+                        'Humidifier',
+                        'Dehumidifier',
+                        'Air conditioning unit',
+                        'Grow room heater',
+                        'Thermostat',
+                        'Temperature and humidity controller',
+                        'Wireless temperature / humidity sensor',
+                        'CO₂ monitor',
+                        'CO₂ controller',
+                        'CO₂ regulator',
+                        'CO₂ cylinder / bottle',
+                        'CO₂ generator',
+                        'CO₂ distribution tubing'
+                    ]
+                },
+                {
+                    title: 'Extraction & air movement',
+                    options: [
+                        'Inline extractor fan',
+                        'EC extractor fan',
+                        'Twin-speed extractor fan',
+                        'Intake fan',
+                        'Complete extraction kit',
+                        'Carbon filter',
+                        'Pre-filter sleeve',
+                        'Ducting',
+                        'Duct clamps and connectors',
+                        'Duct silencer',
+                        'Backdraft shutter',
+                        'Clip-on circulation fan',
+                        'Oscillating fan',
+                        'Fan speed controller',
+                        'Fan and climate controller'
+                    ]
+                },
+                {
+                    title: 'Lighting',
+                    options: [
+                        'LED grow light',
+                        'HPS grow light',
+                        'CDM / CMH grow light',
+                        'T5 fluorescent propagation light',
+                        'Grow lamp / replacement bulb',
+                        'Reflector',
+                        'Ballast',
+                        'LED driver / power supply',
+                        'Light timer',
+                        'Contactor',
+                        'Grow light controller',
+                        'Light hanging kit / ratchet hangers',
+                        'Reflective light accessories',
+                        'PAR light meter'
+                    ]
+                },
+                {
+                    title: 'Grow space & tents',
+                    options: [
+                        'Grow tent',
+                        'Complete grow tent kit',
+                        'Propagation tent',
+                        'Mother plant tent',
+                        'Grow room sheeting',
+                        'Reflective sheeting',
+                        'Lightproof sheeting',
+                        'Tent frame / replacement poles',
+                        'Tent observation window / viewing accessories',
+                        'Ventilation flanges and duct ports',
+                        'Grow tent trays / floor trays',
+                        'Grow room tape',
+                        'Tent clips and hanging accessories'
+                    ]
+                }
             ];
             const outsideSections = [
                 'Drip & micro irrigation',
