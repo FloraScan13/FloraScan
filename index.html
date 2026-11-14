@@ -5982,6 +5982,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 {
                     title: 'Monitoring & testing',
                     options: [
+                        'Thermometer',
                         'Digital temperature & humidity meter',
                         'Probe temperature & humidity meter',
                         'pH meter / pH pen',
@@ -6185,6 +6186,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     return new Set();
                 }
             })();
+            // Keep legacy equipment pills selectable in the modal. Older versions stored
+            // simple labels such as "Thermometer" without a section prefix.
+            if (savedInsideSelections.has('Thermometer')) {
+                savedInsideSelections.delete('Thermometer');
+                savedInsideSelections.add('Monitoring & testing::Thermometer');
+            }
             const draftInsideSelections = new Set(savedInsideSelections);
             const savedEquipmentNames = (() => {
                 try {
