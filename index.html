@@ -6186,6 +6186,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             })();
             const draftInsideSelections = new Set(savedInsideSelections);
+            const savedEquipmentNames = (() => {
+                try {
+                    const saved = JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}');
+                    return saved[location] && typeof saved[location] === 'object' ? saved[location] : {};
+                } catch (error) {
+                    return {};
+                }
+            })();
+            const draftEquipmentNames = { ...savedEquipmentNames };
             modal.innerHTML = `
                 <div class="relative bg-[#fffef9] max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-8 border border-[#e1e1d5]" style="max-height:90vh;">
                     <div class="absolute top-0 left-0 right-0 z-10 h-7 px-[10px] flex items-start justify-end bg-[#fffef9]">
@@ -6207,12 +6216,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                             <legend class="sr-only">${escapeHtml(section.title)} options</legend>
                                             <div class="flex flex-col gap-2">
                                                 ${section.options.map(option => {
-                                                    const selected = savedInsideSelections.has(section.title + '::' + option);
+                                                    const equipmentKey = section.title + '::' + option;
+                                                    const selected = savedInsideSelections.has(equipmentKey);
+                                                    const equipmentName = draftEquipmentNames[equipmentKey] || '';
                                                     return `
-                                                        <label class="flex items-center gap-2 text-sm cursor-pointer" style="color:#426b47;">
-                                                            <input type="checkbox" class="location-equipment-option h-4 w-4 shrink-0" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="accent-color:#31583b;">
-                                                            <span>${escapeHtml(option)}</span>
-                                                        </label>
+                                                        <div class="location-equipment-row flex flex-col gap-2 py-1">
+                                                            <label class="flex items-center gap-2 text-sm cursor-pointer" style="color:#426b47;">
+                                                                <input type="checkbox" class="location-equipment-option h-4 w-4 shrink-0" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="accent-color:#31583b;">
+                                                                <span>${escapeHtml(option)}</span>
+                                                            </label>
+                                                            <input type="text" class="location-equipment-name ml-6 w-[calc(100%-1.5rem)] rounded-lg border px-3 py-2 text-sm" data-equipment-key="${escapeHtml(equipmentKey)}" value="${escapeHtml(equipmentName)}" placeholder="Type the equipment name..." aria-label="Equipment name for ${escapeHtml(option)}" ${selected ? '' : 'hidden'} style="background:#fffef9;border-color:#d9ddcf;color:#294333;">
+                                                        </div>
                                                     `;
                                                 }).join('')}
                                             </div>
@@ -6231,12 +6245,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                             <legend class="sr-only">${escapeHtml(section.title)} options</legend>
                                             <div class="flex flex-col gap-2">
                                                 ${section.options.map(option => {
-                                                    const selected = savedInsideSelections.has(section.title + '::' + option);
+                                                    const equipmentKey = section.title + '::' + option;
+                                                    const selected = savedInsideSelections.has(equipmentKey);
+                                                    const equipmentName = draftEquipmentNames[equipmentKey] || '';
                                                     return `
-                                                        <label class="flex items-center gap-2 text-sm cursor-pointer" style="color:#426b47;">
-                                                            <input type="checkbox" class="location-equipment-option h-4 w-4 shrink-0" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="accent-color:#31583b;">
-                                                            <span>${escapeHtml(option)}</span>
-                                                        </label>
+                                                        <div class="location-equipment-row flex flex-col gap-2 py-1">
+                                                            <label class="flex items-center gap-2 text-sm cursor-pointer" style="color:#426b47;">
+                                                                <input type="checkbox" class="location-equipment-option h-4 w-4 shrink-0" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="accent-color:#31583b;">
+                                                                <span>${escapeHtml(option)}</span>
+                                                            </label>
+                                                            <input type="text" class="location-equipment-name ml-6 w-[calc(100%-1.5rem)] rounded-lg border px-3 py-2 text-sm" data-equipment-key="${escapeHtml(equipmentKey)}" value="${escapeHtml(equipmentName)}" placeholder="Type the equipment name..." aria-label="Equipment name for ${escapeHtml(option)}" ${selected ? '' : 'hidden'} style="background:#fffef9;border-color:#d9ddcf;color:#294333;">
+                                                        </div>
                                                     `;
                                                 }).join('')}
                                             </div>
@@ -6255,17 +6274,34 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const checkbox = event.target.closest('.location-equipment-option');
                 if (!checkbox) return;
                 const key = checkbox.dataset.section + '::' + checkbox.dataset.option;
-                if (checkbox.checked) draftInsideSelections.add(key);
-                else draftInsideSelections.delete(key);
-                const label = checkbox.closest('label');
-                label.style.background = checkbox.checked ? '#e4eadf' : '#fffef9';
-                label.style.borderColor = checkbox.checked ? '#8da687' : '#d9ddcf';
+                const nameInput = checkbox.closest('.location-equipment-row').querySelector('.location-equipment-name');
+                if (checkbox.checked) {
+                    draftInsideSelections.add(key);
+                    nameInput.hidden = false;
+                    nameInput.focus();
+                } else {
+                    draftInsideSelections.delete(key);
+                    delete draftEquipmentNames[key];
+                    nameInput.value = '';
+                    nameInput.hidden = true;
+                }
+            });
+            modal.addEventListener('input', event => {
+                const nameInput = event.target.closest('.location-equipment-name');
+                if (!nameInput) return;
+                const key = nameInput.dataset.equipmentKey;
+                const value = nameInput.value.trim();
+                if (value) draftEquipmentNames[key] = value;
+                else delete draftEquipmentNames[key];
             });
             modal.querySelector('#save-plant-location-details').addEventListener('click', () => {
                 try {
                     const saved = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
                     saved[location] = Array.from(draftInsideSelections);
                     localStorage.setItem('flora_location_inside_options', JSON.stringify(saved));
+                    const savedNames = JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}');
+                    savedNames[location] = draftEquipmentNames;
+                    localStorage.setItem('flora_location_equipment_names', JSON.stringify(savedNames));
                     renderPlants();
                     closePlantLocationDetailsModal();
                 } catch (error) {
@@ -6518,7 +6554,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 } catch (error) {
                     selectedLocationEquipment = [];
                 }
-                const selectedEquipmentLabels = selectedLocationEquipment.map(item => item.split('::').slice(1).join('::')).filter(Boolean);
+                let locationEquipmentNames = {};
+                try {
+                    const savedNames = JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}');
+                    locationEquipmentNames = savedNames[location] && typeof savedNames[location] === 'object' ? savedNames[location] : {};
+                } catch (error) {
+                    locationEquipmentNames = {};
+                }
+                const selectedEquipmentLabels = selectedLocationEquipment.map(item => locationEquipmentNames[item] || item.split('::').slice(1).join('::')).filter(Boolean);
                 return `
                     <section class="location-group col-span-full min-w-0 mb-3 p-3 sm:p-4" style="background-color: transparent !important; background-image: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;">
                         <div class="location-group-toolbar flex items-center justify-between gap-2 mb-3">
