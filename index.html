@@ -2,13 +2,13 @@
 
 
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full flora-settings-inactive">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <style id="settings-first-paint-guard">
-        /* Keep Settings hidden on the very first paint while the utility CSS loads. */
-        #view-settings.hidden { display: none !important; }
+        /* Keep Settings hidden from the first paint until the user explicitly selects it. */
+        html.flora-settings-inactive #view-settings { display: none !important; }
     </style>
     <script>
         // Identify a browser reload before the first page paint so the welcome
@@ -5532,6 +5532,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function switchTab(tabId) {
+            // A root-level guard prevents Settings flashing even before Tailwind loads.
+            document.documentElement.classList.toggle('flora-settings-inactive', tabId !== 'settings');
             if (tabId === 'settings') renderMyPlantLibrary();
             // On mobile, dismiss an open Plant Journal when navigating to Settings.
             if (tabId === 'settings' && window.matchMedia('(max-width: 767px)').matches) {
@@ -6769,6 +6771,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             // Saving a scanner preference is a Settings action: keep the user on Settings
             // rather than navigating to the scanner or another view.
+            document.documentElement.classList.remove('flora-settings-inactive');
             const settingsView = document.getElementById('view-settings');
             if (settingsView) {
                 settingsView.classList.remove('hidden');
