@@ -8354,7 +8354,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 : '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-leaf text-2xl" aria-hidden="true"></i></div>';
             // Open the journal even if an optional nutrient UI control is unavailable.
             try { toggleNutrientLibraryView(); toggleGerminationSection(); } catch (error) { console.warn('Journal controls could not be refreshed:', error); }
-            // Seed the journal's shared Add Plant pickers with the plant's current values.
+            // Rebuild from the current Add Plant controls so the journal never
+            // reopens an older, previously generated picker.
+            if (typeof window.refreshJournalGrowingPickers === 'function') {
+                window.refreshJournalGrowingPickers();
+            }
+            // Seed the journal pickers with the plant's current values.
             // This prevents an update to only the medium or setup from clearing the other field.
             if (typeof window.setJournalGrowingValues === 'function') {
                 window.setJournalGrowingValues(p.medium || '', p.setup || []);
@@ -10443,7 +10448,7 @@ document.addEventListener('click', function(event) {
             return [...new Set(values)];
         };
         details._setJournalValues = rawValues => {
-            const values = (Array.isArray(rawValues) ? rawValues : String(rawValues || '').split(/\\s*[·,]\\s*/))
+            const values = (Array.isArray(rawValues) ? rawValues : String(rawValues || '').split(/\s*[·,]\s*/))
                 .map(value => String(value || '').trim()).filter(Boolean);
             const customValues = [];
             details.querySelectorAll('input[name="' + checkboxName + '"]').forEach(input => {
@@ -10466,14 +10471,27 @@ document.addEventListener('click', function(event) {
     function init() {
         bindPickerSearch(document.getElementById('plant-medium-dropdown'));
         bindPickerSearch(document.getElementById('plant-setup-dropdown'));
-        const medium = buildJournalPicker('plant-medium-dropdown', 'journal-medium-picker', 'Growing medium', 'journal-medium-option');
-        const setup = buildJournalPicker('plant-setup-dropdown', 'journal-setup-picker', 'Growing setup', 'journal-setup-option');
+        let medium = null;
+        let setup = null;
+        const rebuildJournalPickers = () => {
+            // Re-clone the live Add Plant controls whenever the journal opens.
+            // Their option lists are populated dynamically, so an init-time clone
+            // can otherwise preserve an obsolete version of the picker.
+            const previousMedium = medium?._journalValues() || [];
+            const previousSetup = setup?._journalValues() || [];
+            medium = buildJournalPicker('plant-medium-dropdown', 'journal-medium-picker', 'Growing medium', 'journal-medium-option');
+            setup = buildJournalPicker('plant-setup-dropdown', 'journal-setup-picker', 'Growing setup', 'journal-setup-option');
+            medium?._setJournalValues(previousMedium);
+            setup?._setJournalValues(previousSetup);
+        };
+        window.refreshJournalGrowingPickers = rebuildJournalPickers;
         window.getJournalMediumValues = () => medium?._journalValues() || [];
         window.getJournalSetupValues = () => setup?._journalValues() || [];
         window.setJournalGrowingValues = (mediumValues, setupValues) => {
             medium?._setJournalValues(mediumValues);
             setup?._setJournalValues(setupValues);
         };
+        rebuildJournalPickers();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
     else init();
