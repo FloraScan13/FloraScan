@@ -10365,6 +10365,17 @@ document.addEventListener('click', function(event) {
         if (!source || !host) return null;
         const details = source.cloneNode(true);
         details.classList.add('journal-growing-picker');
+        details.querySelectorAll('.plant-picker-close').forEach(closeButton => {
+            closeButton.onclick = event => {
+                event.preventDefault();
+                event.stopPropagation();
+                details.open = false;
+                details.querySelector('summary')?.focus();
+            };
+            closeButton.setAttribute('type', 'button');
+            closeButton.style.setProperty('pointer-events', 'auto', 'important');
+            closeButton.style.setProperty('z-index', '1105', 'important');
+        });
         details.querySelector('.plant-picker-search')?.removeAttribute('data-bound');
         bindPickerSearch(details);
         details.removeAttribute('id');
