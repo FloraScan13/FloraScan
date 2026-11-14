@@ -11197,11 +11197,24 @@ body.plant-growing-modal-open { overflow: hidden !important; }
             scroller.className = 'plant-picker-scroll-area';
             panel.appendChild(scroller);
         }
+        let footer = panel.querySelector(':scope > .plant-picker-footer');
+        if (!footer) {
+            footer = document.createElement('div');
+            footer.className = 'plant-picker-footer';
+            footer.setAttribute('role', 'group');
+            footer.setAttribute('aria-label', 'Picker actions');
+            panel.appendChild(footer);
+        }
 
-        // Move all option content into the scrolling body, leaving the close tab
-        // and the decorative wave/header attached to the stationary modal frame.
+        // Keep the Done action in its own stationary footer, outside the
+        // scrolling options body. This prevents options showing beneath it.
+        const done = panel.querySelector('.plant-growing-done');
+        if (done && done.parentNode !== footer) footer.appendChild(done);
+
+        // Only option content scrolls. The close tab and footer remain fixed
+        // within the modal frame.
         Array.from(panel.children).forEach(child => {
-            if (child !== scroller && !child.classList.contains('plant-picker-close')) {
+            if (child !== scroller && child !== footer && !child.classList.contains('plant-picker-close')) {
                 scroller.appendChild(child);
             }
         });
@@ -11221,6 +11234,46 @@ body.plant-growing-modal-open { overflow: hidden !important; }
     });
 })();
 </script>
+
+<style id="plant-picker-done-footer-layout">
+/* A solid, non-scrolling footer separates the Done action from picker options. */
+#plant-medium-dropdown[open] #plant-medium-options,
+#plant-setup-dropdown[open] #plant-setup-options {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-footer,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-footer {
+    position: relative !important;
+    z-index: 12 !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    padding: 12px 0 max(12px, env(safe-area-inset-bottom)) !important;
+    margin: 0 !important;
+    background: #FFFEF9 !important;
+    border-top: 1px solid #e7e9df !important;
+    box-shadow: 0 -8px 16px rgba(255, 254, 249, .98) !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-footer .plant-growing-done,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-footer .plant-growing-done {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    display: flex !important;
+    width: 100% !important;
+    min-height: 46px !important;
+    margin: 0 !important;
+    padding: 10px 16px !important;
+    justify-content: center !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: #c6537b !important;
+    color: #fff !important;
+    font-weight: 650 !important;
+    box-shadow: none !important;
+}
+</style>
 
 
 <style id="plant-picker-custom-input-list-spacing">
