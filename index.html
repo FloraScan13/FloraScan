@@ -11891,3 +11891,56 @@ html body #plant-setup-dropdown[open] > #plant-setup-options {
     }
 }
 </style>
+
+
+<style id="plant-growing-picker-live-document-final-override">
+/* This override is deliberately the final stylesheet in the live page, after legacy picker rules. */
+html body > details#plant-medium-dropdown.plant-growing-picker-portal[open],
+html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483000 !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+}
+html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options,
+html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options {
+    position: fixed !important;
+    inset: max(12px, env(safe-area-inset-top, 0px)) 12px max(12px, env(safe-area-inset-bottom, 0px)) 12px !important;
+    top: max(12px, env(safe-area-inset-top, 0px)) !important;
+    right: 12px !important;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+    left: 12px !important;
+    width: min(560px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    z-index: 2147483001 !important;
+}
+@media (max-width: 600px) {
+    html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options,
+    html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options {
+        width: calc(100vw - 20px) !important;
+        max-width: calc(100vw - 20px) !important;
+        inset: max(10px, env(safe-area-inset-top, 0px)) 10px max(10px, env(safe-area-inset-bottom, 0px)) 10px !important;
+        top: max(10px, env(safe-area-inset-top, 0px)) !important;
+        right: 10px !important;
+        bottom: max(10px, env(safe-area-inset-bottom, 0px)) !important;
+        left: 10px !important;
+    }
+}
+</style>
+
