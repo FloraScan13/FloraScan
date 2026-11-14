@@ -6052,37 +6052,37 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         const LOCATION_SETUP_OPTIONS = {
             indoor: {
-                label: 'Inside growing',
+                label: 'Indoor growing',
                 groups: [
-                    ['Growing space', ['Grow tent', 'Propagation tent', 'Grow room', 'Greenhouse', 'Windowsill', 'Grow tray / propagation dome']],
-                    ['Lighting', ['LED grow light', 'HPS grow light', 'CMH / CDM grow light', 'Fluorescent / T5 light', 'Light timer', 'Lighting contactor', 'Dimmable lighting', 'Lighting controller', 'Light hanger / ratchet straps', 'Reflector / shade']],
-                    ['Air movement & extraction', ['Oscillating fan', 'Clip-on fan', 'Floor / wall fan', 'Inline extractor fan', 'Extraction kit', 'Intake fan', 'Carbon filter', 'Ducting', 'Duct clamps / connectors', 'Fan speed controller', 'Silencer']],
-                    ['Climate control', ['Humidifier', 'Dehumidifier', 'Heater', 'Air conditioner', 'Temperature controller', 'Humidity controller', 'CO₂ system', 'Environmental controller', 'Thermo-hygrometer']],
-                    ['Hydroponics & watering', ['Hydroponic system', 'NFT system', 'Deep water culture (DWC) system', 'Ebb and flow / flood & drain system', 'Drip irrigation system', 'Irrigation pump', 'Air pump', 'Water pump', 'Reservoir / tank', 'Water butt', 'Drippers', 'Micro tubing', 'Irrigation pipe and fittings', 'Water filter', 'Pressure regulator', 'Water timer', 'Nutrient doser']],
-                    ['Monitoring & grow tools', ['pH meter', 'EC / CF meter', 'pH test kit', 'Thermometer', 'Hygrometer', 'PAR / light meter', 'Water temperature meter', 'Scales', 'Pruning tools']],
-                    ['Growing media & accessories', ['Coco coir', 'Clay pebbles', 'Rockwool', 'Perlite / vermiculite', 'Propagation plugs', 'Pots / fabric pots', 'Trays / saucers', 'Plant support netting']],
-                    ['Indoor equipment brands', ['GroWell', 'Aqua Master Tools', 'Bluelab', 'Blumat', 'Hailea', 'LUMii', 'Omega', 'G.A.S', 'Systemair', 'Rhino Ventilation', 'Secret Jardin', 'Other indoor growing brand']]
+                    ['Grow space & tents', ['Grow tent', 'Propagation tent', 'Grow room', 'Loft / large tent', 'Grow tent kit', 'Grow tray', 'Propagation dome', 'Tent poles / frame', 'Reflective sheeting']],
+                    ['Lighting', ['LED grow light', 'HPS grow light kit', 'CMH / CDM light', 'Fluorescent / T5 propagation light', 'Light reflector', 'Ballast / LED driver', 'Lighting contactor', 'Timer', 'Dimmable lighting controller', 'Light hangers / ratchet straps', 'Under-canopy lighting']],
+                    ['Extraction & air movement', ['Inline extractor fan', 'Extractor fan and filter kit', 'Carbon filter', 'Intake fan', 'Oscillating fan', 'Clip-on fan', 'Ducting', 'Duct clips / clamps', 'Fan speed controller', 'Fan silencer', 'Air conditioning']],
+                    ['Temperature, humidity & CO₂', ['Heater', 'Tube heater', 'Air conditioner', 'Humidifier', 'Dehumidifier', 'Temperature controller', 'Humidity controller', 'Thermo-hygrometer', 'CO₂ system', 'Environmental controller']],
+                    ['Hydroponic systems', ['NFT system', 'Flood & drain system', 'Deep water culture (DWC) system', 'Aeroponic system', 'Dripper system', 'Automatic watering system', 'Auto-pot style system', 'Grow tank / tray', 'Air pump', 'Air stone']],
+                    ['Water, tanks & irrigation', ['Water pump', 'Submersible pump', 'Reservoir / water tank', 'Flexible water tank', 'Water butt', 'Drip ring / dripper', '4mm micro tube', 'Irrigation pipe', 'Barbed fittings', 'Water filter', 'Reverse osmosis filter', 'Water chiller / heater', 'Nutrient dosing system']],
+                    ['Pots, trays & growing media', ['Plant pots', 'Fabric pots', 'Net pots', 'Pots and saucers', 'Run-off tray', 'Flood tray', 'Coco coir', 'Clay pebbles', 'Rockwool', 'Perlite / vermiculite', 'Propagation plugs', 'Living soil bed']],
+                    ['Propagation & plant care', ['Propagation heated mat', 'Propagation lighting', 'Humidity dome', 'Seedling tray', 'Rooting / cloning system', 'Pruning tools', 'Plant support netting', 'Trellis / plant support']],
+                    ['Monitoring & testing', ['pH meter', 'EC / CF meter', 'pH test kit', 'Thermometer', 'Hygrometer', 'PAR / light meter', 'Water temperature meter', 'Scales']],
+                    ['Indoor equipment brands', ['GroWell', 'ALIEN', 'AutoPot', 'IWS', 'Nutriculture', 'Hailea', 'G.A.S', 'Garland', 'Bluelab', 'Other indoor equipment brand']]
                 ]
             },
             outdoor: {
-                label: 'Outside growing',
+                label: 'Outdoor growing & irrigation',
                 groups: [
-                    ['Drip & micro irrigation', ['Complete drip irrigation kit', 'Drip line / inline drip pipe', 'Pressure-compensating dripline', 'Drip tape / trickle tape', 'Micro irrigation tube', 'Inline drippers', 'Adjustable drippers', 'Pressure-compensating drippers', 'PCJ / button drippers', 'Tree / shrub watering drippers', 'Micro-sprayers', 'Micro-sprinklers', 'Foggers / misters', 'Soaker hose', 'End plugs / flush valves']],
-                    ['Sprinklers & watering heads', ['Pop-up spray sprinkler', 'Pop-up rotor sprinkler', 'Impact sprinkler', 'Oscillating sprinkler', 'Rotary sprinkler', 'Hose-end sprinkler', 'Shrub / border sprinkler', 'Mini sprinkler', 'Sprinkler risers / swing joints', 'Sprinkler nozzles', 'Sprinkler bases / spikes']],
-                    ['Hoses, pipes & fittings', ['Garden hose', 'Hose reel / trolley', 'Hose connectors / quick couplings', 'Tap connectors', 'Hose-end fittings', 'Supply pipe', 'LDPE irrigation pipe', 'MDPE / HDPE main pipe', 'Micro tube (4mm / 6mm)', 'Compression fittings', 'Barbed connectors', 'Threaded adaptors', 'Pipe clips / stakes', 'Repair couplings']],
-                    ['Water control & automation', ['Tap / hose-end water timer', 'Multi-outlet tap timer', 'Battery-operated irrigation controller', 'Mains-powered irrigation controller', 'Wi-Fi smart controller', 'Orbit B-hyve controller', 'Hunter Hydrawise controller', 'Rain Bird controller', 'Claber controller', 'Solenoid valve', 'Battery valve controller', 'Valve manifold', 'Valve box', 'Rain / freeze sensor', 'Soil-moisture sensor', 'Weather-based watering', 'Flow meter']],
-                    ['Water supply, filtration & storage', ['Irrigation pump', 'Booster pump', 'Submersible pump', 'Water filter', 'Disc / screen filter', 'Pressure regulator / reducer', 'Backflow preventer', 'Non-return valve', 'Water tank / storage tank', 'Water butt', 'Rainwater harvesting kit', 'Mains water connection', 'Tank connector / outlet']],
-                    ['Greenhouse & growing area', ['Raised bed', 'In-ground bed', 'Container / pot area', 'Hanging baskets', 'Polytunnel', 'Greenhouse', 'Cold frame', 'Hedge / tree irrigation', 'Lawn irrigation']],
-                    ['Protection & environment', ['Shade cloth', 'Frost protection', 'Windbreak', 'Rain cover', 'Waterproof equipment box']],
-                    ['Hozelock equipment', ['Hozelock watering kit', 'Hozelock Easy Drip kit', 'Hozelock Micro Irrigation kit', 'Hozelock automatic watering kit', 'Hozelock water timer', 'Hozelock hose / hose reel', 'Hozelock hose connectors', 'Hozelock sprinkler / spray gun', 'Hozelock pump']],
-                    ['Gardena equipment', ['Gardena Micro-Drip system', 'Gardena drip head / dripper', 'Gardena Pipeline system', 'Gardena sprinkler system', 'Gardena pop-up sprinkler', 'Gardena water timer / controller', 'Gardena hose / hose reel', 'Gardena connectors / fittings', 'Gardena pump']],
-                    ['Claber equipment', ['Claber drip irrigation kit', 'Claber water timer', 'Claber multi-outlet timer', 'Claber pop-up sprinkler system', 'Claber sprinkler', 'Claber hose / hose reel', 'Claber connectors / fittings']],
-                    ['Rain Bird equipment', ['Rain Bird dripline', 'Rain Bird drip emitter / dripper', 'Rain Bird drip irrigation kit', 'Rain Bird pop-up spray head', 'Rain Bird rotor sprinkler', 'Rain Bird hose-end sprinkler', 'Rain Bird tap timer', 'Rain Bird irrigation controller', 'Rain Bird solenoid valve', 'Rain Bird sensor']],
-                    ['Hunter Industries equipment', ['Hunter MP Rotator nozzle', 'Hunter Pro-Spray spray head', 'Hunter PGJ / PGP rotor', 'Hunter shrub sprinkler', 'Hunter dripline / emitter', 'Hunter tap timer', 'Hunter battery controller', 'Hunter Hydrawise Wi-Fi controller', 'Hunter solenoid valve', 'Hunter rain / freeze sensor', 'Hunter valve manifold']],
-                    ['HydroSure equipment', ['HydroSure drip irrigation kit', 'HydroSure dripline / pipe', 'HydroSure drippers', 'HydroSure micro-sprinkler', 'HydroSure hose / micro tube', 'HydroSure water timer', 'HydroSure filter', 'HydroSure pressure regulator', 'HydroSure fittings / connectors']],
-                    ['Antelco equipment', ['Antelco button dripper', 'Antelco adjustable dripper', 'Antelco pressure-compensating dripper', 'Antelco micro-sprayer', 'Antelco mini sprinkler', 'Antelco fogger / mister', 'Antelco manifolds', 'Antelco take-off / barbed fittings', 'Antelco stakes / accessories']],
-                    ['Orbit B-hyve equipment', ['Orbit B-hyve smart hose tap timer', 'Orbit B-hyve multi-port timer', 'Orbit B-hyve Wi-Fi hub', 'Orbit B-hyve irrigation controller', 'Orbit B-hyve sprinkler controller', 'Orbit B-hyve soil / weather accessories']],
-                    ['Other irrigation brands', ['Netafim', 'Irritec', 'NaanDanJain', 'K-Rain', 'Galcon', 'Plasson', 'GEKA']]
+                    ['Drip & micro irrigation', ['Complete drip irrigation kit', 'Dripline / inline drip pipe', 'Pressure-compensating dripline', 'Drip tape / trickle tape', 'Micro irrigation tube', 'Inline dripper', 'Adjustable dripper', 'Pressure-compensating dripper', 'Tree / shrub dripper', 'Micro-sprayer', 'Micro-sprinkler', 'Fogger / mister', 'Soaker hose', 'End plug / flush valve']],
+                    ['Sprinklers & watering heads', ['Pop-up spray sprinkler', 'Pop-up rotor sprinkler', 'Impact sprinkler', 'Oscillating sprinkler', 'Rotary sprinkler', 'Hose-end sprinkler', 'Shrub / border sprinkler', 'Mini sprinkler', 'Sprinkler nozzle', 'Sprinkler riser / swing joint']],
+                    ['Hoses, pipe & fittings', ['Garden hose', 'Hose reel / trolley', 'Hose connector / quick coupling', 'Tap connector', 'Spray gun / watering lance', 'Supply pipe', 'LDPE irrigation pipe', 'MDPE / HDPE main pipe', 'Micro tube (4mm / 6mm)', 'Compression fitting', 'Barbed connector', 'Threaded adaptor', 'Pipe clip / stake', 'Repair coupling']],
+                    ['Timers, controllers & sensors', ['Tap / hose-end water timer', 'Multi-outlet tap timer', 'Battery irrigation controller', 'Mains irrigation controller', 'Wi-Fi smart controller', 'Bluetooth tap timer', 'Solenoid valve', 'Battery valve controller', 'Valve manifold', 'Valve box', 'Rain sensor', 'Freeze sensor', 'Soil-moisture sensor', 'Flow meter', 'Weather-based watering']],
+                    ['Pumps, filters & water storage', ['Irrigation pump', 'Booster pump', 'Submersible pump', 'Water filter', 'Disc / screen filter', 'Pressure regulator / reducer', 'Backflow preventer', 'Non-return valve', 'Water tank', 'Water butt', 'Rainwater harvesting kit', 'Mains water connection', 'Tank connector / outlet']],
+                    ['Growing areas & protection', ['Raised bed', 'In-ground bed', 'Container / pot area', 'Hanging baskets', 'Polytunnel', 'Greenhouse', 'Cold frame', 'Lawn irrigation', 'Hedge / tree irrigation', 'Shade cloth', 'Frost protection', 'Windbreak', 'Rain cover', 'Waterproof controller box']],
+                    ['Hozelock equipment', ['Hozelock hose and hose reel', 'Hozelock hose connectors', 'Hozelock spray gun / lance', 'Hozelock sprinkler', 'Hozelock drip / micro irrigation kit', 'Hozelock automatic watering kit', 'Hozelock water timer', 'Hozelock water butt pump']],
+                    ['Gardena equipment', ['Gardena hose and hose reel', 'Gardena hose connectors', 'Gardena spray gun', 'Gardena sprinkler', 'Gardena Micro-Drip system', 'Gardena Pipeline system', 'Gardena pop-up sprinkler system', 'Gardena water timer / controller', 'Gardena pump']],
+                    ['Claber equipment', ['Claber hose and hose reel', 'Claber hose fittings', 'Claber spray gun / lance', 'Claber sprinkler', 'Claber drip irrigation system', 'Claber pop-up sprinkler system', 'Claber water timer', 'Claber multi-outlet timer']],
+                    ['Rain Bird equipment', ['Rain Bird dripline and accessories', 'Rain Bird drip emitter', 'Rain Bird pop-up spray head', 'Rain Bird rotor sprinkler', 'Rain Bird sprinkler nozzle', 'Rain Bird irrigation controller', 'Rain Bird tap timer', 'Rain Bird solenoid valve', 'Rain Bird rain sensor']],
+                    ['Hunter Industries equipment', ['Hunter MP Rotator nozzle', 'Hunter Pro-Spray body / nozzle', 'Hunter PGP / PGJ rotor', 'Hunter shrub sprinkler', 'Hunter dripline / emitter', 'Hunter BTT Bluetooth tap timer', 'Hunter Node battery controller', 'Hunter X-Core / X2 controller', 'Hunter Pro-C / HPC controller', 'Hunter Hydrawise Wi-Fi controller', 'Hunter solenoid valve', 'Hunter rain / freeze sensor', 'Hunter soil probe / flow meter']],
+                    ['Access Irrigation equipment', ['Access Irrigation dripline', 'Pressure-compensating dripper', 'Trickle tape and fittings', 'Pop-up sprinkler', 'Hunter sprinkler / nozzle', 'Hunter irrigation controller', 'Hunter solenoid valve', 'Tap timer / Bluetooth controller', 'Rain sensor', 'Disc filter', 'Pressure regulator', 'Irrigation pump', 'Water tank and fittings', 'Polythene pipe and compression fittings', 'Hose reel and hose fittings']],
+                    ['HydroSure equipment', ['HydroSure drip irrigation kit', 'HydroSure dripline / pipe', 'HydroSure drippers', 'HydroSure micro-sprinkler', 'HydroSure micro tube', 'HydroSure water timer', 'HydroSure filter', 'HydroSure pressure regulator', 'HydroSure fittings / connectors']],
+                    ['Orbit equipment', ['Orbit B-hyve smart hose tap timer', 'Orbit B-hyve multi-port timer', 'Orbit B-hyve Wi-Fi hub', 'Orbit B-hyve irrigation controller', 'Orbit sprinkler controller', 'Orbit hose-end timer']],
                 ]
             }
         };
@@ -6092,35 +6092,68 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (!rows || !window.locationDetailDraft) return;
             const draft = window.locationDetailDraft;
             const config = LOCATION_SETUP_OPTIONS[draft.environment] || LOCATION_SETUP_OPTIONS.indoor;
+            const total = draft.selected.length + draft.custom.length;
             rows.innerHTML = `
-                <div class="grid grid-cols-2 gap-2 mb-4" role="group" aria-label="Growing environment">
-                    <button type="button" onclick="setLocationSetupEnvironment('indoor')" aria-pressed="${draft.environment === 'indoor'}" class="rounded-xl border px-3 py-3 text-sm font-semibold ${draft.environment === 'indoor' ? 'border-[#c6537b] bg-[#fff0f4] text-[#81334f]' : 'border-slate-200 bg-white text-slate-600'}"><i class="fa-solid fa-house mr-2"></i>Inside</button>
-                    <button type="button" onclick="setLocationSetupEnvironment('outdoor')" aria-pressed="${draft.environment === 'outdoor'}" class="rounded-xl border px-3 py-3 text-sm font-semibold ${draft.environment === 'outdoor' ? 'border-[#c6537b] bg-[#fff0f4] text-[#81334f]' : 'border-slate-200 bg-white text-slate-600'}"><i class="fa-solid fa-sun mr-2"></i>Outside</button>
+                <div class="sticky top-0 z-10 -mx-1 px-1 pb-3 bg-[#fffdfb]">
+                    <div class="grid grid-cols-2 gap-2 mb-3" role="group" aria-label="Growing environment">
+                        <button type="button" onclick="setLocationSetupEnvironment('indoor')" aria-pressed="${draft.environment === 'indoor'}" class="rounded-xl border px-3 py-3 text-sm font-semibold ${draft.environment === 'indoor' ? 'border-[#c6537b] bg-[#fff0f4] text-[#81334f]' : 'border-slate-200 bg-white text-slate-600'}"><i class="fa-solid fa-house mr-2"></i>Indoor</button>
+                        <button type="button" onclick="setLocationSetupEnvironment('outdoor')" aria-pressed="${draft.environment === 'outdoor'}" class="rounded-xl border px-3 py-3 text-sm font-semibold ${draft.environment === 'outdoor' ? 'border-[#c6537b] bg-[#fff0f4] text-[#81334f]' : 'border-slate-200 bg-white text-slate-600'}"><i class="fa-solid fa-sun mr-2"></i>Outdoor</button>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <p class="text-xs text-slate-500">Select all equipment used at this location.</p>
+                        <span id="location-setup-selected-count" class="shrink-0 rounded-full bg-[#fff0f4] px-3 py-1 text-xs font-bold text-[#81334f]">${total} selected</span>
+                    </div>
+                    <input type="search" id="location-setup-search" oninput="filterLocationSetupOptions(this.value)" placeholder="Search equipment..." class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#c6537b]" aria-label="Search equipment options">
                 </div>
-                <p class="text-xs text-slate-500 mb-3">Choose the equipment and setup used at this location.</p>
-                ${config.groups.map(([group, options]) => `
-                    <section class="mb-4">
-                        <h4 class="text-sm font-bold text-slate-700 mb-2">${group}</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            ${options.map(option => `
-                                <label class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
-                                    <input type="checkbox" class="h-4 w-4 accent-[#c6537b]" ${draft.selected.includes(option) ? 'checked' : ''} onchange="toggleLocationSetupOption(this.value, this.checked)" value="${escapeHtml(option)}">
-                                    <span>${escapeHtml(option)}</span>
-                                </label>
-                            `).join('')}
-                        </div>
-                    </section>
-                `).join('')}
-                <section class="border-t border-slate-200 pt-3 mt-2">
-                    <h4 class="text-sm font-bold text-slate-700 mb-2">Other equipment</h4>
+                <div id="location-setup-groups" class="space-y-2">
+                    ${config.groups.map(([group, options], index) => {
+                        const selectedCount = options.filter(option => draft.selected.includes(option)).length;
+                        return `
+                            <details class="location-setup-group rounded-xl border border-slate-200 bg-white overflow-hidden" ${index === 0 || selectedCount ? 'open' : ''}>
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">
+                                    <span>${group}</span>
+                                    <span class="flex items-center gap-2"><span class="text-xs font-semibold text-slate-500">${selectedCount}/${options.length}</span><i class="fa-solid fa-chevron-down text-xs text-slate-400"></i></span>
+                                </summary>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 border-t border-slate-100 bg-slate-50/60 p-3">
+                                    ${options.map(option => `
+                                        <label class="location-setup-option flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
+                                            <input type="checkbox" class="h-4 w-4 shrink-0 accent-[#c6537b]" ${draft.selected.includes(option) ? 'checked' : ''} onchange="toggleLocationSetupOption(this.value, this.checked); updateLocationSetupSelectedCount()" value="${escapeHtml(option)}">
+                                            <span>${escapeHtml(option)}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </details>`;
+                    }).join('')}
+                </div>
+                <section class="rounded-xl border border-dashed border-[#e8a7bd] bg-[#fff8fa] p-3 mt-3">
+                    <h4 class="text-sm font-bold text-[#81334f] mb-2">Other equipment</h4>
                     <div class="flex gap-2">
                         <input id="location-detail-custom-input" type="text" maxlength="180" class="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Add your own item">
-                        <button type="button" onclick="addLocationSetupCustomItem()" class="rounded-xl bg-[#fff0f4] px-4 py-2 text-sm font-semibold text-[#a63d65]">Add</button>
+                        <button type="button" onclick="addLocationSetupCustomItem()" class="rounded-xl bg-[#c6537b] px-4 py-2 text-sm font-semibold text-white">Add</button>
                     </div>
                     <div class="flex flex-wrap gap-2 mt-3">
-                        ${draft.custom.map((item, index) => `<span class="inline-flex items-center gap-2 rounded-full bg-[#fff0f4] px-3 py-1.5 text-sm text-[#81334f]">${escapeHtml(item)}<button type="button" onclick="removeLocationSetupCustomItem(${index})" aria-label="Remove ${escapeHtml(item)}">×</button></span>`).join('')}
+                        ${draft.custom.map((item, index) => `<span class="inline-flex items-center gap-2 rounded-full bg-white border border-[#f0cad8] px-3 py-1.5 text-sm text-[#81334f]">${escapeHtml(item)}<button type="button" onclick="removeLocationSetupCustomItem(${index})" aria-label="Remove ${escapeHtml(item)}">×</button></span>`).join('')}
                     </div>
                 </section>`;
+        }
+
+        function updateLocationSetupSelectedCount() {
+            const count = document.getElementById('location-setup-selected-count');
+            if (count && window.locationDetailDraft) count.textContent = (window.locationDetailDraft.selected.length + window.locationDetailDraft.custom.length) + ' selected';
+        }
+
+        function filterLocationSetupOptions(query) {
+            const term = String(query || '').trim().toLowerCase();
+            document.querySelectorAll('#location-setup-groups .location-setup-group').forEach(group => {
+                let visible = 0;
+                group.querySelectorAll('.location-setup-option').forEach(option => {
+                    const match = !term || option.textContent.toLowerCase().includes(term);
+                    option.classList.toggle('hidden', !match);
+                    if (match) visible++;
+                });
+                group.classList.toggle('hidden', visible === 0);
+                if (term && visible) group.open = true;
+            });
         }
 
         function setLocationSetupEnvironment(environment) {
