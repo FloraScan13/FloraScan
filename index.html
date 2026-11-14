@@ -6198,19 +6198,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             modal.className = 'fixed inset-0 z-[10000] flex items-center justify-center p-4';
             modal.style.cssText = 'background:rgba(15,23,42,.58);backdrop-filter:blur(3px);';
             modal.innerHTML = `
-                <section role="dialog" aria-modal="true" aria-labelledby="overdue-feed-reminder-title" class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-amber-300 dark:border-amber-700 p-5">
+                <section role="dialog" aria-modal="true" aria-labelledby="overdue-feed-reminder-title" class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-[#798CBF]/40 p-5">
                     <div class="flex items-start gap-3">
-                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style="background:#DFA625;color:#ffffff;"><i class="fa-solid fa-bell" aria-hidden="true"></i></span>
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style="background:#798CBF;color:#ffffff;"><i class="fa-solid fa-bell" aria-hidden="true"></i></span>
                         <div class="min-w-0">
                             <h2 id="overdue-feed-reminder-title" class="text-lg font-bold text-slate-900 dark:text-white">Nutrient feed overdue</h2>
                             <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">These plants are due for a nutrient feed:</p>
                         </div>
                     </div>
                     <div class="mt-4 space-y-2 max-h-64 overflow-y-auto">
-                        ${overduePlants.map(plant => `<button type="button" data-overdue-plant-id="${escapeHtml(plant.id)}" class="w-full flex items-center justify-between gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-slate-900 px-3 py-2.5 text-left"><span class="font-semibold text-sm text-slate-800 dark:text-slate-100">${escapeHtml(plant.name)}</span><span class="text-xs whitespace-nowrap" style="color:#DFA625;">Due ${escapeHtml(plant.date)} <i class="fa-solid fa-chevron-right ml-1"></i></span></button>`).join('')}
+                        ${overduePlants.map(plant => `<button type="button" data-overdue-plant-id="${escapeHtml(plant.id)}" class="w-full flex items-center justify-between gap-3 rounded-xl border border-[#798CBF]/30 bg-[#798CBF]/10 dark:bg-slate-900 px-3 py-2.5 text-left"><span class="font-semibold text-sm text-slate-800 dark:text-slate-100">${escapeHtml(plant.name)}</span><span class="text-xs whitespace-nowrap" style="color:#798CBF;">Due ${escapeHtml(plant.date)} <i class="fa-solid fa-chevron-right ml-1"></i></span></button>`).join('')}
                     </div>
                     <div class="mt-5 flex justify-end">
-                        <button type="button" data-dismiss-overdue-feed class="rounded-xl px-4 py-2 text-sm font-semibold text-white" style="background:#DFA625;">Dismiss</button>
+                        <button type="button" data-dismiss-overdue-feed class="rounded-xl px-4 py-2 text-sm font-semibold text-white" style="background:#798CBF;">Dismiss</button>
                     </div>
                 </section>`;
             modal.addEventListener('click', event => {
@@ -6295,7 +6295,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     reminderDay.setHours(0, 0, 0, 0);
                     const isOverdue = !Number.isNaN(reminderDate.getTime()) && reminderDay.getTime() < today.getTime();
                     const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Feed reminder' : isOverdue ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Feed due';
-                    const bellColor = isOverdue ? '#DFA625' : '#c6537b';
+                    const bellColor = isOverdue ? '#798CBF' : '#c6537b';
                     return '<span class="inline-flex items-center justify-center mt-1 text-lg" style="color:' + bellColor + ';" title="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '" aria-label="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '"><i class="fa-solid fa-bell"></i></span>';
                 })() : '';
                 return `
@@ -8305,9 +8305,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Repeat feed' : isOverdue ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Repeat feed';
                     journalFeedReminderLabel.textContent = dueLabel + ' · ' + reminderLabel;
                     if (isOverdue) {
-                        journalFeedReminderPill.style.setProperty('background-color', '#DFA625', 'important');
+                        journalFeedReminderPill.style.setProperty('background-color', '#798CBF', 'important');
                         journalFeedReminderPill.style.setProperty('color', '#ffffff', 'important');
-                        journalFeedReminderPill.style.setProperty('border', '1px solid #DFA625', 'important');
+                        journalFeedReminderPill.style.setProperty('border', '1px solid #798CBF', 'important');
                     } else {
                         journalFeedReminderPill.style.removeProperty('background-color');
                         journalFeedReminderPill.style.removeProperty('color');
