@@ -4059,6 +4059,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             localStorage.setItem('flora_location_view_modes', JSON.stringify(plantLocationViewModes));
 
             renderPlants();
+            showOverdueFeedReminderPopup();
             renderMyPlantLibrary();
             setupAutocomplete();
             const logDateInput = document.getElementById('log-date');
@@ -6171,6 +6172,60 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 searchInput.value = '';
                 renderPlants();
             }
+        }
+
+        function showOverdueFeedReminderPopup() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const overduePlants = plants.flatMap(plant => {
+                const reminderLog = (Array.isArray(plant.logs) ? plant.logs : [])
+                    .filter(log => log.type === 'Feed' && log.feedReminderDate)
+                    .sort((a, b) => String(a.feedReminderDate).localeCompare(String(b.feedReminderDate)))[0];
+                if (!reminderLog) return [];
+                const parts = String(reminderLog.feedReminderDate).split('-').map(Number);
+                const reminderDate = parts.length === 3 && parts.every(Number.isFinite)
+                    ? new Date(parts[0], parts[1] - 1, parts[2])
+                    : new Date(reminderLog.feedReminderDate);
+                if (Number.isNaN(reminderDate.getTime())) return [];
+                reminderDate.setHours(0, 0, 0, 0);
+                if (reminderDate.getTime() >= today.getTime()) return [];
+                return [{ id: plant.id, name: plant.name, date: reminderDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) }];
+            });
+            if (!overduePlants.length || document.getElementById('overdue-feed-reminder-modal')) return;
+
+            const modal = document.createElement('div');
+            modal.id = 'overdue-feed-reminder-modal';
+            modal.className = 'fixed inset-0 z-[10000] flex items-center justify-center p-4';
+            modal.style.cssText = 'background:rgba(15,23,42,.58);backdrop-filter:blur(3px);';
+            modal.innerHTML = `
+                <section role="dialog" aria-modal="true" aria-labelledby="overdue-feed-reminder-title" class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-amber-300 dark:border-amber-700 p-5">
+                    <div class="flex items-start gap-3">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style="background:#DFA625;color:#ffffff;"><i class="fa-solid fa-bell" aria-hidden="true"></i></span>
+                        <div class="min-w-0">
+                            <h2 id="overdue-feed-reminder-title" class="text-lg font-bold text-slate-900 dark:text-white">Nutrient feed overdue</h2>
+                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">These plants are due for a nutrient feed:</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-2 max-h-64 overflow-y-auto">
+                        ${overduePlants.map(plant => `<button type="button" data-overdue-plant-id="${escapeHtml(plant.id)}" class="w-full flex items-center justify-between gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-slate-900 px-3 py-2.5 text-left"><span class="font-semibold text-sm text-slate-800 dark:text-slate-100">${escapeHtml(plant.name)}</span><span class="text-xs whitespace-nowrap" style="color:#DFA625;">Due ${escapeHtml(plant.date)} <i class="fa-solid fa-chevron-right ml-1"></i></span></button>`).join('')}
+                    </div>
+                    <div class="mt-5 flex justify-end">
+                        <button type="button" data-dismiss-overdue-feed class="rounded-xl px-4 py-2 text-sm font-semibold text-white" style="background:#DFA625;">Dismiss</button>
+                    </div>
+                </section>`;
+            modal.addEventListener('click', event => {
+                if (event.target === modal || event.target.closest('[data-dismiss-overdue-feed]')) {
+                    modal.remove();
+                    return;
+                }
+                const plantButton = event.target.closest('[data-overdue-plant-id]');
+                if (plantButton) {
+                    const plantId = plantButton.dataset.overduePlantId;
+                    modal.remove();
+                    openJournalModal(plantId);
+                }
+            });
+            document.body.appendChild(modal);
         }
 
         function renderPlants() {
