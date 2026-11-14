@@ -10364,6 +10364,7 @@ document.addEventListener('click', function(event) {
         const host = document.getElementById(hostId);
         if (!source || !host) return null;
         const details = source.cloneNode(true);
+        details.classList.add('journal-growing-picker');
         details.querySelector('.plant-picker-search')?.removeAttribute('data-bound');
         bindPickerSearch(details);
         details.removeAttribute('id');
@@ -10372,9 +10373,19 @@ document.addEventListener('click', function(event) {
             input.name = checkboxName;
             input.checked = false;
         });
-        details.querySelectorAll('button').forEach(button => {
-            if (button.classList.contains('plant-growing-done')) button.remove();
-        });
+        details.querySelectorAll('button.plant-growing-done').forEach(button => button.remove());
+        const panel = details.querySelector('.plant-picker-panel');
+        if (panel && !panel.querySelector('.plant-growing-done')) {
+            const done = document.createElement('button');
+            done.type = 'button';
+            done.className = 'plant-growing-done';
+            done.textContent = 'Done';
+            done.addEventListener('click', () => {
+                details.open = false;
+                details.querySelector('summary')?.focus();
+            });
+            panel.appendChild(done);
+        }
         const summary = details.querySelector('summary');
         if (summary) {
             const label = summary.querySelector('span') || summary;
@@ -10401,6 +10412,8 @@ document.addEventListener('click', function(event) {
         details.addEventListener('change', updateLabel);
         other?.addEventListener('input', updateLabel);
         details.addEventListener('toggle', () => {
+            document.body.classList.toggle('plant-growing-modal-open',
+                !!document.querySelector('#journal-medium-picker details[open], #journal-setup-picker details[open], #plant-medium-dropdown[open], #plant-setup-dropdown[open]'));
             if (details.open) {
                 document.querySelectorAll('#journal-medium-picker details, #journal-setup-picker details').forEach(item => {
                     if (item !== details) item.open = false;
@@ -11210,3 +11223,63 @@ body.plant-growing-modal-open { overflow: hidden !important; }
     transition: none !important;
 }
 </style>
+
+<style id="journal-growing-picker-modal-match-add-plant">
+/* Give the Plant Journal cloned selectors the same full-screen modal treatment as Add Plant. */
+.journal-growing-picker[open]::before {
+    content:""; position:fixed; inset:0; z-index:1100;
+    background:rgba(24,38,28,.48); backdrop-filter:blur(2px);
+}
+.journal-growing-picker[open] > summary { display:none !important; }
+.journal-growing-picker[open] .plant-picker-panel {
+    position:fixed !important; z-index:1101 !important;
+    top:50% !important; left:50% !important; transform:translate(-50%,-50%) !important;
+    width:min(560px,calc(100vw - 28px)) !important; max-width:560px !important;
+    max-height:min(68vh,620px) !important; overflow:hidden !important;
+    display:flex !important; flex-direction:column !important;
+    margin:0 !important; padding:54px 16px 16px !important;
+    border:1px solid #e5e7eb !important; border-radius:18px !important;
+    background:#fffef9 !important; box-shadow:0 18px 55px rgba(18,35,23,.24) !important;
+    box-sizing:border-box !important; isolation:isolate !important;
+}
+.journal-growing-picker[open] .plant-picker-scroll-area {
+    display:block !important; min-height:0 !important; flex:1 1 auto !important;
+    overflow-y:auto !important; overscroll-behavior:contain !important;
+    scrollbar-width:thin; padding-bottom:2px !important;
+}
+.journal-growing-picker[open] .plant-picker-close {
+    position:absolute !important; top:0 !important; right:16px !important; z-index:6 !important;
+    display:inline-flex !important; align-items:center !important; justify-content:center !important;
+    width:24px !important; min-width:24px !important; height:34px !important;
+    padding:0 !important; margin:0 !important; border:0 !important;
+    border-radius:0 0 8px 8px !important; background:rgb(196,85,124) !important;
+    color:#fff !important; box-shadow:0 0 0 5px #fffef9 !important;
+}
+.journal-growing-picker[open] .plant-growing-done {
+    position:sticky !important; z-index:3 !important; bottom:0 !important;
+    display:flex !important; width:100% !important; min-height:46px !important;
+    margin:14px 0 0 !important; padding:10px 16px !important; justify-content:center !important;
+    border:0 !important; border-radius:12px !important; background:#c6537b !important;
+    color:#fff !important; font-weight:650 !important; box-shadow:0 -5px 14px rgba(255,254,249,.95) !important;
+}
+.journal-growing-picker[open] .plant-picker-search {
+    position:sticky !important; top:0 !important; z-index:2 !important; flex:0 0 auto !important;
+}
+@media(max-width:480px) {
+    .journal-growing-picker[open] .plant-picker-panel {
+        width:calc(100vw - 20px) !important; max-height:70vh !important;
+        padding:52px 12px 14px !important; border-radius:16px !important;
+    }
+}
+</style>
+<script id="journal-growing-picker-modal-dismiss">
+document.addEventListener('click', event => {
+    document.querySelectorAll('.journal-growing-picker[open]').forEach(details => {
+        const panel = details.querySelector('.plant-picker-panel');
+        if (!panel) return;
+        if (!panel.contains(event.target) && !details.querySelector('summary')?.contains(event.target)) {
+            details.open = false;
+        }
+    });
+});
+</script>
