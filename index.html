@@ -6074,12 +6074,108 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             ];
             const outsideSections = [
-                'Drip & micro irrigation',
-                'Growing areas & protection',
-                'Pumps, filters & water storage',
-                'Timers, controllers & sensors',
-                'Hoses, pipe & fittings',
-                'Sprinklers & watering heads'
+                {
+                    title: 'Drip & micro irrigation',
+                    options: [
+                        'Automatic drip irrigation kit',
+                        'Drip rings',
+                        'Drip lines / delivery pipe',
+                        'Pressure-compensated drippers',
+                        'Adjustable drippers',
+                        'Micro sprayers',
+                        'Dripper manifolds',
+                        'Irrigation stakes',
+                        'Inline irrigation filter',
+                        'Pressure regulator',
+                        'Watering system accessories'
+                    ]
+                },
+                {
+                    title: 'Growing areas & protection',
+                    options: [
+                        'Greenhouse',
+                        'Polytunnel',
+                        'Cold frame',
+                        'Propagation cover',
+                        'Shade netting',
+                        'Insect mesh',
+                        'Garden fleece',
+                        'Ground cover fabric',
+                        'Plant support netting',
+                        'Trellis netting',
+                        'Plant ties and clips',
+                        'Grow bags and outdoor containers'
+                    ]
+                },
+                {
+                    title: 'Pumps, filters & water storage',
+                    options: [
+                        'Submersible water pump',
+                        'Inline irrigation pump',
+                        'Water reservoir / tank',
+                        'Flexible water tank',
+                        'Water butt / storage barrel',
+                        'Inline water filter',
+                        'Sediment filter',
+                        'Pump filter / pre-filter',
+                        'Float valve',
+                        'Tank tap / outlet',
+                        'Air pump and air stone'
+                    ]
+                },
+                {
+                    title: 'Timers, controllers & sensors',
+                    options: [
+                        'Digital watering timer',
+                        'Analogue timer',
+                        'Tap-mounted water timer',
+                        'Automatic irrigation controller',
+                        'Multi-outlet timer',
+                        'Lighting timer',
+                        'Timer contactor',
+                        'Fan speed controller',
+                        'Temperature controller',
+                        'Humidity controller',
+                        'Soil moisture sensor',
+                        'Temperature / humidity sensor'
+                    ]
+                },
+                {
+                    title: 'Hoses, pipe & fittings',
+                    options: [
+                        'Garden hose',
+                        'Irrigation delivery pipe',
+                        '4mm micro tubing',
+                        '13mm irrigation pipe',
+                        '19mm irrigation pipe',
+                        '25mm irrigation pipe',
+                        'Hose tail connectors',
+                        'Barbed straight connectors',
+                        'Tee pieces',
+                        'Elbow connectors',
+                        'End stops',
+                        'Inline taps and valves',
+                        'Non-return valve',
+                        'Grommets and hose clamps'
+                    ]
+                },
+                {
+                    title: 'Sprinklers & watering heads',
+                    options: [
+                        'Oscillating sprinkler',
+                        'Rotary sprinkler',
+                        'Impact sprinkler',
+                        'Micro sprinkler',
+                        'Spray nozzle',
+                        'Adjustable spray head',
+                        'Misting nozzle',
+                        'Dripper / emitter',
+                        'Watering wand',
+                        'Spray lance',
+                        'Adjustable spray gun',
+                        'Hose-end watering head'
+                    ]
+                }
             ];
             const savedInsideSelections = (() => {
                 try {
@@ -6112,7 +6208,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                                 const selected = savedInsideSelections.has(section.title + '::' + option);
                                                 return `
                                                     <label class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold cursor-pointer transition" style="background:${selected ? '#e4eadf' : '#fffef9'};border-color:${selected ? '#8da687' : '#d9ddcf'};color:#426b47;">
-                                                        <input type="checkbox" class="location-inside-option accent-[#31583b]" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="width:14px;height:14px;accent-color:#31583b;">
+                                                        <input type="checkbox" class="location-equipment-option accent-[#31583b]" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="width:14px;height:14px;accent-color:#31583b;">
                                                         <span>${escapeHtml(option)}</span>
                                                     </label>
                                                 `;
@@ -6126,8 +6222,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <h3 id="plant-location-outside-heading" class="text-sm font-bold uppercase tracking-wider mb-3" style="color:#426b47;">Outside</h3>
                             <div class="space-y-2">
                                 ${outsideSections.map(section => `
-                                    <div class="rounded-xl border px-4 py-3" style="background:#f8f8f1;border-color:#d9ddcf;">
-                                        <h4 class="font-semibold text-sm" style="color:#294333;">${escapeHtml(section)}</h4>
+                                    <div class="rounded-xl border px-4 py-3 space-y-3" style="background:#f8f8f1;border-color:#d9ddcf;">
+                                        <h4 class="font-semibold text-sm" style="color:#294333;">${escapeHtml(section.title)}</h4>
+                                        <div class="flex flex-wrap gap-2">
+                                            ${section.options.map(option => {
+                                                const selected = savedInsideSelections.has(section.title + '::' + option);
+                                                return `
+                                                    <label class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold cursor-pointer transition" style="background:${selected ? '#e4eadf' : '#fffef9'};border-color:${selected ? '#8da687' : '#d9ddcf'};color:#426b47;">
+                                                        <input type="checkbox" class="location-equipment-option accent-[#31583b]" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="width:14px;height:14px;accent-color:#31583b;">
+                                                        <span>${escapeHtml(option)}</span>
+                                                    </label>
+                                                `;
+                                            }).join('')}
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
@@ -6139,7 +6246,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     </div>
                 </div>`;
             modal.addEventListener('change', event => {
-                const checkbox = event.target.closest('.location-inside-option');
+                const checkbox = event.target.closest('.location-equipment-option');
                 if (!checkbox) return;
                 const key = checkbox.dataset.section + '::' + checkbox.dataset.option;
                 if (checkbox.checked) draftInsideSelections.add(key);
