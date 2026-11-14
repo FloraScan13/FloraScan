@@ -3956,6 +3956,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let locationTypes = JSON.parse(localStorage.getItem('flora_plant_location_types') || 'null') || { ...DEFAULT_LOCATION_TYPES };
         let locationDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
         let locationDetailsVisibility = JSON.parse(localStorage.getItem('flora_plant_location_details_visibility') || '{}') || {};
+        // Always start with every location's details collapsed on a fresh app load.
+        locationDetailsVisibility = Object.fromEntries(plantLocations.map(location => [location, false]));
+        localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
         let locationSetups = JSON.parse(localStorage.getItem('flora_plant_location_setups') || '{}') || {};
         let locationPostcodes = JSON.parse(localStorage.getItem('flora_plant_location_postcodes') || '{}') || {};
         let locationCoordinates = JSON.parse(localStorage.getItem('flora_plant_location_coordinates') || '{}') || {};
