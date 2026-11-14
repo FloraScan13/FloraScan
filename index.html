@@ -10725,6 +10725,63 @@ html body .journal-growing-picker[open] > .plant-picker-panel > .plant-picker-sc
 }
 </style>
 
+
+<style id="plant-growing-picker-body-portal">
+body > details.plant-growing-picker-portal[open] {
+ position:fixed !important; inset:0 !important; z-index:2147483000 !important;
+ display:block !important; width:auto !important; height:auto !important; margin:0 !important; padding:0 !important;
+}
+body > details.plant-growing-picker-portal[open]::before {
+ content:"" !important; position:fixed !important; inset:0 !important; z-index:0 !important;
+ background:rgba(24,38,28,.58) !important; backdrop-filter:blur(2px);
+}
+body > details.plant-growing-picker-portal[open] > summary { display:none !important; }
+body > details.plant-growing-picker-portal[open] > .plant-picker-panel {
+ position:fixed !important; z-index:1 !important; top:12px !important; bottom:12px !important;
+ left:50% !important; right:auto !important; transform:translateX(-50%) !important;
+ width:min(560px,calc(100vw - 24px)) !important; max-width:calc(100vw - 24px) !important;
+ height:auto !important; max-height:none !important; min-height:0 !important; margin:0 !important;
+ box-sizing:border-box !important; overflow-x:hidden !important; overflow-y:auto !important;
+ overscroll-behavior:contain !important; -webkit-overflow-scrolling:touch !important; background:#fffef9 !important;
+}
+@supports (height:100dvh) {
+ body > details.plant-growing-picker-portal[open] > .plant-picker-panel {
+  top:max(12px,env(safe-area-inset-top,0px)) !important;
+  bottom:max(12px,env(safe-area-inset-bottom,0px)) !important;
+ }
+}
+</style>
+<script id="plant-growing-picker-body-portal-behaviour">
+(() => {
+ const restore = details => {
+  const home = details.__floraPickerHome;
+  details.classList.remove('plant-growing-picker-portal');
+  if (home && home.parent && home.parent.isConnected) {
+   home.parent.insertBefore(details,home.next && home.next.parentNode === home.parent ? home.next : null);
+  }
+  details.__floraPickerHome = null;
+ };
+ ['plant-medium-dropdown','plant-setup-dropdown'].forEach(id => {
+  const details = document.getElementById(id);
+  if (!details || details.dataset.bodyPortalBound === 'true') return;
+  details.dataset.bodyPortalBound = 'true';
+  details.addEventListener('toggle',() => {
+   if (details.open) {
+    if (!details.__floraPickerHome) details.__floraPickerHome = {parent:details.parentNode,next:details.nextSibling};
+    details.classList.add('plant-growing-picker-portal');
+    document.body.appendChild(details);
+   } else if (details.classList.contains('plant-growing-picker-portal')) restore(details);
+  });
+ });
+ document.addEventListener('click',event => {
+  const details = document.querySelector('body > details.plant-growing-picker-portal[open]');
+  if (!details) return;
+  const panel = details.querySelector('.plant-picker-panel');
+  if (panel && !panel.contains(event.target)) details.open = false;
+ },true);
+})();
+</script>
+
 </body>
 </html>
 
