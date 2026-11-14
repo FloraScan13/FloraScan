@@ -8246,8 +8246,18 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     today.setHours(0, 0, 0, 0);
                     const reminderDay = new Date(reminderDate);
                     reminderDay.setHours(0, 0, 0, 0);
-                    const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Repeat feed' : reminderDay.getTime() < today.getTime() ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Repeat feed';
+                    const isOverdue = !Number.isNaN(reminderDate.getTime()) && reminderDay.getTime() < today.getTime();
+                    const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Repeat feed' : isOverdue ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Repeat feed';
                     journalFeedReminderLabel.textContent = dueLabel + ' · ' + reminderLabel;
+                    if (isOverdue) {
+                        journalFeedReminderPill.style.setProperty('background-color', '#DFA625', 'important');
+                        journalFeedReminderPill.style.setProperty('color', '#46320B', 'important');
+                        journalFeedReminderPill.style.setProperty('border', '1px solid #DFA625', 'important');
+                    } else {
+                        journalFeedReminderPill.style.removeProperty('background-color');
+                        journalFeedReminderPill.style.removeProperty('color');
+                        journalFeedReminderPill.style.removeProperty('border');
+                    }
                     journalFeedReminderPill.classList.remove('hidden');
                 } else {
                     journalFeedReminderLabel.textContent = '';
