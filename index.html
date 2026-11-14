@@ -10336,17 +10336,27 @@ document.addEventListener('click', function(event) {
         const search = list?.querySelector('.plant-picker-search');
         if (!list || !search || search.dataset.bound === 'true') return;
         search.dataset.bound = 'true';
-        search.addEventListener('input', () => {
-            const query = search.value.trim().toLocaleLowerCase();
+        const normalize = value => String(value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase().trim();
+        const applyFilter = () => {
+            const query = normalize(search.value);
+            const terms = query.split(/\\s+/).filter(Boolean);
             const scroller = list.querySelector('.plant-picker-scroll-area') || list;
             scroller.querySelectorAll('label').forEach(label => {
-                label.hidden = !!query && !label.textContent.toLocaleLowerCase().includes(query);
+                const checkbox = label.querySelector('input[type="checkbox"]');
+                if (!checkbox) return;
+                const searchableText = normalize(label.textContent + ' ' + checkbox.value);
+                const matches = terms.every(term => searchableText.includes(term));
+                label.style.setProperty('display', matches ? '' : 'none', matches ? '' : 'important');
             });
             scroller.querySelectorAll('fieldset, section').forEach(group => {
-                const labels = Array.from(group.querySelectorAll('label'));
-                if (labels.length) group.hidden = labels.every(label => label.hidden);
+                const options = Array.from(group.querySelectorAll('label')).filter(label => label.querySelector('input[type="checkbox"]'));
+                if (!options.length) return;
+                const hasMatch = options.some(label => label.style.getPropertyValue('display') !== 'none');
+                group.style.setProperty('display', hasMatch ? '' : 'none', hasMatch ? '' : 'important');
             });
-        });
+        };
+        search.addEventListener('input', applyFilter);
+        search.addEventListener('search', applyFilter);
     }
 
     function buildJournalPicker(sourceId, hostId, title, checkboxName) {
