@@ -12001,3 +12001,80 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
 }
 </style>
 
+
+
+<style id="plant-growing-picker-fixed-header-footer-order">
+/* Keep the header and action footer outside the scrolling options region. */
+html body > details.plant-growing-picker-portal[open] > .plant-picker-panel,
+#plant-medium-dropdown[open] > #plant-medium-options,
+#plant-setup-dropdown[open] > #plant-setup-options,
+.journal-growing-picker[open] > .plant-picker-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+html body > details.plant-growing-picker-portal[open] > .plant-picker-panel > .plant-picker-topbar,
+#plant-medium-dropdown[open] > #plant-medium-options > .plant-picker-topbar,
+#plant-setup-dropdown[open] > #plant-setup-options > .plant-picker-topbar,
+.journal-growing-picker[open] > .plant-picker-panel > .plant-picker-topbar {
+    order: 0 !important;
+    position: relative !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    width: 100% !important;
+    z-index: 8 !important;
+    background: #FFFEF9 !important;
+}
+html body > details.plant-growing-picker-portal[open] > .plant-picker-panel > .plant-picker-scroll-area,
+#plant-medium-dropdown[open] > #plant-medium-options > .plant-picker-scroll-area,
+#plant-setup-dropdown[open] > #plant-setup-options > .plant-picker-scroll-area,
+.journal-growing-picker[open] > .plant-picker-panel > .plant-picker-scroll-area {
+    order: 1 !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+html body > details.plant-growing-picker-portal[open] > .plant-picker-panel > .plant-picker-footer,
+#plant-medium-dropdown[open] > #plant-medium-options > .plant-picker-footer,
+#plant-setup-dropdown[open] > #plant-setup-options > .plant-picker-footer,
+.journal-growing-picker[open] > .plant-picker-panel > .plant-picker-footer {
+    order: 2 !important;
+    position: relative !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    width: 100% !important;
+    z-index: 9 !important;
+    background: #FFFEF9 !important;
+}
+</style>
+<script id="plant-growing-picker-fixed-header-footer-dom-order">
+(() => {
+    const arrange = panel => {
+        if (!panel) return;
+        const topbar = panel.querySelector(':scope > .plant-picker-topbar');
+        const scroller = panel.querySelector(':scope > .plant-picker-scroll-area');
+        const footer = panel.querySelector(':scope > .plant-picker-footer');
+        if (!topbar || !scroller || !footer) return;
+        // DOM order matters: the previous setup appended the scroller first,
+        // which put the header and footer after the scrollable content.
+        panel.insertBefore(topbar, scroller);
+        panel.appendChild(footer);
+    };
+    const run = () => {
+        document.querySelectorAll('#plant-medium-options, #plant-setup-options, .journal-growing-picker .plant-picker-panel')
+            .forEach(arrange);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
+    else run();
+    document.addEventListener('toggle', event => {
+        if (event.target?.matches?.('#plant-medium-dropdown, #plant-setup-dropdown, .journal-growing-picker') && event.target.open) {
+            arrange(event.target.querySelector('.plant-picker-panel'));
+            arrange(event.target.querySelector('#plant-medium-options, #plant-setup-options'));
+        }
+    }, true);
+})();
+</script>
+
