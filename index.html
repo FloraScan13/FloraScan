@@ -6,6 +6,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <style id="settings-first-paint-guard">
+        /* Keep Settings hidden on the very first paint while the utility CSS loads. */
+        #view-settings.hidden { display: none !important; }
+    </style>
     <script>
         // Identify a browser reload before the first page paint so the welcome
         // overlay never flashes ahead of the refresh screen.
