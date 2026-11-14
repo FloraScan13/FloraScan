@@ -5982,6 +5982,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 'Lighting',
                 'Grow space & tents'
             ];
+            const outsideSections = [
+                'Drip & micro irrigation',
+                'Growing areas & protection',
+                'Pumps, filters & water storage',
+                'Timers, controllers & sensors',
+                'Hoses, pipe & fittings',
+                'Sprinklers & watering heads'
+            ];
             modal.innerHTML = `
                 <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-700">
                     <div class="sticky top-0 z-10 flex items-center justify-between gap-3 px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 rounded-t-2xl">
@@ -6003,7 +6011,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             </div>
                         </section>
                         <section aria-labelledby="plant-location-outside-heading">
-                            <h3 id="plant-location-outside-heading" class="text-base font-bold text-emerald-700 dark:text-emerald-300">Outside</h3>
+                            <h3 id="plant-location-outside-heading" class="text-base font-bold text-emerald-700 dark:text-emerald-300 mb-3">Outside</h3>
+                            <div class="space-y-2">
+                                ${outsideSections.map(section => `
+                                    <div class="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-3">
+                                        <h4 class="font-semibold text-slate-800 dark:text-slate-100">${escapeHtml(section)}</h4>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </section>
                     </div>
                 </div>`;
