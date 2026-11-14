@@ -11197,6 +11197,12 @@ body.plant-growing-modal-open { overflow: hidden !important; }
             scroller.className = 'plant-picker-scroll-area';
             panel.appendChild(scroller);
         }
+        let topbar = panel.querySelector(':scope > .plant-picker-topbar');
+        if (!topbar) {
+            topbar = document.createElement('div');
+            topbar.className = 'plant-picker-topbar';
+            panel.appendChild(topbar);
+        }
         let footer = panel.querySelector(':scope > .plant-picker-footer');
         if (!footer) {
             footer = document.createElement('div');
@@ -11206,15 +11212,21 @@ body.plant-growing-modal-open { overflow: hidden !important; }
             panel.appendChild(footer);
         }
 
-        // Keep the Done action in its own stationary footer, outside the
-        // scrolling options body. This prevents options showing beneath it.
+        // Keep search and the custom "Other" entry visible above the
+        // independently scrolling options list.
+        const search = panel.querySelector('.plant-picker-search');
+        const customEntry = panel.querySelector('[data-custom-option="medium"], [data-custom-option="setup"]');
+        if (search && search.parentNode !== topbar) topbar.appendChild(search);
+        if (customEntry && customEntry.parentNode !== topbar) topbar.appendChild(customEntry);
+
+        // Keep the Done action in its own stationary footer.
         const done = panel.querySelector('.plant-growing-done');
         if (done && done.parentNode !== footer) footer.appendChild(done);
 
-        // Only option content scrolls. The close tab and footer remain fixed
-        // within the modal frame.
+        // Only the remaining option content scrolls. The search/custom
+        // entry stay fixed above it; the close tab and footer stay fixed too.
         Array.from(panel.children).forEach(child => {
-            if (child !== scroller && child !== footer && !child.classList.contains('plant-picker-close')) {
+            if (child !== scroller && child !== topbar && child !== footer && !child.classList.contains('plant-picker-close')) {
                 scroller.appendChild(child);
             }
         });
@@ -11234,6 +11246,32 @@ body.plant-growing-modal-open { overflow: hidden !important; }
     });
 })();
 </script>
+
+<style id="plant-picker-static-search-other">
+/* Keep Search and the custom Other field fixed while the options list scrolls. */
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-topbar,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-topbar {
+    position: relative !important;
+    z-index: 4 !important;
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+    padding: 0 0 10px !important;
+    background: #FFFEF9 !important;
+}
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-topbar .plant-picker-search,
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-topbar .plant-picker-search,
+#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-topbar [data-custom-option],
+#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-topbar [data-custom-option] {
+    position: relative !important;
+    inset: auto !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
+</style>
 
 <style id="plant-picker-search-cream">
 /* Match both growing picker search fields to the modal cream surface. */
