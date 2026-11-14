@@ -8754,6 +8754,40 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
     line-height: 1.4 !important;
 }
 </style>
+
+<style id="plant-growing-picker-portal-specificity-fix">
+/* Override the older ID-based modal rules after the picker has been portalled to body. */
+html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options,
+html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options {
+    position: fixed !important;
+    top: max(12px, env(safe-area-inset-top, 0px)) !important;
+    right: 12px !important;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+    left: 12px !important;
+    inset: max(12px, env(safe-area-inset-top, 0px)) 12px max(12px, env(safe-area-inset-bottom, 0px)) 12px !important;
+    width: auto !important;
+    max-width: 560px !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    margin: auto !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    z-index: 2147483001 !important;
+}
+html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options > .plant-picker-scroll-area,
+html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options > .plant-picker-scroll-area {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+</style>
+
 </body>
 
 </html>`);
