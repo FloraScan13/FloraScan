@@ -6048,20 +6048,24 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             indoor: {
                 label: 'Inside growing',
                 groups: [
-                    ['Growing space', ['Grow tent', 'Grow room', 'Greenhouse', 'Windowsill']],
-                    ['Lighting', ['LED grow light', 'HPS grow light', 'CMH grow light', 'Light timer', 'Dimmable lighting']],
-                    ['Air movement & extraction', ['Oscillating fan', 'Clip-on fan', 'Inline extractor fan', 'Intake fan', 'Carbon filter', 'Ducting']],
-                    ['Climate control', ['Humidifier', 'Dehumidifier', 'Heater', 'Air conditioner', 'Temperature controller', 'Humidity controller']],
-                    ['Other equipment', ['CO₂ system', 'Environmental controller', 'Air circulation fan']]
+                    ['Growing space', ['Grow tent', 'Propagation tent', 'Grow room', 'Greenhouse', 'Windowsill']],
+                    ['Lighting', ['LED grow light', 'HPS grow light', 'CMH / CDM grow light', 'Fluorescent / T5 light', 'Light timer', 'Lighting contactor', 'Dimmable lighting', 'Lighting controller']],
+                    ['Air movement & extraction', ['Oscillating fan', 'Clip-on fan', 'Inline extractor fan', 'Extraction kit', 'Intake fan', 'Carbon filter', 'Ducting', 'Fan speed controller']],
+                    ['Climate control', ['Humidifier', 'Dehumidifier', 'Heater', 'Air conditioner', 'Temperature controller', 'Humidity controller', 'CO₂ system', 'Environmental controller']],
+                    ['Hydroponics & watering', ['Hydroponic system', 'Irrigation pump', 'Water pump', 'Reservoir / tank', 'Drip irrigation', 'Drippers', 'Irrigation pipe and fittings']],
+                    ['Equipment brands', ['GroWell', 'Other indoor growing brand']]
                 ]
             },
             outdoor: {
                 label: 'Outside growing',
                 groups: [
-                    ['Irrigation', ['Drip irrigation', 'Drip lines', 'Soaker hose', 'Sprinkler system', 'Micro-sprinklers', 'Hand watering']],
-                    ['Water control', ['Water timer', 'Automatic irrigation controller', 'Rainwater collection', 'Water butt', 'Mains water connection']],
+                    ['Drip & micro irrigation', ['Drip irrigation kit', 'Drip lines', 'Inline drippers', 'Adjustable drippers', 'Micro-sprinklers', 'Soaker hose']],
+                    ['Sprinklers', ['Pop-up sprinkler', 'Rotor sprinkler', 'Spray sprinkler', 'Oscillating sprinkler', 'Hose-end sprinkler']],
+                    ['Water control & automation', ['Water timer', 'Hose-faucet timer', 'Automatic irrigation controller', 'Multi-zone controller', 'Solenoid valve', 'Zone manifold', 'Wi-Fi smart controller', 'Orbit B-hyve controller', 'Rain delay / rain sensor', 'Soil-moisture sensor', 'Weather-based watering']],
+                    ['Water supply & storage', ['Irrigation pump', 'Supply pipe', 'Garden hose', 'Compression fittings', 'Rainwater collection', 'Water butt / tank', 'Mains water connection']],
                     ['Growing area', ['Raised bed', 'In-ground bed', 'Container area', 'Polytunnel', 'Cold frame', 'Greenhouse']],
-                    ['Protection & environment', ['Shade cloth', 'Frost protection', 'Windbreak', 'Rain cover']]
+                    ['Protection & environment', ['Shade cloth', 'Frost protection', 'Windbreak', 'Rain cover']],
+                    ['Irrigation brands', ['Hozelock', 'Gardena', 'Claber', 'Rain Bird', 'Hunter Industries', 'HydroSure', 'Antelco', 'Orbit B-hyve']]
                 ]
             }
         };
