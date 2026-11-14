@@ -6314,6 +6314,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     saved[location] = Array.from(draftInsideSelections);
                     localStorage.setItem('flora_location_inside_options', JSON.stringify(saved));
                     const savedNames = JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}');
+                    // Use the checkbox label as the equipment name when no custom name was entered.
+                    modal.querySelectorAll('.location-equipment-option:checked').forEach(checkbox => {
+                        const key = checkbox.dataset.section + '::' + checkbox.dataset.option;
+                        const nameInput = checkbox.closest('.location-equipment-row').querySelector('.location-equipment-name');
+                        const customName = nameInput ? nameInput.value.trim() : '';
+                        draftEquipmentNames[key] = customName || checkbox.dataset.option;
+                    });
                     savedNames[location] = draftEquipmentNames;
                     localStorage.setItem('flora_location_equipment_names', JSON.stringify(savedNames));
                     markFloraSyncPending('locations');
