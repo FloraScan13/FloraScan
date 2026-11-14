@@ -5976,11 +5976,57 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             modal.setAttribute('aria-modal', 'true');
             modal.setAttribute('aria-labelledby', 'plant-location-details-title');
             const insideSections = [
-                'Monitoring & testing',
-                'Temperature, humidity & CO₂',
-                'Extraction & air movement',
-                'Lighting',
-                'Grow space & tents'
+                {
+                    title: 'Monitoring & testing',
+                    links: [
+                        { label: 'Measuring tools & meters', url: 'https://www.growell.co.uk/collections/measuring-tools' },
+                        { label: 'pH & EC testing', url: 'https://www.growell.co.uk/collections/nutrient-ph-management' },
+                        { label: 'Reverse osmosis & water filtration', url: 'https://www.growell.co.uk/collections/reverse-osmosis-filtration' }
+                    ]
+                },
+                {
+                    title: 'Temperature, humidity & CO₂',
+                    links: [
+                        { label: 'Humidity control', url: 'https://www.growell.co.uk/collections/humidity' },
+                        { label: 'CO₂ systems', url: 'https://www.growell.co.uk/collections/co2' },
+                        { label: 'Grow room heaters & temperature', url: 'https://www.growell.co.uk/collections/grow-room-temperature' },
+                        { label: 'Air conditioning', url: 'https://www.growell.co.uk/collections/air-conditioning' }
+                    ]
+                },
+                {
+                    title: 'Extraction & air movement',
+                    links: [
+                        { label: 'Extraction kits', url: 'https://www.growell.co.uk/collections/extraction-filtration-kits' },
+                        { label: 'Extractor & intake fans', url: 'https://www.growell.co.uk/collections/extractor-fans' },
+                        { label: 'Carbon filters', url: 'https://www.growell.co.uk/collections/carbon-filters' },
+                        { label: 'Air circulation fans', url: 'https://www.growell.co.uk/collections/air-movement-fans' },
+                        { label: 'Fan speed controllers', url: 'https://www.growell.co.uk/collections/fan-controllers' },
+                        { label: 'Ducting & accessories', url: 'https://www.growell.co.uk/collections/ducting-accessories' }
+                    ]
+                },
+                {
+                    title: 'Lighting',
+                    links: [
+                        { label: 'All grow lights', url: 'https://www.growell.co.uk/collections/grow-lights' },
+                        { label: 'LED grow lights', url: 'https://www.growell.co.uk/collections/led-grow-lights' },
+                        { label: 'HPS lighting systems', url: 'https://www.growell.co.uk/collections/complete-lighting-systems' },
+                        { label: 'Propagation grow lights', url: 'https://www.growell.co.uk/collections/propagation-grow-lights' },
+                        { label: 'Grow lamps', url: 'https://www.growell.co.uk/collections/grow-lamps' },
+                        { label: 'Reflectors & ballasts', url: 'https://www.growell.co.uk/collections/reflectors' },
+                        { label: 'Timers & contactors', url: 'https://www.growell.co.uk/collections/timers-contactors' },
+                        { label: 'Grow light controllers', url: 'https://www.growell.co.uk/collections/grow-light-controllers' }
+                    ]
+                },
+                {
+                    title: 'Grow space & tents',
+                    links: [
+                        { label: 'Grow tents & sheeting', url: 'https://www.growell.co.uk/collections/grow-tents-sheeting' },
+                        { label: 'Grow tent kits', url: 'https://www.growell.co.uk/collections/grow-tent-kits' },
+                        { label: 'Propagation grow tents', url: 'https://www.growell.co.uk/collections/propagation-grow-tents' },
+                        { label: 'Reflective sheeting', url: 'https://www.growell.co.uk/collections/reflective-sheeting' },
+                        { label: 'Grow room tape & accessories', url: 'https://www.growell.co.uk/collections/grow-room-tape' }
+                    ]
+                }
             ];
             const outsideSections = [
                 'Drip & micro irrigation',
@@ -6005,8 +6051,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <h3 id="plant-location-inside-heading" class="text-sm font-bold uppercase tracking-wider mb-3" style="color:#426b47;">Inside</h3>
                             <div class="space-y-2">
                                 ${insideSections.map(section => `
-                                    <div class="rounded-xl border px-4 py-3" style="background:#f8f8f1;border-color:#d9ddcf;">
-                                        <h4 class="font-semibold text-sm" style="color:#294333;">${escapeHtml(section)}</h4>
+                                    <div class="rounded-xl border px-4 py-3 space-y-3" style="background:#f8f8f1;border-color:#d9ddcf;">
+                                        <h4 class="font-semibold text-sm" style="color:#294333;">${escapeHtml(section.title)}</h4>
+                                        <div class="flex flex-wrap gap-2">
+                                            ${section.links.map(link => `
+                                                <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition hover:-translate-y-0.5" style="background:#fffef9;border-color:#d9ddcf;color:#426b47;text-decoration:none;">
+                                                    ${escapeHtml(link.label)} <i class="fa-solid fa-arrow-up-right-from-square text-[10px]" aria-hidden="true"></i>
+                                                </a>
+                                            `).join('')}
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
