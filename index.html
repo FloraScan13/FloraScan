@@ -3236,6 +3236,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <details id="plant-setup-dropdown" class="w-full">
                                     <summary class="w-full flex cursor-pointer list-none items-center justify-between px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-left"><span>Setup</span><i class="fa-solid fa-chevron-down text-slate-500" aria-hidden="true"></i></summary>
                                 <div id="plant-setup-options" class="plant-picker-panel mt-2 w-full max-h-64 overflow-y-auto rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 space-y-3" role="group" aria-describedby="plant-setup-help">
+                                     <input type="search" class="plant-picker-search w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" placeholder="Search growing setups..." aria-label="Search growing setups" autocomplete="off">
                                     <button type="button" class="plant-picker-close" aria-label="Close growing setup options" onclick="this.closest('details').open=false"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                                     <fieldset><legend class="text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">Pots, containers and fabric planters</legend><div class="flex flex-col gap-2">
                                         <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Standard round pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Standard round pot</span></label>
@@ -10253,7 +10254,15 @@ document.addEventListener('click', function(event) {
     }
 
     function buildOptions() {
+        const existingSearch = list.querySelector('.plant-picker-search');
         list.replaceChildren();
+        const search = existingSearch || document.createElement('input');
+        search.type = 'search';
+        search.className = 'plant-picker-search w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100';
+        search.placeholder = 'Search growing mediums...';
+        search.setAttribute('aria-label', 'Search growing mediums');
+        search.autocomplete = 'off';
+        list.appendChild(search);
         const closeButton = document.createElement('button');
         closeButton.type = 'button';
         closeButton.className = 'plant-picker-close';
@@ -10322,11 +10331,30 @@ document.addEventListener('click', function(event) {
 </script>
 <script id="journal-growing-medium-setup-options">
 (function () {
+    function bindPickerSearch(details) {
+        const list = details?.querySelector('.plant-picker-panel');
+        const search = list?.querySelector('.plant-picker-search');
+        if (!list || !search || search.dataset.bound === 'true') return;
+        search.dataset.bound = 'true';
+        search.addEventListener('input', () => {
+            const query = search.value.trim().toLocaleLowerCase();
+            const scroller = list.querySelector('.plant-picker-scroll-area') || list;
+            scroller.querySelectorAll('label').forEach(label => {
+                label.hidden = !!query && !label.textContent.toLocaleLowerCase().includes(query);
+            });
+            scroller.querySelectorAll('fieldset, section').forEach(group => {
+                const labels = Array.from(group.querySelectorAll('label'));
+                if (labels.length) group.hidden = labels.every(label => label.hidden);
+            });
+        });
+    }
+
     function buildJournalPicker(sourceId, hostId, title, checkboxName) {
         const source = document.getElementById(sourceId);
         const host = document.getElementById(hostId);
         if (!source || !host) return null;
         const details = source.cloneNode(true);
+        bindPickerSearch(details);
         details.removeAttribute('id');
         details.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
         details.querySelectorAll('input[type="checkbox"]').forEach(input => {
@@ -10379,6 +10407,8 @@ document.addEventListener('click', function(event) {
     }
 
     function init() {
+        bindPickerSearch(document.getElementById('plant-medium-dropdown'));
+        bindPickerSearch(document.getElementById('plant-setup-dropdown'));
         const medium = buildJournalPicker('plant-medium-dropdown', 'journal-medium-picker', 'Growing medium', 'journal-medium-option');
         const setup = buildJournalPicker('plant-setup-dropdown', 'journal-setup-picker', 'Growing setup', 'journal-setup-option');
         window.getJournalMediumValues = () => medium?._journalValues() || [];
