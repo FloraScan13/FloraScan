@@ -5976,57 +5976,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             modal.setAttribute('aria-modal', 'true');
             modal.setAttribute('aria-labelledby', 'plant-location-details-title');
             const insideSections = [
-                {
-                    title: 'Monitoring & testing',
-                    links: [
-                        { label: 'Measuring tools & meters', url: 'https://www.growell.co.uk/collections/measuring-tools' },
-                        { label: 'pH & EC testing', url: 'https://www.growell.co.uk/collections/nutrient-ph-management' },
-                        { label: 'Reverse osmosis & water filtration', url: 'https://www.growell.co.uk/collections/reverse-osmosis-filtration' }
-                    ]
-                },
-                {
-                    title: 'Temperature, humidity & CO₂',
-                    links: [
-                        { label: 'Humidity control', url: 'https://www.growell.co.uk/collections/humidity' },
-                        { label: 'CO₂ systems', url: 'https://www.growell.co.uk/collections/co2' },
-                        { label: 'Grow room heaters & temperature', url: 'https://www.growell.co.uk/collections/grow-room-temperature' },
-                        { label: 'Air conditioning', url: 'https://www.growell.co.uk/collections/air-conditioning' }
-                    ]
-                },
-                {
-                    title: 'Extraction & air movement',
-                    links: [
-                        { label: 'Extraction kits', url: 'https://www.growell.co.uk/collections/extraction-filtration-kits' },
-                        { label: 'Extractor & intake fans', url: 'https://www.growell.co.uk/collections/extractor-fans' },
-                        { label: 'Carbon filters', url: 'https://www.growell.co.uk/collections/carbon-filters' },
-                        { label: 'Air circulation fans', url: 'https://www.growell.co.uk/collections/air-movement-fans' },
-                        { label: 'Fan speed controllers', url: 'https://www.growell.co.uk/collections/fan-controllers' },
-                        { label: 'Ducting & accessories', url: 'https://www.growell.co.uk/collections/ducting-accessories' }
-                    ]
-                },
-                {
-                    title: 'Lighting',
-                    links: [
-                        { label: 'All grow lights', url: 'https://www.growell.co.uk/collections/grow-lights' },
-                        { label: 'LED grow lights', url: 'https://www.growell.co.uk/collections/led-grow-lights' },
-                        { label: 'HPS lighting systems', url: 'https://www.growell.co.uk/collections/complete-lighting-systems' },
-                        { label: 'Propagation grow lights', url: 'https://www.growell.co.uk/collections/propagation-grow-lights' },
-                        { label: 'Grow lamps', url: 'https://www.growell.co.uk/collections/grow-lamps' },
-                        { label: 'Reflectors & ballasts', url: 'https://www.growell.co.uk/collections/reflectors' },
-                        { label: 'Timers & contactors', url: 'https://www.growell.co.uk/collections/timers-contactors' },
-                        { label: 'Grow light controllers', url: 'https://www.growell.co.uk/collections/grow-light-controllers' }
-                    ]
-                },
-                {
-                    title: 'Grow space & tents',
-                    links: [
-                        { label: 'Grow tents & sheeting', url: 'https://www.growell.co.uk/collections/grow-tents-sheeting' },
-                        { label: 'Grow tent kits', url: 'https://www.growell.co.uk/collections/grow-tent-kits' },
-                        { label: 'Propagation grow tents', url: 'https://www.growell.co.uk/collections/propagation-grow-tents' },
-                        { label: 'Reflective sheeting', url: 'https://www.growell.co.uk/collections/reflective-sheeting' },
-                        { label: 'Grow room tape & accessories', url: 'https://www.growell.co.uk/collections/grow-room-tape' }
-                    ]
-                }
+                { title: 'Monitoring & testing', options: ['Thermometer', 'Hygrometer', 'Digital temperature & humidity monitor', 'pH meter', 'EC / TDS meter', 'Water testing kit', 'CO₂ monitor', 'PAR / light meter'] },
+                { title: 'Temperature, humidity & CO₂', options: ['Humidifier', 'Dehumidifier', 'CO₂ controller', 'CO₂ regulator & bottle', 'CO₂ monitor', 'Heater', 'Air conditioner', 'Temperature controller'] },
+                { title: 'Extraction & air movement', options: ['Extractor fan', 'Intake fan', 'Carbon filter', 'Ducting', 'Air circulation fan', 'Fan speed controller', 'Silencer', 'Ducting accessories'] },
+                { title: 'Lighting', options: ['LED grow light', 'HPS grow light', 'Propagation light', 'Grow lamp', 'Reflector', 'Ballast / driver', 'Light timer', 'Lighting controller', 'Hanging kit'] },
+                { title: 'Grow space & tents', options: ['Grow tent', 'Propagation tent', 'Grow room sheeting', 'Reflective sheeting', 'Grow tent frame', 'Panda film / lightproof sheeting', 'Grow room tape', 'Tent accessories'] }
             ];
             const outsideSections = [
                 'Drip & micro irrigation',
@@ -6036,6 +5990,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 'Hoses, pipe & fittings',
                 'Sprinklers & watering heads'
             ];
+            const savedInsideSelections = (() => {
+                try {
+                    const saved = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
+                    return new Set(Array.isArray(saved[location]) ? saved[location] : []);
+                } catch (error) {
+                    return new Set();
+                }
+            })();
             modal.innerHTML = `
                 <div class="relative bg-[#fffef9] max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-8 border border-[#e1e1d5]" style="max-height:90vh;">
                     <div class="absolute top-0 left-0 right-0 z-10 h-7 px-[10px] flex items-start justify-end bg-[#fffef9]">
@@ -6054,11 +6016,15 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <div class="rounded-xl border px-4 py-3 space-y-3" style="background:#f8f8f1;border-color:#d9ddcf;">
                                         <h4 class="font-semibold text-sm" style="color:#294333;">${escapeHtml(section.title)}</h4>
                                         <div class="flex flex-wrap gap-2">
-                                            ${section.links.map(link => `
-                                                <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition hover:-translate-y-0.5" style="background:#fffef9;border-color:#d9ddcf;color:#426b47;text-decoration:none;">
-                                                    ${escapeHtml(link.label)} <i class="fa-solid fa-arrow-up-right-from-square text-[10px]" aria-hidden="true"></i>
-                                                </a>
-                                            `).join('')}
+                                            ${section.options.map(option => {
+                                                const selected = savedInsideSelections.has(section.title + '::' + option);
+                                                return `
+                                                    <label class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold cursor-pointer transition" style="background:${selected ? '#e4eadf' : '#fffef9'};border-color:${selected ? '#8da687' : '#d9ddcf'};color:#426b47;">
+                                                        <input type="checkbox" class="location-inside-option accent-[#31583b]" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="width:14px;height:14px;accent-color:#31583b;">
+                                                        <span>${escapeHtml(option)}</span>
+                                                    </label>
+                                                `;
+                                            }).join('')}
                                         </div>
                                     </div>
                                 `).join('')}
@@ -6076,6 +6042,23 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </section>
                     </div>
                 </div>`;
+            modal.addEventListener('change', event => {
+                const checkbox = event.target.closest('.location-inside-option');
+                if (!checkbox) return;
+                const key = checkbox.dataset.section + '::' + checkbox.dataset.option;
+                if (checkbox.checked) savedInsideSelections.add(key);
+                else savedInsideSelections.delete(key);
+                try {
+                    const saved = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
+                    saved[location] = Array.from(savedInsideSelections);
+                    localStorage.setItem('flora_location_inside_options', JSON.stringify(saved));
+                } catch (error) {
+                    console.warn('Could not save location equipment selections', error);
+                }
+                const label = checkbox.closest('label');
+                label.style.background = checkbox.checked ? '#e4eadf' : '#fffef9';
+                label.style.borderColor = checkbox.checked ? '#8da687' : '#d9ddcf';
+            });
             modal.addEventListener('click', event => {
                 if (event.target === modal) closePlantLocationDetailsModal();
             });
