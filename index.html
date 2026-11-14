@@ -6203,17 +6203,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 ${insideSections.map(section => `
                                     <div class="rounded-xl border px-4 py-3 space-y-3" style="background:#f8f8f1;border-color:#d9ddcf;">
                                         <h4 class="font-semibold text-sm" style="color:#294333;">${escapeHtml(section.title)}</h4>
-                                        <div class="flex flex-wrap gap-2">
-                                            ${section.options.map(option => {
-                                                const selected = savedInsideSelections.has(section.title + '::' + option);
-                                                return `
-                                                    <label class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold cursor-pointer transition" style="background:${selected ? '#e4eadf' : '#fffef9'};border-color:${selected ? '#8da687' : '#d9ddcf'};color:#426b47;">
-                                                        <input type="checkbox" class="location-equipment-option accent-[#31583b]" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="width:14px;height:14px;accent-color:#31583b;">
-                                                        <span>${escapeHtml(option)}</span>
-                                                    </label>
-                                                `;
-                                            }).join('')}
-                                        </div>
+                                        <fieldset class="min-w-0">
+                                            <legend class="sr-only">${escapeHtml(section.title)} options</legend>
+                                            <div class="flex flex-col gap-2">
+                                                ${section.options.map(option => {
+                                                    const selected = savedInsideSelections.has(section.title + '::' + option);
+                                                    return `
+                                                        <label class="flex items-center gap-2 text-sm cursor-pointer" style="color:#426b47;">
+                                                            <input type="checkbox" class="location-equipment-option h-4 w-4 shrink-0" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="accent-color:#31583b;">
+                                                            <span>${escapeHtml(option)}</span>
+                                                        </label>
+                                                    `;
+                                                }).join('')}
+                                            </div>
+                                        </fieldset>
                                     </div>
                                 `).join('')}
                             </div>
@@ -6224,17 +6227,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 ${outsideSections.map(section => `
                                     <div class="rounded-xl border px-4 py-3 space-y-3" style="background:#f8f8f1;border-color:#d9ddcf;">
                                         <h4 class="font-semibold text-sm" style="color:#294333;">${escapeHtml(section.title)}</h4>
-                                        <div class="flex flex-wrap gap-2">
-                                            ${section.options.map(option => {
-                                                const selected = savedInsideSelections.has(section.title + '::' + option);
-                                                return `
-                                                    <label class="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold cursor-pointer transition" style="background:${selected ? '#e4eadf' : '#fffef9'};border-color:${selected ? '#8da687' : '#d9ddcf'};color:#426b47;">
-                                                        <input type="checkbox" class="location-equipment-option accent-[#31583b]" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="width:14px;height:14px;accent-color:#31583b;">
-                                                        <span>${escapeHtml(option)}</span>
-                                                    </label>
-                                                `;
-                                            }).join('')}
-                                        </div>
+                                        <fieldset class="min-w-0">
+                                            <legend class="sr-only">${escapeHtml(section.title)} options</legend>
+                                            <div class="flex flex-col gap-2">
+                                                ${section.options.map(option => {
+                                                    const selected = savedInsideSelections.has(section.title + '::' + option);
+                                                    return `
+                                                        <label class="flex items-center gap-2 text-sm cursor-pointer" style="color:#426b47;">
+                                                            <input type="checkbox" class="location-equipment-option h-4 w-4 shrink-0" data-section="${escapeHtml(section.title)}" data-option="${escapeHtml(option)}" ${selected ? 'checked' : ''} style="accent-color:#31583b;">
+                                                            <span>${escapeHtml(option)}</span>
+                                                        </label>
+                                                    `;
+                                                }).join('')}
+                                            </div>
+                                        </fieldset>
                                     </div>
                                 `).join('')}
                             </div>
