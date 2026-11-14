@@ -8354,8 +8354,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 : '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-leaf text-2xl" aria-hidden="true"></i></div>';
             // Open the journal even if an optional nutrient UI control is unavailable.
             try { toggleNutrientLibraryView(); toggleGerminationSection(); } catch (error) { console.warn('Journal controls could not be refreshed:', error); }
-            // Rebuild from the current Add Plant controls so the journal never
-            // reopens an older, previously generated picker.
+            // Move the actual Add Plant picker nodes into the journal. These are
+            // the same controls, not copies or journal-specific replacements.
             if (typeof window.refreshJournalGrowingPickers === 'function') {
                 window.refreshJournalGrowingPickers();
             }
@@ -8673,6 +8673,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
 
         function closeJournalModal() {
+            if (typeof window.restoreSharedGrowingPickers === 'function') window.restoreSharedGrowingPickers();
             document.getElementById('journal-modal').classList.add('hidden');
             // Return to the Plants view as well as resetting its navigation highlight.
             // This keeps the selected tab in sync after a journal opened by an NFC scan.
@@ -10469,29 +10470,74 @@ document.addEventListener('click', function(event) {
     }
 
     function init() {
-        bindPickerSearch(document.getElementById('plant-medium-dropdown'));
-        bindPickerSearch(document.getElementById('plant-setup-dropdown'));
-        let medium = null;
-        let setup = null;
-        const rebuildJournalPickers = () => {
-            // Re-clone the live Add Plant controls whenever the journal opens.
-            // Their option lists are populated dynamically, so an init-time clone
-            // can otherwise preserve an obsolete version of the picker.
-            const previousMedium = medium?._journalValues() || [];
-            const previousSetup = setup?._journalValues() || [];
-            medium = buildJournalPicker('plant-medium-dropdown', 'journal-medium-picker', 'Growing medium', 'journal-medium-option');
-            setup = buildJournalPicker('plant-setup-dropdown', 'journal-setup-picker', 'Growing setup', 'journal-setup-option');
-            medium?._setJournalValues(previousMedium);
-            setup?._setJournalValues(previousSetup);
+        const medium = document.getElementById('plant-medium-dropdown');
+        const setup = document.getElementById('plant-setup-dropdown');
+        const mediumHost = document.getElementById('journal-medium-picker');
+        const setupHost = document.getElementById('journal-setup-picker');
+        // Keep the real Add Plant controls and their original event handlers.
+        // Placeholders let us move those exact nodes into the journal and restore
+        // them to their original positions when the journal closes.
+        const mediumHome = medium?.parentNode;
+        const setupHome = setup?.parentNode;
+        const mediumPlaceholder = medium ? document.createComment('plant-medium-dropdown-home') : null;
+        const setupPlaceholder = setup ? document.createComment('plant-setup-dropdown-home') : null;
+        if (medium && mediumHome) mediumHome.insertBefore(mediumPlaceholder, medium);
+        if (setup && setupHome) setupHome.insertBefore(setupPlaceholder, setup);
+        const readValues = (details, name) => {
+            if (!details) return [];
+            const values = Array.from(details.querySelectorAll('input[type="checkbox"][name="' + name + '"]:checked'))
+                .filter(input => input.value !== 'Other').map(input => input.value);
+            const other = details.querySelector('input[type="text"], input:not([type])');
+            if (other?.value.trim()) values.push(...other.value.split(/\\s*,\\s*/).filter(Boolean));
+            return [...new Set(values)];
         };
-        window.refreshJournalGrowingPickers = rebuildJournalPickers;
-        window.getJournalMediumValues = () => medium?._journalValues() || [];
-        window.getJournalSetupValues = () => setup?._journalValues() || [];
+        const setValues = (details, name, rawValues) => {
+            if (!details) return;
+            const values = (Array.isArray(rawValues) ? rawValues : String(rawValues || '').split(/\\s*[·,]\\s*/))
+                .map(value => String(value || '').trim()).filter(Boolean);
+            const options = Array.from(details.querySelectorAll('input[type="checkbox"][name="' + name + '"]'));
+            const known = options.filter(input => input.value !== 'Other').map(input => input.value.toLocaleLowerCase());
+            options.forEach(input => {
+                input.checked = input.value === 'Other'
+                    ? values.some(value => !known.includes(value.toLocaleLowerCase()))
+                    : values.some(value => value.toLocaleLowerCase() === input.value.toLocaleLowerCase());
+            });
+            const other = details.querySelector('input[type="text"], input:not([type])');
+            if (other) other.value = values.filter(value => !known.includes(value.toLocaleLowerCase())).join(', ');
+            details.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        const mountSharedGrowingPickers = () => {
+            if (medium && mediumHost && medium.parentNode !== mediumHost) {
+                medium.open = false;
+                medium.classList.add('journal-growing-picker');
+                mediumHost.replaceChildren(medium);
+            }
+            if (setup && setupHost && setup.parentNode !== setupHost) {
+                setup.open = false;
+                setup.classList.add('journal-growing-picker');
+                setupHost.replaceChildren(setup);
+            }
+        };
+        window.restoreSharedGrowingPickers = () => {
+            [medium, setup].forEach((details, index) => {
+                const placeholder = index === 0 ? mediumPlaceholder : setupPlaceholder;
+                if (!details || !placeholder?.parentNode) return;
+                details.open = false;
+                details.classList.remove('journal-growing-picker');
+                placeholder.parentNode.insertBefore(details, placeholder);
+            });
+            document.body.classList.remove('plant-growing-modal-open');
+        };
+        window.refreshJournalGrowingPickers = mountSharedGrowingPickers;
+        window.getJournalMediumValues = () => readValues(medium, 'plant-medium-option');
+        window.getJournalSetupValues = () => readValues(setup, 'plant-setup-option');
         window.setJournalGrowingValues = (mediumValues, setupValues) => {
-            medium?._setJournalValues(mediumValues);
-            setup?._setJournalValues(setupValues);
+            setValues(medium, 'plant-medium-option', mediumValues);
+            setValues(setup, 'plant-setup-option', setupValues);
         };
-        rebuildJournalPickers();
+        // The native controls are initialised by the Add Plant UI; move them only
+        // when a journal is actually opened.
+        
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
     else init();
