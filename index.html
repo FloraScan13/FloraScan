@@ -5982,7 +5982,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 {
                     title: 'Monitoring & testing',
                     options: [
-                        'Thermometer',
                         'Digital temperature & humidity meter',
                         'Probe temperature & humidity meter',
                         'pH meter / pH pen',
@@ -6186,12 +6185,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     return new Set();
                 }
             })();
-            // Keep legacy equipment pills selectable in the modal. Older versions stored
-            // simple labels such as "Thermometer" without a section prefix.
-            if (savedInsideSelections.has('Thermometer')) {
-                savedInsideSelections.delete('Thermometer');
-                savedInsideSelections.add('Monitoring & testing::Thermometer');
-            }
             const draftInsideSelections = new Set(savedInsideSelections);
             const savedEquipmentNames = (() => {
                 try {
@@ -6557,7 +6550,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 let selectedLocationEquipment = [];
                 try {
                     const savedEquipment = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
-                    selectedLocationEquipment = Array.isArray(savedEquipment[location]) ? savedEquipment[location] : [];
+                    const storedSelections = Array.isArray(savedEquipment[location]) ? savedEquipment[location] : [];
+                    // Only section-qualified keys correspond to real modal checkboxes.
+                    // Discard orphaned legacy labels so they cannot appear as equipment pills.
+                    selectedLocationEquipment = storedSelections.filter(item => typeof item === 'string' && item.includes('::'));
+                    if (selectedLocationEquipment.length !== storedSelections.length) {
+                        savedEquipment[location] = selectedLocationEquipment;
+                        localStorage.setItem('flora_location_inside_options', JSON.stringify(savedEquipment));
+                    }
                 } catch (error) {
                     selectedLocationEquipment = [];
                 }
