@@ -10354,6 +10354,7 @@ document.addEventListener('click', function(event) {
         const host = document.getElementById(hostId);
         if (!source || !host) return null;
         const details = source.cloneNode(true);
+        details.querySelector('.plant-picker-search')?.removeAttribute('data-bound');
         bindPickerSearch(details);
         details.removeAttribute('id');
         details.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
