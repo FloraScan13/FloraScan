@@ -6238,8 +6238,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     today.setHours(0, 0, 0, 0);
                     const reminderDay = new Date(reminderDate);
                     reminderDay.setHours(0, 0, 0, 0);
-                    const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Feed reminder' : reminderDay.getTime() < today.getTime() ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Feed due';
-                    return '<span class="inline-flex items-center justify-center mt-1 text-[#c6537b] text-lg" title="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '" aria-label="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '"><i class="fa-solid fa-bell"></i></span>';
+                    const isOverdue = !Number.isNaN(reminderDate.getTime()) && reminderDay.getTime() < today.getTime();
+                    const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Feed reminder' : isOverdue ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Feed due';
+                    const bellColor = isOverdue ? '#DFA625' : '#c6537b';
+                    return '<span class="inline-flex items-center justify-center mt-1 text-lg" style="color:' + bellColor + ';" title="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '" aria-label="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '"><i class="fa-solid fa-bell"></i></span>';
                 })() : '';
                 return `
                     <div onclick="openJournalModal('${p.id}')" onkeydown="if ((event.key === 'Enter' || event.key === ' ') && event.target === this) { event.preventDefault(); openJournalModal('${p.id}'); }" tabindex="0" aria-label="Open growth journal for ${escapeHtml(p.name)}" class="plant-card relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm   dark: focus:outline-none focus:ring-2 focus:ring-emerald-500 transition flex flex-col cursor-pointer" style="background-color: rgb(248, 248, 242) !important; background-image: none !important;">
