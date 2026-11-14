@@ -11242,6 +11242,17 @@ body.plant-growing-modal-open { overflow: hidden !important; }
     background:rgba(24,38,28,.48); backdrop-filter:blur(2px);
 }
 .journal-growing-picker[open] > summary { display:none !important; }
+/* The Add Plant wave is attached to its original element IDs; recreate it on the cloned Journal panels. */
+.journal-growing-picker[open] .plant-picker-panel::before {
+    content:"" !important; position:absolute !important; top:0 !important; left:0 !important; right:0 !important;
+    height:28px !important; background:#fffef9 !important; pointer-events:none !important; z-index:1 !important;
+}
+.journal-growing-picker[open] .plant-picker-panel::after {
+    content:"" !important; position:absolute !important; top:22px !important; left:14px !important; right:14px !important;
+    height:6px !important; pointer-events:none !important; background-repeat:no-repeat !important;
+    background-position:center !important; background-size:100% 6px !important; z-index:2 !important;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+}
 .journal-growing-picker[open] .plant-picker-panel {
     position:fixed !important; z-index:1101 !important;
     top:50% !important; left:50% !important; transform:translate(-50%,-50%) !important;
