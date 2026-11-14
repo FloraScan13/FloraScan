@@ -11219,6 +11219,36 @@ body.plant-growing-modal-open { overflow: hidden !important; }
         if (search && search.parentNode !== topbar) topbar.appendChild(search);
         if (customEntry && customEntry.parentNode !== topbar) topbar.appendChild(customEntry);
 
+        // Bind filtering to the real shared Add Plant search fields. The
+        // previous handler was attached only to the retired journal clones.
+        if (search && search.dataset.sharedSearchBound !== 'true') {
+            search.dataset.sharedSearchBound = 'true';
+            const normalize = value => String(value || '')
+                .normalize('NFD')
+                .replace(/[\\u0300-\\u036f]/g, '')
+                .toLocaleLowerCase()
+                .trim();
+            const applyFilter = () => {
+                const terms = normalize(search.value).split(/\\s+/).filter(Boolean);
+                scroller.querySelectorAll('label').forEach(label => {
+                    const checkbox = label.querySelector('input[type="checkbox"]');
+                    if (!checkbox) return;
+                    const haystack = normalize(label.textContent + ' ' + checkbox.value);
+                    const matches = terms.every(term => haystack.includes(term));
+                    label.style.setProperty('display', matches ? '' : 'none', matches ? '' : 'important');
+                });
+                scroller.querySelectorAll('fieldset, section').forEach(group => {
+                    const labels = Array.from(group.querySelectorAll('label'))
+                        .filter(label => label.querySelector('input[type="checkbox"]'));
+                    if (!labels.length) return;
+                    const hasMatch = labels.some(label => label.style.getPropertyValue('display') !== 'none');
+                    group.style.setProperty('display', hasMatch ? '' : 'none', hasMatch ? '' : 'important');
+                });
+            };
+            search.addEventListener('input', applyFilter);
+            search.addEventListener('search', applyFilter);
+        }
+
         // Keep the Done action in its own stationary footer.
         const done = panel.querySelector('.plant-growing-done');
         if (done && done.parentNode !== footer) footer.appendChild(done);
