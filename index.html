@@ -10610,6 +10610,59 @@ document.addEventListener('click', function(event) {
     else init();
 })();
 </script>
+
+<style id="plant-picker-final-spacing-override">
+/* Final override: keep both growing pickers and their Plant Journal clones aligned. */
+#plant-medium-options.plant-picker-panel,
+#plant-setup-options.plant-picker-panel,
+.journal-growing-picker .plant-picker-panel {
+    --picker-option-gap: 6px;
+}
+#plant-medium-options.plant-picker-panel section,
+#plant-setup-options.plant-picker-panel fieldset,
+#plant-setup-options.plant-picker-panel section,
+.journal-growing-picker .plant-picker-panel section,
+.journal-growing-picker .plant-picker-panel fieldset {
+    display: block !important;
+    margin: 0 0 14px !important;
+    padding: 0 !important;
+}
+#plant-medium-options.plant-picker-panel section > div,
+#plant-setup-options.plant-picker-panel fieldset > div,
+#plant-setup-options.plant-picker-panel section > div,
+.journal-growing-picker .plant-picker-panel section > div,
+.journal-growing-picker .plant-picker-panel fieldset > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--picker-option-gap) !important;
+}
+#plant-medium-options.plant-picker-panel label,
+#plant-setup-options.plant-picker-panel label,
+.journal-growing-picker .plant-picker-panel label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-height: 30px !important;
+    margin: 0 !important;
+    padding: 5px 10px !important;
+    box-sizing: border-box !important;
+    line-height: 1.4 !important;
+}
+#plant-medium-options.plant-picker-panel section > h4,
+#plant-setup-options.plant-picker-panel fieldset > legend,
+#plant-setup-options.plant-picker-panel section > h4,
+.journal-growing-picker .plant-picker-panel section > h4,
+.journal-growing-picker .plant-picker-panel fieldset > legend {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 8px !important;
+    padding: 0 !important;
+    line-height: 1.4 !important;
+    box-sizing: border-box !important;
+}
+</style>
+
 </body>
 </html>
 
