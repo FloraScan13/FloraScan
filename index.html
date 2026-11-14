@@ -2753,12 +2753,15 @@ textarea {
             </div>
 
             <!-- App Branding Settings -->
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
-                <h3 class="text-base font-bold flex items-center space-x-2">
-                    <i class="fa-solid fa-paintbrush text-emerald-600"></i>
-                    <span>Profile</span>
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <details open class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm group">
+                <summary class="list-none cursor-pointer flex items-center justify-between [&::-webkit-details-marker]:hidden">
+                    <h3 class="text-base font-bold flex items-center space-x-2">
+                        <i class="fa-solid fa-paintbrush text-emerald-600"></i>
+                        <span>Profile</span>
+                    </h3>
+                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs ml-3 transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                </summary>
+                <div class="space-y-4 pt-4">
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Email address</label>
                         <input type="email" id="setting-profile-email" autocomplete="email" placeholder="Email for notifications" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
@@ -2774,7 +2777,8 @@ textarea {
                         Save Profile Preferences
                     </button>
                 </div>
-            </div>
+                </div>
+            </details>
 
             <!-- Growing Locations Settings -->
             <div id="growing-locations-settings" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
