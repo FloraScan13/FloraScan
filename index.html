@@ -4026,6 +4026,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let locationTypes = JSON.parse(localStorage.getItem('flora_plant_location_types') || 'null') || { ...DEFAULT_LOCATION_TYPES };
         let locationDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
         let locationDetailsVisibility = JSON.parse(localStorage.getItem('flora_plant_location_details_visibility') || '{}') || {};
+        let locationSetups = JSON.parse(localStorage.getItem('flora_plant_location_setups') || '{}') || {};
         let locationPostcodes = JSON.parse(localStorage.getItem('flora_plant_location_postcodes') || '{}') || {};
         let locationCoordinates = JSON.parse(localStorage.getItem('flora_plant_location_coordinates') || '{}') || {};
         let locationPostcodeLocks = JSON.parse(localStorage.getItem('flora_plant_location_postcode_locks') || '{}') || {};
@@ -5813,6 +5814,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         locationDetails = data.locations.details;
                         localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
                     }
+                    if (!Array.isArray(data.locations) && data.locations.setups && typeof data.locations.setups === 'object') {
+                        locationSetups = data.locations.setups;
+                        localStorage.setItem('flora_plant_location_setups', JSON.stringify(locationSetups));
+                    }
                     if (!Array.isArray(data.locations) && data.locations.detailsVisibility && typeof data.locations.detailsVisibility === 'object') {
                         locationDetailsVisibility = data.locations.detailsVisibility;
                         localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
@@ -5844,6 +5849,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 types: locationTypes,
                                 details: locationDetails,
                                 detailsVisibility: locationDetailsVisibility,
+                                setups: locationSetups,
                                 postcodes: locationPostcodes,
                                 coordinates: locationCoordinates
                             },
@@ -5865,7 +5871,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     .from('user_plant_locations')
                     .upsert({
                         user_id: currentUser.id,
-                        locations: { names: plantLocations, types: locationTypes, details: locationDetails, detailsVisibility: locationDetailsVisibility, postcodes: locationPostcodes, coordinates: locationCoordinates, postcodeLocks: locationPostcodeLocks },
+                        locations: { names: plantLocations, types: locationTypes, details: locationDetails, detailsVisibility: locationDetailsVisibility, setups: locationSetups, postcodes: locationPostcodes, coordinates: locationCoordinates, postcodeLocks: locationPostcodeLocks },
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
                 if (error) throw error;
@@ -6213,9 +6219,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 custom: [...new Set((draft.custom || []).map(item => String(item).trim()).filter(Boolean))]
             };
             const details = [...setup.selected, ...setup.custom];
-            const savedSetups = JSON.parse(localStorage.getItem('flora_plant_location_setups') || '{}') || {};
-            savedSetups[location] = setup;
-            localStorage.setItem('flora_plant_location_setups', JSON.stringify(savedSetups));
+            locationSetups[location] = setup;
+            localStorage.setItem('flora_plant_location_setups', JSON.stringify(locationSetups));
             if (details.length) locationDetails[location] = details.join('\\n');
             else delete locationDetails[location];
             localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
