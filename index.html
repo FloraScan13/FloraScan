@@ -11684,3 +11684,29 @@ document.addEventListener('click', event => {
 }
 </style>
 
+
+
+<style id="plant-picker-true-viewport-fit">
+/* The medium and setup selectors are viewport-level panels, not small inline dropdowns. */
+html body #plant-medium-dropdown[open] > #plant-medium-options,
+html body #plant-setup-dropdown[open] > #plant-setup-options {
+    position: fixed !important;
+    inset: max(10px, env(safe-area-inset-top, 0px)) 10px max(10px, env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    z-index: 10000 !important;
+}
+html body #plant-medium-dropdown[open] > #plant-medium-options,
+html body #plant-setup-dropdown[open] > #plant-setup-options {
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
+}
+</style>
