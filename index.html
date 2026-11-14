@@ -4023,8 +4023,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             // valid choice exists, NFC has already been persisted as the default.
             applyScannerPreference();
 
-            // Reset the Plants screen presentation on every app load.
-            // Keep saved location details themselves; only hide their display by default.
+            // Reset the Plants screen presentation after local and cloud data have loaded.
+            // Keep saved location details and equipment; only collapse their display.
             locationDetailsVisibility = Object.fromEntries(plantLocations.map(location => [location, false]));
             localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
 
@@ -5751,10 +5751,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         locationSetups = data.locations.setups;
                         localStorage.setItem('flora_plant_location_setups', JSON.stringify(locationSetups));
                     }
-                    if (!Array.isArray(data.locations) && data.locations.detailsVisibility && typeof data.locations.detailsVisibility === 'object') {
-                        locationDetailsVisibility = data.locations.detailsVisibility;
-                        localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
-                    }
+                    // Do not restore expanded/collapsed UI state from the cloud.
+                    // Every app load and cloud refresh starts with all location details hidden.
+                    locationDetailsVisibility = Object.fromEntries(plantLocations.map(location => [location, false]));
+                    localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
                     if (!Array.isArray(data.locations) && data.locations.postcodes && typeof data.locations.postcodes === 'object') {
                         locationPostcodes = data.locations.postcodes;
                         localStorage.setItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
