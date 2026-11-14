@@ -12078,3 +12078,43 @@ html body > details.plant-growing-picker-portal[open] > .plant-picker-panel > .p
 })();
 </script>
 
+
+
+<style id="plant-picker-only-options-scroll-correction">
+/* The panel is a fixed frame. Only its options list may scroll. */
+html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options,
+html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+}
+html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options > .plant-picker-topbar,
+html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options > .plant-picker-topbar,
+html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options > .plant-picker-footer,
+html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options > .plant-picker-footer {
+    flex: 0 0 auto !important;
+}
+html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options > .plant-picker-scroll-area,
+html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options > .plant-picker-scroll-area {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+#journal-modal .journal-growing-picker[open] > .plant-picker-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+#journal-modal .journal-growing-picker[open] > .plant-picker-panel > .plant-picker-topbar,
+#journal-modal .journal-growing-picker[open] > .plant-picker-panel > .plant-picker-footer {
+    flex: 0 0 auto !important;
+}
+#journal-modal .journal-growing-picker[open] > .plant-picker-panel > .plant-picker-scroll-area {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+</style>
