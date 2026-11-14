@@ -6054,24 +6054,35 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             indoor: {
                 label: 'Inside growing',
                 groups: [
-                    ['Growing space', ['Grow tent', 'Propagation tent', 'Grow room', 'Greenhouse', 'Windowsill']],
-                    ['Lighting', ['LED grow light', 'HPS grow light', 'CMH / CDM grow light', 'Fluorescent / T5 light', 'Light timer', 'Lighting contactor', 'Dimmable lighting', 'Lighting controller']],
-                    ['Air movement & extraction', ['Oscillating fan', 'Clip-on fan', 'Inline extractor fan', 'Extraction kit', 'Intake fan', 'Carbon filter', 'Ducting', 'Fan speed controller']],
-                    ['Climate control', ['Humidifier', 'Dehumidifier', 'Heater', 'Air conditioner', 'Temperature controller', 'Humidity controller', 'CO₂ system', 'Environmental controller']],
-                    ['Hydroponics & watering', ['Hydroponic system', 'Irrigation pump', 'Water pump', 'Reservoir / tank', 'Drip irrigation', 'Drippers', 'Irrigation pipe and fittings']],
-                    ['Equipment brands', ['GroWell', 'Other indoor growing brand']]
+                    ['Growing space', ['Grow tent', 'Propagation tent', 'Grow room', 'Greenhouse', 'Windowsill', 'Grow tray / propagation dome']],
+                    ['Lighting', ['LED grow light', 'HPS grow light', 'CMH / CDM grow light', 'Fluorescent / T5 light', 'Light timer', 'Lighting contactor', 'Dimmable lighting', 'Lighting controller', 'Light hanger / ratchet straps', 'Reflector / shade']],
+                    ['Air movement & extraction', ['Oscillating fan', 'Clip-on fan', 'Floor / wall fan', 'Inline extractor fan', 'Extraction kit', 'Intake fan', 'Carbon filter', 'Ducting', 'Duct clamps / connectors', 'Fan speed controller', 'Silencer']],
+                    ['Climate control', ['Humidifier', 'Dehumidifier', 'Heater', 'Air conditioner', 'Temperature controller', 'Humidity controller', 'CO₂ system', 'Environmental controller', 'Thermo-hygrometer']],
+                    ['Hydroponics & watering', ['Hydroponic system', 'NFT system', 'Deep water culture (DWC) system', 'Ebb and flow / flood & drain system', 'Drip irrigation system', 'Irrigation pump', 'Air pump', 'Water pump', 'Reservoir / tank', 'Water butt', 'Drippers', 'Micro tubing', 'Irrigation pipe and fittings', 'Water filter', 'Pressure regulator', 'Water timer', 'Nutrient doser']],
+                    ['Monitoring & grow tools', ['pH meter', 'EC / CF meter', 'pH test kit', 'Thermometer', 'Hygrometer', 'PAR / light meter', 'Water temperature meter', 'Scales', 'Pruning tools']],
+                    ['Growing media & accessories', ['Coco coir', 'Clay pebbles', 'Rockwool', 'Perlite / vermiculite', 'Propagation plugs', 'Pots / fabric pots', 'Trays / saucers', 'Plant support netting']],
+                    ['Indoor equipment brands', ['GroWell', 'Aqua Master Tools', 'Bluelab', 'Blumat', 'Hailea', 'LUMii', 'Omega', 'G.A.S', 'Systemair', 'Rhino Ventilation', 'Secret Jardin', 'Other indoor growing brand']]
                 ]
             },
             outdoor: {
                 label: 'Outside growing',
                 groups: [
-                    ['Drip & micro irrigation', ['Drip irrigation kit', 'Drip lines', 'Inline drippers', 'Adjustable drippers', 'Micro-sprinklers', 'Soaker hose']],
-                    ['Sprinklers', ['Pop-up sprinkler', 'Rotor sprinkler', 'Spray sprinkler', 'Oscillating sprinkler', 'Hose-end sprinkler']],
-                    ['Water control & automation', ['Water timer', 'Hose-faucet timer', 'Automatic irrigation controller', 'Multi-zone controller', 'Solenoid valve', 'Zone manifold', 'Wi-Fi smart controller', 'Orbit B-hyve controller', 'Rain delay / rain sensor', 'Soil-moisture sensor', 'Weather-based watering']],
-                    ['Water supply & storage', ['Irrigation pump', 'Supply pipe', 'Garden hose', 'Compression fittings', 'Rainwater collection', 'Water butt / tank', 'Mains water connection']],
-                    ['Growing area', ['Raised bed', 'In-ground bed', 'Container area', 'Polytunnel', 'Cold frame', 'Greenhouse']],
-                    ['Protection & environment', ['Shade cloth', 'Frost protection', 'Windbreak', 'Rain cover']],
-                    ['Irrigation brands', ['Hozelock', 'Gardena', 'Claber', 'Rain Bird', 'Hunter Industries', 'HydroSure', 'Antelco', 'Orbit B-hyve']]
+                    ['Drip & micro irrigation', ['Complete drip irrigation kit', 'Drip line / inline drip pipe', 'Pressure-compensating dripline', 'Drip tape / trickle tape', 'Micro irrigation tube', 'Inline drippers', 'Adjustable drippers', 'Pressure-compensating drippers', 'PCJ / button drippers', 'Tree / shrub watering drippers', 'Micro-sprayers', 'Micro-sprinklers', 'Foggers / misters', 'Soaker hose', 'End plugs / flush valves']],
+                    ['Sprinklers & watering heads', ['Pop-up spray sprinkler', 'Pop-up rotor sprinkler', 'Impact sprinkler', 'Oscillating sprinkler', 'Rotary sprinkler', 'Hose-end sprinkler', 'Shrub / border sprinkler', 'Mini sprinkler', 'Sprinkler risers / swing joints', 'Sprinkler nozzles', 'Sprinkler bases / spikes']],
+                    ['Hoses, pipes & fittings', ['Garden hose', 'Hose reel / trolley', 'Hose connectors / quick couplings', 'Tap connectors', 'Hose-end fittings', 'Supply pipe', 'LDPE irrigation pipe', 'MDPE / HDPE main pipe', 'Micro tube (4mm / 6mm)', 'Compression fittings', 'Barbed connectors', 'Threaded adaptors', 'Pipe clips / stakes', 'Repair couplings']],
+                    ['Water control & automation', ['Tap / hose-end water timer', 'Multi-outlet tap timer', 'Battery-operated irrigation controller', 'Mains-powered irrigation controller', 'Wi-Fi smart controller', 'Orbit B-hyve controller', 'Hunter Hydrawise controller', 'Rain Bird controller', 'Claber controller', 'Solenoid valve', 'Battery valve controller', 'Valve manifold', 'Valve box', 'Rain / freeze sensor', 'Soil-moisture sensor', 'Weather-based watering', 'Flow meter']],
+                    ['Water supply, filtration & storage', ['Irrigation pump', 'Booster pump', 'Submersible pump', 'Water filter', 'Disc / screen filter', 'Pressure regulator / reducer', 'Backflow preventer', 'Non-return valve', 'Water tank / storage tank', 'Water butt', 'Rainwater harvesting kit', 'Mains water connection', 'Tank connector / outlet']],
+                    ['Greenhouse & growing area', ['Raised bed', 'In-ground bed', 'Container / pot area', 'Hanging baskets', 'Polytunnel', 'Greenhouse', 'Cold frame', 'Hedge / tree irrigation', 'Lawn irrigation']],
+                    ['Protection & environment', ['Shade cloth', 'Frost protection', 'Windbreak', 'Rain cover', 'Waterproof equipment box']],
+                    ['Hozelock equipment', ['Hozelock watering kit', 'Hozelock Easy Drip kit', 'Hozelock Micro Irrigation kit', 'Hozelock automatic watering kit', 'Hozelock water timer', 'Hozelock hose / hose reel', 'Hozelock hose connectors', 'Hozelock sprinkler / spray gun', 'Hozelock pump']],
+                    ['Gardena equipment', ['Gardena Micro-Drip system', 'Gardena drip head / dripper', 'Gardena Pipeline system', 'Gardena sprinkler system', 'Gardena pop-up sprinkler', 'Gardena water timer / controller', 'Gardena hose / hose reel', 'Gardena connectors / fittings', 'Gardena pump']],
+                    ['Claber equipment', ['Claber drip irrigation kit', 'Claber water timer', 'Claber multi-outlet timer', 'Claber pop-up sprinkler system', 'Claber sprinkler', 'Claber hose / hose reel', 'Claber connectors / fittings']],
+                    ['Rain Bird equipment', ['Rain Bird dripline', 'Rain Bird drip emitter / dripper', 'Rain Bird drip irrigation kit', 'Rain Bird pop-up spray head', 'Rain Bird rotor sprinkler', 'Rain Bird hose-end sprinkler', 'Rain Bird tap timer', 'Rain Bird irrigation controller', 'Rain Bird solenoid valve', 'Rain Bird sensor']],
+                    ['Hunter Industries equipment', ['Hunter MP Rotator nozzle', 'Hunter Pro-Spray spray head', 'Hunter PGJ / PGP rotor', 'Hunter shrub sprinkler', 'Hunter dripline / emitter', 'Hunter tap timer', 'Hunter battery controller', 'Hunter Hydrawise Wi-Fi controller', 'Hunter solenoid valve', 'Hunter rain / freeze sensor', 'Hunter valve manifold']],
+                    ['HydroSure equipment', ['HydroSure drip irrigation kit', 'HydroSure dripline / pipe', 'HydroSure drippers', 'HydroSure micro-sprinkler', 'HydroSure hose / micro tube', 'HydroSure water timer', 'HydroSure filter', 'HydroSure pressure regulator', 'HydroSure fittings / connectors']],
+                    ['Antelco equipment', ['Antelco button dripper', 'Antelco adjustable dripper', 'Antelco pressure-compensating dripper', 'Antelco micro-sprayer', 'Antelco mini sprinkler', 'Antelco fogger / mister', 'Antelco manifolds', 'Antelco take-off / barbed fittings', 'Antelco stakes / accessories']],
+                    ['Orbit B-hyve equipment', ['Orbit B-hyve smart hose tap timer', 'Orbit B-hyve multi-port timer', 'Orbit B-hyve Wi-Fi hub', 'Orbit B-hyve irrigation controller', 'Orbit B-hyve sprinkler controller', 'Orbit B-hyve soil / weather accessories']],
+                    ['Other irrigation brands', ['Netafim', 'Irritec', 'NaanDanJain', 'K-Rain', 'Galcon', 'Plasson', 'GEKA']]
                 ]
             }
         };
