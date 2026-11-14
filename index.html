@@ -10816,6 +10816,63 @@ body > details.plant-growing-picker-portal[open] > .plant-picker-panel {
 })();
 </script>
 
+
+<style id="plant-growing-picker-stationary-footer-fix">
+/* The panel is a fixed frame: only the options list scrolls. */
+html body > details.plant-growing-picker-portal[open] > .plant-picker-panel,
+#plant-medium-dropdown[open] > #plant-medium-options,
+#plant-setup-dropdown[open] > #plant-setup-options {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+html body > details.plant-growing-picker-portal[open] > .plant-picker-panel > .plant-picker-topbar,
+#plant-medium-dropdown[open] > #plant-medium-options > .plant-picker-topbar,
+#plant-setup-dropdown[open] > #plant-setup-options > .plant-picker-topbar,
+html body > details.plant-growing-picker-portal[open] > .plant-picker-panel > .plant-picker-footer,
+#plant-medium-dropdown[open] > #plant-medium-options > .plant-picker-footer,
+#plant-setup-dropdown[open] > #plant-setup-options > .plant-picker-footer {
+    position: relative !important;
+    display: flex !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    z-index: 5 !important;
+    background: #FFFEF9 !important;
+}
+html body > details.plant-growing-picker-portal[open] > .plant-picker-panel > .plant-picker-scroll-area,
+#plant-medium-dropdown[open] > #plant-medium-options > .plant-picker-scroll-area,
+#plant-setup-dropdown[open] > #plant-setup-options > .plant-picker-scroll-area {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+</style>
+<script id="plant-growing-picker-preopen-portal-fix">
+(() => {
+    const ids = ['plant-medium-dropdown', 'plant-setup-dropdown'];
+    const portalBeforeNativeToggle = event => {
+        const summary = event.target.closest && event.target.closest('details#plant-medium-dropdown > summary, details#plant-setup-dropdown > summary');
+        if (!summary) return;
+        const details = summary.parentElement;
+        if (details.open || details.classList.contains('plant-growing-picker-portal')) return;
+        if (!details.__floraPickerHome) {
+            details.__floraPickerHome = { parent: details.parentNode, next: details.nextSibling };
+        }
+        details.classList.add('plant-growing-picker-portal');
+        document.body.appendChild(details);
+    };
+    document.addEventListener('click', portalBeforeNativeToggle, true);
+    ids.forEach(id => {
+        const details = document.getElementById(id);
+        if (!details || details.dataset.preopenPortalFix === 'true') return;
+        details.dataset.preopenPortalFix = 'true';
+    });
+})();
+</script>
+
 </body>
 </html>
 
