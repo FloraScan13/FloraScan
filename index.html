@@ -8354,6 +8354,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 : '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-leaf text-2xl" aria-hidden="true"></i></div>';
             // Open the journal even if an optional nutrient UI control is unavailable.
             try { toggleNutrientLibraryView(); toggleGerminationSection(); } catch (error) { console.warn('Journal controls could not be refreshed:', error); }
+            // Seed the journal's shared Add Plant pickers with the plant's current values.
+            // This prevents an update to only the medium or setup from clearing the other field.
+            if (typeof window.setJournalGrowingValues === 'function') {
+                window.setJournalGrowingValues(p.medium || '', p.setup || []);
+            }
             renderJournalLogs(p);
             document.getElementById('journal-modal').classList.remove('hidden');
             recordWeeklyOutdoorRainfall(plantLocation).catch(error => console.warn('Outdoor rainfall log skipped:', error));
@@ -10437,6 +10442,23 @@ document.addEventListener('click', function(event) {
             if (other?.value.trim()) values.push(other.value.trim());
             return [...new Set(values)];
         };
+        details._setJournalValues = rawValues => {
+            const values = (Array.isArray(rawValues) ? rawValues : String(rawValues || '').split(/\\s*[·,]\\s*/))
+                .map(value => String(value || '').trim()).filter(Boolean);
+            const customValues = [];
+            details.querySelectorAll('input[name="' + checkboxName + '"]').forEach(input => {
+                if (input.value === 'Other') {
+                    input.checked = values.some(value => !Array.from(details.querySelectorAll('input[name="' + checkboxName + '"]')).some(option => option.value !== 'Other' && option.value.toLocaleLowerCase() === value.toLocaleLowerCase()));
+                } else {
+                    input.checked = values.some(value => value.toLocaleLowerCase() === input.value.toLocaleLowerCase());
+                }
+            });
+            const known = Array.from(details.querySelectorAll('input[name="' + checkboxName + '"]'))
+                .filter(input => input.value !== 'Other').map(input => input.value.toLocaleLowerCase());
+            values.forEach(value => { if (!known.includes(value.toLocaleLowerCase())) customValues.push(value); });
+            if (other) other.value = customValues.join(', ');
+            updateLabel();
+        };
         updateLabel();
         return details;
     }
@@ -10448,6 +10470,10 @@ document.addEventListener('click', function(event) {
         const setup = buildJournalPicker('plant-setup-dropdown', 'journal-setup-picker', 'Growing setup', 'journal-setup-option');
         window.getJournalMediumValues = () => medium?._journalValues() || [];
         window.getJournalSetupValues = () => setup?._journalValues() || [];
+        window.setJournalGrowingValues = (mediumValues, setupValues) => {
+            medium?._setJournalValues(mediumValues);
+            setup?._setJournalValues(setupValues);
+        };
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
     else init();
