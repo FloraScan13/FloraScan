@@ -7554,11 +7554,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const initialMedium = String(plantData.medium || '').trim();
                 const initialSetup = (Array.isArray(plantData.setup) ? plantData.setup : (plantData.setup ? [plantData.setup] : [])).map(value => String(value).trim()).filter(Boolean).join(', ');
                 if (initialMedium || initialSetup) {
+                    const initialHeatedTemperature = initialSetup.split(',').map(value => value.trim()).includes('Heated propagator')
+                        ? plantData.heatedPropagatorTemperatureC
+                        : null;
                     initialMediumLog = {
                         id: 'log_' + (Date.now() + 1),
                         date: plantData.date || localToday,
                         type: 'Medium',
-                        text: 'Initial growing medium: ' + (initialMedium || 'Not specified') + (initialSetup ? ' · Growing setup: ' + initialSetup : '')
+                        heatedPropagatorTemperatureC: initialHeatedTemperature ?? null,
+                        text: 'Initial growing medium: ' + (initialMedium || 'Not specified') +
+                            (initialSetup ? ' · Growing setup: ' + initialSetup : '') +
+                            (initialHeatedTemperature !== null && initialHeatedTemperature !== undefined && initialHeatedTemperature !== ''
+                                ? ' · Heated propagator set temperature: ' + initialHeatedTemperature + ' °C'
+                                : '')
                     };
                     plantData.logs.unshift(initialMediumLog);
                 }
