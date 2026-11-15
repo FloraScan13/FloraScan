@@ -9111,7 +9111,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             '@media print{.entry,.equipment-group{break-inside:avoid-page}.details,.cover,.location-description{-webkit-print-color-adjust:economy;print-color-adjust:economy}}' +
             '</style></head><body><main class="page-preview">' +
             '<div class="masthead"><span class="masthead-mark">FLORA SCAN</span><span class="masthead-title">Plant journal</span></div>' +
-            '<header class="cover"><div><p class="eyebrow">Plant journal</p><h1>' + title + '</h1><p class="variety">' + variety + '</p></div>' + photo + '</header>' +
+            '<header class="cover"><div><h1>' + title + '</h1><p class="variety">' + variety + '</p></div>' + photo + '</header>' +
             '<section><div class="section-heading"><h2>Plant profile</h2><span class="section-kicker">Growing details</span></div><div class="details">' + summary + '</div></section>' +
             locationSetupHTML +
             '<section><div class="section-heading"><h2>Growth journal</h2><span class="section-kicker">' + logs.length + ' ' + (logs.length === 1 ? 'entry' : 'entries') + '</span></div>' + entriesHTML + '</section>' +
