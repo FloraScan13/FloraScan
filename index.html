@@ -10648,6 +10648,35 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         }
       }
     </style>
+    <style id="mobile-location-pill-layout">
+        /* Let location filter pills wrap into tidy rows on narrow screens. */
+        @media (max-width: 640px) {
+            #plants-location-control,
+            #plants-location-control > div {
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+            #plant-location-tabs {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
+                overflow-x: visible !important;
+                overflow-y: visible !important;
+                white-space: normal !important;
+                gap: 8px !important;
+                padding: 4px 0 !important;
+            }
+            #plant-location-tabs .location-filter-tab {
+                flex: 0 1 auto !important;
+                max-width: 100% !important;
+                white-space: normal !important;
+                overflow-wrap: anywhere !important;
+                text-align: center !important;
+            }
+        }
+    </style>
+
     <style id="journal-germination-box-palette">
         /* Match the germination panel to the other soft-rose boxes in the Plant Journal. */
         #journal-modal #germination-section {
