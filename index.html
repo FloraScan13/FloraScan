@@ -6840,8 +6840,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const selectedEquipmentLabels = selectedLocationEquipment
                     .map(item => locationEquipmentNames[item] || item.split('::').slice(1).join('::'))
                     .filter(label => Boolean(label) && String(label).trim().toLowerCase() !== 'thermometer')
-                    // Place longer labels first so the flexible pill rows pack more neatly.
-                    .sort((a, b) => String(b).trim().length - String(a).trim().length);
+                    // Put shorter labels first so more pills can share each mobile row.
+                    .sort((a, b) => String(a).trim().length - String(b).trim().length);
                 return `
                     <section class="location-group col-span-full min-w-0 mb-3 p-3 sm:p-4" style="background-color: transparent !important; background-image: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;">
                         <div class="location-group-toolbar flex items-center justify-between gap-2 mb-3">
@@ -10664,7 +10664,7 @@ e>
                 flex-direction: row !important;
                 flex-wrap: wrap !important;
                 align-items: center !important;
-                justify-content: flex-start !important;
+                justify-content: space-between !important;
                 gap: 8px !important;
                 width: 100% !important;
                 min-width: 0 !important;
