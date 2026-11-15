@@ -7799,10 +7799,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             host.innerHTML = data.states.map(state => {
                 const remaining = Math.max(0, state.germinated - state.thinned);
                 const seedLimit = Math.max(0, Number(plant.seedsPerPot) - state.germinated);
-                return '<div class="rounded-lg border border-emerald-200 bg-white p-2.5 space-y-2">' +
-                    '<div class="flex items-center justify-between gap-2"><strong class="text-sm text-emerald-900">' + escapeHtml(data.label) + ' ' + state.index + '</strong><span class="text-[11px] text-emerald-700">Germinated ' + state.germinated + ' · Thinned ' + state.thinned + ' · Remaining ' + remaining + '</span></div>' +
-                    '<div class="grid grid-cols-2 gap-2"><label class="text-[11px] font-semibold text-slate-600">Newly germinated<input data-ms-germ="' + state.index + '" type="number" min="0" max="' + seedLimit + '" step="1" inputmode="numeric" placeholder="0" class="mt-1 w-full px-2.5 py-2 rounded-lg border border-emerald-200 text-sm"></label>' +
-                    '<label class="text-[11px] font-semibold text-slate-600">Thinned out<input data-ms-thin="' + state.index + '" type="number" min="0" max="' + remaining + '" step="1" inputmode="numeric" placeholder="0" class="mt-1 w-full px-2.5 py-2 rounded-lg border border-emerald-200 text-sm"></label></div></div>';
+                return '<details class="group rounded-lg border border-emerald-200 bg-white px-3 py-2">' +
+                    '<summary class="flex cursor-pointer list-none items-center justify-between gap-2 min-h-8">' +
+                    '<span class="flex items-center gap-2 min-w-0"><strong class="text-xs font-semibold text-emerald-900">' + escapeHtml(data.label) + ' ' + state.index + '</strong>' +
+                    '<span class="text-[10px] text-slate-500 truncate">Germinated ' + state.germinated + ' · Thinned ' + state.thinned + ' · Remaining ' + remaining + '</span></span>' +
+                    '<i class="fa-solid fa-chevron-down text-[10px] text-emerald-700 transition-transform group-open:rotate-180" aria-hidden="true"></i></summary>' +
+                    '<div class="grid grid-cols-2 gap-2 pt-2 mt-2 border-t border-emerald-100">' +
+                    '<label class="text-[11px] font-semibold text-slate-600">Newly germinated<input data-ms-germ="' + state.index + '" type="number" min="0" max="' + seedLimit + '" step="1" inputmode="numeric" placeholder="0" class="mt-1 w-full px-2.5 py-2 rounded-lg border border-emerald-200 text-sm"></label>' +
+                    '<label class="text-[11px] font-semibold text-slate-600">Thinned out<input data-ms-thin="' + state.index + '" type="number" min="0" max="' + remaining + '" step="1" inputmode="numeric" placeholder="0" class="mt-1 w-full px-2.5 py-2 rounded-lg border border-emerald-200 text-sm"></label></div></details>';
             }).join('');
         }
 
