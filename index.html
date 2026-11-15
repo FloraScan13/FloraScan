@@ -8555,6 +8555,47 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
+        function getLatestJournalMediumSetup(plant) {
+            const logs = Array.isArray(plant?.logs) ? plant.logs : [];
+            const parseDate = value => {
+                if (!value) return 0;
+                const raw = String(value).trim();
+                let match = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+                if (match) return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+                match = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+                if (match) return Date.UTC(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+                const parsed = Date.parse(raw);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            };
+            const mediumEntries = logs.map((log, index) => ({ log, index, timestamp: parseDate(log.date) }))
+                .filter(item => String(item.log.type || '').toLowerCase() === 'medium')
+                .sort((a, b) => b.timestamp - a.timestamp || b.index - a.index);
+            for (const { log } of mediumEntries) {
+                const text = String(log.text || '');
+                const match = text.match(/\(Growing medium changed from [\s\S]*? to ([\s\S]*?); setup changed from [\s\S]*? to ([\s\S]*?)\.\)/i);
+                const medium = String(log.growthMedium || (match ? match[1] : '')).trim();
+                const setup = match ? match[2].trim() : '';
+                if (medium || setup) {
+                    return {
+                        medium: medium || (plant.medium || 'Not specified'),
+                        setup: setup || (Array.isArray(plant.setup) ? plant.setup.join(', ') : (plant.setup || 'Not specified'))
+                    };
+                }
+            }
+            return {
+                medium: plant.medium || 'Not specified',
+                setup: Array.isArray(plant.setup) ? plant.setup.join(', ') : (plant.setup || 'Not specified')
+            };
+        }
+
+        function updateJournalMediumSetupHeader(plant) {
+            const latest = getLatestJournalMediumSetup(plant);
+            const medium = document.getElementById('journal-medium');
+            const setup = document.getElementById('journal-setup');
+            if (medium) medium.textContent = latest.medium || 'Not specified';
+            if (setup) setup.textContent = latest.setup || 'Not specified';
+        }
+
         function openJournalModal(id) {
             const p = plants.find(item => item.id === id);
             if (!p) return;
@@ -8645,9 +8686,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             }
             document.getElementById('journal-date').textContent = p.date || 'Not specified';
-            document.getElementById('journal-medium').textContent = p.medium || 'Not specified';
-            document.getElementById('journal-setup').textContent = (Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : [])).join(', ') || 'Not specified';
-            document.getElementById('journal-setup').textContent = (Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : [])).join(', ') || 'Not specified';
+            updateJournalMediumSetupHeader(p);
             const tagTypeRow = document.getElementById('journal-tag-type-row');
             const tagTypeLabel = document.getElementById('journal-tag-type');
             const linkedTagType = String(p.qrCodeValue || '').trim() ? 'QR code' : (p.nfcTagLinked ? 'NFC' : '');
@@ -10178,8 +10217,7 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                 const reminderSaved = await saveFeedReminder(plant, existingLog);
                 localStorage.setItem('flora_plants', JSON.stringify(plants));
                 renderJournalLogs(plant);
-                document.getElementById('journal-medium').textContent = plant.medium || 'Not specified';
-                document.getElementById('journal-setup').textContent = (Array.isArray(plant.setup) ? plant.setup : (plant.setup ? [plant.setup] : [])).join(', ') || 'Not specified';
+                updateJournalMediumSetupHeader(plant);
                 renderPlants();
                 cancelJournalLogEdit();
                 if (supabaseClient && currentUser && navigator.onLine && (synced === false || plantSynced === false)) {
@@ -10377,7 +10415,7 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
             if (type === 'Feed') await saveFeedReminder(p, newLog);
 
             renderJournalLogs(p);
-            document.getElementById('journal-medium').textContent = p.medium || 'Not specified';
+            updateJournalMediumSetupHeader(p);
             renderPlants();
             document.getElementById('log-text').value = '';
             document.getElementById('journal-photo-input').value = '';
