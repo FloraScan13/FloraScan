@@ -7565,7 +7565,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         text: 'Initial growing medium: ' + (initialMedium || 'Not specified') +
                             (initialSetup ? ' · Growing setup: ' + initialSetup : '') +
                             (initialHeatedTemperature !== null && initialHeatedTemperature !== undefined && initialHeatedTemperature !== ''
-                                ? ' · Heated propagator set temperature: ' + initialHeatedTemperature + ' °C'
+                                ? ' · Set temperature: ' + initialHeatedTemperature + ' °C'
                                 : '')
                     };
                     plantData.logs.unshift(initialMediumLog);
