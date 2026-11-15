@@ -6368,75 +6368,147 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                     </div>
                 </div>`;
-            // GroWell-inspired equipment autocomplete. Suggestions are curated from the
-            // public GroWell catalogue and remain editable as free text.
-            const growellEquipmentSuggestions = [
-                // GroWell catalogue categories
-                'LED Grow Lights',
-                'HPS Grow Lights',
-                'CDM Grow Lights',
-                'Propagation Grow Lights',
-                'Grow Lamps',
-                'Reflectors',
-                'Ballasts',
-                'Timers & Contactors',
-                'Grow Light Controllers',
-                'Grow Tents',
-                'Grow Tent Kits',
-                'Propagation Grow Tents',
-                'Nutrients',
-                'Propagation Nutrients & Boosters',
-                'Organic Nutrients',
-                'Coco / Coir',
-                'Soil',
-                'Rockwool',
-                'Hydroponic Media',
-                'Rooting Media',
-                'Pots, Trays & Stands',
-                'Irrigation Pipes',
-                'Irrigation Pumps',
-                'Irrigation Components',
-                'Drippers',
-                'Air Pumps and Aeration',
-                'Tanks & Reservoirs',
-                'Extraction Kits',
-                'Extractor Fans',
-                'Carbon Filters',
-                'Air Movement Fans',
-                'Fan Controllers',
-                'Humidity',
-                'CO2',
-                'Grow Room Temperature',
-                'Air Conditioning',
-                'Ducting & Accessories',
-                'Propagators',
-                'Seeds',
-                'Measuring Tools',
-                'Plant Supports',
-                // Products shown on the GroWell homepage
-                '6 Inch Clip-on Fans',
-                'SHOGUN Silicon',
-                'Exhale CO2 Bag',
-                'TNB The Enhancer CO2 Dispersal Canister',
-                'Thrips Predators',
-                'Vortex 16" Oscillating Pedestal Fan (3 Speed)',
-                'Disposable Cloning Scalpels',
-                'Nutrient Measuring Syringes & Pipettes',
-                'Measuring Jugs and Cups',
-                'Grow Gadgets Temperature & Humidity Meter',
-                'Lighthouse Wireless Thermostat'
-            ];
+            // Product suggestions are selected from the GroWell product catalogue
+            // according to the equipment checkbox in the same row.
+            const growellProductsByCategory = {
+                lighting: [
+                    'Omega 3.0 Infinity Pro LED Grow Light - 600W',
+                    'Omega Black LED Grow Light - 720W',
+                    'Omega Spectra G Line Quantum LED Grow Light - 100W',
+                    'Lumatek ATS Pro LED Grow Light',
+                    'Sylvania Grolux Lamps',
+                    'Omega 18W or 9W Clone LED Grow Lights (Twin Pack)',
+                    'Heavy Duty Lighting Timer and Contactor'
+                ],
+                propagation: [
+                    'GroWell Clone & Seed Propagation Kit',
+                    'BAY6 Mini Propagation Tent',
+                    'BAY6 Dual Purpose 130 Propagation Tent',
+                    'Grow Tools Budget Propagator',
+                    'SHOGUN Start',
+                    'Clonex Rooting Gel',
+                    'Root Riot Cubes',
+                    'Grodan Rockwool Cubes',
+                    'Eazy Plug Propagation Cubes',
+                    'Disposable Cloning Scalpels',
+                    'Omega 18W or 9W Clone LED Grow Lights (Twin Pack)'
+                ],
+                nutrients: [
+                    'SHOGUN Samurai Coco Nutrients',
+                    'SHOGUN Samurai Terra Nutrients',
+                    'SHOGUN Samurai Hydroponics Nutrients',
+                    'Biobizz Bio Grow & Bloom',
+                    'Biobizz Starter Pack',
+                    'Canna Rhizotonic',
+                    'SHOGUN Start',
+                    'Clonex Rooting Gel'
+                ],
+                media: [
+                    'Tropic 100% Coco Pro - 50 Litre',
+                    'Tropic 70/30 Coco Mix - 50 Litre',
+                    'Plagron Cocos Premium Growing Media - 50 Litre',
+                    'Canna Coco Professional Plus Growing Medium - 50 Litres',
+                    'Ecothrive Coco Pro - 50 Litres',
+                    'Tropic Light Mix - 50 Litre',
+                    'Tropic All Mix - 50 Litre',
+                    'Biobizz All-Mix Soil',
+                    'Biobizz Light Mix Soil',
+                    'Gold Label HydroCorn Clay Pebbles - 45 Litre',
+                    'Grodan Rockwool Cubes',
+                    'Eazy Plug Propagation Cubes'
+                ],
+                tents: [
+                    'BAY6 Mini Propagation Tent',
+                    'BAY6 Dual Purpose 130 Propagation Tent',
+                    'BAY6 Dual Purpose 160 Propagation Tent',
+                    'BAY6 1m x 1m x 2m Grow Tent',
+                    'BAY6 XL Grow Tent',
+                    'BudBox Pro Grow Tent',
+                    'BAY6 Multi-Chamber Propagation Tent',
+                    'Omega Black 720W LED 1.2m x 1.2m Complete Kit'
+                ],
+                climate: [
+                    'Mammoth TT Twin Speed Inline Fans',
+                    'Mammoth Juiced EC Fans',
+                    'Systemair RVK Extractor Fans',
+                    'Phresh HyperFan Silenced EC Fans',
+                    'Vortex 6 Inch Clip-on Fans',
+                    'Vortex 16 Inch Oscillating Pedestal Fan',
+                    'Grow Gadgets Temperature & Humidity Meter',
+                    'Lighthouse Wireless Thermostat',
+                    'Exhale CO2 Bag',
+                    'TNB The Enhancer CO2 Dispersal Canister'
+                ],
+                irrigation: [
+                    'AutoPot Easy2Grow Irrigation System',
+                    'Automatic Drip Irrigation Kit',
+                    'ALIEN EasyFeed Pipe',
+                    '4mm Barbed Irrigation Fittings',
+                    'Submersible Water Pump',
+                    'Water Reservoir / Tank',
+                    'Tap-Mounted Water Timer',
+                    'Inline Irrigation Filter',
+                    'Drip Rings and Drippers'
+                ],
+                tools: [
+                    'Grow Gadgets Temperature & Humidity Meter',
+                    'Nutrient Measuring Syringes & Pipettes',
+                    'Measuring Jugs and Cups',
+                    'Bluelab pH Pen',
+                    'Bluelab Truncheon EC Meter',
+                    'Digital Scales',
+                    'Disposable Cloning Scalpels'
+                ],
+                plantHealth: [
+                    'Thrips Predators',
+                    'SHOGUN Silicon',
+                    'Clonex Rooting Gel',
+                    'Canna Rhizotonic'
+                ],
+                general: [
+                    'Grow Tools Plant Support Canes',
+                    'Twist Tie and Cutter',
+                    'Nutrient Measuring Syringes & Pipettes',
+                    'Grow Gadgets Temperature & Humidity Meter'
+                ]
+            };
+            function getGrowellCategories(section, option) {
+                const text = (section + ' ' + option).toLowerCase();
+                const categories = [];
+                const add = (category) => { if (!categories.includes(category)) categories.push(category); };
+                if (/light|lamp|reflector|ballast|led driver|par meter/.test(text)) add('lighting');
+                if (/propagat|seed|clon|rooting|scalpel/.test(text)) add('propagation');
+                if (/nutrient|feed|booster|syringe|pipette/.test(text)) add('nutrients');
+                if (/medium|substrate|coco|coir|soil|rockwool|clay pebble|root riot|eazy plug/.test(text)) add('media');
+                if (/tent|grow space|sheeting|frame|tray|grow room/.test(text)) add('tents');
+                if (/extract|fan|carbon filter|duct|humid|dehumid|air condition|heater|thermostat|temperature|humidity|co2|climate/.test(text)) add('climate');
+                if (/irrigat|drip|water|pump|sprinkler|hose|pipe|tap|reservoir|tank|valve|dripper|misting/.test(text)) add('irrigation');
+                if (/meter|monitor|measur|scale|sensor|ph |ph\/| ec |ec meter|calibration/.test(text)) add('tools');
+                if (/pest|predator|plant health|silicon|vitality|insect/.test(text)) add('plantHealth');
+                if (!categories.length) add('general');
+                return categories;
+            }
             const growellSuggestionList = document.createElement('datalist');
             growellSuggestionList.id = 'growell-equipment-suggestions';
-            growellEquipmentSuggestions.forEach(suggestion => {
-                const option = document.createElement('option');
-                option.value = suggestion;
-                growellSuggestionList.appendChild(option);
-            });
             modal.appendChild(growellSuggestionList);
+            function updateGrowellSuggestions(input) {
+                const row = input.closest('.location-equipment-row');
+                const checkbox = row && row.querySelector('.location-equipment-option');
+                growellSuggestionList.replaceChildren();
+                if (!checkbox || !checkbox.checked) return;
+                const categories = getGrowellCategories(checkbox.dataset.section || '', checkbox.dataset.option || '');
+                const suggestions = [...new Set(categories.flatMap(category => growellProductsByCategory[category] || []))];
+                suggestions.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product;
+                    growellSuggestionList.appendChild(option);
+                });
+            }
             modal.querySelectorAll('.location-equipment-name').forEach(input => {
                 input.setAttribute('list', growellSuggestionList.id);
                 input.setAttribute('autocomplete', 'off');
+                input.addEventListener('focus', () => updateGrowellSuggestions(input));
+                input.addEventListener('click', () => updateGrowellSuggestions(input));
             });
 
             modal.addEventListener('change', event => {
@@ -6447,6 +6519,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (checkbox.checked) {
                     draftInsideSelections.add(key);
                     nameInput.hidden = false;
+                    updateGrowellSuggestions(nameInput);
                     nameInput.focus();
                 } else {
                     draftInsideSelections.delete(key);
