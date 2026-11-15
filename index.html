@@ -3562,7 +3562,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
 
                         <div id="germination-section" class="hidden p-3 rounded-xl border border-emerald-200 bg-emerald-50/70 space-y-2">
-                            <div id="seed-germination-controls"><div id="multisow-container-tracking" class="hidden space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3"><p class="text-xs font-semibold text-emerald-800">Record new germination and thinning separately for each numbered container.</p><div id="multisow-container-rows" class="space-y-2"></div></div>
+                            <div id="seed-germination-controls"><div id="multisow-container-tracking" class="hidden space-y-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 p-3"><p class="text-xs font-semibold text-emerald-800">Record new germination and thinning separately for each numbered container.</p><div id="multisow-container-rows" class="space-y-2"></div></div>
                             <label for="log-germinated-amount" class="block text-xs font-semibold text-emerald-800">Seeds germinated</label>
                             <input type="number" id="log-germinated-amount" oninput="toggleGerminationSection()" min="1" step="1" inputmode="numeric" placeholder="Additional seeds germinated." class="w-full px-3 py-2 rounded-xl bg-white border border-emerald-200 text-sm">
                             <p class="text-[11px] text-emerald-700">Enter only the additional seeds that have germinated since your last update. Each entry adds to your plant total and reduces the seeds remaining.</p>
@@ -7802,13 +7802,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const seedsLeftToGerminate = Math.max(0, Number(plant.seedsPerPot) - state.germinated);
                 const seedLimit = seedsLeftToGerminate;
                 const germinationField = seedLimit > 0
-                    ? '<label class="text-[9px] font-semibold leading-3 text-emerald-800">Germinated<input aria-label="Newly germinated in ' + escapeHtml(data.label) + ' ' + state.index + '" data-ms-germ="' + state.index + '" type="number" min="0" max="' + seedLimit + '" step="1" inputmode="numeric" placeholder="0" class="mt-0.5 w-full rounded-md border border-emerald-300 bg-white px-1.5 py-1 text-xs text-emerald-950"></label>'
+                    ? '<label class="text-[9px] font-semibold leading-3 text-emerald-800">Germinated<input aria-label="Newly germinated in ' + escapeHtml(data.label) + ' ' + state.index + '" data-ms-germ="' + state.index + '" type="number" min="0" max="' + seedLimit + '" step="1" inputmode="numeric" placeholder="0" class="mt-0.5 w-full rounded-md border border-emerald-500 bg-white px-1.5 py-1 text-xs text-emerald-950"></label>'
                     : '<span class="text-[9px] font-medium text-emerald-700 text-center">Complete</span>';
-                return '<div class="grid grid-cols-[minmax(0,1fr)_4.25rem_4.25rem] items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-100/70 px-2 py-2">' +
+                return '<div class="grid grid-cols-[minmax(0,1fr)_4.25rem_4.25rem] items-center gap-2 rounded-lg border border-emerald-500 bg-emerald-100 px-2 py-2">' +
                     '<div class="min-w-0"><strong class="block truncate text-xs font-semibold text-emerald-900">' + escapeHtml(data.label) + ' ' + state.index + '</strong>' +
                     '<span class="block truncate text-[9px] leading-3 text-emerald-800">Seedlings ' + remaining + (seedsLeftToGerminate > 0 ? ' · Left to germinate ' + seedsLeftToGerminate : '') + '</span></div>' +
                     germinationField +
-                    '<label class="text-[9px] font-semibold leading-3 text-emerald-800">Removed<input aria-label="Removed from ' + escapeHtml(data.label) + ' ' + state.index + '" data-ms-thin="' + state.index + '" type="number" min="0" max="' + remaining + '" step="1" inputmode="numeric" placeholder="0" class="mt-0.5 w-full rounded-md border border-emerald-300 bg-white px-1.5 py-1 text-xs text-emerald-950"></label></div>';
+                    '<label class="text-[9px] font-semibold leading-3 text-emerald-800">Removed<input aria-label="Removed from ' + escapeHtml(data.label) + ' ' + state.index + '" data-ms-thin="' + state.index + '" type="number" min="0" max="' + remaining + '" step="1" inputmode="numeric" placeholder="0" class="mt-0.5 w-full rounded-md border border-emerald-500 bg-white px-1.5 py-1 text-xs text-emerald-950"></label></div>';
             }).join('');
         }
 
