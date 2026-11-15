@@ -3188,11 +3188,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     <input type="number" id="plant-multisow-pots" min="1" step="1" value="1" required inputmode="numeric" onchange="updateMultisowTotal()" oninput="updateMultisowTotal()" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 6">
                                 </div>
                                 <div>
-                                    <label id="plant-multisow-seeds-label" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-seeds-per-pot">Seeds per pot</label>
+                                    <label id="plant-multisow-seeds-label" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400" for="plant-multisow-seeds-per-pot">Seeds per Pot</label>
                                     <input type="number" id="plant-multisow-seeds-per-pot" min="1" step="1" value="2" required inputmode="numeric" onchange="updateMultisowTotal()" oninput="updateMultisowTotal()" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="e.g. 4">
                                 </div>
                             </div>
-                            <p id="plant-multisow-help" class="text-[11px] text-slate-500 mt-1">Total seeds sown is calculated automatically: number of pots × seeds per pot.</p>
+                            <p id="plant-multisow-help" class="text-[11px] text-slate-500 mt-1">Total seeds sown is calculated automatically: number of Pots × seeds per Pot.</p>
                         </div>
                     </div>
                     <div>
@@ -3248,16 +3248,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                      <input type="search" class="plant-picker-search w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100" placeholder="Search growing setups..." aria-label="Search growing setups" autocomplete="off">
                                     <button type="button" class="plant-picker-close" aria-label="Close growing setup options" onclick="this.closest('details').open=false"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                                     <fieldset><legend class="text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">Pots, containers and fabric planters</legend><div class="flex flex-col gap-2">
-                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Standard round pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Standard round pot</span></label>
-                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Square pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Square pot</span></label>
+                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Standard round pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Standard round Pot</span></label>
+                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Square pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Square Pot</span></label>
                                         <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Woolpot / wool planter" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Woolpot / wool planter</span></label>
-                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Fabric pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Fabric pot</span></label>
-                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Air pot / air-pruning pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Air pot / air-pruning pot</span></label>
-                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Root-training pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Root-training pot</span></label>
+                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Fabric pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Fabric Pot</span></label>
+                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Air pot / air-pruning pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Air Pot / air-pruning Pot</span></label>
+                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Root-training pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Root-training Pot</span></label>
                                         <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Living-soil bed / fabric bed" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Living-soil bed / fabric bed</span></label>
-                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Container / pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Container / pot</span></label>
+                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Container / pot" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Container / Pot</span></label>
                                         <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Seed tray" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Seed tray</span></label>
-                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Cell tray / plug tray" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Cell tray / plug tray</span></label>
+                                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Cell tray / plug tray" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Cell tray / Plug tray</span></label>
                                         <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Propagator (unheated)" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Propagator (unheated)</span></label>
                                         <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"><input type="checkbox" name="plant-setup-option" value="Heated propagator" class="h-4 w-4 shrink-0 accent-emerald-600"><span>Heated propagator</span></label>
                                         <div class="ml-6"><div id="plant-heated-propagator-temperature-field" class="hidden mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FFFEF9] dark:bg-slate-900 p-3 space-y-1.5">
@@ -3450,7 +3450,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                             <button type="button" onclick="document.getElementById('journal-amount-editor').classList.add('hidden')" class="px-3 py-2 rounded-lg text-xs font-semibold border border-pink-200 bg-white text-slate-700 ">Cancel</button>
                                         </div>
                                         <p id="journal-multisow-summary" class="hidden text-[11px]" style="color:#9b6478;"></p>
-                                        <p class="text-[11px]" style="color:#9b6478;">Update how many plants, seeds, or cuttings this journal tracks. Multisown seed totals are calculated from pots / plugs × seeds per pot / plug.</p>
+                                        <p class="text-[11px]" style="color:#9b6478;">Update how many plants, seeds, or cuttings this journal tracks. Multisown seed totals are calculated from Pots / Plugs × seeds per Pot / Plug.</p>
                                     </div>
                                 </div>
                                 <div id="journal-plant-details-editor" class="hidden mt-3 space-y-2">
@@ -6772,7 +6772,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 </div>
                                 <p class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate">${escapeHtml(p.variety || 'Standard Variety')}</p>
                                 <p class="text-xs font-semibold mt-1" style="color:#a63d65;">${p.quantityType === 'seeds' ? (Number(p.quantity || 1) + ' seeds sown') : (Number(p.quantity || 1) + ' ' + (p.quantityType === 'cuttings' ? (Number(p.quantity || 1) === 1 ? 'cutting' : 'cuttings') : (Number(p.quantity || 1) === 1 ? 'plant' : 'plants')))}${Number(p.remainingSeeds) > 0 ? ' · ' + Number(p.remainingSeeds) + ' seeds left' : ''}${Number(p.remainingCuttings || (p.quantityType === 'cuttings' ? p.quantity : 0)) > 0 && p.quantityType !== 'cuttings' ? ' · ' + Number(p.remainingCuttings) + ' cuttings left' : ''}</p>
-                                ${p.multisow ? '<p class="plant-multisow-card-detail text-xs font-semibold mt-1" style="color:#526653;">' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType === 'plugs' ? 'plugs' : 'pots') + ' · ' + Number(p.seedsPerPot || 0) + ' seeds per ' + (p.multisowContainerType === 'plugs' ? 'plug' : 'pot') + '</p>' : ''}
+                                ${p.multisow ? '<p class="plant-multisow-card-detail text-xs font-semibold mt-1" style="color:#526653;">' + Number(p.multisowPots || 0) + ' ' + (p.multisowContainerType === 'plugs' ? 'plugs' : 'pots') + ' · ' + Number(p.seedsPerPot || 0) + ' seeds per ' + (p.multisowContainerType === 'plugs' ? 'Plug' : 'Pot') + '</p>' : ''}
                             </div>
                             <div class="plant-feed-reminder-indicator ml-auto flex flex-col items-end justify-center gap-1 min-w-0 flex-shrink-0">
                                 ${feedReminderMarkup}
@@ -7083,7 +7083,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function updateMultisowLabels() {
             const typeSelect = document.getElementById('plant-multisow-container-type');
-            const type = typeSelect && typeSelect.value === 'plugs' ? 'plug' : 'pot';
+            const type = typeSelect && typeSelect.value === 'plugs' ? 'Plug' : 'Pot';
             const plural = type + 's';
             const countLabel = document.getElementById('plant-multisow-count-label');
             const seedsLabel = document.getElementById('plant-multisow-seeds-label');
