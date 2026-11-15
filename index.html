@@ -9147,6 +9147,26 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
 }
 </style>
 
+
+<style id="list-view-show-setup-only">
+/* In list view, retain only the setup line in the plant details column. */
+#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p {
+    display: none !important;
+}
+#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p:nth-of-type(3) {
+    display: block !important;
+    margin-top: 0 !important;
+    white-space: normal !important;
+}
+#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > span {
+    display: none !important;
+}
+</style>
 </body>
 
 </html>`);
