@@ -9322,6 +9322,16 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
             const container = document.getElementById('journal-logs-container');
             const usage = getJournalUsageTotals(p);
             const rainfall = getJournalCumulativeRainfall(p);
+            const journalSetups = Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : []);
+            const journalHasHeatedPropagator = journalSetups.includes('Heated propagator');
+            const journalSetupSummary = (p.medium || journalSetups.length || (journalHasHeatedPropagator && p.heatedPropagatorTemperatureC !== null && p.heatedPropagatorTemperatureC !== undefined))
+                ? `<div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-[#FFFEF9] dark:bg-slate-900 p-3 mb-3">
+                    <div class="text-[10px] uppercase tracking-wide font-bold text-slate-600 dark:text-slate-400 mb-2">Growing medium &amp; setup</div>
+                    ${p.medium ? '<div class="text-xs text-slate-700 dark:text-slate-300"><span class="font-semibold">Medium:</span> ' + escapeHtml(Array.isArray(p.medium) ? p.medium.join(' · ') : p.medium) + '</div>' : ''}
+                    ${journalSetups.length ? '<div class="text-xs text-slate-700 dark:text-slate-300 mt-1"><span class="font-semibold">Setup:</span> ' + escapeHtml(journalSetups.join(', ')) + '</div>' : ''}
+                    ${journalHasHeatedPropagator && p.heatedPropagatorTemperatureC !== null && p.heatedPropagatorTemperatureC !== undefined && p.heatedPropagatorTemperatureC !== '' ? '<div class="text-xs text-slate-700 dark:text-slate-300 mt-1"><span class="font-semibold">Heated propagator set temperature:</span> ' + escapeHtml(String(p.heatedPropagatorTemperatureC)) + ' °C</div>' : ''}
+                </div>`
+                : '';
             const usageSummary = `
                 <div class="grid grid-cols-2 gap-2 mb-3">
                     <div class="rounded-xl border border-[#e8a7bd] dark:border-rose-900 bg-[#fff0f4] dark:bg-rose-950/30 p-3">
@@ -9337,7 +9347,7 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                     </div>
                 </div>`;
             if (!p.logs || p.logs.length === 0) {
-                container.innerHTML = usageSummary + `<p class="text-xs text-slate-400 italic py-3 text-center">No growth logs recorded yet. Add your first update above!</p>`;
+                container.innerHTML = journalSetupSummary + usageSummary + `<p class="text-xs text-slate-400 italic py-3 text-center">No growth logs recorded yet. Add your first update above!</p>`;
                 return;
             }
 
@@ -9385,7 +9395,7 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                     if (a.sortDate !== null && b.sortDate === null) return -1;
                     return (b.sortDate ?? 0) - (a.sortDate ?? 0) || a.originalIndex - b.originalIndex;
                 });
-            container.innerHTML = usageSummary + timelineLogs.map(({ log, originalIndex }, timelineIndex) => `
+            container.innerHTML = journalSetupSummary + usageSummary + timelineLogs.map(({ log, originalIndex }, timelineIndex) => `
                 ${timelineIndex === 0 || String(timelineLogs[timelineIndex - 1].log.growthStage || '').trim() !== String(log.growthStage || '').trim()
                     ? '<div class="pt-4 pb-2 first:pt-0"><h4 class="text-sm font-bold tracking-wide text-emerald-800 dark:text-emerald-300 border-b border-emerald-200 dark:border-emerald-900 pb-2">' + escapeHtml(String(log.growthStage || '').trim() || 'Other updates') + '</h4></div>'
                     : ''}
