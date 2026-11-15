@@ -10658,9 +10658,9 @@ e>
                 min-width: 0 !important;
             }
             #plants-grid .location-equipment-summary > div {
-                display: grid !important;
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                align-items: start !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
                 gap: 8px !important;
                 width: 100% !important;
                 min-width: 0 !important;
@@ -10669,19 +10669,19 @@ e>
                 display: block !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                min-width: 0 !important;
                 box-sizing: border-box !important;
                 white-space: normal !important;
                 overflow-wrap: anywhere !important;
                 line-height: 1.35 !important;
             }
             #plants-grid .location-equipment-summary > div > button[aria-label="Edit location details"] {
-                grid-column: 1 / -1 !important;
-                justify-self: start !important;
+                align-self: flex-start !important;
                 flex: 0 0 auto !important;
             }
         }
     </style>
+
+yle>
 
 e>
 
