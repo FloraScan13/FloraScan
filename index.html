@@ -8582,13 +8582,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const text = String(log.text || '');
                 const match = text.match(/\(Growing medium changed from [\s\S]*? to ([\s\S]*?); setup changed from [\s\S]*? to ([\s\S]*?)\.\)/i);
                 const initialMediumMatch = text.match(/Initial growing medium:\s*([\s\S]*?)(?=\s*[·;]\s*Growing setup:|$)/i);
-                const initialSetupMatch = text.match(/Growing setup:\s*([\s\S]*?)(?=\s*[·;]\s*Heated propagator set temperature:|$)/i);
+                const initialSetupMatch = text.match(/Growing setup:\s*([\s\S]*?)(?=\s*[·;]\s*(?:Heated propagator )?set temperature:|$)/i);
                 const medium = String(log.growthMedium || (match ? match[1] : (initialMediumMatch ? initialMediumMatch[1] : ''))).trim();
                 let setup = match ? match[2].trim() : (initialSetupMatch ? initialSetupMatch[1].trim() : '');
-                const temperatureMatch = text.match(/Heated propagator set temperature:\s*(-?\d+(?:\.\d+)?)\s*°?C/i);
+                const temperatureMatch = text.match(/(?:Heated propagator )?set temperature:\s*(-?\d+(?:\.\d+)?)\s*°?C/i);
                 const temperature = log.heatedPropagatorTemperatureC ?? (temperatureMatch ? Number(temperatureMatch[1]) : null);
                 if (temperature !== null && temperature !== undefined && temperature !== '' && setup) {
                     setup = setup.replace(/Heated propagator(?:\s*\([^)]*\))?/i, 'Heated propagator (' + temperature + ' °C)');
+                    setup = setup.replace(/\s*[·;,]\s*(?:Heated propagator )?set temperature:\s*-?\d+(?:\.\d+)?\s*°?C/ig, '');
                 }
                 if (medium || setup) {
                     return {
