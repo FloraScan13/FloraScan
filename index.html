@@ -637,13 +637,16 @@ textarea {
         .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p {
             display: block !important; overflow: visible !important; white-space: normal !important;
         }
-        /* In list view, show only the same Setup value displayed on grid cards. */
-        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p:nth-of-type(-n+2),
+        /* List rows retain only the explicitly marked Setup line from the grid card. */
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p:not(.plant-card-setup-detail),
         .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > span {
             display: none !important;
         }
-        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p:nth-of-type(3) {
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > .plant-card-setup-detail {
             display: block !important;
+            margin-top: 0 !important;
+            overflow: visible !important;
+            white-space: normal !important;
         }
         .location-group-plants.is-list-view .plant-card .crop-badge-container {
             width: 2.5rem !important; height: 2.5rem !important; padding: .25rem !important;
@@ -6635,7 +6638,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
 
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-seedling mr-1"></i>Setup: <strong class="font-semibold">${escapeHtml(setupLabel)}</strong></p>
+                                <p class="plant-card-setup-detail text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-seedling mr-1"></i>Setup: <strong class="font-semibold">${escapeHtml(setupLabel)}</strong></p>
                                 <span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-2"><i class="fa-solid fa-book-open mr-1 text-[10px]"></i> ${p.logs ? p.logs.length : 0} Growth Logs</span>
                             </div>
                         </div>
