@@ -637,6 +637,14 @@ textarea {
         .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p {
             display: block !important; overflow: visible !important; white-space: normal !important;
         }
+        /* In list view, show only the same Setup value displayed on grid cards. */
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p:nth-of-type(-n+2),
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > span {
+            display: none !important;
+        }
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p:nth-of-type(3) {
+            display: block !important;
+        }
         .location-group-plants.is-list-view .plant-card .crop-badge-container {
             width: 2.5rem !important; height: 2.5rem !important; padding: .25rem !important;
             border-radius: 13px !important; background: #eaf0e4 !important;
