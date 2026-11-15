@@ -6568,6 +6568,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     : '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-leaf text-2xl" aria-hidden="true"></i></div>';
                 // Use the actual rendered group heading as the key, so every card in a group gets the same details.
                 const plantLocation = (groupLocation || p.location || '').trim();
+                const setupItems = (Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : []))
+                    .map(value => String(value).trim())
+                    .filter(Boolean)
+                    .map(value => value === 'Heated propagator' && p.heatedPropagatorTemperatureC !== null && p.heatedPropagatorTemperatureC !== undefined && p.heatedPropagatorTemperatureC !== ''
+                        ? value + ' (' + p.heatedPropagatorTemperatureC + ' °C)'
+                        : value);
+                const setupLabel = setupItems.length ? setupItems.join(', ') : 'Not specified';
                 const savedDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
                 const sharedLocationDetails = String(locationDetails[plantLocation] || savedDetails[plantLocation] || '');
                 const feedReminderLog = (Array.isArray(p.logs) ? p.logs : [])
@@ -6613,6 +6620,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
 
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-seedling mr-1"></i>Setup: <strong class="font-semibold">${escapeHtml(setupLabel)}</strong></p>
                                 <span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-2"><i class="fa-solid fa-book-open mr-1 text-[10px]"></i> ${p.logs ? p.logs.length : 0} Growth Logs</span>
                             </div>
                         </div>
