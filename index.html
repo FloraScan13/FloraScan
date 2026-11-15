@@ -7771,7 +7771,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function getMultisowContainerStates(plant) {
             const count = Math.max(0, Math.floor(Number(plant.multisowPots) || 0));
-            const label = String(plant.multisowContainerType || 'pot').replace(/s$/i, '');
+            const rawLabel = String(plant.multisowContainerType || 'pot').replace(/s$/i, '');
+            const label = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1);
             const states = Array.from({length: count}, (_, i) => ({index: i + 1, germinated: 0, thinned: 0}));
             // Journal logs are stored newest-first. Each matching line is a cumulative
             // snapshot for that container, so keep the first (most recent) snapshot only.
