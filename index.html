@@ -12540,6 +12540,23 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
 }
 </style>
 
+<style id="show-plant-setup-in-list-view">
+/* Override the compact-list rule that hides the text column in the plant photo row. */
+#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div:not(.crop-badge-container):not(.plant-photo-no-frame) {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p {
+    display: block !important;
+    white-space: normal !important;
+    overflow: visible !important;
+}
+</style>
 
 <style id="hide-location-setup-details-in-plant-journal">
 /* Location setup details are not shown in the Plant Journal. */
