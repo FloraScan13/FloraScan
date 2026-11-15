@@ -6225,6 +6225,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <h2 id="plant-location-details-title" class="text-lg font-bold" style="color:#294333;">Location details</h2>
                             <p class="text-sm truncate" style="color:#718071;">${escapeHtml(location)}</p>
                         </div>
+                        ${locationTypes[location] !== 'outdoor' ? `
                         <section aria-labelledby="plant-location-inside-heading">
                             <h3 id="plant-location-inside-heading" class="text-sm font-bold uppercase tracking-wider mb-3" style="color:#426b47;">Indoor</h3>
                             <div class="space-y-2">
@@ -6253,7 +6254,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     </div>
                                 `).join('')}
                             </div>
-                        </section>
+                        </section>` : ''}
+                        ${locationTypes[location] === 'outdoor' ? `
                         <section aria-labelledby="plant-location-outside-heading">
                             <h3 id="plant-location-outside-heading" class="text-sm font-bold uppercase tracking-wider mb-3" style="color:#426b47;">Outdoor</h3>
                             <div class="space-y-2">
@@ -6282,7 +6284,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                     </div>
                                 `).join('')}
                             </div>
-                        </section>
+                        </section>` : ''}
                         <div class="sticky bottom-0 pt-4 pb-1 flex justify-end gap-2" style="background:#fffef9;border-top:1px solid #e1e1d5;">
                             <button type="button" onclick="closePlantLocationDetailsModal()" class="rounded-lg px-4 py-2 text-sm font-semibold border" style="background:#fffef9;border-color:#d9ddcf;color:#426b47;">Cancel</button>
                             <button type="button" id="save-plant-location-details" class="rounded-lg px-5 py-2 text-sm font-bold shadow-sm" style="background:#c6537b;color:#fff;border:1px solid #c6537b;">Save details</button>
