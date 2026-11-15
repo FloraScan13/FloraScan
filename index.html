@@ -3562,7 +3562,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
 
                         <div id="germination-section" class="hidden p-3 rounded-xl border border-emerald-200 bg-emerald-50/70 space-y-2">
-                            <div id="seed-germination-controls">
+                            <div id="seed-germination-controls"><div id="multisow-container-tracking" class="hidden space-y-3"><p class="text-xs text-emerald-800">Record new germination and thinning separately for each numbered container.</p><div id="multisow-container-rows" class="space-y-2"></div></div>
                             <label for="log-germinated-amount" class="block text-xs font-semibold text-emerald-800">Seeds germinated</label>
                             <input type="number" id="log-germinated-amount" oninput="toggleGerminationSection()" min="1" step="1" inputmode="numeric" placeholder="Additional seeds germinated." class="w-full px-3 py-2 rounded-xl bg-white border border-emerald-200 text-sm">
                             <p class="text-[11px] text-emerald-700">Enter only the additional seeds that have germinated since your last update. Each entry adds to your plant total and reduces the seeds remaining.</p>
@@ -7768,6 +7768,36 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
 
 
+
+        function getMultisowContainerStates(plant) {
+            const count = Math.max(0, Math.floor(Number(plant.multisowPots) || 0));
+            const label = String(plant.multisowContainerType || 'pot').replace(/s$/i, '');
+            const states = Array.from({length: count}, (_, i) => ({index: i + 1, germinated: 0, thinned: 0}));
+            (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
+                const re = /Multi-sow container (\d+) \| germinated: (\d+) \| thinned: (\d+)/g;
+                let match;
+                while ((match = re.exec(String(log.text || '')))) {
+                    const state = states[Number(match[1]) - 1];
+                    if (state) { state.germinated = Number(match[2]); state.thinned = Number(match[3]); }
+                }
+            });
+            return {label, states};
+        }
+
+        function renderMultisowContainerRows(plant) {
+            const host = document.getElementById('multisow-container-rows');
+            if (!host || !plant) return;
+            const data = getMultisowContainerStates(plant);
+            host.innerHTML = data.states.map(state => {
+                const remaining = Math.max(0, state.germinated - state.thinned);
+                const seedLimit = Math.max(0, Number(plant.seedsPerPot) - state.germinated);
+                return '<div class="rounded-lg border border-emerald-200 bg-white p-2.5 space-y-2">' +
+                    '<div class="flex items-center justify-between gap-2"><strong class="text-sm text-emerald-900">' + escapeHtml(data.label) + ' ' + state.index + '</strong><span class="text-[11px] text-emerald-700">Germinated ' + state.germinated + ' · Thinned ' + state.thinned + ' · Remaining ' + remaining + '</span></div>' +
+                    '<div class="grid grid-cols-2 gap-2"><label class="text-[11px] font-semibold text-slate-600">Newly germinated<input data-ms-germ="' + state.index + '" type="number" min="0" max="' + seedLimit + '" step="1" inputmode="numeric" placeholder="0" class="mt-1 w-full px-2.5 py-2 rounded-lg border border-emerald-200 text-sm"></label>' +
+                    '<label class="text-[11px] font-semibold text-slate-600">Thinned out<input data-ms-thin="' + state.index + '" type="number" min="0" max="' + remaining + '" step="1" inputmode="numeric" placeholder="0" class="mt-1 w-full px-2.5 py-2 rounded-lg border border-emerald-200 text-sm"></label></div></div>';
+            }).join('');
+        }
+
         function toggleGerminationSection() {
             const section = document.getElementById('germination-section');
             const amountInput = document.getElementById('log-germinated-amount');
@@ -7782,8 +7812,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             section.classList.toggle('hidden', !showSeeds && !showCuttings);
             const seedControls = document.getElementById('seed-germination-controls');
             const cuttingControls = document.getElementById('cutting-rooting-controls');
+            const multisow = !!(plant && plant.multisow && Number(plant.multisowPots) > 0);
+            const multisowPanel = document.getElementById('multisow-container-tracking');
             if (seedControls) seedControls.classList.toggle('hidden', !showSeeds);
             if (cuttingControls) cuttingControls.classList.toggle('hidden', !showCuttings);
+            if (multisowPanel) multisowPanel.classList.toggle('hidden', !showSeeds || !multisow);
+            if (multisow && showSeeds) renderMultisowContainerRows(plant);
+            ['log-germinated-amount','log-failed-seed-amount'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden', multisow && showSeeds);
+            });
+            document.querySelectorAll('label[for="log-germinated-amount"], #seed-germination-controls details, #seed-germination-controls > p').forEach(el => el.classList.toggle('hidden', multisow && showSeeds));
             amountInput.max = showSeeds ? String(availableSeeds) : '';
             if (!showSeeds) amountInput.value = '';
             const stageSection = document.getElementById('growth-stage-section');
@@ -10344,6 +10383,36 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     failedCuttingsAmount = enteredCuttingAmount;
                     p.remainingCuttings = availableCuttings - failedCuttingsAmount;
                     text = (text.trim() ? text.trim() + ' ' : '') + 'Failed rooting recorded: ' + failedCuttingsAmount + ' ' + (failedCuttingsAmount === 1 ? 'cutting' : 'cuttings') + ' did not root and ' + (failedCuttingsAmount === 1 ? 'has' : 'have') + ' been removed from the remaining cutting count. Plant total remains ' + (Number(p.quantity) || 0) + '. ' + p.remainingCuttings + ' cuttings remaining.';
+                }
+            } else if (type === 'Growth' && seedsAvailable > 0 && p.multisow && Number(p.multisowPots) > 0) {
+                const data = getMultisowContainerStates(p);
+                const changes = [];
+                let germinatedTotal = 0, thinnedTotal = 0;
+                for (const state of data.states) {
+                    const germInput = document.querySelector('[data-ms-germ="' + state.index + '"]');
+                    const thinInput = document.querySelector('[data-ms-thin="' + state.index + '"]');
+                    const germ = Number(germInput && germInput.value || 0);
+                    const thin = Number(thinInput && thinInput.value || 0);
+                    if (!Number.isSafeInteger(germ) || germ < 0 || germ > Math.max(0, Number(p.seedsPerPot) - state.germinated)) {
+                        alert('Enter a valid newly germinated seed count for ' + data.label + ' ' + state.index + '.'); germInput && germInput.focus(); return;
+                    }
+                    if (!Number.isSafeInteger(thin) || thin < 0 || thin > state.germinated - state.thinned + germ) {
+                        alert('The thinning count exceeds the plants in ' + data.label + ' ' + state.index + '.'); thinInput && thinInput.focus(); return;
+                    }
+                    if (germ || thin) {
+                        changes.push({index:state.index, germinated:state.germinated + germ, thinned:state.thinned + thin});
+                        germinatedTotal += germ; thinnedTotal += thin;
+                    }
+                }
+                if (germinatedTotal > seedsAvailable) { alert('The germination total exceeds the seeds remaining (' + seedsAvailable + ').'); return; }
+                if (changes.length) {
+                    const currentPlants = p.quantityType === 'seeds' ? 0 : Math.max(0, Number(p.quantity) || 0);
+                    p.quantity = Math.max(0, currentPlants + germinatedTotal - thinnedTotal);
+                    p.quantityType = 'plants';
+                    p.remainingSeeds = Math.max(0, seedsAvailable - germinatedTotal);
+                    changes.forEach(change => { text = (text.trim() ? text.trim() + '\n' : '') + 'Multi-sow container ' + change.index + ' | germinated: ' + change.germinated + ' | thinned: ' + change.thinned; });
+                    text = (text.trim() ? text.trim() + '\n' : '') + 'Multi-sow update: ' + germinatedTotal + ' newly germinated; ' + thinnedTotal + ' thinned out. Plant total: ' + p.quantity + '; seeds remaining: ' + p.remainingSeeds + '.';
+                    germinatedAmount = germinatedTotal || null;
                 }
             } else if (type === 'Growth' && seedsAvailable > 0) {
                 const germinationInput = document.getElementById('log-germinated-amount');
