@@ -9020,6 +9020,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const type = plant.quantityType || 'plants';
             const quantity = Math.max(0, Number(plant.quantity) || 0);
             const quantityLabel = quantity + ' ' + (type === 'seeds' ? 'seeds' : type === 'cuttings' ? (quantity === 1 ? 'cutting' : 'cuttings') : (quantity === 1 ? 'plant' : 'plants'));
+            const plantTagType = String(plant.qrCodeValue || '').trim() ? 'QR code' : (plant.nfcTagLinked ? 'NFC' : 'Not assigned');
             const remaining = type === 'seeds' ? Number(plant.remainingSeeds || 0) : type === 'cuttings' ? Number(plant.remainingCuttings || 0) : 0;
             const notes = String(plant.notes || '').trim();
             const title = esc(plant.name || 'Plant Journal');
@@ -9045,6 +9046,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const setupValue = setup.length ? esc(setup.join(' · ')) : '';
             const summary = [
                 detail('Sown / started', esc(quantityLabel)),
+                detail('Plant tag type', esc(plantTagType)),
                 detail('Remaining', remaining > 0 ? esc(remaining + (type === 'seeds' ? ' seeds' : ' cuttings')) : ''),
                 detail('Planting date', formatDate(plant.date)),
                 detail('Growing location', esc(plant.location || '')),
