@@ -3574,6 +3574,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="text-xs font-semibold text-slate-700 dark:text-slate-300">Update growing medium and setup</div>
                             <div id="journal-medium-picker"></div>
                             <div id="journal-setup-picker"></div>
+                            <div id="heated-propagator-temperature-field" class="hidden space-y-1.5 rounded-lg border border-amber-200 bg-amber-50/70 p-3">
+                                <label for="heated-propagator-temperature" class="block text-xs font-semibold text-slate-700">Heated propagator set temperature (°C)</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="heated-propagator-temperature" min="5" max="40" step="0.5" inputmode="decimal" placeholder="e.g. 22" class="w-full px-3 py-2 rounded-lg bg-white border border-amber-200 text-sm text-slate-900" aria-describedby="heated-propagator-temperature-help">
+                                    <span class="text-sm font-semibold text-slate-600">°C</span>
+                                </div>
+                                <p id="heated-propagator-temperature-help" class="text-[11px] text-slate-500">Enter the target temperature for your heated propagator.</p>
+                            </div>
                             <input type="hidden" id="log-growth-medium">
                             <p class="text-[11px] text-slate-500 dark:text-slate-400">Saving this entry updates the medium and setup shown in the plant details and profile card.</p>
                         </div>
@@ -8662,6 +8670,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (typeof window.setJournalGrowingValues === 'function') {
                 window.setJournalGrowingValues('', []);
             }
+            const heatedTemperatureInput = document.getElementById('heated-propagator-temperature');
+            if (heatedTemperatureInput) heatedTemperatureInput.value = p.heatedPropagatorTemperatureC ?? '';
             renderJournalLogs(p);
             document.getElementById('journal-modal').classList.remove('hidden');
             recordWeeklyOutdoorRainfall(plantLocation).catch(error => console.warn('Outdoor rainfall log skipped:', error));
@@ -9785,6 +9795,10 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                     Array.isArray(plant.setup) ? plant.setup : (plant.setup ? [plant.setup] : [])
                 );
             }
+            const heatedTemperatureInput = document.getElementById('heated-propagator-temperature');
+            if (heatedTemperatureInput) heatedTemperatureInput.value = plant.heatedPropagatorTemperatureC ?? '';
+            const heatedTemperatureField = document.getElementById('heated-propagator-temperature-field');
+            heatedTemperatureField?.classList.toggle('hidden', !(Array.isArray(plant.setup) ? plant.setup : [plant.setup]).includes('Heated propagator'));
             toggleNutrientLibraryView();
             toggleHarvestFields();
             const logText = String(log.text || '').replace(/\\n/g, '\n');
@@ -10119,6 +10133,10 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                     const nextSetup = setupValues.join(', ');
                     plant.medium = nextMedium;
                     plant.setup = setupValues;
+                    const heatedTemperatureInput = document.getElementById('heated-propagator-temperature');
+                    plant.heatedPropagatorTemperatureC = setupValues.includes('Heated propagator') && heatedTemperatureInput?.value !== ''
+                        ? Number(heatedTemperatureInput.value)
+                        : null;
                     // Replace a previous generated summary instead of stacking one on every edit.
                     const cleanNotes = String(existingLog.text || '').replace(/\\s*\\(Growing medium changed from [\\s\\S]*?; setup changed from [\\s\\S]*?\\.\\)\\s*$/i, '').trim();
                     existingLog.text = (cleanNotes ? cleanNotes + ' ' : '') +
@@ -10941,9 +10959,18 @@ document.addEventListener('click', function(event) {
         window.refreshJournalGrowingPickers = mountSharedGrowingPickers;
         window.getJournalMediumValues = () => readValues(medium, 'plant-medium-option');
         window.getJournalSetupValues = () => readValues(setup, 'plant-setup-option');
+        const heatedTemperatureField = document.getElementById('heated-propagator-temperature-field');
+        const heatedTemperatureInput = document.getElementById('heated-propagator-temperature');
+        const syncHeatedTemperatureField = () => {
+            const selected = !!setup?.querySelector('input[name="plant-setup-option"][value="Heated propagator"]:checked');
+            heatedTemperatureField?.classList.toggle('hidden', !selected);
+            if (!selected && heatedTemperatureInput) heatedTemperatureInput.value = '';
+        };
+        setup?.addEventListener('change', syncHeatedTemperatureField);
         window.setJournalGrowingValues = (mediumValues, setupValues) => {
             setValues(medium, 'plant-medium-option', mediumValues);
             setValues(setup, 'plant-setup-option', setupValues);
+            syncHeatedTemperatureField();
             // Search is an input too; reset it and notify the filter handlers
             // so every option is visible when either picker is opened.
             [medium, setup].forEach(details => {
