@@ -2807,6 +2807,13 @@ textarea {
                 </button>
                 <div id="growing-locations-content" hidden class="space-y-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                     <p class="text-sm text-slate-500 dark:text-slate-400">Manage each growing location separately. Add a location with the button below, or use × to remove one.</p>
+                    <label class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3 cursor-pointer">
+                        <span class="min-w-0">
+                            <span class="block text-sm font-semibold text-slate-700 dark:text-slate-200">Live temperature &amp; humidity in location headers</span>
+                            <span class="block text-xs text-slate-500 dark:text-slate-400 mt-1">Show or hide current sensor and outdoor weather readings beside each growing location.</span>
+                        </span>
+                        <input id="setting-location-header-weather" type="checkbox" class="h-5 w-5 shrink-0 accent-emerald-600" checked onchange="setLocationHeaderWeatherVisibility(this.checked)">
+                    </label>
                     <div id="setting-plant-locations-list" class="space-y-2"></div>
                     <div class="flex flex-col sm:flex-row gap-2">
                         <input id="new-plant-location" type="text" maxlength="80" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="New location name" onkeydown="if(event.key==='Enter'){event.preventDefault();addPlantLocation();}">
@@ -4032,6 +4039,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         let locationTypes = JSON.parse(localStorage.getItem('flora_plant_location_types') || 'null') || { ...DEFAULT_LOCATION_TYPES };
         let locationDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
         let locationDetailsVisibility = JSON.parse(localStorage.getItem('flora_plant_location_details_visibility') || '{}') || {};
+        let locationHeaderWeatherVisible = localStorage.getItem('flora_location_header_weather_visible') !== 'false';
         // Always start with every location's details collapsed on a fresh app load.
         locationDetailsVisibility = Object.fromEntries(plantLocations.map(location => [location, false]));
         localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
@@ -6582,6 +6590,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             document.removeEventListener('keydown', handlePlantLocationDetailsEscape);
         }
 
+        function setLocationHeaderWeatherVisibility(visible) {
+            locationHeaderWeatherVisible = visible === true;
+            localStorage.setItem('flora_location_header_weather_visible', String(locationHeaderWeatherVisible));
+            renderPlants();
+        }
+
         async function toggleLocationDetailsVisibility(location) {
             locationDetailsVisibility[location] = locationDetailsVisibility[location] !== true;
             localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
@@ -6848,8 +6862,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             <div class="location-group-heading min-w-0 flex flex-1 items-center gap-2">
                                 <h3 class="text-base sm:text-lg font-bold text-emerald-800 dark:text-emerald-300 min-w-0 break-words">${escapeHtml(location)}</h3>
                                 <span class="location-group-count flex-shrink-0 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">(${cards.reduce((total, plant) => total + (plant.quantityType === 'plants' ? Math.max(0, Number(plant.quantity) || 0) : 0), 0)} ${cards.reduce((total, plant) => total + (plant.quantityType === 'plants' ? Math.max(0, Number(plant.quantity) || 0) : 0), 0) === 1 ? 'plant' : 'plants'})</span>
-                                ${location === 'Grow Tent' && locationDetailsVisibility[location] === true ? '<span id="govee-inline-readings" class="text-xs text-slate-600 whitespace-nowrap">Loading sensor…</span>' : ''}
-                                ${isOutdoor && locationDetailsVisibility[location] === true ? '<span id="outdoor-weather-' + locationIndex + '" data-location="' + escapeHtml(location) + '" class="text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap" aria-live="polite">Loading postcode weather…</span>' : ''}
+                                ${locationHeaderWeatherVisible && location === 'Grow Tent' && locationDetailsVisibility[location] === true ? '<span id="govee-inline-readings" class="text-xs text-slate-600 whitespace-nowrap">Loading sensor…</span>' : ''}
+                                ${locationHeaderWeatherVisible && isOutdoor && locationDetailsVisibility[location] === true ? '<span id="outdoor-weather-' + locationIndex + '" data-location="' + escapeHtml(location) + '" class="text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap" aria-live="polite">Loading postcode weather…</span>' : ''}
                             </div>
                             <div class="location-group-actions flex flex-shrink-0 items-center gap-1.5">
                                 <button type="button" onclick="toggleLocationDetailsVisibility(this.dataset.location)" data-location="${escapeHtml(location)}" aria-label="${locationDetailsVisibility[location] === true ? 'Hide' : 'Show'} location details for ${escapeHtml(location)}" aria-pressed="${locationDetailsVisibility[location] === true ? 'true' : 'false'}" title="${locationDetailsVisibility[location] === true ? 'Hide location details' : 'Show location details'}" class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 dark:text-slate-300"><i class="fa-solid ${locationDetailsVisibility[location] === true ? 'fa-eye' : 'fa-eye-slash'}" aria-hidden="true"></i></button>
