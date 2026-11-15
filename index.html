@@ -8574,7 +8574,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const text = String(log.text || '');
                 const match = text.match(/\(Growing medium changed from [\s\S]*? to ([\s\S]*?); setup changed from [\s\S]*? to ([\s\S]*?)\.\)/i);
                 const medium = String(log.growthMedium || (match ? match[1] : '')).trim();
-                const setup = match ? match[2].trim() : '';
+                let setup = match ? match[2].trim() : '';
+                const temperatureMatch = text.match(/Heated propagator set temperature:\s*(-?\d+(?:\.\d+)?)\s*°?C/i);
+                const temperature = log.heatedPropagatorTemperatureC ?? (temperatureMatch ? Number(temperatureMatch[1]) : null);
+                if (temperature !== null && temperature !== undefined && temperature !== '' && setup) {
+                    setup = setup.replace(/Heated propagator(?:\s*\([^)]*\))?/i, 'Heated propagator (' + temperature + ' °C)');
+                }
                 if (medium || setup) {
                     return {
                         medium: medium || (plant.medium || 'Not specified'),
@@ -10196,11 +10201,15 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                     plant.heatedPropagatorTemperatureC = setupValues.includes('Heated propagator') && heatedTemperatureInput?.value !== ''
                         ? Number(heatedTemperatureInput.value)
                         : null;
+                    existingLog.heatedPropagatorTemperatureC = plant.heatedPropagatorTemperatureC;
                     // Replace a previous generated summary instead of stacking one on every edit.
                     const cleanNotes = String(existingLog.text || '').replace(/\\s*\\(Growing medium changed from [\\s\\S]*?; setup changed from [\\s\\S]*?\\.\\)\\s*$/i, '').trim();
+                    const temperatureNote = setupValues.includes('Heated propagator') && plant.heatedPropagatorTemperatureC !== null
+                        ? '; Heated propagator set temperature: ' + plant.heatedPropagatorTemperatureC + ' °C'
+                        : '';
                     existingLog.text = (cleanNotes ? cleanNotes + ' ' : '') +
                         '(Growing medium changed from ' + previousMedium + ' to ' + (nextMedium || 'Not specified') +
-                        '; setup changed from ' + previousSetup + ' to ' + (nextSetup || 'Not specified') + '.)';
+                        '; setup changed from ' + previousSetup + ' to ' + (nextSetup || 'Not specified') + temperatureNote + '.)';
                     existingLog.growthMedium = nextMedium;
                 }
                 existingLog.feedReminderDate = type === 'Feed' ? document.getElementById('feed-reminder-date').value : '';
@@ -10379,9 +10388,16 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                 const previousSetup = Array.isArray(p.setup) ? p.setup.join(', ') : (p.setup || 'Not specified');
                 p.medium = newMedium;
                 p.setup = journalSetupValues;
+                const heatedTemperatureInput = document.getElementById('heated-propagator-temperature');
+                p.heatedPropagatorTemperatureC = journalSetupValues.includes('Heated propagator') && heatedTemperatureInput?.value !== ''
+                    ? Number(heatedTemperatureInput.value)
+                    : null;
                 const mediumSummary = newMedium || 'Not specified';
                 const setupSummary = journalSetupValues.join(', ') || 'Not specified';
-                text = (text.trim() ? text.trim() + ' ' : '') + '(Growing medium changed from ' + previousMedium + ' to ' + mediumSummary + '; setup changed from ' + previousSetup + ' to ' + setupSummary + '.)';
+                const temperatureNote = journalSetupValues.includes('Heated propagator') && p.heatedPropagatorTemperatureC !== null
+                    ? '; Heated propagator set temperature: ' + p.heatedPropagatorTemperatureC + ' °C'
+                    : '';
+                text = (text.trim() ? text.trim() + ' ' : '') + '(Growing medium changed from ' + previousMedium + ' to ' + mediumSummary + '; setup changed from ' + previousSetup + ' to ' + setupSummary + temperatureNote + '.)';
             }
 
             if (!p.logs) p.logs = [];
@@ -10393,6 +10409,7 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
             const feedReminderUnit = type === 'Feed' ? document.getElementById('feed-reminder-unit').value : 'days';
             const newLog = {
                 id: logId, date, type, growthStage,
+                ...(type === 'Medium' ? { heatedPropagatorTemperatureC: p.heatedPropagatorTemperatureC ?? null } : {}),
                 ...(type === 'Harvest' ? {
                     harvestMeasurement,
                     harvestValue,
