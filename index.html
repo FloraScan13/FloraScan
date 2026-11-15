@@ -9077,7 +9077,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const hasLocationSetup = Boolean(plantLocation || locationDescription || locationType || locationPostcode || locationEquipmentSelections.length);
             const locationSetupHTML = hasLocationSetup
                 ? '<section><div class="section-heading"><h2>Location setup</h2><span class="section-kicker">Growing environment</span></div>' +
-                    '<div class="details">' + detail('Location', esc(plantLocation)) + detail('Environment', esc(locationType)) + detail('Postcode', esc(locationPostcode)) + detail('Equipment selected', esc(String(locationEquipmentSelections.length))) + '</div>' +
+                    '<div class="details">' + detail('Location', esc(plantLocation)) + detail('Environment', esc(locationType)) + detail('Equipment selected', esc(String(locationEquipmentSelections.length))) + '</div>' +
                     (locationDescription ? '<div class="notes-panel location-description">' + esc(locationDescription).replace(/\n/g, '<br>') + '</div>' : '') +
                     (equipmentGroups ? '<div class="equipment-list">' + equipmentGroups + '</div>' : '<p class="empty-state">No equipment has been selected for this location.</p>') +
                   '</section>'
@@ -9101,7 +9101,6 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             '<div class="masthead"><span class="masthead-mark">FLORA SCAN</span><span>Personal growing record</span></div>' +
             '<header class="cover"><div><p class="eyebrow">Plant journal</p><h1>' + title + '</h1><p class="variety">' + variety + '</p></div>' + photo + '</header>' +
             '<section><div class="section-heading"><h2>Plant profile</h2><span class="section-kicker">Growing details</span></div><div class="details">' + summary + '</div></section>' +
-            '<section><div class="section-heading"><h2>Initial notes</h2><span class="section-kicker">At setup</span></div><div class="notes-panel ' + (notes ? '' : 'empty') + '">' + (notes ? esc(notes).replace(/\n/g, '<br>') : 'No initial notes recorded.') + '</div></section>' +
             locationSetupHTML +
             '<section><div class="section-heading"><h2>Growth journal</h2><span class="section-kicker">' + logs.length + ' ' + (logs.length === 1 ? 'entry' : 'entries') + '</span></div>' + entriesHTML + '</section>' +
             '<footer class="footer"><span>Flora Scan · ' + title + '</span><span>Generated ' + esc(generated) + '</span></footer>' +
