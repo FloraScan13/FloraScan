@@ -9162,22 +9162,17 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
 
 
 <style id="list-view-show-setup-only">
-/* In list view, retain only the setup line in the plant details column. */
-#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 {
+/* In list view, hide notes/medium/logs but always retain the Setup line.
+   Target the Setup class directly rather than relying on card child positions. */
+#view-plants #plants-grid .location-group-plants.is-list-view .plant-card .plant-card-setup-detail {
     display: block !important;
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-}
-#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p {
-    display: none !important;
-}
-#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p:nth-of-type(3) {
-    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     margin-top: 0 !important;
     white-space: normal !important;
-}
-#view-plants #plants-grid .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > span {
-    display: none !important;
 }
 </style>
 </body>
