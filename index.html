@@ -7806,13 +7806,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 const seedsLeftToGerminate = Math.max(0, Number(plant.seedsPerPot) - state.germinated);
                 const seedLimit = seedsLeftToGerminate;
                 const germinationField = seedLimit > 0
-                    ? '<label class="text-[9px] font-semibold leading-3" style="color:#000000 !important">Germinated<input aria-label="Newly germinated in ' + escapeHtml(data.label) + ' ' + state.index + '" data-ms-germ="' + state.index + '" type="number" min="0" max="' + seedLimit + '" step="1" inputmode="numeric" placeholder="0" class="mt-0.5 w-full rounded-md border border px-1.5 py-1 text-xs text-emerald-950" style="border-color:#78947e;background-color:#ffffff;color:#294b34"></label>'
+                    ? '<label class="text-[9px] font-semibold leading-3" style="color:#000000 !important">Germinated<input aria-label="Newly germinated in ' + escapeHtml(data.label) + ' ' + state.index + '" data-ms-germ="' + state.index + '" type="number" min="0" max="' + seedLimit + '" step="1" inputmode="numeric" placeholder="0" class="mt-0.5 w-full rounded-md border border px-1.5 py-1 text-xs text-emerald-950" style="border-color:#e2e8f0 !important;background-color:#ffffff;color:#294b34"></label>'
                     : '<span class="multisow-complete text-[9px] font-medium text-center" style="color:#000000 !important">Complete</span>';
                 return '<div class="grid grid-cols-[minmax(0,1fr)_4.25rem_4.25rem] items-center gap-2 rounded-lg border px-2 py-2" style="border-color:#e2e8f0 !important;background-color:#f4f5ee !important;background:#f4f5ee !important">' +
                     '<div class="min-w-0"><strong class="block truncate text-xs font-semibold text-emerald-900">' + escapeHtml(data.label) + ' ' + state.index + '</strong>' +
                     '<span class="block truncate text-[9px] leading-3 text-emerald-800" style="color:#294b34">Seedlings ' + remaining + (seedsLeftToGerminate > 0 ? ' · Left to germinate ' + seedsLeftToGerminate : '') + '</span></div>' +
                     germinationField +
-                    '<label class="text-[9px] font-semibold leading-3" style="color:#000000 !important">Removed<input aria-label="Removed from ' + escapeHtml(data.label) + ' ' + state.index + '" data-ms-thin="' + state.index + '" type="number" min="0" max="' + remaining + '" step="1" inputmode="numeric" placeholder="0" class="mt-0.5 w-full rounded-md border border px-1.5 py-1 text-xs text-emerald-950" style="border-color:#78947e;background-color:#ffffff;color:#294b34"></label></div>';
+                    '<label class="text-[9px] font-semibold leading-3" style="color:#000000 !important">Removed<input aria-label="Removed from ' + escapeHtml(data.label) + ' ' + state.index + '" data-ms-thin="' + state.index + '" type="number" min="0" max="' + remaining + '" step="1" inputmode="numeric" placeholder="0" class="mt-0.5 w-full rounded-md border border px-1.5 py-1 text-xs text-emerald-950" style="border-color:#e2e8f0 !important;background-color:#ffffff;color:#294b34"></label></div>';
             }).join('');
         }
 
