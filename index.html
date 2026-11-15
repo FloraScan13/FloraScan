@@ -630,6 +630,13 @@ textarea {
             gap: 0 !important; background: transparent !important;
         }
         .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div:not(.crop-badge-container):not(.plant-photo-no-frame) { display: none !important; }
+        /* Keep the plant details column visible in compact list cards. */
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 {
+            display: block !important; flex: 1 1 auto !important; min-width: 0 !important;
+        }
+        .location-group-plants.is-list-view .plant-card > div:nth-child(2) > div.flex-1 > p {
+            display: block !important; overflow: visible !important; white-space: normal !important;
+        }
         .location-group-plants.is-list-view .plant-card .crop-badge-container {
             width: 2.5rem !important; height: 2.5rem !important; padding: .25rem !important;
             border-radius: 13px !important; background: #eaf0e4 !important;
