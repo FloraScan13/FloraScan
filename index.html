@@ -8998,333 +8998,89 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
         function downloadPlantJournalPDF(plantId) {
             const plant = plants.find(item => String(item.id) === String(plantId));
-            if (!plant) {
-                alert('Could not find this plant journal. Please close and reopen it, then try again.');
-                return;
-            }
+            if (!plant) { alert('Could not find this plant journal. Please close and reopen it, then try again.'); return; }
 
+            const esc = escapePDFHTML;
             const logs = Array.isArray(plant.logs) ? [...plant.logs] : [];
             logs.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
-            const entriesHTML = logs.length ? logs.map((log, index) => `
-                <article class="entry">
-                    <div class="entry-heading">
-                        <strong>${escapePDFHTML(log.type || 'Growth Update')}</strong>
-                        <span>${escapePDFHTML(log.date || 'Date not specified')}</span>
-                    </div>
-                    <p>${escapePDFHTML(log.text || 'No notes recorded.').replace(/\n/g, '<br>')}</p>
-                </article>
-            `).join('') : '<p class="empty">No journal entries have been recorded for this plant yet.</p>';
+            const generated = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            const formatDate = value => {
+                if (!value) return 'Not recorded';
+                const parsed = new Date(String(value).length === 10 ? value + 'T00:00:00' : value);
+                return Number.isNaN(parsed.getTime()) ? esc(value) : esc(parsed.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }));
+            };
+            const safeImage = value => {
+                const src = String(value || '');
+                return /^(https?:\/\/|data:image\/)/i.test(src) ? esc(src) : '';
+            };
+            const setup = (Array.isArray(plant.setup) ? plant.setup : (plant.setup ? [plant.setup] : [])).filter(Boolean).map(String);
+            if (setup.includes('Heated propagator') && plant.heatedPropagatorTemperatureC !== null && plant.heatedPropagatorTemperatureC !== undefined && plant.heatedPropagatorTemperatureC !== '') {
+                setup[setup.indexOf('Heated propagator')] += ' (' + plant.heatedPropagatorTemperatureC + ' °C)';
+            }
+            const type = plant.quantityType || 'plants';
+            const quantity = Math.max(0, Number(plant.quantity) || 0);
+            const quantityLabel = quantity + ' ' + (type === 'seeds' ? 'seeds' : type === 'cuttings' ? (quantity === 1 ? 'cutting' : 'cuttings') : (quantity === 1 ? 'plant' : 'plants'));
+            const remaining = type === 'seeds' ? Number(plant.remainingSeeds || 0) : type === 'cuttings' ? Number(plant.remainingCuttings || 0) : 0;
+            const notes = String(plant.notes || '').trim();
+            const title = esc(plant.name || 'Plant Journal');
+            const variety = esc(plant.variety || 'Variety not specified');
+            const coverImage = safeImage(plant.customIconUrl);
+            const detail = (label, value) => '<div class="detail"><span class="detail-label">' + esc(label) + '</span><span class="detail-value">' + (value || '<span class="muted">Not recorded</span>') + '</span></div>';
+            const photoMarkup = photos => (Array.isArray(photos) ? photos : []).map((photo, index) => {
+                const src = safeImage(photo);
+                return src ? '<figure class="journal-photo"><img src="' + src + '" alt="Journal photograph ' + (index + 1) + '"><figcaption>Photo ' + (index + 1) + '</figcaption></figure>' : '';
+            }).join('');
+            const entriesHTML = logs.length ? logs.map((log, index) => {
+                const stage = log.growthStage || log.growth_stage || '';
+                const reminder = log.feedReminderDate ? '<div class="log-meta">Feed reminder: ' + formatDate(log.feedReminderDate) + (log.feedReminderMode === 'recurring' ? ' · recurring' : '') + '</div>' : '';
+                return '<article class="entry">' +
+                    '<div class="entry-topline"><span class="entry-number">ENTRY ' + String(index + 1).padStart(2, '0') + '</span><time>' + formatDate(log.date) + '</time></div>' +
+                    '<div class="entry-title-row"><h3>' + esc(log.type || 'Growth Update') + '</h3>' + (stage ? '<span class="stage">' + esc(stage) + '</span>' : '') + '</div>' +
+                    '<div class="entry-copy">' + esc(log.text || 'No written notes for this entry.').replace(/\n/g, '<br>') + '</div>' + reminder + photoMarkup(log.photos) + '</article>';
+            }).join('') : '<p class="empty-state">No journal entries have been recorded yet.</p>';
 
             const printWindow = window.open('', '_blank');
-            if (!printWindow) {
-                alert('Your browser blocked the PDF window. Please allow pop-ups for Flora Scan and try again.');
-                return;
-            }
-
-            const title = escapePDFHTML(plant.name || 'Plant Journal');
-            const variety = escapePDFHTML(plant.variety || 'Standard Variety');
-            const date = escapePDFHTML(plant.date || 'Not specified');
-            const medium = escapePDFHTML(plant.medium || 'Not specified');
-            const color = escapePDFHTML(getCommonColorName(plant.hex));
-            const notes = escapePDFHTML(plant.notes || 'No initial notes recorded.');
-            const generated = escapePDFHTML(new Date().toLocaleDateString());
-
+            if (!printWindow) { alert('Your browser blocked the PDF window. Please allow pop-ups for Flora Scan and try again.'); return; }
+            const multisow = plant.multisow ? Number(plant.multisowPots || 0) + ' ' + (plant.multisowContainerType === 'plugs' ? 'plugs' : 'pots') + ' · ' + Number(plant.seedsPerPot || 0) + ' seeds per ' + (plant.multisowContainerType === 'plugs' ? 'plug' : 'pot') : '';
+            const setupValue = setup.length ? esc(setup.join(' · ')) : '';
+            const summary = [
+                detail('Sown / started', esc(quantityLabel)),
+                detail('Remaining', remaining > 0 ? esc(remaining + (type === 'seeds' ? ' seeds' : ' cuttings')) : ''),
+                detail('Planting date', formatDate(plant.date)),
+                detail('Growing location', esc(plant.location || '')),
+                detail('Growing medium', esc(plant.medium || '')),
+                detail('Plant colour', esc(getCommonColorName(plant.hex) || '')),
+                detail('Growing setup', setupValue),
+                detail('Journal entries', esc(String(logs.length))),
+                ...(multisow ? [detail('Multi-sowing', esc(multisow))] : [])
+            ].join('');
+            const photo = coverImage ? '<img class="cover-photo" src="' + coverImage + '" alt="' + title + '">' : '';
+            const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + title + ' — Flora Scan Plant Journal</title>' +
+            '<style>' +
+            '@page{size:A4;margin:16mm 17mm 18mm}*{box-sizing:border-box}body{margin:0;color:#263b2d;background:#fff;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:10pt;line-height:1.55}' +
+            '.masthead{display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid #dce4d8;color:#526b56;font-size:8pt;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}.masthead-mark{color:#2d5938;letter-spacing:2px}' +
+            '.cover{display:grid;grid-template-columns:minmax(0,1fr) 42mm;gap:18px;align-items:center;padding:24px 0 20px;border-bottom:3px solid #315b3b}.eyebrow{margin:0 0 5px;color:#789078;font-size:8pt;font-weight:700;letter-spacing:2px;text-transform:uppercase}' +
+            'h1{margin:0;color:#24452e;font-size:29pt;line-height:1.08;letter-spacing:-.8px;overflow-wrap:anywhere}.variety{margin:7px 0 0;color:#648069;font-size:13pt;font-weight:600}.cover-photo{width:42mm;height:42mm;object-fit:cover;border-radius:12px;border:1px solid #dce4d8}' +
+            '.section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid #dce4d8}h2{margin:0;color:#2c5035;font-size:14pt}.section-kicker{color:#829184;font-size:8pt;text-transform:uppercase;letter-spacing:1px}' +
+            '.details{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;padding:13px 15px;background:#f5f7f1;border:1px solid #e1e8dc;border-radius:10px}.detail{min-width:0;padding:7px 0;border-bottom:1px solid #e5ebe1}.detail-label{display:block;margin-bottom:2px;color:#7c8d7d;font-size:7.5pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase}.detail-value{display:block;color:#2e4935;font-size:9.5pt;font-weight:600;overflow-wrap:anywhere}.muted{color:#9aa59a;font-weight:400}' +
+            '.notes-panel{padding:13px 15px;background:#fbfcf9;border-left:3px solid #9bb18e;border-radius:0 8px 8px 0;overflow-wrap:anywhere}.notes-panel.empty{color:#929d91;font-style:italic}' +
+            '.entry{margin:0 0 13px;padding:13px 15px;border:1px solid #e1e8dc;border-radius:10px;break-inside:avoid;page-break-inside:avoid}.entry-topline{display:flex;justify-content:space-between;gap:12px;color:#829184;font-size:8pt}.entry-number{font-weight:800;letter-spacing:1.2px;color:#789078}.entry-title-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:5px 0 7px}h3{margin:0;color:#2c5035;font-size:12pt}.stage{padding:2px 8px;border-radius:20px;background:#edf3e9;color:#587653;font-size:8pt;font-weight:700}.entry-copy{color:#3e4d40;overflow-wrap:anywhere}.log-meta{margin-top:8px;color:#738575;font-size:8pt}' +
+            '.journal-photo{display:inline-block;width:31%;margin:10px 1% 0 0;vertical-align:top}.journal-photo img{display:block;width:100%;height:42mm;object-fit:cover;border-radius:7px;border:1px solid #e1e8dc}.journal-photo figcaption{margin-top:3px;color:#849184;font-size:7pt}.empty-state{padding:16px;color:#8b988b;background:#f7f9f5;border-radius:8px;font-style:italic}' +
+            '.footer{display:flex;justify-content:space-between;gap:12px;margin-top:25px;padding-top:9px;border-top:1px solid #dce4d8;color:#849184;font-size:8pt}.print-actions{margin:24px 0;text-align:center}.print-actions button{margin:0 4px;padding:10px 16px;border:0;border-radius:7px;background:#315b3b;color:white;font-weight:700;cursor:pointer}.print-actions button.secondary{border:1px solid #cbd7c8;background:white;color:#315b3b}' +
+            '@media print{.print-actions{display:none!important}a{color:inherit;text-decoration:none}.cover,.details,.entry,.notes-panel{-webkit-print-color-adjust:exact;print-color-adjust:exact}}' +
+            '</style></head><body>' +
+            '<div class="masthead"><span class="masthead-mark">FLORA SCAN</span><span>Personal growing record</span></div>' +
+            '<header class="cover"><div><p class="eyebrow">Plant journal</p><h1>' + title + '</h1><p class="variety">' + variety + '</p></div>' + photo + '</header>' +
+            '<section><div class="section-heading"><h2>Plant profile</h2><span class="section-kicker">Growing details</span></div><div class="details">' + summary + '</div></section>' +
+            '<section><div class="section-heading"><h2>Initial notes</h2><span class="section-kicker">At setup</span></div><div class="notes-panel ' + (notes ? '' : 'empty') + '">' + (notes ? esc(notes).replace(/\n/g, '<br>') : 'No initial notes recorded.') + '</div></section>' +
+            '<section><div class="section-heading"><h2>Growth journal</h2><span class="section-kicker">' + logs.length + ' ' + (logs.length === 1 ? 'entry' : 'entries') + '</span></div>' + entriesHTML + '</section>' +
+            '<footer class="footer"><span>Flora Scan · ' + title + '</span><span>Generated ' + esc(generated) + '</span></footer>' +
+            '<div class="print-actions"><button onclick="window.print()">Print / Save as PDF</button><button class="secondary" onclick="window.close()">Close</button><p style="color:#849184;font-size:9pt">Choose “Save as PDF” in your browser’s print destination to save a copy.</p></div>' +
+            '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),500));<\/script></body></html>';
             printWindow.document.open();
-            printWindow.document.write(`<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${title} - Plant Journal</title>
-<style>
-    @page { size: A4; margin: 18mm; }
-    * { box-sizing: border-box; }
-    body { font-family: Arial, Helvetica, sans-serif; color: #1f2937; font-size: 11pt; line-height: 1.55; }
-    header { border-bottom: 3px solid #15803d; padding-bottom: 14px; margin-bottom: 20px; }
-    .brand { color: #15803d; font-size: 10pt; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
-    h1 { font-size: 25pt; margin: 6px 0 2px; overflow-wrap: anywhere; }
-    .subtitle { color: #64748b; margin: 0; }
-    h2 { font-size: 15pt; margin: 22px 0 10px; border-bottom: 1px solid #d1d5db; padding-bottom: 5px; }
-    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 14px; border: 1px solid #e2e8f0; border-radius: 8px; }
-    .detail-label { color: #64748b; font-size: 9pt; text-transform: uppercase; letter-spacing: .5px; }
-    .detail-value { font-weight: 600; overflow-wrap: anywhere; }
-    .notes { white-space: normal; overflow-wrap: anywhere; }
-    .entry { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin: 10px 0; break-inside: avoid; }
-    .entry-heading { display: flex; justify-content: space-between; gap: 14px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
-    .entry-heading span { color: #64748b; white-space: nowrap; font-size: 9.5pt; }
-    .entry p { margin: 8px 0 0; overflow-wrap: anywhere; }
-    .empty { color: #64748b; font-style: italic; }
-    footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 9pt; }
-    @media print { .no-print { display: none; } }
-
-        /* Final override: keep every location-area surface in Grid view the same sage green as List view. */
-        #plants-grid section.location-group,
-        #plants-grid .location-group-details,
-        #plants-grid .location-details {
-            background-color: #f0f2e9 !important;
-            background-image: none !important;
-        }
-
-        /* Force the Plant Journal close control to keep its pink rollover state. */
-        #journal-modal #journal-header button[aria-label="Close journal"]:hover,
-        #journal-modal #journal-header button[aria-label="Close journal"]:active,
-        #journal-modal #journal-header button[aria-label="Close journal"]:focus,
-        #journal-modal #journal-header button[aria-label="Close journal"]:focus-visible {
-            background: #B0466C !important;
-            background-color: #B0466C !important;
-            background-image: none !important;
-            color: #ffffff !important;
-            box-shadow: none !important;
-            outline: none !important;
-            -webkit-tap-highlight-color: transparent !important;
-        }
-
-        /* Centre each navigation icon above its label on mobile. */
-        @media (max-width: 767px) {
-            #main-navigation-tabs > button {
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 4px !important;
-                space-x: 0 !important;
-                padding-left: 4px !important;
-                padding-right: 4px !important;
-                text-align: center !important;
-            }
-            #main-navigation-tabs > button > i,
-            #main-navigation-tabs > button > img {
-                display: block !important;
-                margin: 0 auto !important;
-                flex: 0 0 auto !important;
-            }
-            #main-navigation-tabs > button > span {
-                display: block !important;
-                margin: 0 !important;
-                line-height: 1.15 !important;
-            }
-        }
-</style></head><body>
-<header><div class="brand">Flora Scan · Plant Journal</div><h1>${title}</h1><p class="subtitle">${variety}</p></header>
-<section class="details">
-<div><div class="detail-label">Planting date</div><div class="detail-value">${date}</div></div>
-<div><div class="detail-label">Growing medium</div><div class="detail-value">${medium}</div></div>
-<div><div class="detail-label">Journal entries</div><div class="detail-value">${logs.length}</div></div>
-</section>
-<h2>Plant notes</h2><p class="notes">${notes.replace(/\n/g, '<br>')}</p>
-<h2>Growth journal</h2>${entriesHTML}
-<footer>Exported from Flora Scan on ${generated}.</footer>
-<div class="no-print" style="margin-top:24px"><button onclick="window.print()" style="background:#15803d;color:white;border:0;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer">Print / Save as PDF</button> <button onclick="window.close()" style="padding:10px 16px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer">Close</button><p style="color:#64748b;font-size:12px">In the print dialog, choose “Save as PDF” as the destination to download your journal.</p></div>
-<script>window.addEventListener('load', () => setTimeout(() => window.print(), 350));<\/script>
-<style id="plant-growing-selection-modal-journal-header">
-/* Put the Plant Journal-style header on the actual full-screen growing selector panels. */
-#plant-medium-dropdown[open] #plant-medium-options,
-#plant-setup-dropdown[open] #plant-setup-options {
-    position: fixed !important;
-    isolation: isolate !important;
-    padding-top: 54px !important;
-}
-#plant-medium-dropdown[open] #plant-medium-options::before,
-#plant-setup-dropdown[open] #plant-setup-options::before {
-    content: "" !important;
-    display: block !important;
-    position: absolute !important;
-    inset: 0 0 auto 0 !important;
-    height: 28px !important;
-    background: #fffef9 !important;
-    z-index: 4 !important;
-    pointer-events: none !important;
-}
-#plant-medium-dropdown[open] #plant-medium-options::after,
-#plant-setup-dropdown[open] #plant-setup-options::after {
-    content: "" !important;
-    display: block !important;
-    position: absolute !important;
-    top: 22px !important;
-    left: 14px !important;
-    right: 14px !important;
-    height: 6px !important;
-    z-index: 5 !important;
-    pointer-events: none !important;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 6px no-repeat !important;
-}
-#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-close,
-#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-close {
-    position: absolute !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    top: 0 !important;
-    right: 16px !important;
-    z-index: 6 !important;
-    width: 24px !important;
-    min-width: 24px !important;
-    max-width: 24px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    max-height: 34px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: 0 !important;
-    border-radius: 0 0 8px 8px !important;
-    background: rgb(196, 85, 124) !important;
-    color: #fff !important;
-    box-shadow: 0 0 0 5px #fffef9 !important;
-    line-height: 1 !important;
-}
-#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-close:hover,
-#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-close:hover {
-    background: #B0466C !important;
-    color: #fff !important;
-}
-
-/* Keep the decorative header and close tab pinned while the options list scrolls. */
-#plant-medium-dropdown[open] #plant-medium-options,
-#plant-setup-dropdown[open] #plant-setup-options {
-    background-color: #fffef9 !important;
-    background-image:
-      linear-gradient(#fffef9, #fffef9),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
-    background-repeat: no-repeat, no-repeat !important;
-    background-position: top left, 14px 22px !important;
-    background-size: 100% 28px, calc(100% - 28px) 6px !important;
-    background-attachment: scroll, scroll !important;
-}
-#plant-medium-dropdown[open] #plant-medium-options::before,
-#plant-setup-dropdown[open] #plant-setup-options::before,
-#plant-medium-dropdown[open] #plant-medium-options::after,
-#plant-setup-dropdown[open] #plant-setup-options::after {
-    content: none !important;
-    display: none !important;
-}
-#plant-medium-dropdown[open] #plant-medium-options > .plant-picker-close,
-#plant-setup-dropdown[open] #plant-setup-options > .plant-picker-close {
-    position: sticky !important;
-    top: 0 !important;
-    float: right !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin-top: -54px !important;
-    margin-bottom: 20px !important;
-    margin-right: 0 !important;
-    z-index: 10 !important;
-    width: 24px !important;
-    min-width: 24px !important;
-    max-width: 24px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    max-height: 34px !important;
-    border-radius: 0 0 8px 8px !important;
-    background: rgb(196, 85, 124) !important;
-    color: #fff !important;
-    box-shadow: 0 0 0 5px #fffef9 !important;
-}
-</style>
-
-
-
-
-<style id="plant-picker-unified-option-spacing">
-/* Apply spacing to the actual option groups (the lists are not wrapped in a scroll-area element). */
-#plant-medium-options section,
-#plant-setup-options fieldset,
-#plant-setup-options section,
-.journal-growing-picker #plant-medium-options section,
-.journal-growing-picker #plant-setup-options fieldset,
-.journal-growing-picker #plant-setup-options section {
-    margin: 0 0 14px !important;
-    padding: 0 !important;
-}
-#plant-medium-options section > div,
-#plant-setup-options fieldset > div,
-#plant-setup-options section > div,
-.journal-growing-picker #plant-medium-options section > div,
-.journal-growing-picker #plant-setup-options fieldset > div,
-.journal-growing-picker #plant-setup-options section > div {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 6px !important;
-}
-#plant-medium-options label,
-#plant-setup-options label,
-.journal-growing-picker #plant-medium-options label,
-.journal-growing-picker #plant-setup-options label {
-    display: flex !important;
-    align-items: center !important;
-    column-gap: 10px !important;
-    box-sizing: border-box !important;
-    min-height: 30px !important;
-    margin: 0 !important;
-    padding: 5px 10px !important;
-    line-height: 1.4 !important;
-}
-#plant-medium-options section > h4,
-#plant-setup-options fieldset > legend,
-#plant-setup-options section > h4,
-.journal-growing-picker #plant-medium-options section > h4,
-.journal-growing-picker #plant-setup-options fieldset > legend,
-.journal-growing-picker #plant-setup-options section > h4 {
-    display: block !important;
-    box-sizing: border-box !important;
-    width: 100% !important;
-    margin: 0 0 8px !important;
-    padding: 0 !important;
-    line-height: 1.4 !important;
-}
-</style>
-
-<style id="plant-growing-picker-portal-specificity-fix">
-/* Override the older ID-based modal rules after the picker has been portalled to body. */
-html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options,
-html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options {
-    position: fixed !important;
-    top: max(12px, env(safe-area-inset-top, 0px)) !important;
-    right: 12px !important;
-    bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
-    left: 12px !important;
-    inset: max(12px, env(safe-area-inset-top, 0px)) 12px max(12px, env(safe-area-inset-bottom, 0px)) 12px !important;
-    width: auto !important;
-    max-width: 560px !important;
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
-    margin: auto !important;
-    transform: none !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
-    z-index: 2147483001 !important;
-}
-html body > details#plant-medium-dropdown.plant-growing-picker-portal[open] > #plant-medium-options > .plant-picker-scroll-area,
-html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #plant-setup-options > .plant-picker-scroll-area {
-    min-height: 0 !important;
-    flex: 1 1 auto !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-}
-</style>
-
-
-<style id="list-view-show-setup-only">
-/* In list view, hide notes/medium/logs but always retain the Setup line.
-   Target the Setup class directly rather than relying on card child positions. */
-#view-plants #plants-grid .location-group-plants.is-list-view .plant-card .plant-card-setup-detail {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    margin-top: 0 !important;
-    white-space: normal !important;
-}
-</style>
-</body>
-
-</html>`);
+            printWindow.document.write(html);
             printWindow.document.close();
         }
-
         function closeJournalModal() {
             if (typeof window.restoreSharedGrowingPickers === 'function') window.restoreSharedGrowingPickers();
             document.getElementById('journal-modal').classList.add('hidden');
