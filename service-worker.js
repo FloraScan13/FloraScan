@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sugar-bush-shell-v21';;;;;;;
+const CACHE_NAME = 'sugar-bush-shell-vNaN';;;;;;;;
 const APP_SHELL = [
     './',
     './index.html',
