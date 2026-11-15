@@ -4633,6 +4633,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     multisow_container_type: plant.multisow ? (plant.multisowContainerType === 'plugs' ? 'plugs' : 'pots') : '',
                     seeds_per_pot: plant.multisow ? Math.max(0, Number(plant.seedsPerPot) || 0) : 0,
                         icon_key: plant.iconKey, custom_icon_path: plant.customIconPath || null, hex: plant.hex, date: plant.date, medium: plant.medium,
+                        setup: Array.isArray(plant.setup) ? plant.setup : (plant.setup ? [plant.setup] : []),
+                        heated_propagator_temperature_c: plant.heatedPropagatorTemperatureC ?? null,
                         notes: plant.notes, location: plant.location || '',
                         nfc_tag_linked: !!plant.nfcTagLinked, qr_code_value: plant.qrCodeValue || null
                     });
@@ -4809,6 +4811,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             hex: p.hex,
                             date: p.date,
                             medium: p.medium,
+                            setup: Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : []),
+                            heatedPropagatorTemperatureC: p.heated_propagator_temperature_c ?? null,
                             location: p.location || (JSON.parse(localStorage.getItem('flora_plants') || '[]').find(localPlant => localPlant.id === p.id) || {}).location || '',
                             notes: p.notes,
                             nfcTagLinked: !!p.nfc_tag_linked,
@@ -4856,6 +4860,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     hex: plant.hex,
                     date: plant.date,
                     medium: plant.medium,
+                    setup: Array.isArray(plant.setup) ? plant.setup : (plant.setup ? [plant.setup] : []),
+                    heated_propagator_temperature_c: plant.heatedPropagatorTemperatureC ?? null,
                     notes: plant.notes,
                     location: plant.location || '',
                     nfc_tag_linked: !!plant.nfcTagLinked,
