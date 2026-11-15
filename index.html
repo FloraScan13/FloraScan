@@ -6512,13 +6512,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const reminderDate = reminderParts.length === 3 && reminderParts.every(Number.isFinite)
                         ? new Date(reminderParts[0], reminderParts[1] - 1, reminderParts[2])
                         : new Date(feedReminderLog.feedReminderDate);
-                    const reminderLabel = Number.isNaN(reminderDate.getTime()) ? feedReminderLog.feedReminderDate : reminderDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                    if (Number.isNaN(reminderDate.getTime())) return '';
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
                     const reminderDay = new Date(reminderDate);
                     reminderDay.setHours(0, 0, 0, 0);
-                    const isOverdue = !Number.isNaN(reminderDate.getTime()) && reminderDay.getTime() < today.getTime();
-                    const dueLabel = Number.isNaN(reminderDate.getTime()) ? 'Feed reminder' : isOverdue ? 'Feed overdue' : reminderDay.getTime() === today.getTime() ? 'Feed due today' : 'Feed due';
+                    // Keep upcoming feed reminders off the plant cards; show the bell only when due today or overdue.
+                    if (reminderDay.getTime() > today.getTime()) return '';
+                    const reminderLabel = reminderDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const isOverdue = reminderDay.getTime() < today.getTime();
+                    const dueLabel = isOverdue ? 'Feed overdue' : 'Feed due today';
                     const bellColor = isOverdue ? '#798CBF' : '#c6537b';
                     return '<span class="inline-flex items-center justify-center mt-1 text-lg" style="color:' + bellColor + ';" title="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '" aria-label="' + dueLabel + ' · ' + escapeHtml(reminderLabel) + '"><i class="fa-solid fa-bell"></i></span>';
                 })() : '';
