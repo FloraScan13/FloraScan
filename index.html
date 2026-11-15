@@ -9049,7 +9049,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 detail('Planting date', formatDate(plant.date)),
                 detail('Growing location', esc(plant.location || '')),
                 detail('Growing medium', esc(plant.medium || '')),
-                detail('Plant colour', esc(getCommonColorName(plant.hex) || '')),
+
                 detail('Growing setup', setupValue),
                 detail('Journal entries', esc(String(logs.length))),
                 ...(multisow ? [detail('Multi-sowing', esc(multisow))] : [])
