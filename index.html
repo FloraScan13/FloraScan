@@ -9880,6 +9880,11 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                 const field = document.getElementById(id);
                 if (field) field.classList.add('hidden');
             });
+            // Hidden edit-only fields must not participate in native browser validation.
+            // In particular, the hidden growth-stage select is required for new Growth logs
+            // but intentionally unavailable while editing an existing log.
+            const editStageSelect = document.getElementById('log-growth-stage');
+            if (editStageSelect) editStageSelect.required = false;
             // The date field is intentionally hidden in edit mode; scroll to the visible
             // form heading instead of trying to scroll to that hidden input.
             installJournalEditLivePreview();
@@ -9904,6 +9909,8 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
             document.getElementById('log-date').value = new Date().toISOString().slice(0, 10);
             document.getElementById('log-type').value = 'Growth';
             document.getElementById('log-growth-stage').value = '';
+            // Restore normal required-field rules when leaving edit mode.
+            toggleGerminationSection();
             document.getElementById('log-text').value = '';
             const originalPlant = plants.find(item => String(item.id) === String(document.getElementById('log-plant-id').value));
             if (originalPlant) renderJournalLogs(originalPlant);
