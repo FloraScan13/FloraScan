@@ -9004,6 +9004,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const logs = Array.isArray(plant.logs) ? [...plant.logs] : [];
             logs.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
             const generated = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+            const pdfUsername = esc(String(appSettings.username || '@kitchengardener').trim());
             const formatDate = value => {
                 if (!value) return 'Not recorded';
                 const parsed = new Date(String(value).length === 10 ? value + 'T00:00:00' : value);
@@ -9110,7 +9111,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             '.empty-state{padding:5px 0;background:transparent;border-radius:0}.footer{margin-top:18px;padding-top:6px;border-top:1px solid #aeb9ad}' +
             '@media print{.entry,.equipment-group{break-inside:avoid-page}.details,.cover,.location-description{-webkit-print-color-adjust:economy;print-color-adjust:economy}}' +
             '</style></head><body><main class="page-preview">' +
-            '<div class="masthead"><span class="masthead-mark">FLORA SCAN</span><span class="masthead-title">Plant journal</span></div>' +
+            '<div class="masthead"><span class="masthead-mark">FLORA SCAN</span><span class="masthead-title">Plant journal · ' + pdfUsername + '</span></div>' +
             '<header class="cover"><div><h1>' + title + '</h1><p class="variety">' + variety + '</p></div>' + photo + '</header>' +
             '<section><div class="section-heading"><h2>Plant profile</h2><span class="section-kicker">Growing details</span></div><div class="details">' + summary + '</div></section>' +
             locationSetupHTML +
