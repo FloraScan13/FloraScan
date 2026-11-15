@@ -10060,6 +10060,22 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                 existingLog.text = type === 'Harvest'
                     ? buildHarvestLogText(journalNotes, harvestMeasurement, harvestValue, harvestUnit, plant.name)
                     : journalNotes;
+                if (type === 'Medium') {
+                    const previousMedium = plant.medium || 'Not specified';
+                    const previousSetup = Array.isArray(plant.setup) ? plant.setup.join(', ') : (plant.setup || 'Not specified');
+                    const mediumValues = window.getJournalMediumValues ? window.getJournalMediumValues() : [];
+                    const setupValues = window.getJournalSetupValues ? window.getJournalSetupValues() : [];
+                    const nextMedium = mediumValues.join(' · ');
+                    const nextSetup = setupValues.join(', ');
+                    plant.medium = nextMedium;
+                    plant.setup = setupValues;
+                    // Replace a previous generated summary instead of stacking one on every edit.
+                    const cleanNotes = String(existingLog.text || '').replace(/\\s*\\(Growing medium changed from [\\s\\S]*?; setup changed from [\\s\\S]*?\\.\\)\\s*$/i, '').trim();
+                    existingLog.text = (cleanNotes ? cleanNotes + ' ' : '') +
+                        '(Growing medium changed from ' + previousMedium + ' to ' + (nextMedium || 'Not specified') +
+                        '; setup changed from ' + previousSetup + ' to ' + (nextSetup || 'Not specified') + '.)';
+                    existingLog.growthMedium = nextMedium;
+                }
                 existingLog.feedReminderDate = type === 'Feed' ? document.getElementById('feed-reminder-date').value : '';
                 existingLog.feedReminderMode = type === 'Feed' ? document.getElementById('feed-reminder-mode').value : 'once';
                 existingLog.feedReminderInterval = type === 'Feed' && document.getElementById('feed-reminder-interval').value ? Number(document.getElementById('feed-reminder-interval').value) : '';
@@ -10069,13 +10085,16 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                 // after a reload, even when the reminder table update is delayed.
                 localStorage.setItem('flora_plants', JSON.stringify(plants));
                 markFloraSyncPending();
+                const plantSynced = type === 'Medium' ? await syncPlantToCloud(plant) : true;
                 const synced = await syncLogToCloud(plantId, existingLog);
                 const reminderSaved = await saveFeedReminder(plant, existingLog);
                 localStorage.setItem('flora_plants', JSON.stringify(plants));
                 renderJournalLogs(plant);
+                document.getElementById('journal-medium').textContent = plant.medium || 'Not specified';
+                document.getElementById('journal-setup').textContent = (Array.isArray(plant.setup) ? plant.setup : (plant.setup ? [plant.setup] : [])).join(', ') || 'Not specified';
                 renderPlants();
                 cancelJournalLogEdit();
-                if (supabaseClient && currentUser && navigator.onLine && synced === false) {
+                if (supabaseClient && currentUser && navigator.onLine && (synced === false || plantSynced === false)) {
                     alert('Your growth log edit was saved on this device, but cloud sync failed. It will retry when sync is available.');
                 } else if (!reminderSaved) {
                     alert('Your growth log was updated, but the feed reminder could not be fully saved. Please check the reminder date and try again.');
