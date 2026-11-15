@@ -3371,6 +3371,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
                                     <div><strong class="text-slate-800 dark:text-slate-200">Planted:</strong> <span id="journal-date">-</span></div>
                                     <div><strong class="text-slate-800 dark:text-slate-200">Medium:</strong> <span id="journal-medium">-</span></div>
+                                    <div class="w-full"><strong class="text-slate-800 dark:text-slate-200">Setup:</strong> <span id="journal-setup">Not specified</span></div>
                                     <div id="journal-tag-type-row" class="hidden"><strong class="text-slate-800 dark:text-slate-200">Tag type:</strong> <span id="journal-tag-type"></span></div>
                                 </div>
                                 <div id="journal-amount-editor" class="hidden mt-2 rounded-xl border border-pink-200 bg-pink-50/70 p-3">
@@ -8573,7 +8574,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
             }
             document.getElementById('journal-date').textContent = p.date || 'Not specified';
-            document.getElementById('journal-medium').textContent = [p.medium, (Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : [])).join(', ')].filter(Boolean).join(' · ') || 'Not specified';
+            document.getElementById('journal-medium').textContent = p.medium || 'Not specified';
+            document.getElementById('journal-setup').textContent = (Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : [])).join(', ') || 'Not specified';
+            document.getElementById('journal-setup').textContent = (Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : [])).join(', ') || 'Not specified';
             const tagTypeRow = document.getElementById('journal-tag-type-row');
             const tagTypeLabel = document.getElementById('journal-tag-type');
             const linkedTagType = String(p.qrCodeValue || '').trim() ? 'QR code' : (p.nfcTagLinked ? 'NFC' : '');
