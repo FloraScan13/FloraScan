@@ -9088,7 +9088,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + title + ' — Flora Scan Plant Journal</title>' +
             '<style>' +
             '@page{size:A4;margin:16mm 17mm 18mm}*{box-sizing:border-box}body{margin:0;padding:24px 0;color:#263b2d;background:#edf0ec;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:10pt;line-height:1.55}.page-preview{width:min(210mm,calc(100% - 32px));min-height:297mm;margin:0 auto;padding:16mm 17mm 18mm;background:#fff;border:1px solid #cbd5c8;box-shadow:0 5px 22px rgba(31,55,37,.14)}' +
-            '.masthead{display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid #dce4d8;color:#526b56;font-size:8pt;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}.masthead-mark{color:#2d5938;letter-spacing:2px}' +
+            '.masthead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid #dce4d8;color:#526b56;font-size:8pt;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}.masthead-mark{color:#2d5938;letter-spacing:2px}.masthead-title{color:#526052;font-size:8pt;font-weight:600;letter-spacing:1px}' +
             '.cover{display:grid;grid-template-columns:minmax(0,1fr) 42mm;gap:18px;align-items:center;padding:24px 0 20px;border-bottom:3px solid #315b3b}.eyebrow{margin:0 0 5px;color:#789078;font-size:8pt;font-weight:700;letter-spacing:2px;text-transform:uppercase}' +
             'h1{margin:0;color:#24452e;font-size:29pt;line-height:1.08;letter-spacing:-.8px;overflow-wrap:anywhere}.variety{margin:7px 0 0;color:#648069;font-size:13pt;font-weight:600}.cover-photo{width:42mm;height:42mm;object-fit:cover;border-radius:12px;border:1px solid #dce4d8}' +
             '.section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid #dce4d8}h2{margin:0;color:#2c5035;font-size:14pt}.section-kicker{color:#829184;font-size:8pt;text-transform:uppercase;letter-spacing:1px}' +
@@ -9100,7 +9100,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             '.footer{display:flex;justify-content:space-between;gap:12px;margin-top:25px;padding-top:9px;border-top:1px solid #dce4d8;color:#849184;font-size:8pt}.print-actions{margin:24px 0;text-align:center}.print-actions button{margin:0 4px;padding:10px 16px;border:0;border-radius:7px;background:#315b3b;color:white;font-weight:700;cursor:pointer}.print-actions button.secondary{border:1px solid #cbd7c8;background:white;color:#315b3b}' +
             '@media print{body{padding:0;background:#fff}.page-preview{width:auto;min-height:0;margin:0;padding:0;border:0;box-shadow:none}.print-actions{display:none!important}a{color:inherit;text-decoration:none}.cover,.details,.entry,.notes-panel{-webkit-print-color-adjust:exact;print-color-adjust:exact}}' +
             /* Research-report layout: remove decorative cards and prioritise readable data. */
-            '.masthead{padding-bottom:6px;border-bottom:1px solid #aeb9ad;color:#526052;letter-spacing:1px}' +
+            '.masthead{padding-bottom:6px;border-bottom:1px solid #aeb9ad;color:#526052;letter-spacing:1px}.masthead-title{font-size:7.5pt;letter-spacing:.8px}' +
             '.cover{grid-template-columns:minmax(0,1fr) 30mm;gap:14px;padding:16px 0 13px;border-bottom:1.5px solid #526b56}.cover-photo{width:30mm;height:30mm;border:0;border-radius:0}' +
             '.eyebrow{letter-spacing:1.2px}h1{font-size:24pt;letter-spacing:0}.variety{margin-top:4px;font-size:11pt;font-weight:500;color:#526052}' +
             '.section-heading{margin:17px 0 6px;padding-bottom:4px;border-bottom:1px solid #aeb9ad}h2{font-size:12pt;font-weight:700}.section-kicker{font-size:7pt;letter-spacing:.7px}' +
@@ -9110,7 +9110,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             '.empty-state{padding:5px 0;background:transparent;border-radius:0}.footer{margin-top:18px;padding-top:6px;border-top:1px solid #aeb9ad}' +
             '@media print{.entry,.equipment-group{break-inside:avoid-page}.details,.cover,.location-description{-webkit-print-color-adjust:economy;print-color-adjust:economy}}' +
             '</style></head><body><main class="page-preview">' +
-            '<div class="masthead"><span class="masthead-mark">FLORA SCAN</span><span></span></div>' +
+            '<div class="masthead"><span class="masthead-mark">FLORA SCAN</span><span class="masthead-title">Plant journal</span></div>' +
             '<header class="cover"><div><p class="eyebrow">Plant journal</p><h1>' + title + '</h1><p class="variety">' + variety + '</p></div>' + photo + '</header>' +
             '<section><div class="section-heading"><h2>Plant profile</h2><span class="section-kicker">Growing details</span></div><div class="details">' + summary + '</div></section>' +
             locationSetupHTML +
