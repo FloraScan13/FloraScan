@@ -9054,6 +9054,34 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 detail('Journal entries', esc(String(logs.length))),
                 ...(multisow ? [detail('Multi-sowing', esc(multisow))] : [])
             ].join('');
+            const plantLocation = String(plant.location || '').trim();
+            let locationEquipmentSelections = [];
+            let locationEquipmentNames = {};
+            try {
+                const allEquipment = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
+                const selected = Array.isArray(allEquipment[plantLocation]) ? allEquipment[plantLocation] : [];
+                const allNames = JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}');
+                locationEquipmentNames = allNames[plantLocation] && typeof allNames[plantLocation] === 'object' ? allNames[plantLocation] : {};
+                locationEquipmentSelections = selected.filter(key => typeof key === 'string' && key.includes('::')).map(key => {
+                    const parts = key.split('::');
+                    return { category: parts[0], name: locationEquipmentNames[key] || parts.slice(1).join('::') };
+                });
+            } catch (error) { locationEquipmentSelections = []; }
+            const locationType = locationTypes[plantLocation] === 'outdoor' ? 'Outdoor' : (plantLocation && plantLocations.includes(plantLocation) ? 'Indoor' : '');
+            const locationDescription = String(locationDetails[plantLocation] || '').trim();
+            const locationPostcode = locationPostcodes[plantLocation] || '';
+            const equipmentGroups = [...new Set(locationEquipmentSelections.map(item => item.category))].map(category => {
+                const names = locationEquipmentSelections.filter(item => item.category === category).map(item => esc(item.name));
+                return '<div class="equipment-group"><strong>' + esc(category) + '</strong><div class="equipment-items">' + names.map(name => '<span class="equipment-chip">' + name + '</span>').join('') + '</div></div>';
+            }).join('');
+            const hasLocationSetup = Boolean(plantLocation || locationDescription || locationType || locationPostcode || locationEquipmentSelections.length);
+            const locationSetupHTML = hasLocationSetup
+                ? '<section><div class="section-heading"><h2>Location setup</h2><span class="section-kicker">Growing environment</span></div>' +
+                    '<div class="details">' + detail('Location', esc(plantLocation)) + detail('Environment', esc(locationType)) + detail('Postcode', esc(locationPostcode)) + detail('Equipment selected', esc(String(locationEquipmentSelections.length))) + '</div>' +
+                    (locationDescription ? '<div class="notes-panel location-description">' + esc(locationDescription).replace(/\n/g, '<br>') + '</div>' : '') +
+                    (equipmentGroups ? '<div class="equipment-list">' + equipmentGroups + '</div>' : '<p class="empty-state">No equipment has been selected for this location.</p>') +
+                  '</section>'
+                : '';
             const photo = coverImage ? '<img class="cover-photo" src="' + coverImage + '" alt="' + title + '">' : '';
             const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + title + ' — Flora Scan Plant Journal</title>' +
             '<style>' +
@@ -9064,6 +9092,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             '.section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid #dce4d8}h2{margin:0;color:#2c5035;font-size:14pt}.section-kicker{color:#829184;font-size:8pt;text-transform:uppercase;letter-spacing:1px}' +
             '.details{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;padding:13px 15px;background:#f5f7f1;border:1px solid #e1e8dc;border-radius:10px}.detail{min-width:0;padding:7px 0;border-bottom:1px solid #e5ebe1}.detail-label{display:block;margin-bottom:2px;color:#7c8d7d;font-size:7.5pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase}.detail-value{display:block;color:#2e4935;font-size:9.5pt;font-weight:600;overflow-wrap:anywhere}.muted{color:#9aa59a;font-weight:400}' +
             '.notes-panel{padding:13px 15px;background:#fbfcf9;border-left:3px solid #9bb18e;border-radius:0 8px 8px 0;overflow-wrap:anywhere}.notes-panel.empty{color:#929d91;font-style:italic}' +
+            '.location-description{margin-top:10px}.equipment-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.equipment-group{padding:10px 12px;border:1px solid #e1e8dc;border-radius:8px;break-inside:avoid}.equipment-group>strong{display:block;margin-bottom:6px;color:#607b60;font-size:8pt;text-transform:uppercase;letter-spacing:.6px}.equipment-items{display:flex;flex-wrap:wrap;gap:5px}.equipment-chip{padding:3px 7px;border-radius:20px;background:#edf3e9;color:#36583b;font-size:8pt}' +
             '.entry{margin:0 0 13px;padding:13px 15px;border:1px solid #e1e8dc;border-radius:10px;break-inside:avoid;page-break-inside:avoid}.entry-topline{display:flex;justify-content:space-between;gap:12px;color:#829184;font-size:8pt}.entry-number{font-weight:800;letter-spacing:1.2px;color:#789078}.entry-title-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:5px 0 7px}h3{margin:0;color:#2c5035;font-size:12pt}.stage{padding:2px 8px;border-radius:20px;background:#edf3e9;color:#587653;font-size:8pt;font-weight:700}.entry-copy{color:#3e4d40;overflow-wrap:anywhere}.log-meta{margin-top:8px;color:#738575;font-size:8pt}' +
             '.journal-photo{display:inline-block;width:31%;margin:10px 1% 0 0;vertical-align:top}.journal-photo img{display:block;width:100%;height:42mm;object-fit:cover;border-radius:7px;border:1px solid #e1e8dc}.journal-photo figcaption{margin-top:3px;color:#849184;font-size:7pt}.empty-state{padding:16px;color:#8b988b;background:#f7f9f5;border-radius:8px;font-style:italic}' +
             '.footer{display:flex;justify-content:space-between;gap:12px;margin-top:25px;padding-top:9px;border-top:1px solid #dce4d8;color:#849184;font-size:8pt}.print-actions{margin:24px 0;text-align:center}.print-actions button{margin:0 4px;padding:10px 16px;border:0;border-radius:7px;background:#315b3b;color:white;font-weight:700;cursor:pointer}.print-actions button.secondary{border:1px solid #cbd7c8;background:white;color:#315b3b}' +
@@ -9073,6 +9102,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             '<header class="cover"><div><p class="eyebrow">Plant journal</p><h1>' + title + '</h1><p class="variety">' + variety + '</p></div>' + photo + '</header>' +
             '<section><div class="section-heading"><h2>Plant profile</h2><span class="section-kicker">Growing details</span></div><div class="details">' + summary + '</div></section>' +
             '<section><div class="section-heading"><h2>Initial notes</h2><span class="section-kicker">At setup</span></div><div class="notes-panel ' + (notes ? '' : 'empty') + '">' + (notes ? esc(notes).replace(/\n/g, '<br>') : 'No initial notes recorded.') + '</div></section>' +
+            locationSetupHTML +
             '<section><div class="section-heading"><h2>Growth journal</h2><span class="section-kicker">' + logs.length + ' ' + (logs.length === 1 ? 'entry' : 'entries') + '</span></div>' + entriesHTML + '</section>' +
             '<footer class="footer"><span>Flora Scan · ' + title + '</span><span>Generated ' + esc(generated) + '</span></footer>' +
             '<div class="print-actions"><button onclick="window.print()">Print / Save as PDF</button><button class="secondary" onclick="window.close()">Close</button><p style="color:#849184;font-size:9pt">Choose “Save as PDF” in your browser’s print destination to save a copy.</p></div>' +
