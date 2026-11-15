@@ -6215,12 +6215,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             })();
             const draftEquipmentNames = { ...savedEquipmentNames };
             modal.innerHTML = `
-                <div class="relative bg-[#fffef9] max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-8 border border-[#e1e1d5]" style="max-height:90vh;">
+                <div class="relative bg-[#fffef9] max-w-lg w-full rounded-2xl shadow-xl overflow-hidden my-8 border border-[#e1e1d5] flex flex-col" style="max-height:90vh;">
                     <div class="absolute top-0 left-0 right-0 z-10 h-7 px-[10px] flex items-start justify-end bg-[#fffef9]">
                         <div aria-hidden="true" class="absolute left-[14px] right-[14px] bottom-0 h-[6px] pointer-events-none" style="background-repeat:no-repeat;background-position:center;background-size:100% 6px;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 6' preserveAspectRatio='none'%3E%3Cpath d='M2 3.8 C80 1.8 120 4.6 205 3.1 S350 2.1 430 3.5 S580 4.5 665 2.9 S820 2.2 998 3.4' fill='none' stroke='%23b8c9b9' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E&quot;);"></div>
                         <button type="button" class="relative z-20 w-6 h-[34px] flex items-center justify-center rounded-b-lg bg-[rgb(196,85,124)] text-white border-0" style="box-shadow:0 0 0 5px #fffef9;" aria-label="Close location details" onclick="closePlantLocationDetailsModal()"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                    <div class="p-6 pt-12 space-y-5 overflow-y-auto custom-scrollbar" style="max-height:90vh;color:#294333;">
+                    <div class="p-6 pt-12 space-y-5 overflow-y-auto custom-scrollbar flex-1 min-h-0" style="color:#294333;">
                         <div class="pb-3 border-b border-[#e1e1d5]">
                             <h2 id="plant-location-details-title" class="text-lg font-bold" style="color:#294333;">Location details</h2>
                             <p class="text-sm truncate" style="color:#718071;">${escapeHtml(location)}</p>
@@ -6285,7 +6285,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                                 `).join('')}
                             </div>
                         </section>` : ''}
-                        <div class="sticky bottom-0 pt-4 pb-1 flex justify-end gap-2" style="background:#fffef9;border-top:1px solid #e1e1d5;">
+                        </div>
+                        <div class="flex-shrink-0 px-6 py-4 flex justify-end gap-2" style="background:#fffef9;border-top:1px solid #e1e1d5;">
                             <button type="button" onclick="closePlantLocationDetailsModal()" class="rounded-lg px-4 py-2 text-sm font-semibold border" style="background:#fffef9;border-color:#d9ddcf;color:#426b47;">Cancel</button>
                             <button type="button" id="save-plant-location-details" class="rounded-lg px-5 py-2 text-sm font-bold shadow-sm" style="background:#c6537b;color:#fff;border:1px solid #c6537b;">Save details</button>
                         </div>
