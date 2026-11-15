@@ -6586,6 +6586,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     : '<div class="w-full h-full flex items-center justify-center text-slate-300"><i class="fa-solid fa-leaf text-2xl" aria-hidden="true"></i></div>';
                 // Use the actual rendered group heading as the key, so every card in a group gets the same details.
                 const plantLocation = (groupLocation || p.location || '').trim();
+                const isListView = getLocationPlantView(plantLocation) === 'list';
+                const listOnlyStyle = isListView ? ' style="display:none !important;"' : '';
                 const setupItems = (Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : []))
                     .map(value => String(value).trim())
                     .filter(Boolean)
@@ -6635,11 +6637,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         <div class="p-5 flex space-x-4 items-center" style="background-color: #f7f6f0;">
                             <div class="w-16 h-16 flex items-center justify-center flex-shrink-0 ${p.customIconUrl ? 'plant-photo-no-frame' : 'rounded-2xl crop-badge-container p-2 shadow-sm'}">${svgMarkup}</div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${escapeHtml(p.notes || 'No notes added.')}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2"${listOnlyStyle}>${escapeHtml(p.notes || 'No notes added.')}</p>
 
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
-                                <p class="plant-card-setup-detail text-[11px] text-slate-500 dark:text-slate-400 mt-1"><i class="fa-solid fa-seedling mr-1"></i>Setup: <strong class="font-semibold">${escapeHtml(setupLabel)}</strong></p>
-                                <span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-2"><i class="fa-solid fa-book-open mr-1 text-[10px]"></i> ${p.logs ? p.logs.length : 0} Growth Logs</span>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1"${listOnlyStyle}><i class="fa-solid fa-layer-group mr-1"></i>Medium: <strong class="font-semibold">${escapeHtml(p.medium || 'Not specified')}</strong></p>
+                                <p class="plant-card-setup-detail text-[11px] text-slate-500 dark:text-slate-400 mt-1"${isListView ? ' style="display:block !important;"' : ''}><i class="fa-solid fa-seedling mr-1"></i>Setup: <strong class="font-semibold">${escapeHtml(setupLabel)}</strong></p>
+                                <span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-2"${listOnlyStyle}><i class="fa-solid fa-book-open mr-1 text-[10px]"></i> ${p.logs ? p.logs.length : 0} Growth Logs</span>
                             </div>
                         </div>
                         <div class="px-5 py-2.5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700/50 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-400">
