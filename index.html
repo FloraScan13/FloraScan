@@ -7846,8 +7846,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (failedCuttingInput) failedCuttingInput.max = showCuttings ? String(availableCuttings) : '';
             if (!showCuttings && rootedInput) rootedInput.value = '';
             if (!showCuttings && failedCuttingInput) failedCuttingInput.value = '';
-            // Location changes are handled by the location picker and do not need a growth stage.
-            const requiresGrowthStage = document.getElementById('log-type').value !== 'Location Change';
+            // Multi-sow seed tracking is inherently at the seedling stage, so avoid
+            // asking for a redundant stage selection while recording germination/thinning.
+            // Keep the stage value for the saved journal entry and existing timeline grouping.
+            const isMultiSowSeedEntry = isGrowth && multisow && showSeeds;
+            if (isMultiSowSeedEntry && stageSelect) stageSelect.value = 'Seedling';
+            const requiresGrowthStage = document.getElementById('log-type').value !== 'Location Change' && !isMultiSowSeedEntry;
             if (stageSection) stageSection.classList.toggle('hidden', !requiresGrowthStage);
             if (stageSelect) stageSelect.required = requiresGrowthStage;
         }
