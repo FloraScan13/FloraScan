@@ -7773,12 +7773,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const count = Math.max(0, Math.floor(Number(plant.multisowPots) || 0));
             const label = String(plant.multisowContainerType || 'pot').replace(/s$/i, '');
             const states = Array.from({length: count}, (_, i) => ({index: i + 1, germinated: 0, thinned: 0}));
+            // Journal logs are stored newest-first. Each matching line is a cumulative
+            // snapshot for that container, so keep the first (most recent) snapshot only.
+            const restored = new Set();
             (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
                 const re = /Multi-sow container (\d+) \| germinated: (\d+) \| thinned: (\d+)/g;
                 let match;
                 while ((match = re.exec(String(log.text || '')))) {
-                    const state = states[Number(match[1]) - 1];
-                    if (state) { state.germinated = Number(match[2]); state.thinned = Number(match[3]); }
+                    const index = Number(match[1]);
+                    const state = states[index - 1];
+                    if (state && !restored.has(index)) {
+                        state.germinated = Number(match[2]);
+                        state.thinned = Number(match[3]);
+                        restored.add(index);
+                    }
                 }
             });
             return {label, states};
