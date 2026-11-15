@@ -9736,6 +9736,12 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
             document.getElementById('log-date').value = log.date || '';
             document.getElementById('log-type').value = log.type || 'Growth';
             document.getElementById('log-growth-stage').value = log.growthStage || '';
+            if (window.setJournalGrowingValues) {
+                window.setJournalGrowingValues(
+                    Array.isArray(plant.medium) ? plant.medium : String(plant.medium || '').split(/\\s*[·,]\\s*/).filter(Boolean),
+                    Array.isArray(plant.setup) ? plant.setup : (plant.setup ? [plant.setup] : [])
+                );
+            }
             toggleNutrientLibraryView();
             toggleHarvestFields();
             const logText = String(log.text || '').replace(/\\n/g, '\n');
@@ -9946,7 +9952,9 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                 document.getElementById('log-cuttings-rooted-amount').value.trim() !== '' ||
                 document.getElementById('log-failed-cutting-amount').value.trim() !== ''
             );
-            if (!growthStage) {
+            // Existing log edits intentionally hide the growth-stage control; do not block
+            // those saves or overwrite the saved stage with an empty value.
+            if (!editId && !growthStage) {
                 alert('Please select a growth stage before saving this journal entry.');
                 document.getElementById('log-growth-stage').focus();
                 return;
@@ -9962,7 +9970,7 @@ html body > details#plant-setup-dropdown.plant-growing-picker-portal[open] > #pl
                 const existingLog = matchingLogs[0];
                 existingLog.date = date;
                 existingLog.type = type;
-                existingLog.growthStage = growthStage;
+                existingLog.growthStage = growthStage || existingLog.growthStage || '';
                 // Commit the brand currently open in the picker. Other brands were
                 // committed as the user switched between them, so Save Changes is enough.
                 if (type === 'Feed' && window.nutrientEditorActiveBrand) {
