@@ -6368,6 +6368,59 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         </div>
                     </div>
                 </div>`;
+            // GroWell-inspired equipment autocomplete. Suggestions are curated from the
+            // public GroWell catalogue and remain editable as free text.
+            const growellEquipmentSuggestions = [
+                'Grow Tools Budget Propagator',
+                'Stewart Heated Propagator',
+                'GroWell Vitopod Propagator',
+                'Aeroponic Propagator',
+                'Propagation tent',
+                'LED propagation grow light',
+                'T5 fluorescent propagation light',
+                'LED grow light',
+                'HPS grow light',
+                'Grow Gadgets Temperature & Humidity Meter',
+                'Clip-on circulation fan',
+                'Inline extractor fan',
+                'Carbon filter',
+                'Grow tent',
+                'Grow tent tray',
+                'Round plant pot',
+                'Plant pot saucer',
+                'Deep flexi-tray',
+                'Garland work tray',
+                'Root Riot Organic Starter Cubes',
+                'Eazy Plug Organic Propagation Cubes',
+                'Grodan rockwool cubes',
+                'Clonex Rooting Gel',
+                'SHOGUN Start',
+                'Coco growing media',
+                'Organic soil',
+                'Hydroponic growing system',
+                'Submersible water pump',
+                'Automatic drip irrigation kit',
+                'Digital watering timer',
+                'Temperature controller',
+                'Humidity controller',
+                'PAR light meter',
+                'Nutrient measuring syringes',
+                'pH meter',
+                'EC meter'
+            ];
+            const growellSuggestionList = document.createElement('datalist');
+            growellSuggestionList.id = 'growell-equipment-suggestions';
+            growellEquipmentSuggestions.forEach(suggestion => {
+                const option = document.createElement('option');
+                option.value = suggestion;
+                growellSuggestionList.appendChild(option);
+            });
+            modal.appendChild(growellSuggestionList);
+            modal.querySelectorAll('.location-equipment-name').forEach(input => {
+                input.setAttribute('list', growellSuggestionList.id);
+                input.setAttribute('autocomplete', 'off');
+            });
+
             modal.addEventListener('change', event => {
                 const checkbox = event.target.closest('.location-equipment-option');
                 if (!checkbox) return;
