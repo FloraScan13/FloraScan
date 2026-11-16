@@ -9872,7 +9872,9 @@ textarea {
         }
 
         function getJournalCumulativeRainfall(plant) {
-            if (!plant || !plant.location || locationTypes[plant.location] !== 'outdoor') return null;
+            // A saved rainfall log is definitive evidence that this plant is in a rainfall-tracked outdoor location.
+            // Do not hide its total just because a custom location (for example, "Garden") has no type entry.
+            if (!plant || !plant.location || locationTypes[plant.location] === 'indoor') return null;
             const weeklyTotals = new Map();
             const addedAt = String(plant.addedAt || plant.createdAt || plant.date || '');
             const pattern = /Rainfall for (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2}): ([\d.]+) mm total/;
