@@ -4656,6 +4656,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
+        // Expose the handler explicitly so the invite screen's inline click can invoke it.
+        window.sendFloraInviteRecoveryEmail = sendFloraInviteRecoveryEmail;
+
         function toggleFloraInvitePasswordVisibility(inputId, button) {
             const input = document.getElementById(inputId);
             if (!input || !button) return;
