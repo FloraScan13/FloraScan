@@ -9153,7 +9153,7 @@ textarea {
 
             const outdoorPlants = plants.filter(plant => plant.location === location);
             if (!outdoorPlants.length || outdoorPlants.every(plant =>
-                (plant.logs || []).some(log => log.type === 'Weather' && String(log.text || '').includes('Rainfall for ' + periodLabel))
+                (plant.logs || []).some(log => ['Weather', 'Rainfall'].includes(log.type) && String(log.text || '').includes('Rainfall for ' + periodLabel))
             )) return;
 
             try {
@@ -9177,13 +9177,13 @@ textarea {
                 let changed = false;
                 for (const plant of outdoorPlants) {
                     plant.logs = Array.isArray(plant.logs) ? plant.logs : [];
-                    if (plant.logs.some(log => log.type === 'Weather' && String(log.text || '').includes('Rainfall for ' + periodLabel))) continue;
+                    if (plant.logs.some(log => ['Weather', 'Rainfall'].includes(log.type) && String(log.text || '').includes('Rainfall for ' + periodLabel))) continue;
 
                     // Add this week's rainfall to the running total already recorded in this plant's journal.
                     // Each journal is calculated independently so the same location-wide rainfall is not double-counted across plants.
                     const weeklyRainfallPattern = /Rainfall for (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2}): ([\d.]+) mm total/;
                     const previousWeeks = plant.logs
-                        .filter(log => log.type === 'Weather')
+                        .filter(log => ['Weather', 'Rainfall'].includes(log.type))
                         .map(log => {
                             const match = String(log.text || '').match(weeklyRainfallPattern);
                             return match ? { start: match[1], amount: Number(match[3]) } : null;
@@ -9877,7 +9877,7 @@ textarea {
             const addedAt = String(plant.addedAt || plant.createdAt || plant.date || '');
             const pattern = /Rainfall for (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2}): ([\d.]+) mm total/;
             (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
-                if (log.type !== 'Weather') return;
+                if (!['Weather', 'Rainfall'].includes(log.type)) return;
                 const match = String(log.text || '').match(pattern);
                 // Only include complete rainfall periods that begin on or after
                 // the plant was added; do not carry in rainfall from earlier dates.
