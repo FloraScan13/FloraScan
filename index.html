@@ -9862,14 +9862,15 @@ textarea {
             // Do not hide its total just because a custom location (for example, "Garden") has no type entry.
             if (!plant || !plant.location || locationTypes[plant.location] === 'indoor') return null;
             const weeklyTotals = new Map();
-            const addedAt = String(plant.addedAt || plant.createdAt || plant.date || '');
+            const addedAt = String(plant.addedAt || plant.createdAt || plant.date || '').slice(0, 10);
             const pattern = /Rainfall for (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2}): ([\d.]+) mm total/;
             (Array.isArray(plant.logs) ? plant.logs : []).forEach(log => {
                 if (!['Weather', 'Rainfall'].includes(log.type)) return;
                 const match = String(log.text || '').match(pattern);
-                // Only include complete rainfall periods that begin on or after
-                // the plant was added; do not carry in rainfall from earlier dates.
-                if (match && Number.isFinite(Number(match[3])) && (!addedAt || match[1] >= addedAt)) {
+                // Include rainfall periods that overlap the plant's journal dates.
+                // Logs are rolling weekly windows, so compare the period end with the
+                // plant's added date rather than excluding a week that started earlier.
+                if (match && Number.isFinite(Number(match[3])) && (!addedAt || match[2] >= addedAt)) {
                     weeklyTotals.set(match[1] + '|' + match[2], { start: match[1], end: match[2], amount: Number(match[3]) });
                 }
             });
