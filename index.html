@@ -2730,6 +2730,68 @@ textarea {
 
     <main class="flex-1 max-w-4xl w-full mx-auto p-4 pb-24 overflow-y-auto custom-scrollbar">
 
+        <!-- Cloud sign-in is part of the main app entry, not Settings. -->
+        <section id="cloud-auth-screen" class="hidden mb-6 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="mb-4">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Welcome to Flora Scan</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sign in or create your gardener account to access and sync your garden across devices. Cloud connection is configured automatically.</p>
+            </div>
+                <!-- User Authentication (Login / Register / User Panel) -->
+                <div id="supabase-auth-panel" class="space-y-4 pt-1">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">2. Cloud User Account</h4>
+                    
+                    <!-- Logged Out View -->
+                    <div id="auth-logged-out" class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Email Address</label>
+                                <input type="email" id="auth-email" placeholder="gardener@example.com" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Password</label>
+<input type="password" id="auth-password" autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            <button onclick="handleSupabaseLogin()" class="bg-emerald-600  text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                                <i class="fa-solid fa-right-to-bracket"></i>
+                                <span>Sign In</span>
+                            </button>
+                            <button onclick="handleSupabaseSignUp()" class="bg-slate-800  text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                                <i class="fa-solid fa-user-plus"></i>
+                                <span>Register Account</span>
+                            </button>
+                            <button type="button" onclick="handleSupabasePasswordReset()" class="text-emerald-700  underline text-xs font-semibold px-2 py-2">
+                                Forgot password?
+                            </button>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Logged In View -->
+                    <div id="auth-logged-in" class="hidden p-4 rounded-xl bg-emerald-50 dark:bg-slate-900/80 border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <div class="w-9 h-9 rounded-full bg-[#f9dce6] text-[#a63d65] flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800 dark:text-slate-100" id="user-email-display">user@example.com</p>
+                                <p class="text-[10px] text-emerald-600 dark:text-emerald-400">Authenticated Cloud Session Active</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 pl-12 sm:pl-0">
+                            <button onclick="handleSupabaseChangePassword()" class="bg-emerald-600  text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap">
+                                Change Password
+                            </button>
+                            <button onclick="handleSupabaseSignOut()" class="bg-slate-200  dark:bg-slate-800 dark: text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap">
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+        </section>
+
         <!-- Navigation Tabs -->
         <div id="main-navigation-tabs" class="flex space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl mb-6 text-sm font-medium">
             <button onclick="switchTab('plants')" id="tab-plants" aria-current="page" class="flex-1 py-2.5 rounded-xl transition flex items-center justify-center space-x-2 bg-[#e4eadf] border border-[#d7dfd0] text-[#294b34] shadow-sm font-semibold">
@@ -2829,7 +2891,7 @@ textarea {
             </div>
         </div>
 
-        <!-- TAB 3: SETTINGS & SUPABASE CLOUD AUTH -->
+        <!-- TAB 3: SETTINGS -->
         <div id="view-settings" class="hidden space-y-6" style="display: none !important;">
             <!-- Quick account controls: keep sign-out visible at the top of Settings while signed in. -->
             <section id="settings-account-session" class="hidden bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -3000,9 +3062,9 @@ textarea {
                     <div>
                         <h3 class="text-base font-bold flex items-center space-x-2">
                             <i class="fa-solid fa-cloud text-emerald-600"></i>
-                            <span>Supabase Cloud Sync & Authentication</span>
+                            <span>Cloud Sync & Administration</span>
                         </h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cloud sync is configured automatically. Sign in with your Flora Scan account to access your garden across devices.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cloud sync connects automatically. Administrator tools are available only to authorised admin accounts.</p>
                     </div>
                     <span id="supabase-connection-status" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                         Offline Mode
@@ -3019,60 +3081,7 @@ textarea {
                     <p class="text-[11px] text-slate-400">Your access is limited to the permissions assigned to your account.</p>
                 </div>
 
-                <!-- User Authentication (Login / Register / User Panel) -->
-                <div id="supabase-auth-panel" class="space-y-4 pt-1">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">2. Cloud User Account</h4>
-                    
-                    <!-- Logged Out View -->
-                    <div id="auth-logged-out" class="space-y-3">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Email Address</label>
-                                <input type="email" id="auth-email" placeholder="gardener@example.com" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Password</label>
-<input type="password" id="auth-password" autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 pt-1">
-                            <button onclick="handleSupabaseLogin()" class="bg-emerald-600  text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
-                                <i class="fa-solid fa-right-to-bracket"></i>
-                                <span>Sign In</span>
-                            </button>
-                            <button onclick="handleSupabaseSignUp()" class="bg-slate-800  text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
-                                <i class="fa-solid fa-user-plus"></i>
-                                <span>Register Account</span>
-                            </button>
-                            <button type="button" onclick="handleSupabasePasswordReset()" class="text-emerald-700  underline text-xs font-semibold px-2 py-2">
-                                Forgot password?
-                            </button>
-                        </div>
-                    </div>
 
-
-
-                    <!-- Logged In View -->
-                    <div id="auth-logged-in" class="hidden p-4 rounded-xl bg-emerald-50 dark:bg-slate-900/80 border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div class="flex items-center space-x-3 min-w-0">
-                            <div class="w-9 h-9 rounded-full bg-[#f9dce6] text-[#a63d65] flex items-center justify-center font-bold">
-                                <i class="fa-solid fa-user"></i>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-slate-800 dark:text-slate-100" id="user-email-display">user@example.com</p>
-                                <p class="text-[10px] text-emerald-600 dark:text-emerald-400">Authenticated Cloud Session Active</p>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-2 pl-12 sm:pl-0">
-                            <button onclick="handleSupabaseChangePassword()" class="bg-emerald-600  text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap">
-                                Change Password
-                            </button>
-                            <button onclick="handleSupabaseSignOut()" class="bg-slate-200  dark:bg-slate-800 dark: text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap">
-                                Sign Out
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
                 <div id="flora-admin-panel" class="mt-4 rounded-xl border border-[#d8c5ce] bg-[#fff9fb] p-4 space-y-3">
                     <h4 class="text-sm font-bold text-[#8e3458]">FloraScan Administration</h4>
@@ -4777,6 +4786,8 @@ textarea {
             const adminTools = document.getElementById('flora-admin-tools');
             const adminNote = document.getElementById('flora-admin-access-note');
             const accountSession = document.getElementById('settings-account-session');
+            const cloudAuthScreen = document.getElementById('cloud-auth-screen');
+            if (cloudAuthScreen) cloudAuthScreen.classList.toggle('hidden', isLoggedIn || isFloraInviteFlow);
             const accountEmail = document.getElementById('settings-account-email');
             if (accountSession) accountSession.classList.toggle('hidden', !isLoggedIn);
             if (accountEmail) accountEmail.textContent = isLoggedIn ? (email || currentUser?.email || 'Signed in') : 'Not signed in';
