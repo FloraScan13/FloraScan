@@ -4208,33 +4208,8 @@ textarea {
         let plantLocationsRealtimeChannel = null;
         let plantLocationsRefreshListenersInstalled = false;
 
-        let plants = JSON.parse(localStorage.getItem('flora_plants')) || [
-            {
-                id: 'plant_1',
-                name: 'Cucumber',
-                variety: 'Beth Alpha',
-                hex: '#16a34a',
-                iconKey: 'cucumber',
-                date: '2026-06-01',
-                medium: 'Wicking Bed',
-                notes: 'Thriving with smooth crisp gherkins.',
-                logs: [
-                    { id: 'l1', date: '2026-07-20', type: 'Harvest', text: 'Harvested 3 crisp Beth Alpha cucumbers.' }
-                ]
-            },
-            {
-                id: 'plant_2',
-                name: 'Cherry Tomato',
-                variety: "Gardener's Delight",
-                hex: '#dc2626',
-                iconKey: 'tomato',
-                date: '2026-05-10',
-                medium: 'AutoPot System',
-                notes: 'Fed with organic tomato feed.',
-                logs: []
-            }
-        ];
-
+        // Never hydrate the app from the legacy shared plant cache before auth resolves.
+        let plants = [];
         let pendingDeleteId = null;
         let activeFormStream = null;
         let activeMatchStream = null;
@@ -5107,9 +5082,12 @@ textarea {
 
         function saveLocalPlantsForCurrentUser(value = plants) {
             const serialized = JSON.stringify(value);
-            localStorage.setItem('flora_plants', serialized);
             if (currentUser?.id) {
-                localStorage.setItem(floraUserStorageKey('flora_plants_user'), serialized);
+                // Authenticated data is written only to this account's cache.
+                localStorage.setItem(floraUserStorageKey('flora_plants_user', currentUser.id), serialized);
+            } else {
+                // Retain a legacy cache only for signed-out/local-only use.
+                localStorage.setItem('flora_plants', serialized);
             }
         }
 
@@ -5168,7 +5146,7 @@ textarea {
             window.floraSyncInProgress = true;
             updateSyncBadge('local', 'Syncing Offline Changes…');
             try {
-                const localPlants = JSON.parse(localStorage.getItem('flora_plants') || '[]');
+                const localPlants = JSON.parse(localStorage.getItem(floraUserStorageKey('flora_plants_user', currentUser.id)) || '[]');
                 const deletedLogs = Array.isArray(queue.deletedLogIds) ? queue.deletedLogIds : [];
                 const deletedPlants = Array.isArray(queue.deletedPlantIds) ? queue.deletedPlantIds : [];
 
@@ -5417,7 +5395,7 @@ textarea {
                     return;
                 }
             }
-            plants = JSON.parse(localStorage.getItem('flora_plants')) || [];
+            plants = []; // Never show the previous account's shared legacy cache.
         }
 
         async function syncPlantToCloud(plant) {
