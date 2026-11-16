@@ -4549,7 +4549,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function callFloraAdmin(action, payload = {}) {
             if (!supabaseClient) throw new Error('Connect to Supabase and sign in first.');
             const { data, error } = await supabaseClient.functions.invoke('admin-users', { body: { action, ...payload } });
-            if (error) throw error;
+            if (error) {
+                let detail = '';
+                try {
+                    if (error.context && typeof error.context.json === 'function') {
+                        const body = await error.context.json();
+                        detail = body?.error || body?.message || '';
+                    }
+                } catch (_) {}
+                throw new Error(detail || error.message || 'The administrator request failed.');
+            }
             if (data && data.error) throw new Error(data.error);
             return data || {};
         }
