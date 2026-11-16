@@ -2653,6 +2653,12 @@ textarea {
                 <button id="flora-invite-complete-button" type="button" onclick="completeFloraInviteRegistration()" class="w-full rounded-xl bg-emerald-800 px-4 py-3 text-sm font-semibold text-white shadow">Create my account</button>
             </div>
             <p id="flora-invite-status" class="text-sm text-slate-600 text-center" role="status" aria-live="polite">Checking your invitation…</p>
+            <div id="flora-invite-recovery" class="hidden space-y-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                <p class="text-xs text-emerald-950">If you already opened the invitation link but didn't finish setting a password, you can request a fresh password setup link here. Enter the email address the invitation was sent to.</p>
+                <label for="flora-invite-recovery-email" class="block text-xs font-semibold text-emerald-950">Invitation email address</label>
+                <input id="flora-invite-recovery-email" type="email" autocomplete="email" placeholder="you@example.com" class="w-full rounded-lg border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-800">
+                <button id="flora-invite-recovery-button" type="button" onclick="sendFloraInviteRecoveryEmail()" class="w-full rounded-lg bg-emerald-800 px-3 py-2.5 text-sm font-semibold text-white">Email me a password setup link</button>
+            </div>
             <button id="flora-invite-return-login" type="button" onclick="leaveFloraInviteScreen()" class="hidden w-full text-sm font-semibold text-emerald-800 underline">Return to sign in</button>
         </div>
     </div>
@@ -4603,19 +4609,51 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         function showFloraInviteSessionState(session) {
             if (!isFloraInviteFlow) return;
             const fields = document.getElementById('flora-invite-password-fields');
+            const recovery = document.getElementById('flora-invite-recovery');
+            const recoveryEmail = document.getElementById('flora-invite-recovery-email');
             const returnButton = document.getElementById('flora-invite-return-login');
             const email = document.getElementById('flora-invite-email');
             if (session?.user) {
                 if (email) email.textContent = session.user.email || '';
+                if (recoveryEmail && session.user.email) recoveryEmail.value = session.user.email;
                 if (fields) fields.classList.remove('hidden');
+                if (recovery) recovery.classList.add('hidden');
                 if (returnButton) returnButton.classList.add('hidden');
                 showFloraInviteStatus('Set a password below to finish creating your account.');
             } else {
                 if (fields) fields.classList.add('hidden');
+                if (recovery) recovery.classList.remove('hidden');
                 if (returnButton) returnButton.classList.remove('hidden');
-                showFloraInviteStatus('This invitation link is invalid, expired, or already used. Ask your Flora Scan administrator to send a new invitation.', true);
+                showFloraInviteStatus('This invitation link has already been used or is no longer valid. You can request a fresh password setup link below.', true);
             }
             updateAuthUI(!!session?.user, session?.user?.email || '');
+        }
+
+        async function sendFloraInviteRecoveryEmail() {
+            if (!supabaseClient) {
+                showFloraInviteStatus('Flora Scan could not connect to the account service. Refresh and try again.', true);
+                return;
+            }
+            const emailInput = document.getElementById('flora-invite-recovery-email');
+            const email = emailInput?.value.trim() || '';
+            if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+                showFloraInviteStatus('Enter a valid email address that received the invitation.', true);
+                emailInput?.focus();
+                return;
+            }
+            const button = document.getElementById('flora-invite-recovery-button');
+            if (button) { button.disabled = true; button.textContent = 'Sending…'; }
+            try {
+                const redirectTo = window.location.origin + window.location.pathname + '?password-recovery=1';
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+                if (error) throw error;
+                showFloraInviteStatus('If an account exists for that email, a fresh password setup link has been sent. Check your inbox and spam folder, then open the newest email on this device.', false);
+                if (button) button.textContent = 'Email requested';
+            } catch (error) {
+                console.error('Flora invitation recovery request failed:', error);
+                showFloraInviteStatus('Could not send the password setup email: ' + (error.message || 'Please try again or contact your administrator.'), true);
+                if (button) { button.disabled = false; button.textContent = 'Email me a password setup link'; }
+            }
         }
 
         function toggleFloraInvitePasswordVisibility(inputId, button) {
