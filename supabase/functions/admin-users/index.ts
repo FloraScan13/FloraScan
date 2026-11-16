@@ -42,7 +42,21 @@ Deno.serve(async (req: Request) => {
     if (action === "invite") {
       const email = String(body.email || "").trim().toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return reply({ error: "Enter a valid email address" }, 400);
-      const { data, error } = await admin.auth.admin.inviteUserByEmail(email);
+      const requestOrigin = req.headers.get("origin");
+      const requestedRedirect = String(body.redirectTo || "");
+      if (!requestOrigin || !requestedRedirect) return reply({ error: "The app invitation return address is missing" }, 400);
+      let redirectTo: string;
+      try {
+        const appOrigin = new URL(requestOrigin).origin;
+        const target = new URL(requestedRedirect);
+        if (target.origin !== appOrigin || target.searchParams.get("invite") !== "1") {
+          return reply({ error: "Invalid invitation return address" }, 400);
+        }
+        redirectTo = target.toString();
+      } catch {
+        return reply({ error: "Invalid invitation return address" }, 400);
+      }
+      const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo });
       if (error) throw error;
       return reply({ invited: true, user: { id: data.user.id, email: data.user.email } });
     }
