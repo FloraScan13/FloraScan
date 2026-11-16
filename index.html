@@ -4359,6 +4359,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 }
                 if (session && session.user) {
                     currentUser = session.user;
+                    if (isFloraInviteFlow) showFloraInviteSessionState(session);
                     subscribeToPlantLocationChanges();
                     updateAuthUI(true, currentUser.email);
                     updateSyncBadge('cloud', 'Cloud Connected');
