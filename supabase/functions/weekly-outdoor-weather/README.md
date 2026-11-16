@@ -15,14 +15,20 @@ This Edge Function writes a weekly high/low temperature and humidity journal ent
    ```
 5. Store the same cron secret in Vault (replace the example values; never commit real values):
    ```sql
-   select vault.create_secret('https://YOUR_PROJECT_REF.supabase.co', 'flora_supabase_url');
+   -- Keep the existing flora_supabase_url secret if it is already correct.
    select vault.create_secret('GENERATED_FLORA_CRON_SECRET', 'flora_cron_secret');
    ```
    If either Vault secret already exists, update it rather than creating a duplicate.
 
 ## Schedule it weekly
 
-In Supabase SQL Editor, enable the `pg_cron`, `pg_net`, and `vault` extensions if they are not already enabled. Schedule the function for every Monday at 03:15 UTC:
+In Supabase SQL Editor, enable the `pg_cron`, `pg_net`, and `vault` extensions if they are not already enabled. If the job is already scheduled, remove the old definition first so it does not keep sending the service-role key:
+
+\`\`\`sql
+select cron.unschedule('flora-weekly-outdoor-weather');
+\`\`\`
+
+Then schedule the function for every Monday at 03:15 UTC:
 
 ```sql
 select cron.schedule(
