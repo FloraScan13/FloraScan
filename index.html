@@ -9141,7 +9141,7 @@ textarea {
         }
 
         async function recordWeeklyOutdoorRainfall(location) {
-            if (!location || locationTypes[location] !== 'outdoor' || !locationPostcodes[location] || !locationCoordinates[location]) return;
+            if (!location || locationTypes[location] !== 'outdoor' || !locationCoordinates[location]) return;
             const postcode = locationPostcodes[location];
             const coordinates = locationCoordinates[location];
             const today = new Date();
@@ -9192,7 +9192,7 @@ textarea {
                     const cumulativeMm = previousWeeks.reduce((sum, entry) => sum + entry.amount, totalMm);
                     const firstRecordedWeek = previousWeeks.reduce((earliest, entry) => entry.start < earliest ? entry.start : earliest, start);
                     const rainfallText = 'Rainfall for ' + periodLabel + ': ' + totalMm.toFixed(1) +
-                        ' mm total (' + (totalMm / 25.4).toFixed(2) + ' in) at ' + postcode +
+                        ' mm total (' + (totalMm / 25.4).toFixed(2) + ' in)' + (postcode ? ' at ' + postcode : ' at ' + location) +
                         '. Cumulative recorded rainfall since ' + firstRecordedWeek + ': ' + cumulativeMm.toFixed(1) +
                         ' mm (' + (cumulativeMm / 25.4).toFixed(2) + ' in). Source: Open-Meteo.';
                     const log = {
@@ -9446,7 +9446,14 @@ textarea {
             if (heatedTemperatureInput) heatedTemperatureInput.value = p.heatedPropagatorTemperatureC ?? '';
             renderJournalLogs(p);
             document.getElementById('journal-modal').classList.remove('hidden');
-            recordWeeklyOutdoorRainfall(plantLocation).catch(error => console.warn('Outdoor rainfall log skipped:', error));
+            // Refresh rainfall for every configured outdoor location, not only the location
+            // of the plant whose journal was opened.
+            Promise.allSettled(plantLocations
+                .filter(location => locationTypes[location] === 'outdoor')
+                .map(location => recordWeeklyOutdoorRainfall(location)))
+                .then(results => results.forEach(result => {
+                    if (result.status === 'rejected') console.warn('Outdoor rainfall log skipped:', result.reason);
+                }));
         }
 
         async function duplicatePlantJournal(plantId) {
