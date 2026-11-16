@@ -5346,15 +5346,11 @@ textarea {
                     if (plantErr) throw plantErr;
                     if (!currentUser || currentUser.id !== requestedUserId) return;
 
-                    const { data: dbLogs, error: logsErr } = await supabaseClient
-                        .from('plant_logs')
-                        .select('*')
-                        .eq('user_id', requestedUserId)
-                        .order('created_at', { ascending: false });
-                    if (logsErr) throw logsErr;
-                    if (!currentUser || currentUser.id !== requestedUserId) return;
-
-                    const loadedPlants = await Promise.all((dbPlants || []).map(async p => ({
+                    // Render the plant records as soon as the plants query succeeds.
+                    // Journal rows and signed photo URLs are optional enrichment and must
+                    // never hold the entire plant library behind a second query or storage request.
+                    const localPlants = readOwnedCache();
+                    const loadedPlants = (dbPlants || []).map(p => ({
                         id: p.id,
                         name: p.name,
                         variety: p.variety,
@@ -5368,25 +5364,52 @@ textarea {
                         remainingCuttings: Math.max(0, Number(p.remaining_cuttings) || 0),
                         iconKey: p.icon_key,
                         customIconPath: p.custom_icon_path || '',
-                        customIconUrl: p.custom_icon_path ? await createJournalPhotoUrl(p.custom_icon_path) : '',
+                        customIconUrl: '',
                         hex: p.hex,
                         date: p.date,
                         medium: p.medium,
                         setup: Array.isArray(p.setup) ? p.setup : (p.setup ? [p.setup] : []),
                         heatedPropagatorTemperatureC: p.heated_propagator_temperature_c ?? null,
-                        location: p.location || (readOwnedCache().find(localPlant => localPlant.id === p.id) || {}).location || '',
+                        location: p.location || (localPlants.find(localPlant => localPlant.id === p.id) || {}).location || '',
                         notes: p.notes,
                         nfcTagLinked: !!p.nfc_tag_linked,
                         qrCodeValue: p.qr_code_value || '',
-                        logs: await Promise.all((dbLogs || []).filter(l => l.plant_id === p.id).map(async l => {
-                            const photoPaths = Array.isArray(l.photos) ? l.photos : [];
-                            const photoUrls = await Promise.all(photoPaths.map(createJournalPhotoUrl));
-                            return { ...restoreJournalLogStage(l), feedReminderDate: l.feed_reminder_date || '', feedReminderMode: l.feed_reminder_mode || 'once', feedReminderInterval: l.feed_reminder_interval || '', feedReminderUnit: l.feed_reminder_unit || 'days', photos: photoUrls.filter(Boolean), photoPaths };
-                        }))
-                    })));
+                        logs: []
+                    }));
                     if (!currentUser || currentUser.id !== requestedUserId) return;
                     plants = loadedPlants;
                     saveLocalPlantsForCurrentUser(plants);
+
+                    // Enrich journal entries and private photo URLs in the background.
+                    // Failure here leaves the already-rendered plant cards intact.
+                    void (async () => {
+                        try {
+                            const { data: dbLogs, error: logsErr } = await supabaseClient
+                                .from('plant_logs')
+                                .select('*')
+                                .eq('user_id', requestedUserId)
+                                .order('created_at', { ascending: false });
+                            if (logsErr) throw logsErr;
+                            if (!currentUser || currentUser.id !== requestedUserId) return;
+
+                            await Promise.all(loadedPlants.map(async plant => {
+                                const row = (dbPlants || []).find(item => item.id === plant.id);
+                                if (row?.custom_icon_path) {
+                                    plant.customIconUrl = await createJournalPhotoUrl(row.custom_icon_path);
+                                }
+                                plant.logs = await Promise.all((dbLogs || []).filter(log => log.plant_id === plant.id).map(async log => {
+                                    const photoPaths = Array.isArray(log.photos) ? log.photos : [];
+                                    const photoUrls = await Promise.all(photoPaths.map(createJournalPhotoUrl));
+                                    return { ...restoreJournalLogStage(log), feedReminderDate: log.feed_reminder_date || '', feedReminderMode: log.feed_reminder_mode || 'once', feedReminderInterval: log.feed_reminder_interval || '', feedReminderUnit: log.feed_reminder_unit || 'days', photos: photoUrls.filter(Boolean), photoPaths };
+                                }));
+                            }));
+                            if (!currentUser || currentUser.id !== requestedUserId) return;
+                            saveLocalPlantsForCurrentUser(plants);
+                            renderPlants();
+                        } catch (enrichmentError) {
+                            console.warn('Plant cards loaded; optional journal/photo enrichment was unavailable:', enrichmentError);
+                        }
+                    })();
                     return;
                 } catch (err) {
                     if (!currentUser || currentUser.id !== requestedUserId) return;
