@@ -4403,7 +4403,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
             if (url && key && window.supabase) {
                 try {
-                    supabaseClient = window.supabase.createClient(url, key);
+                    // Use a separate auth storage namespace for invitation/recovery links.
+                    // This prevents an already signed-in administrator session on this browser from
+                    // being reused while a gardener is completing their own account setup.
+                    supabaseClient = window.supabase.createClient(url, key, isFloraInviteFlow
+                        ? { auth: { storageKey: 'flora-invite-auth-token' } }
+                        : undefined);
                     checkSupabaseSession();
                 } catch (e) {
                     console.error('Failed to init Supabase:', e);
@@ -4424,12 +4429,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (!refreshed.error && refreshed.data.session) session = refreshed.data.session;
                 }
                 if (isFloraInviteFlow) {
-                    // An invite/recovery link must never inherit the previous browser user's session or data.
-                    currentUser = null;
+                    // This client uses invite-only storage, so any session here belongs to the invite link.
+                    currentUser = session?.user || null;
                     plants = [];
                     renderPlants();
                     updateAuthUI(false);
-                    showFloraInviteSessionState(null);
+                    showFloraInviteSessionState(session);
                 } else if (session && session.user) {
                     currentUser = session.user;
                     if (isFloraInviteFlow) showFloraInviteSessionState(session);
@@ -4458,18 +4463,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
                     if (event === 'PASSWORD_RECOVERY' && !isFloraInviteFlow) setTimeout(() => completeSupabasePasswordRecovery(), 0);
                     if (isFloraInviteFlow) {
-                        // Ignore the browser's pre-existing INITIAL_SESSION (often the administrator).
-                        // Only render the setup panel for subsequent auth-link events; never load app data here.
-                        if (event === 'INITIAL_SESSION') {
-                            currentUser = null;
-                            plants = [];
-                            renderPlants();
-                            updateAuthUI(false);
-                            showFloraInviteSessionState(null);
-                        } else {
-                            currentUser = session?.user || null;
-                            showFloraInviteSessionState(session);
-                        }
+                        // Invite-only auth storage means this session can only belong to the invited user.
+                        // Never load gardener data until registration has completed and the normal app opens.
+                        currentUser = session?.user || null;
+                        showFloraInviteSessionState(session);
                         return;
                     }
                     if (session && session.user) {
@@ -4765,9 +4762,26 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (sessionError || !session?.user) throw new Error('Your invitation session has expired. Ask the administrator for a new invitation.');
                 const { error } = await supabaseClient.auth.updateUser({ password });
                 if (error) throw error;
+
+                // Sign in with the newly chosen password, then transfer only this invited user's
+                // session into the normal app storage namespace before opening the garden.
+                const { data: signedIn, error: signInError } = await supabaseClient.auth.signInWithPassword({
+                    email: session.user.email,
+                    password
+                });
+                if (signInError || !signedIn?.session) {
+                    throw new Error('Your password has been saved. Please return to the sign-in page and sign in with your new password.');
+                }
+                const appUrl = FLORA_SUPABASE_CONFIG.url || appSettings.supabaseUrl || '';
+                const appKey = FLORA_SUPABASE_CONFIG.publishableKey || appSettings.supabaseKey || '';
+                const appClient = window.supabase.createClient(appUrl, appKey);
+                const { error: transferError } = await appClient.auth.setSession({
+                    access_token: signedIn.session.access_token,
+                    refresh_token: signedIn.session.refresh_token
+                });
+                if (transferError) throw transferError;
+                await supabaseClient.auth.signOut();
                 alert('Your Flora Scan account has been created. Welcome!');
-                // Reload into the normal app only after the invited user's password is saved.
-                // This makes the app initialise cleanly against the newly established user session.
                 window.location.replace(window.location.pathname);
                 return;
             } catch (error) {
