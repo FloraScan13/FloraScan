@@ -2973,12 +2973,6 @@ textarea {
                             <span aria-hidden="true" class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></span>
                         </span>
                     </label>
-                    <script>
-                        (() => {
-                            const toggle = document.getElementById('setting-location-header-weather');
-                            if (toggle) toggle.checked = getFloraAccountItem('flora_location_header_weather_visible') !== 'false';
-                        })();
-                    </script>
                     <div id="setting-plant-locations-list" class="space-y-2"></div>
                     <div class="flex flex-col sm:flex-row gap-2">
                         <input id="new-plant-location" type="text" maxlength="80" class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" placeholder="New location name" onkeydown="if(event.key==='Enter'){event.preventDefault();addPlantLocation();}">
@@ -4137,6 +4131,8 @@ textarea {
             locationDetails = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_details', userId)) || '{}');
             locationDetailsVisibility = Object.fromEntries((plantLocations || []).map(location => [location, false]));
             locationHeaderWeatherVisible = localStorage.getItem(floraAccountStorageKey('flora_location_header_weather_visible', userId)) !== 'false';
+            const weatherToggle = document.getElementById('setting-location-header-weather');
+            if (weatherToggle) weatherToggle.checked = locationHeaderWeatherVisible;
             locationSetups = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_setups', userId)) || '{}');
             locationPostcodes = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_postcodes', userId)) || '{}');
             locationCoordinates = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_coordinates', userId)) || '{}');
@@ -4234,6 +4230,8 @@ textarea {
             applyBranding();
             renderIconPickerGrid();
             renderPlantLocationControls();
+            const weatherToggle = document.getElementById('setting-location-header-weather');
+            if (weatherToggle) weatherToggle.checked = locationHeaderWeatherVisible;
             initSupabaseClient();
             await fetchPlantsFromCloudOrLocal();
             // Re-apply the saved scanner choice after app data has loaded. If no
