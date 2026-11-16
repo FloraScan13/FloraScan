@@ -4323,7 +4323,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         async function checkSupabaseSession() {
             if (!supabaseClient) return;
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
+                const { data: { session: storedSession } } = await supabaseClient.auth.getSession();
+                let session = storedSession;
+                if (session) {
+                    const refreshed = await supabaseClient.auth.refreshSession();
+                    if (!refreshed.error && refreshed.data.session) session = refreshed.data.session;
+                }
                 if (session && session.user) {
                     currentUser = session.user;
                     subscribeToPlantLocationChanges();
