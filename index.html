@@ -4207,6 +4207,7 @@ textarea {
         let plantLocationsRefreshListenersInstalled = false;
 
         // Never hydrate the app from the legacy shared plant cache before auth resolves.
+        let plantsInitialLoadComplete = false;
         let plants = [];
         let pendingDeleteId = null;
         let activeFormStream = null;
@@ -4235,6 +4236,7 @@ textarea {
             await fetchPlantsFromCloudOrLocal();
             // Load this account's growing locations before the first library render.
             await fetchPlantLocationsFromCloudOrLocal();
+            plantsInitialLoadComplete = true;
             renderPlantLocationControls();
             // Re-apply the saved scanner choice after app data has loaded. If no
             // valid choice exists, NFC has already been persisted as the default.
@@ -7320,6 +7322,12 @@ textarea {
             const query = document.getElementById('plant-search').value.toLowerCase();
             const container = document.getElementById('plants-grid');
             const emptyEl = document.getElementById('plants-empty');
+
+            // Do not flash the empty-library message while the account's garden is still loading.
+            if (!plantsInitialLoadComplete) {
+                emptyEl.classList.add('hidden');
+                return;
+            }
             const locationFilter = document.getElementById('plant-location-filter');
             const selectedLocation = locationFilter ? locationFilter.value : '';
 
