@@ -4465,6 +4465,9 @@ textarea {
                 } else if (session && session.user) {
                     currentUser = session.user;
                     activateFloraAccountStorage(currentUser.id);
+                    // Account activation replaces appSettings with this user's saved preferences.
+                    // Reapply scanner UI so the header pill and controls match that account.
+                    applyScannerPreference();
                     if (isFloraInviteFlow) showFloraInviteSessionState(session);
                     subscribeToPlantLocationChanges();
                     updateAuthUI(true, currentUser.email);
@@ -4508,6 +4511,9 @@ textarea {
                     if (session && session.user) {
                         currentUser = session.user;
                         activateFloraAccountStorage(currentUser.id);
+                    // Account activation replaces appSettings with this user's saved preferences.
+                    // Reapply scanner UI so the header pill and controls match that account.
+                    applyScannerPreference();
                         subscribeToPlantLocationChanges();
                             updateAuthUI(true, currentUser.email);
                         updateSyncBadge('cloud', 'Cloud Connected');
