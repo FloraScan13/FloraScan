@@ -4423,7 +4423,14 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     const refreshed = await supabaseClient.auth.refreshSession();
                     if (!refreshed.error && refreshed.data.session) session = refreshed.data.session;
                 }
-                if (session && session.user) {
+                if (isFloraInviteFlow) {
+                    // An invite/recovery link must never inherit the previous browser user's session or data.
+                    currentUser = null;
+                    plants = [];
+                    renderPlants();
+                    updateAuthUI(false);
+                    showFloraInviteSessionState(null);
+                } else if (session && session.user) {
                     currentUser = session.user;
                     if (isFloraInviteFlow) showFloraInviteSessionState(session);
                     subscribeToPlantLocationChanges();
@@ -4451,8 +4458,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
                     if (event === 'PASSWORD_RECOVERY' && !isFloraInviteFlow) setTimeout(() => completeSupabasePasswordRecovery(), 0);
                     if (isFloraInviteFlow) {
-                        showFloraInviteSessionState(session);
-                        if (!session?.user) return;
+                        // Ignore the browser's pre-existing INITIAL_SESSION (often the administrator).
+                        // Only render the setup panel for subsequent auth-link events; never load app data here.
+                        if (event === 'INITIAL_SESSION') {
+                            currentUser = null;
+                            plants = [];
+                            renderPlants();
+                            updateAuthUI(false);
+                            showFloraInviteSessionState(null);
+                        } else {
+                            currentUser = session?.user || null;
+                            showFloraInviteSessionState(session);
+                        }
+                        return;
                     }
                     if (session && session.user) {
                         currentUser = session.user;
@@ -4747,12 +4765,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (sessionError || !session?.user) throw new Error('Your invitation session has expired. Ask the administrator for a new invitation.');
                 const { error } = await supabaseClient.auth.updateUser({ password });
                 if (error) throw error;
-                isFloraInviteFlow = false;
-                window.history.replaceState({}, document.title, window.location.pathname);
-                document.getElementById('flora-invite-password').value = '';
-                document.getElementById('flora-invite-password-confirm').value = '';
-                updateAuthUI(true, session.user.email || '');
                 alert('Your Flora Scan account has been created. Welcome!');
+                // Reload into the normal app only after the invited user's password is saved.
+                // This makes the app initialise cleanly against the newly established user session.
+                window.location.replace(window.location.pathname);
+                return;
             } catch (error) {
                 showFloraInviteStatus(error.message || 'Could not complete registration. Please try again.', true);
             } finally {
@@ -5226,6 +5243,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         });
 
         async function fetchPlantsFromCloudOrLocal() {
+            // Account setup routes must not read shared local storage or any gardener's cloud records.
+            if (isFloraInviteFlow) {
+                plants = [];
+                return;
+            }
             const pending = getFloraSyncQueue();
             if (supabaseClient && currentUser) {
                 const userCacheKey = floraUserStorageKey('flora_plants_user');
