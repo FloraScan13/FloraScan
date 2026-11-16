@@ -1854,7 +1854,6 @@ textarea {
         @media (min-width: 768px) {
             #tab-scanner,
             #view-scanner,
-            #header-scanner-mode-icon,
             #scan-options-overlay,
             #qr-scan-overlay,
             #nfc-tap-overlay,
@@ -5340,7 +5339,9 @@ textarea {
                 };
 
                 // Keep this account's own offline edits, but never reuse another account's queue/cache.
-                if ((pending.dirty || pending.profileDirty || pending.locationsDirty) && pending.userId === requestedUserId) {
+                // Only pending plant edits require the local plant cache to remain authoritative.
+                // Profile or growing-location edits must not suppress the cloud plant query.
+                if (pending.dirty && pending.userId === requestedUserId) {
                     plants = readOwnedCache();
                     saveLocalPlantsForCurrentUser(plants);
                     return;
