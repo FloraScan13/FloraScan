@@ -2932,25 +2932,11 @@ textarea {
                 </summary>
                 <div class="space-y-5 pt-5">
 
-                <!-- API Keys Setup -->
-                <div class="space-y-3 bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">1. Supabase Project Credentials</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-500 mb-1">Supabase URL</label>
-                            <input type="text" id="supabase-url" placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-500 mb-1">Anon Key / API Key</label>
-                            <input type="text" id="supabase-key" autocomplete="off" autocapitalize="none" spellcheck="false" style="-webkit-text-security: disc;" placeholder="eyJhbGciOiJIUzI1NiIsInR..." class="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-1">
-                        <p class="text-[11px] text-slate-400">If unconfigured, Flora Scan seamlessly operates using local storage.</p>
-                        <button onclick="saveSupabaseCredentials()" class="bg-emerald-700  text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition">
-                            Connect Supabase
-                        </button>
-                    </div>
+                <!-- Supabase is configured centrally for every Flora Scan visitor. -->
+                <div class="space-y-2 bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Cloud Connection</h4>
+                    <p class="text-xs text-slate-600 dark:text-slate-300">Flora Scan is connected to its shared Supabase project. You do not need to enter project credentials to register or sign in. Each gardener's account and cloud records remain protected by their own sign-in and database access policies.</p>
+                    <p class="text-[11px] text-slate-400">Connection is configured by the app owner.</p>
                 </div>
 
                 <!-- User Authentication (Login / Register / User Panel) -->
@@ -4053,6 +4039,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
         ];
 
         // --- Application State & Supabase Integration ---
+        // Public app-wide Supabase configuration. Publishable keys are designed
+        // for browser use; never place a Supabase secret/service_role key here.
+        const FLORA_SUPABASE_CONFIG = Object.freeze({
+            url: 'https://symklyxbcztdsmktvhgj.supabase.co',
+            publishableKey: 'sb_publishable_PKEQJvNbnKkpINoB-CckuA_OjPVU1O1'
+        });
         let appSettings = JSON.parse(localStorage.getItem('flora_settings')) || {
             username: '@kitchengardener',
             logoUrl: '',
@@ -4320,15 +4312,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
         }
 
-        // Initialize Supabase Client
+        // Initialize Supabase Client using the shared app configuration.
+        // Visitors do not need to enter or save project credentials themselves.
         function initSupabaseClient() {
-            const url = appSettings.supabaseUrl || '';
-            const key = appSettings.supabaseKey || '';
-
-            const urlInput = document.getElementById('supabase-url');
-            const keyInput = document.getElementById('supabase-key');
-            if (urlInput) urlInput.value = url;
-            if (keyInput) keyInput.value = key;
+            const url = FLORA_SUPABASE_CONFIG.url || appSettings.supabaseUrl || '';
+            const key = FLORA_SUPABASE_CONFIG.publishableKey || appSettings.supabaseKey || '';
 
             if (url && key && window.supabase) {
                 try {
