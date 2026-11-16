@@ -2970,6 +2970,22 @@ textarea {
                         </div>
                     </div>
 
+                    <!-- Invited gardener completes account setup after following the email link. -->
+                    <div id="flora-invite-registration" class="hidden rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-slate-900/80 space-y-3">
+                        <div>
+                            <h4 class="text-sm font-bold text-emerald-800 dark:text-emerald-300">Complete your Flora Scan registration</h4>
+                            <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">Your invitation has been verified. Choose a password to finish setting up your personal gardener account.</p>
+                            <p id="flora-invite-email" class="mt-2 text-xs font-semibold text-slate-700 dark:text-slate-200"></p>
+                        </div>
+                        <div id="flora-invite-password-fields" class="space-y-2">
+                            <div><label for="flora-invite-password" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-300">Create password</label><input id="flora-invite-password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm"></div>
+                            <div><label for="flora-invite-password-confirm" class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-300">Confirm password</label><input id="flora-invite-password-confirm" type="password" autocomplete="new-password" minlength="8" placeholder="Enter the password again" class="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm"></div>
+                            <button id="flora-invite-complete-button" type="button" onclick="completeFloraInviteRegistration()" class="rounded-xl bg-emerald-700 px-4 py-2.5 text-xs font-semibold text-white shadow">Create my account</button>
+                        </div>
+                        <p id="flora-invite-status" class="text-xs text-slate-600 dark:text-slate-300" role="status" aria-live="polite"></p>
+                        <button id="flora-invite-return-login" type="button" onclick="leaveFloraInviteScreen()" class="hidden text-xs font-semibold text-emerald-700 underline">Return to sign in</button>
+                    </div>
+
                     <!-- Logged In View -->
                     <div id="auth-logged-in" class="hidden p-4 rounded-xl bg-emerald-50 dark:bg-slate-900/80 border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div class="flex items-center space-x-3 min-w-0">
@@ -4360,12 +4376,17 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     localStorage.setItem('flora_plants', '[]');
                     renderPlants();
                     updateAuthUI(false);
+                    if (isFloraInviteFlow) showFloraInviteSessionState(null);
                     updateSyncBadge('cloud', 'Supabase Ready (Sign In)');
                 }
 
                 // Listen for auth state changes
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
                     if (event === 'PASSWORD_RECOVERY') setTimeout(() => completeSupabasePasswordRecovery(), 0);
+                    if (isFloraInviteFlow) {
+                        showFloraInviteSessionState(session);
+                        if (!session?.user) return;
+                    }
                     if (session && session.user) {
                         currentUser = session.user;
                         subscribeToPlantLocationChanges();
@@ -4489,7 +4510,11 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (submit) submit.disabled = true;
             setFloraAdminStatus('Sending invitation…');
             try {
-                await callFloraAdmin('invite', { email });
+                const redirectTo = new URL(window.location.href);
+                redirectTo.search = '';
+                redirectTo.hash = '';
+                redirectTo.searchParams.set('invite', '1');
+                await callFloraAdmin('invite', { email, redirectTo: redirectTo.toString() });
                 if (input) input.value = '';
                 setFloraAdminStatus(`Invitation sent to ${email}.`);
                 await refreshFloraAdminUsers();
@@ -4508,9 +4533,71 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 await refreshFloraAdminUsers();
             } catch (error) { setFloraAdminStatus(error.message || 'Account update failed.', true); }
         }
+        let isFloraInviteFlow = new URLSearchParams(window.location.search).get('invite') === '1';
+
+        function showFloraInviteStatus(message, isError = false) {
+            const status = document.getElementById('flora-invite-status');
+            if (status) {
+                status.textContent = message;
+                status.className = isError ? 'text-xs text-rose-700 dark:text-rose-300' : 'text-xs text-slate-600 dark:text-slate-300';
+            }
+        }
+
+        function showFloraInviteSessionState(session) {
+            if (!isFloraInviteFlow) return;
+            const fields = document.getElementById('flora-invite-password-fields');
+            const returnButton = document.getElementById('flora-invite-return-login');
+            const email = document.getElementById('flora-invite-email');
+            if (session?.user) {
+                if (email) email.textContent = session.user.email || '';
+                if (fields) fields.classList.remove('hidden');
+                if (returnButton) returnButton.classList.add('hidden');
+                showFloraInviteStatus('Set a password below to finish creating your account.');
+            } else {
+                if (fields) fields.classList.add('hidden');
+                if (returnButton) returnButton.classList.remove('hidden');
+                showFloraInviteStatus('This invitation link is invalid, expired, or already used. Ask your Flora Scan administrator to send a new invitation.', true);
+            }
+            updateAuthUI(!!session?.user, session?.user?.email || '');
+        }
+
+        async function completeFloraInviteRegistration() {
+            if (!supabaseClient) { showFloraInviteStatus('Flora Scan could not connect to the account service. Refresh and try again.', true); return; }
+            const password = document.getElementById('flora-invite-password')?.value || '';
+            const confirmation = document.getElementById('flora-invite-password-confirm')?.value || '';
+            if (password.length < 8) { showFloraInviteStatus('Please choose a password with at least 8 characters.', true); return; }
+            if (password !== confirmation) { showFloraInviteStatus('The passwords do not match. Please try again.', true); return; }
+            const button = document.getElementById('flora-invite-complete-button');
+            if (button) { button.disabled = true; button.textContent = 'Creating account…'; }
+            try {
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError || !session?.user) throw new Error('Your invitation session has expired. Ask the administrator for a new invitation.');
+                const { error } = await supabaseClient.auth.updateUser({ password });
+                if (error) throw error;
+                isFloraInviteFlow = false;
+                window.history.replaceState({}, document.title, window.location.pathname);
+                document.getElementById('flora-invite-password').value = '';
+                document.getElementById('flora-invite-password-confirm').value = '';
+                updateAuthUI(true, session.user.email || '');
+                alert('Your Flora Scan account has been created. Welcome!');
+            } catch (error) {
+                showFloraInviteStatus(error.message || 'Could not complete registration. Please try again.', true);
+            } finally {
+                if (button) { button.disabled = false; button.textContent = 'Create my account'; }
+            }
+        }
+
+        async function leaveFloraInviteScreen() {
+            if (supabaseClient) await supabaseClient.auth.signOut();
+            isFloraInviteFlow = false;
+            window.history.replaceState({}, document.title, window.location.pathname);
+            updateAuthUI(false);
+        }
+
         function updateAuthUI(isLoggedIn, email = '') {
             const loggedOutSec = document.getElementById('auth-logged-out');
             const loggedInSec = document.getElementById('auth-logged-in');
+            const invitePanel = document.getElementById('flora-invite-registration');
             const emailDisp = document.getElementById('user-email-display');
             const profileEmail = document.getElementById('setting-profile-email');
             const adminTools = document.getElementById('flora-admin-tools');
@@ -4524,15 +4611,24 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (adminNote) adminNote.textContent = isAdmin ? 'Administrator access confirmed. You can manage gardener accounts below.' : (isLoggedIn ? 'This account does not have administrator permissions.' : 'Connect to Supabase and sign in with the administrator account to unlock account management.');
             if (isAdmin) setTimeout(() => refreshFloraAdminUsers(), 0);
 
-            if (isLoggedIn) {
+            if (isFloraInviteFlow) {
+                if (loggedOutSec) loggedOutSec.classList.add('hidden');
+                if (loggedInSec) loggedInSec.classList.add('hidden');
+                if (invitePanel) invitePanel.classList.remove('hidden');
+                const inviteEmail = document.getElementById('flora-invite-email');
+                if (inviteEmail) inviteEmail.textContent = currentUser?.email || '';
+                if (profileEmail) profileEmail.value = '';
+            } else if (isLoggedIn) {
                 if (loggedOutSec) loggedOutSec.classList.add('hidden');
                 if (loggedInSec) loggedInSec.classList.remove('hidden');
+                if (invitePanel) invitePanel.classList.add('hidden');
                 if (emailDisp) emailDisp.textContent = email;
                 if (profileEmail) profileEmail.value = (appSettings.notificationEmail || email || '');
             } else {
                 if (profileEmail) profileEmail.value = '';
                 if (loggedOutSec) loggedOutSec.classList.remove('hidden');
                 if (loggedInSec) loggedInSec.classList.add('hidden');
+                if (invitePanel) invitePanel.classList.add('hidden');
             }
         }
 
