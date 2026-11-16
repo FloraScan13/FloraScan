@@ -2751,6 +2751,19 @@ textarea {
 
         <!-- TAB 3: SETTINGS & SUPABASE CLOUD AUTH -->
         <div id="view-settings" class="hidden space-y-6" style="display: none !important;">
+            <!-- Quick account controls: keep sign-out visible at the top of Settings while signed in. -->
+            <section id="settings-account-session" class="hidden bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="min-w-0">
+                        <h3 class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-user-circle text-emerald-600" aria-hidden="true"></i><span>Signed-in account</span></h3>
+                        <p id="settings-account-email" class="text-sm text-slate-600 dark:text-slate-300 mt-1 break-all">Not signed in</p>
+                    </div>
+                    <button type="button" onclick="handleSupabaseSignOut()" class="shrink-0 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 px-4 py-2.5 text-sm font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition">
+                        <i class="fa-solid fa-right-from-bracket mr-2" aria-hidden="true"></i>Log out
+                    </button>
+                </div>
+            </section>
+
             <!-- Scanner Preference Settings -->
             <div id="scanner-preference-settings" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                 <h3 class="text-base font-bold flex items-center gap-2"><i class="fa-solid fa-qrcode text-emerald-600"></i><span>Scanner Preference</span></h3>
@@ -4505,6 +4518,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const profileEmail = document.getElementById('setting-profile-email');
             const adminTools = document.getElementById('flora-admin-tools');
             const adminNote = document.getElementById('flora-admin-access-note');
+            const accountSession = document.getElementById('settings-account-session');
+            const accountEmail = document.getElementById('settings-account-email');
+            if (accountSession) accountSession.classList.toggle('hidden', !isLoggedIn);
+            if (accountEmail) accountEmail.textContent = isLoggedIn ? (email || currentUser?.email || 'Signed in') : 'Not signed in';
             const isAdmin = !!(isLoggedIn && currentUser && currentUser.app_metadata && currentUser.app_metadata.role === 'admin');
             if (adminTools) adminTools.classList.toggle('hidden', !isAdmin);
             if (adminNote) adminNote.textContent = isAdmin ? 'Administrator access confirmed. You can manage gardener accounts below.' : (isLoggedIn ? 'This account does not have administrator permissions.' : 'Connect to Supabase and sign in with the administrator account to unlock account management.');
