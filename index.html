@@ -5337,13 +5337,14 @@ textarea {
             }
             const pending = getFloraSyncQueue();
             if (supabaseClient && currentUser) {
-                const userCacheKey = floraUserStorageKey('flora_plants_user');
+                const requestedUserId = currentUser.id;
+                const userCacheKey = floraUserStorageKey('flora_plants_user', requestedUserId);
                 const readOwnedCache = () => {
                     try {
                         const cached = localStorage.getItem(userCacheKey);
                         if (cached) return JSON.parse(cached) || [];
                         // Read the legacy shared cache only if it is explicitly tagged to this same account.
-                        if (localStorage.getItem('flora_last_user_id') === currentUser.id) {
+                        if (localStorage.getItem('flora_last_user_id') === requestedUserId) {
                             return JSON.parse(localStorage.getItem('flora_plants') || '[]') || [];
                         }
                     } catch (_) {}
@@ -5351,7 +5352,7 @@ textarea {
                 };
 
                 // Keep this account's own offline edits, but never reuse another account's queue/cache.
-                if ((pending.dirty || pending.profileDirty || pending.locationsDirty) && pending.userId === currentUser.id) {
+                if ((pending.dirty || pending.profileDirty || pending.locationsDirty) && pending.userId === requestedUserId) {
                     plants = readOwnedCache();
                     saveLocalPlantsForCurrentUser(plants);
                     return;
@@ -5361,18 +5362,20 @@ textarea {
                     const { data: dbPlants, error: plantErr } = await supabaseClient
                         .from('plants')
                         .select('*')
-                        .eq('user_id', currentUser.id)
+                        .eq('user_id', requestedUserId)
                         .order('created_at', { ascending: false });
                     if (plantErr) throw plantErr;
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
 
                     const { data: dbLogs, error: logsErr } = await supabaseClient
                         .from('plant_logs')
                         .select('*')
-                        .eq('user_id', currentUser.id)
+                        .eq('user_id', requestedUserId)
                         .order('created_at', { ascending: false });
                     if (logsErr) throw logsErr;
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
 
-                    plants = await Promise.all((dbPlants || []).map(async p => ({
+                    const loadedPlants = await Promise.all((dbPlants || []).map(async p => ({
                         id: p.id,
                         name: p.name,
                         variety: p.variety,
@@ -5402,9 +5405,12 @@ textarea {
                             return { ...restoreJournalLogStage(l), feedReminderDate: l.feed_reminder_date || '', feedReminderMode: l.feed_reminder_mode || 'once', feedReminderInterval: l.feed_reminder_interval || '', feedReminderUnit: l.feed_reminder_unit || 'days', photos: photoUrls.filter(Boolean), photoPaths };
                         }))
                     })));
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
+                    plants = loadedPlants;
                     saveLocalPlantsForCurrentUser(plants);
                     return;
                 } catch (err) {
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
                     console.error("Cloud fetch failed; using only this account's local cache:", err);
                     plants = readOwnedCache();
                     updateSyncBadge('local', 'Cloud Read Failed · Local Cache');
@@ -6404,6 +6410,7 @@ textarea {
                     // No cloud row means this account has not synced locations yet. Keep its
                     // already-loaded account-scoped local values and seed the cloud from them.
                     const saved = await savePlantLocationsToCloud();
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
                     if (!saved) throw new Error('Could not initialise this account’s growing locations in the cloud.');
                 } else {
                     // Older cloud records may not yet contain every location setting. Preserve this device's
@@ -6454,10 +6461,12 @@ textarea {
                     }
                     if (needsLocationSettingsBackfill) {
                         const backfilled = await savePlantLocationsToCloud();
+                        if (!currentUser || currentUser.id !== requestedUserId) return;
                         if (!backfilled) throw new Error('Could not backfill all growing-location settings to the cloud.');
                     }
                 }
             } catch (err) {
+                if (!currentUser || currentUser.id !== requestedUserId) return;
                 console.error('Failed to load growing locations from cloud:', err);
                 updateSyncBadge('local', 'Location Sync Failed');
                 alert('Could not load your growing locations from the cloud. Your device copy is still available. Check the user_plant_locations table and its access policies in Supabase.');
