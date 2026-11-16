@@ -170,33 +170,21 @@
             }
         }
 
-        /* Full-page account loading screen, shown on desktop and mobile while auth and garden data restore. */
+        /* Welcome overlay is mobile-only; desktop opens straight into the app. */
+        #mobile-welcome-screen {
+            display: none !important;
+        }
         #mobile-welcome-screen.is-hidden {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
-        }
-        #mobile-welcome-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 4000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 28px;
-            background: #ffffff;
-            color: #14532d;
-            text-align: center;
-            opacity: 1;
-            visibility: visible;
-            transition: opacity .28s ease, visibility .28s ease;
         }
         @media (max-width: 768px) {
             #mobile-welcome-screen {
                 position: fixed;
                 inset: 0;
                 z-index: 2000;
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 justify-content: center;
                 padding: 28px;
@@ -4238,12 +4226,12 @@ textarea {
             const isPageRefresh = navigationEntry && navigationEntry.type === 'reload';
             const isMobileLayout = window.matchMedia('(max-width: 768px)').matches;
             if (isPageRefresh && isMobileLayout) {
-                // On mobile, replace the welcome overlay with the refresh screen.
+                // On mobile reload, replace the welcome overlay with the refresh screen.
                 const welcomeScreen = document.getElementById('mobile-welcome-screen');
                 if (welcomeScreen) welcomeScreen.classList.add('is-hidden');
                 showMobileRefreshScreen();
-            } else {
-                // Desktop always uses the standard welcome overlay, including on reload.
+            } else if (isMobileLayout) {
+                // Keep the welcome overlay on mobile only.
                 showMobileWelcomeScreen();
             }
             applyAppearance();
