@@ -3002,7 +3002,7 @@ textarea {
                             <i class="fa-solid fa-cloud text-emerald-600"></i>
                             <span>Supabase Cloud Sync & Authentication</span>
                         </h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Connect your Supabase project to enable multi-device sync and user accounts.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cloud sync is configured automatically. Sign in with your Flora Scan account to access your garden across devices.</p>
                     </div>
                     <span id="supabase-connection-status" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                         Offline Mode
@@ -3014,9 +3014,9 @@ textarea {
 
                 <!-- Supabase is configured centrally for every Flora Scan visitor. -->
                 <div class="space-y-2 bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Cloud Connection</h4>
-                    <p class="text-xs text-slate-600 dark:text-slate-300">Flora Scan is connected to its shared Supabase project. You do not need to enter project credentials to register or sign in. Each gardener's account and cloud records remain protected by their own sign-in and database access policies.</p>
-                    <p class="text-[11px] text-slate-400">Connection is configured by the app owner.</p>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Automatic Cloud Connection</h4>
+                    <p class="text-xs text-slate-600 dark:text-slate-300">Flora Scan connects to its cloud service automatically. Once you sign in, your garden syncs across devices using your own account. You do not need project URLs, API keys, server details, or administrator access.</p>
+                    <p class="text-[11px] text-slate-400">Your access is limited to the permissions assigned to your account.</p>
                 </div>
 
                 <!-- User Authentication (Login / Register / User Panel) -->
@@ -4807,7 +4807,7 @@ textarea {
         }
 
         async function handleSupabaseLogin() {
-            if (!supabaseClient) { alert("Please connect your Supabase credentials first!"); return; }
+            if (!supabaseClient) { alert("Flora Scan cloud sign-in is temporarily unavailable. Please refresh the app or contact your administrator."); return; }
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if (!email || !password) { alert("Please enter email and password."); return; }
