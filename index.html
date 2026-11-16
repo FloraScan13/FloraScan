@@ -4267,6 +4267,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 try {
                     await fetchPlantsFromCloudOrLocal();
                     await fetchPlantLocationsFromCloudOrLocal();
+                    localStorage.setItem('flora_last_user_id', currentUser.id);
                     renderPlantLocationControls();
                     renderPlants();
                 } finally {
@@ -4343,12 +4344,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 if (session && session.user) {
                     currentUser = session.user;
                     subscribeToPlantLocationChanges();
-                    localStorage.setItem('flora_last_user_id', currentUser.id);
                     updateAuthUI(true, currentUser.email);
                     updateSyncBadge('cloud', 'Cloud Connected');
                     await loadBrandingSettingsFromCloud();
                     await fetchPlantsFromCloudOrLocal();
                     await fetchPlantLocationsFromCloudOrLocal();
+                    localStorage.setItem('flora_last_user_id', currentUser.id);
                     renderPlantLocationControls();
                     renderPlants();
                     await syncPendingFloraChanges();
@@ -4364,12 +4365,12 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     if (session && session.user) {
                         currentUser = session.user;
                         subscribeToPlantLocationChanges();
-                        localStorage.setItem('flora_last_user_id', currentUser.id);
-                        updateAuthUI(true, currentUser.email);
+                            updateAuthUI(true, currentUser.email);
                         updateSyncBadge('cloud', 'Cloud Connected');
                         await loadBrandingSettingsFromCloud();
                         await fetchPlantsFromCloudOrLocal();
                         await fetchPlantLocationsFromCloudOrLocal();
+                        localStorage.setItem('flora_last_user_id', currentUser.id);
                         renderPlantLocationControls();
                         renderPlants();
                         await syncPendingFloraChanges();
@@ -4963,6 +4964,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 // Keep this account's own offline edits, but never reuse another account's queue/cache.
                 if ((pending.dirty || pending.profileDirty || pending.locationsDirty) && pending.userId === currentUser.id) {
                     plants = readOwnedCache();
+                    saveLocalPlantsForCurrentUser(plants);
                     return;
                 }
 
