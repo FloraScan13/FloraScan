@@ -85,6 +85,8 @@ Deno.serve(async (req: Request) => {
         const humidity: number[] = (weather.hourly?.relative_humidity_2m || []).filter((v: unknown) => typeof v === "number" && Number.isFinite(v));
         if (!temps.length || !humidity.length) throw new Error("No hourly readings returned for " + startDate + " to " + endDate);
         const summary = [
+          "Weekly outdoor weather summary (" + startDate + " to " + endDate + ")",
+          "Location: " + location + (postcodes[location] ? " (" + postcodes[location] + ")" : ""),
           "Temperature: high " + Math.max(...temps).toFixed(1) + "°C · low " + Math.min(...temps).toFixed(1) + "°C",
           "Humidity: high " + Math.max(...humidity).toFixed(0) + "% · low " + Math.min(...humidity).toFixed(0) + "%"
         ].join("\n");
