@@ -9192,9 +9192,7 @@ textarea {
                     const cumulativeMm = previousWeeks.reduce((sum, entry) => sum + entry.amount, totalMm);
                     const firstRecordedWeek = previousWeeks.reduce((earliest, entry) => entry.start < earliest ? entry.start : earliest, start);
                     const rainfallText = 'Rainfall for ' + periodLabel + ': ' + totalMm.toFixed(1) +
-                        ' mm total (' + (totalMm / 25.4).toFixed(2) + ' in)' + (postcode ? ' at ' + postcode : ' at ' + location) +
-                        '. Cumulative recorded rainfall since ' + firstRecordedWeek + ': ' + cumulativeMm.toFixed(1) +
-                        ' mm (' + (cumulativeMm / 25.4).toFixed(2) + ' in). Source: Open-Meteo.';
+                        ' mm total (' + (totalMm / 25.4).toFixed(2) + ' in). Source: Open-Meteo.';
                     const log = {
                         id: 'log_weather_' + plant.id + '_' + start.replace(/-/g, ''),
                         date: end,
