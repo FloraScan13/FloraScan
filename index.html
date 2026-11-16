@@ -4355,6 +4355,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                     await syncPendingFloraChanges();
                 } else {
                     currentUser = null;
+                    // A signed-out visitor must not see the last account's cached garden.
+                    plants = [];
+                    localStorage.setItem('flora_plants', '[]');
+                    renderPlants();
                     updateAuthUI(false);
                     updateSyncBadge('cloud', 'Supabase Ready (Sign In)');
                 }
