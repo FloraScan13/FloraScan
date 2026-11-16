@@ -5133,6 +5133,9 @@ textarea {
             if (kind === 'log-delete' && deletedId) queue.deletedLogIds = [...new Set([...queue.deletedLogIds, deletedId])];
             if (kind === 'profile') queue.profileDirty = true;
             if (kind === 'locations') queue.locationsDirty = true;
+            // Track plant/journal edits separately: the general dirty flag also covers
+            // profile and location changes and must not suppress the cloud plant read.
+            if (kind !== 'profile' && kind !== 'locations') queue.plantsDirty = true;
             saveFloraSyncQueue(queue);
             if (!navigator.onLine) updateSyncBadge('local', 'Offline · Changes Queued');
         }
@@ -5338,14 +5341,12 @@ textarea {
                     return [];
                 };
 
-                // Keep this account's own offline edits, but never reuse another account's queue/cache.
-                // Only pending plant edits require the local plant cache to remain authoritative.
-                // Profile or growing-location edits must not suppress the cloud plant query.
-                if (pending.dirty && pending.userId === requestedUserId) {
-                    plants = readOwnedCache();
-                    saveLocalPlantsForCurrentUser(plants);
-                    return;
-                }
+                // The general dirty flag also covers profile and location edits.
+                // Always read the cloud library, then merge locally queued plant edits below.
+                const hasPendingPlantChanges = pending.userId === requestedUserId && (
+                    pending.plantsDirty === true ||
+                    (pending.dirty && !pending.profileDirty && !pending.locationsDirty)
+                );
 
                 try {
                     const { data: dbPlants, error: plantErr } = await supabaseClient
@@ -5360,6 +5361,8 @@ textarea {
                     // Journal rows and signed photo URLs are optional enrichment and must
                     // never hold the entire plant library behind a second query or storage request.
                     const localPlants = readOwnedCache();
+                    const localPlantsById = new Map(localPlants.map(plant => [String(plant.id), plant]));
+                    const deletedPlantIds = new Set((pending.userId === requestedUserId && Array.isArray(pending.deletedPlantIds) ? pending.deletedPlantIds : []).map(String));
                     const loadedPlants = (dbPlants || []).map(p => ({
                         id: p.id,
                         name: p.name,
@@ -5387,7 +5390,20 @@ textarea {
                         logs: []
                     }));
                     if (!currentUser || currentUser.id !== requestedUserId) return;
-                    plants = loadedPlants;
+                    // Preserve unsynced local plant/journal edits without hiding cloud-only
+                    // records. Deleted plant tombstones remain excluded from the merged list.
+                    const cloudPlantIds = new Set(loadedPlants.map(plant => String(plant.id)));
+                    const mergedPlants = loadedPlants.map(cloudPlant => {
+                        if (!hasPendingPlantChanges || !localPlantsById.has(String(cloudPlant.id))) return cloudPlant;
+                        return { ...cloudPlant, ...localPlantsById.get(String(cloudPlant.id)) };
+                    });
+                    if (hasPendingPlantChanges) {
+                        localPlants.forEach(localPlant => {
+                            const id = String(localPlant.id);
+                            if (!cloudPlantIds.has(id) && !deletedPlantIds.has(id)) mergedPlants.push(localPlant);
+                        });
+                    }
+                    plants = mergedPlants.filter(plant => !deletedPlantIds.has(String(plant.id)));
                     saveLocalPlantsForCurrentUser(plants);
 
                     // Enrich journal entries and private photo URLs in the background.
