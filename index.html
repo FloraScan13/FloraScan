@@ -4115,7 +4115,7 @@ textarea {
                         const mayAdoptLegacy = previousUserId === userId;
             const defaults = {
                 flora_settings: JSON.stringify({ username: '@kitchengardener', logoUrl: '', supabaseUrl: '', supabaseKey: '', theme: 'light', accentColor: 'green', appearancePreset: 'garden', scannerPreference: 'nfc', rememberScannerPreference: true }),
-                flora_plant_locations: JSON.stringify([...DEFAULT_PLANT_LOCATIONS]),
+                flora_plant_locations: '[]',
                 flora_plant_location_types: JSON.stringify({ ...DEFAULT_LOCATION_TYPES }),
                 flora_plant_location_details: '{}', flora_plant_location_details_visibility: '{}',
                 flora_location_header_weather_visible: 'true', flora_plant_location_setups: '{}',
@@ -4148,7 +4148,7 @@ textarea {
 
         function resetFloraAccountStateForSignedOut() {
             plants = [];
-            plantLocations = [...DEFAULT_PLANT_LOCATIONS];
+            plantLocations = [];
             locationTypes = { ...DEFAULT_LOCATION_TYPES };
             locationDetails = {};
             locationSetups = {};
@@ -4193,8 +4193,7 @@ textarea {
         if (!appSettings.rememberScannerPreference) appSettings.scannerPreference = 'nfc';
         setFloraAccountItem('flora_settings', JSON.stringify(appSettings));
 
-        const DEFAULT_PLANT_LOCATIONS = ['Grow Tent', 'Front Garden', 'Back Garden', 'Greenhouse', 'Windowsill'];
-        let plantLocations = JSON.parse(getFloraAccountItem('flora_plant_locations') || 'null') || [...DEFAULT_PLANT_LOCATIONS];
+        let plantLocations = JSON.parse(getFloraAccountItem('flora_plant_locations') || 'null') || [];
         const DEFAULT_LOCATION_TYPES = { 'Grow Tent': 'indoor', 'Front Garden': 'outdoor', 'Back Garden': 'outdoor', 'Greenhouse': 'indoor', 'Windowsill': 'indoor' };
         let locationTypes = JSON.parse(getFloraAccountItem('flora_plant_location_types') || 'null') || { ...DEFAULT_LOCATION_TYPES };
         let locationDetails = JSON.parse(getFloraAccountItem('flora_plant_location_details') || '{}') || {};
