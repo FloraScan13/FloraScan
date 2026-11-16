@@ -6,7 +6,7 @@ alter table public.plants add column if not exists location text not null defaul
 -- Store the user's configured list of growing locations across devices.
 create table if not exists public.user_plant_locations (
     user_id uuid primary key references auth.users(id) on delete cascade,
-    locations jsonb not null default '["Grow Tent","Front Garden","Back Garden","Greenhouse","Windowsill"]'::jsonb,
+    locations jsonb not null default '[]'::jsonb,
     updated_at timestamptz not null default now()
 );
 
