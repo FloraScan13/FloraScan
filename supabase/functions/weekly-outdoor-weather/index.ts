@@ -1,5 +1,5 @@
 // Scheduled weekly outdoor weather journal summaries.
-// Deploy with: supabase functions deploy weekly-outdoor-weather
+// Deploy with: supabase functions deploy weekly-outdoor-weather --no-verify-jwt
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
@@ -20,10 +20,18 @@ Deno.serve(async (req: Request) => {
 
   const url = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !serviceKey) return Response.json({ error: "Server configuration is incomplete" }, { status: 500, headers: corsHeaders });
+  const cronSecret = Deno.env.get("FLORA_CRON_SECRET");
+  if (!url || !serviceKey || !cronSecret) {
+    return Response.json({ error: "Server configuration is incomplete" }, { status: 500, headers: corsHeaders });
+  }
 
+  // This endpoint is called by pg_cron, not by signed-in users. Keep the
+  // gateway JWT check disabled and authenticate the scheduler with a
+  // dedicated high-entropy secret rather than reusing the database key.
   const auth = req.headers.get("Authorization") || "";
-  if (auth !== "Bearer " + serviceKey) return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
+  if (auth !== "Bearer " + cronSecret) {
+    return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
+  }
 
   const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
   // The run on Monday summarises the previous, fully completed Monday-Sunday week.
