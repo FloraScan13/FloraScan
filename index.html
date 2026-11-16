@@ -4380,6 +4380,10 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                             supabaseClient.removeChannel(plantLocationsRealtimeChannel);
                             plantLocationsRealtimeChannel = null;
                         }
+                        // Do not leave the previous gardener's plants visible after sign-out.
+                        plants = [];
+                        localStorage.setItem('flora_plants', '[]');
+                        renderPlants();
                         updateAuthUI(false);
                         updateSyncBadge('cloud', 'Supabase Ready (Sign In)');
                     }
@@ -4604,6 +4608,9 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             if (supabaseClient) {
                 await supabaseClient.auth.signOut();
                 currentUser = null;
+                plants = [];
+                localStorage.setItem('flora_plants', '[]');
+                renderPlants();
                 updateAuthUI(false);
                 updateSyncBadge('cloud', 'Supabase Ready (Sign In)');
                 alert("Signed Out.");
