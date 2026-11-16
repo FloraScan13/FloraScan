@@ -4636,7 +4636,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             }
             const emailInput = document.getElementById('flora-invite-recovery-email');
             const email = emailInput?.value.trim() || '';
-            if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 showFloraInviteStatus('Enter a valid email address that received the invitation.', true);
                 emailInput?.focus();
                 return;
