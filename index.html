@@ -4236,13 +4236,14 @@ textarea {
         window.addEventListener('DOMContentLoaded', async () => {
             const navigationEntry = performance.getEntriesByType('navigation')[0];
             const isPageRefresh = navigationEntry && navigationEntry.type === 'reload';
-            if (isPageRefresh) {
-                // The welcome overlay is visible by default on mobile, so explicitly
-                // hide it before showing the refresh overlay above the app.
+            const isMobileLayout = window.matchMedia('(max-width: 768px)').matches;
+            if (isPageRefresh && isMobileLayout) {
+                // On mobile, replace the welcome overlay with the refresh screen.
                 const welcomeScreen = document.getElementById('mobile-welcome-screen');
                 if (welcomeScreen) welcomeScreen.classList.add('is-hidden');
                 showMobileRefreshScreen();
             } else {
+                // Desktop always uses the standard welcome overlay, including on reload.
                 showMobileWelcomeScreen();
             }
             applyAppearance();
