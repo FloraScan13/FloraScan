@@ -4131,6 +4131,8 @@ textarea {
             locationDetails = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_details', userId)) || '{}');
             locationDetailsVisibility = Object.fromEntries((plantLocations || []).map(location => [location, false]));
             locationHeaderWeatherVisible = localStorage.getItem(floraAccountStorageKey('flora_location_header_weather_visible', userId)) !== 'false';
+            const weatherToggle = document.getElementById('setting-location-header-weather');
+            if (weatherToggle) weatherToggle.checked = locationHeaderWeatherVisible;
             locationSetups = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_setups', userId)) || '{}');
             locationPostcodes = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_postcodes', userId)) || '{}');
             locationCoordinates = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_coordinates', userId)) || '{}');
@@ -4228,6 +4230,8 @@ textarea {
             applyBranding();
             renderIconPickerGrid();
             renderPlantLocationControls();
+            const weatherToggle = document.getElementById('setting-location-header-weather');
+            if (weatherToggle) weatherToggle.checked = locationHeaderWeatherVisible;
             initSupabaseClient();
             await fetchPlantsFromCloudOrLocal();
             // Re-apply the saved scanner choice after app data has loaded. If no
