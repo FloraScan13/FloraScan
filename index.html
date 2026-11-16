@@ -9276,6 +9276,19 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const rawRemove = Storage.prototype.removeItem;
             const rawKey = Storage.prototype.key;
             const rawLength = Object.getOwnPropertyDescriptor(Storage.prototype, 'length');
+            const migrateLegacyData = id => {
+                const marker = 'flora_account_storage_migrated__' + id;
+                if (rawGet.call(localStorage, marker)) return;
+                scopedKeys.forEach(key => {
+                    const destination = 'flora_user_' + id + '__' + key;
+                    if (rawGet.call(localStorage, destination) === null) {
+                        const legacy = rawGet.call(localStorage, key);
+                        if (legacy !== null) rawSet.call(localStorage, destination, legacy);
+                    }
+                    rawRemove.call(localStorage, key);
+                });
+                rawSet.call(localStorage, marker, '1');
+            };
             const sessionUserId = () => {
                 try {
                     const physicalLength = rawLength ? rawLength.get.call(localStorage) : localStorage.length;
@@ -9287,35 +9300,16 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                         if (user?.id) {
                             const id = String(user.id);
                             rawSet.call(localStorage, 'flora_active_account_id', id);
+                            migrateLegacyData(id);
                             return id;
                         }
                     }
-                } catch (_) {}
+                } catch (error) { console.warn('Flora Scan account storage migration could not complete:', error); }
                 return rawGet.call(localStorage, 'flora_active_account_id') || null;
             };
             const resolve = key => scoped.has(String(key)) && sessionUserId()
                 ? 'flora_user_' + sessionUserId() + '__' + key
                 : key;
-            const activeNamespaceKey = () => {
-                const id = sessionUserId();
-                return id ? 'flora_account_storage_migrated__' + id : null;
-            };
-            // One-time migration: existing unscoped garden data belongs to the first
-            // account that signs in on this browser. Subsequent accounts start clean.
-            try {
-                const marker = activeNamespaceKey();
-                if (marker && !rawGet.call(localStorage, marker)) {
-                    scopedKeys.forEach(key => {
-                        const destination = 'flora_user_' + sessionUserId() + '__' + key;
-                        if (rawGet.call(localStorage, destination) === null) {
-                            const legacy = rawGet.call(localStorage, key);
-                            if (legacy !== null) rawSet.call(localStorage, destination, legacy);
-                        }
-                        rawRemove.call(localStorage, key);
-                    });
-                    rawSet.call(localStorage, marker, '1');
-                }
-            } catch (error) { console.warn('Flora Scan account storage migration could not complete:', error); }
             Storage.prototype.getItem = function(key) { return rawGet.call(this, resolve(key)); };
             Storage.prototype.setItem = function(key, value) { return rawSet.call(this, resolve(key), value); };
             Storage.prototype.removeItem = function(key) { return rawRemove.call(this, resolve(key)); };
