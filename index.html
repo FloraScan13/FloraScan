@@ -4108,7 +4108,11 @@ textarea {
         function activateFloraAccountStorage(userId) {
             if (!userId) return;
             const previousUserId = localStorage.getItem('flora_last_user_id');
-            const mayAdoptLegacy = !previousUserId || previousUserId === userId;
+            // Only migrate unscoped legacy data when this device already records the
+                        // same account as its owner. A missing marker is ambiguous: the
+                        // legacy keys may belong to another account on a shared device.
+                        // In that case, start this account with its own defaults instead.
+                        const mayAdoptLegacy = previousUserId === userId;
             const defaults = {
                 flora_settings: JSON.stringify({ username: '@kitchengardener', logoUrl: '', supabaseUrl: '', supabaseKey: '', theme: 'light', accentColor: 'green', appearancePreset: 'garden', scannerPreference: 'nfc', rememberScannerPreference: true }),
                 flora_plant_locations: JSON.stringify([...DEFAULT_PLANT_LOCATIONS]),
