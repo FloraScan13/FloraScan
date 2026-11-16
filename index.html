@@ -4291,7 +4291,8 @@ textarea {
             const hour = new Date().getHours();
             const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
             const greetingDisplay = document.getElementById('mobile-welcome-greeting');
-            if (greetingDisplay) greetingDisplay.textContent = greeting + ', ' + (appSettings.username || '@kitchengardener') + '!';
+            const username = typeof appSettings.username === 'string' ? appSettings.username.trim() : '';
+            if (greetingDisplay) greetingDisplay.textContent = username ? greeting + ', ' + username + '!' : greeting + '!';
         }
 
         function showMobileWelcomeScreen() {
