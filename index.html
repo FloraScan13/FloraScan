@@ -2836,7 +2836,7 @@ textarea {
             <div id="plants-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 
             <!-- Empty State -->
-            <div id="plants-empty" class="hidden text-center py-16 px-4 rounded-2xl border border-solid shadow-sm" style="border-color: rgba(196,85,124,.28); background: linear-gradient(135deg, #fff4f7 0%, #fffdfb 55%, #fcecf1 100%);">
+            <div id="plants-empty" class="hidden text-center py-16 px-4 rounded-2xl border border-solid shadow-sm" style="display:none; border-color: rgba(196,85,124,.28); background: linear-gradient(135deg, #fff4f7 0%, #fffdfb 55%, #fcecf1 100%);" style="border-color: rgba(196,85,124,.28); background: linear-gradient(135deg, #fff4f7 0%, #fffdfb 55%, #fcecf1 100%);">
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl border flex items-center justify-center text-2xl shadow-sm" style="border-color: rgba(196,85,124,.22); background: rgba(196,85,124,.12); color: #C4557C;">
                     <i class="fa-solid fa-seedling"></i>
                 </div>
@@ -7326,6 +7326,7 @@ textarea {
             // Do not flash the empty-library message while the account's garden is still loading.
             if (!plantsInitialLoadComplete) {
                 emptyEl.classList.add('hidden');
+                emptyEl.style.display = 'none';
                 return;
             }
             const locationFilter = document.getElementById('plant-location-filter');
@@ -7341,9 +7342,11 @@ textarea {
             if (filtered.length === 0) {
                 container.innerHTML = '';
                 emptyEl.classList.remove('hidden');
+                emptyEl.style.display = 'block';
                 return;
             }
             emptyEl.classList.add('hidden');
+            emptyEl.style.display = 'none';
 
         async function refreshPlantCardPhoto(image) {
             if (!image || image.dataset.refreshAttempted === 'true') {
