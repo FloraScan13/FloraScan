@@ -4156,6 +4156,9 @@ textarea {
             for (const key of Object.keys(plantLocationViewModes)) delete plantLocationViewModes[key];
             Object.assign(plantLocationViewModes, JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_location_view_modes', userId)) || '{}'));
             applyBranding();
+            // The welcome screen is shown before Supabase restores the signed-in account.
+            // Refresh it as soon as this account's local profile has been activated.
+            updateMobileWelcomeGreeting();
         }
 
         function resetFloraAccountStateForSignedOut() {
