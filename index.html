@@ -4234,6 +4234,9 @@ textarea {
             if (weatherToggle) weatherToggle.checked = locationHeaderWeatherVisible;
             initSupabaseClient();
             await fetchPlantsFromCloudOrLocal();
+            // Load this account's growing locations before the first library render.
+            await fetchPlantLocationsFromCloudOrLocal();
+            renderPlantLocationControls();
             // Re-apply the saved scanner choice after app data has loaded. If no
             // valid choice exists, NFC has already been persisted as the default.
             applyScannerPreference();
@@ -7347,7 +7350,12 @@ textarea {
                         ? value + ' (' + p.heatedPropagatorTemperatureC + ' °C)'
                         : value);
                 const setupLabel = setupItems.length ? setupItems.join(', ') : 'Not specified';
-                const savedDetails = JSON.parse(getFloraAccountItem('flora_plant_location_details') || '{}') || {};
+                let savedDetails = {};
+                try {
+                    savedDetails = JSON.parse(getFloraAccountItem('flora_plant_location_details') || '{}') || {};
+                } catch (error) {
+                    console.warn('Could not read saved plant location details; rendering plant cards without them.', error);
+                }
                 const sharedLocationDetails = String(locationDetails[plantLocation] || savedDetails[plantLocation] || '');
                 const feedReminderLog = (Array.isArray(p.logs) ? p.logs : [])
                     .filter(log => log.type === 'Feed' && log.feedReminderDate)
