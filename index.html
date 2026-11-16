@@ -4492,6 +4492,7 @@ textarea {
                     await syncPendingFloraChanges();
                 } else {
                     currentUser = null;
+                    resetFloraAccountStateForSignedOut();
                     // A signed-out visitor must not see the last account's cached garden.
                     plants = [];
                     localStorage.setItem('flora_plants', '[]');
@@ -6439,6 +6440,7 @@ textarea {
                         const backfilled = await savePlantLocationsToCloud();
                         if (!backfilled) throw new Error('Could not backfill all growing-location settings to the cloud.');
                     }
+                }
             } catch (err) {
                 console.error('Failed to load growing locations from cloud:', err);
                 updateSyncBadge('local', 'Location Sync Failed');
