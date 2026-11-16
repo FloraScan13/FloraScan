@@ -4346,6 +4346,13 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
                     if (event === 'PASSWORD_RECOVERY') setTimeout(() => completeSupabasePasswordRecovery(), 0);
                     if (session && session.user) {
+                        // Reload clean state when the signed-in gardener changes.
+                        const previousAccountId = localStorage.getItem('flora_active_account_id');
+                        if (previousAccountId && previousAccountId !== session.user.id) {
+                            localStorage.setItem('flora_active_account_id', session.user.id);
+                            window.location.reload();
+                            return;
+                        }
                         currentUser = session.user;
                         subscribeToPlantLocationChanges();
                         localStorage.setItem('flora_last_user_id', currentUser.id);
