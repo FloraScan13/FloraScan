@@ -4098,6 +4098,7 @@ textarea {
             publishableKey: 'sb_publishable_PKEQJvNbnKkpINoB-CckuA_OjPVU1O1'
         });
         let currentUser = null;
+        let floraAuthRestoreGeneration = 0;
         function floraAccountStorageKey(key, userId = currentUser?.id) { return userId ? key + '_' + userId : key; }
         function getFloraAccountItem(key) { return localStorage.getItem(floraAccountStorageKey(key)); }
         function setFloraAccountItem(key, value) {
@@ -4334,14 +4335,17 @@ textarea {
 
         async function loadBrandingSettingsFromCloud() {
             if (!supabaseClient || !currentUser) return;
+            const requestedUserId = currentUser.id;
             const pending = getFloraSyncQueue();
             const { data, error } = await supabaseClient.auth.getUser();
             if (error) { console.error('Could not load cloud profile:', error); return; }
+            if (!currentUser || currentUser.id !== requestedUserId) return;
             currentUser = data.user || currentUser;
             const metadata = currentUser.user_metadata || {};
             if (!pending.profileDirty) {
-                appSettings.username = typeof metadata.username === 'string' && metadata.username.trim() ? metadata.username.trim() : '@kitchengardener';
-                appSettings.notificationEmail = typeof metadata.notification_email === 'string' ? metadata.notification_email : '';
+                // Missing metadata is not an instruction to erase this account's local profile.
+                appSettings.username = typeof metadata.username === 'string' && metadata.username.trim() ? metadata.username.trim() : (appSettings.username || '@kitchengardener');
+                appSettings.notificationEmail = typeof metadata.notification_email === 'string' ? metadata.notification_email : (appSettings.notificationEmail || '');
                 setFloraAccountItem('flora_settings', JSON.stringify(appSettings));
                 const usernameInput = document.getElementById('setting-username');
                 const emailInput = document.getElementById('setting-profile-email');
@@ -4356,6 +4360,7 @@ textarea {
                     try { library = JSON.parse(getFloraAccountItem('flora_personal_plant_library') || '[]'); }
                     catch (_) { library = []; }
                     const { error: librarySaveError } = await supabaseClient.auth.updateUser({ data: { personal_plant_library: library } });
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
                     if (librarySaveError) console.error('Could not initialise personal plant library:', librarySaveError);
                 }
                 setFloraAccountItem('flora_personal_plant_library', JSON.stringify(library));
@@ -4463,12 +4468,14 @@ textarea {
         async function checkSupabaseSession() {
             if (!supabaseClient) return;
             try {
+                const restoreGeneration = ++floraAuthRestoreGeneration;
                 const { data: { session: storedSession } } = await supabaseClient.auth.getSession();
                 let session = storedSession;
                 if (session) {
                     const refreshed = await supabaseClient.auth.refreshSession();
                     if (!refreshed.error && refreshed.data.session) session = refreshed.data.session;
                 }
+                if (restoreGeneration !== floraAuthRestoreGeneration) return;
                 if (isFloraInviteFlow) {
                     // This client uses invite-only storage, so any session here belongs to the invite link.
                     currentUser = session?.user || null;
@@ -4484,8 +4491,11 @@ textarea {
                     updateAuthUI(true, currentUser.email);
                     updateSyncBadge('cloud', 'Cloud Connected');
                     await loadBrandingSettingsFromCloud();
+                    if (restoreGeneration !== floraAuthRestoreGeneration) return;
                     await fetchPlantsFromCloudOrLocal();
+                    if (restoreGeneration !== floraAuthRestoreGeneration) return;
                     await fetchPlantLocationsFromCloudOrLocal();
+                    if (restoreGeneration !== floraAuthRestoreGeneration) return;
                     localStorage.setItem('flora_last_user_id', currentUser.id);
                     renderPlantLocationControls();
                     renderPlants();
@@ -4504,6 +4514,10 @@ textarea {
 
                 // Listen for auth state changes
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                    // The initial session was already restored above. Ignore its duplicate event.
+                    if (event === 'INITIAL_SESSION' && (session?.user?.id || null) === (currentUser?.id || null)) return;
+                    const restoreGeneration = ++floraAuthRestoreGeneration;
+                    const restoringUserId = session?.user?.id || null;
                     if (event === 'PASSWORD_RECOVERY' && !isFloraInviteFlow) setTimeout(() => completeSupabasePasswordRecovery(), 0);
                     if (isFloraInviteFlow) {
                         // Invite-only auth storage means this session can only belong to the invited user.
@@ -4519,8 +4533,11 @@ textarea {
                             updateAuthUI(true, currentUser.email);
                         updateSyncBadge('cloud', 'Cloud Connected');
                         await loadBrandingSettingsFromCloud();
+                        if (restoreGeneration !== floraAuthRestoreGeneration || currentUser?.id !== restoringUserId) return;
                         await fetchPlantsFromCloudOrLocal();
+                        if (restoreGeneration !== floraAuthRestoreGeneration || currentUser?.id !== restoringUserId) return;
                         await fetchPlantLocationsFromCloudOrLocal();
+                        if (restoreGeneration !== floraAuthRestoreGeneration || currentUser?.id !== restoringUserId) return;
                         localStorage.setItem('flora_last_user_id', currentUser.id);
                         renderPlantLocationControls();
                         renderPlants();
@@ -5320,13 +5337,14 @@ textarea {
             }
             const pending = getFloraSyncQueue();
             if (supabaseClient && currentUser) {
-                const userCacheKey = floraUserStorageKey('flora_plants_user');
+                const requestedUserId = currentUser.id;
+                const userCacheKey = floraUserStorageKey('flora_plants_user', requestedUserId);
                 const readOwnedCache = () => {
                     try {
                         const cached = localStorage.getItem(userCacheKey);
                         if (cached) return JSON.parse(cached) || [];
                         // Read the legacy shared cache only if it is explicitly tagged to this same account.
-                        if (localStorage.getItem('flora_last_user_id') === currentUser.id) {
+                        if (localStorage.getItem('flora_last_user_id') === requestedUserId) {
                             return JSON.parse(localStorage.getItem('flora_plants') || '[]') || [];
                         }
                     } catch (_) {}
@@ -5334,7 +5352,7 @@ textarea {
                 };
 
                 // Keep this account's own offline edits, but never reuse another account's queue/cache.
-                if ((pending.dirty || pending.profileDirty || pending.locationsDirty) && pending.userId === currentUser.id) {
+                if ((pending.dirty || pending.profileDirty || pending.locationsDirty) && pending.userId === requestedUserId) {
                     plants = readOwnedCache();
                     saveLocalPlantsForCurrentUser(plants);
                     return;
@@ -5344,18 +5362,20 @@ textarea {
                     const { data: dbPlants, error: plantErr } = await supabaseClient
                         .from('plants')
                         .select('*')
-                        .eq('user_id', currentUser.id)
+                        .eq('user_id', requestedUserId)
                         .order('created_at', { ascending: false });
                     if (plantErr) throw plantErr;
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
 
                     const { data: dbLogs, error: logsErr } = await supabaseClient
                         .from('plant_logs')
                         .select('*')
-                        .eq('user_id', currentUser.id)
+                        .eq('user_id', requestedUserId)
                         .order('created_at', { ascending: false });
                     if (logsErr) throw logsErr;
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
 
-                    plants = await Promise.all((dbPlants || []).map(async p => ({
+                    const loadedPlants = await Promise.all((dbPlants || []).map(async p => ({
                         id: p.id,
                         name: p.name,
                         variety: p.variety,
@@ -5385,9 +5405,12 @@ textarea {
                             return { ...restoreJournalLogStage(l), feedReminderDate: l.feed_reminder_date || '', feedReminderMode: l.feed_reminder_mode || 'once', feedReminderInterval: l.feed_reminder_interval || '', feedReminderUnit: l.feed_reminder_unit || 'days', photos: photoUrls.filter(Boolean), photoPaths };
                         }))
                     })));
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
+                    plants = loadedPlants;
                     saveLocalPlantsForCurrentUser(plants);
                     return;
                 } catch (err) {
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
                     console.error("Cloud fetch failed; using only this account's local cache:", err);
                     plants = readOwnedCache();
                     updateSyncBadge('local', 'Cloud Read Failed · Local Cache');
@@ -6373,6 +6396,7 @@ textarea {
             const pending = getFloraSyncQueue();
             if (pending.locationsDirty) return;
             if (!supabaseClient || !currentUser) return;
+            const requestedUserId = currentUser.id;
             try {
                 const { data, error } = await supabaseClient
                     .from('user_plant_locations')
@@ -6380,22 +6404,21 @@ textarea {
                     .eq('user_id', currentUser.id)
                     .maybeSingle();
                 if (error) throw error;
+                if (!currentUser || currentUser.id !== requestedUserId) return;
 
                 if (!data || !data.locations) {
-                    plantLocations = [...DEFAULT_PLANT_LOCATIONS];
-                    locationTypes = { ...DEFAULT_LOCATION_TYPES };
-                    locationDetails = {};
-                    locationSetups = {};
-                    locationPostcodes = {};
-                    locationCoordinates = {};
-                    locationPostcodeLocks = {};
-                    await savePlantLocationsToCloud();
+                    // No cloud row means this account has not synced locations yet. Keep its
+                    // already-loaded account-scoped local values and seed the cloud from them.
+                    const saved = await savePlantLocationsToCloud();
+                    if (!currentUser || currentUser.id !== requestedUserId) return;
+                    if (!saved) throw new Error('Could not initialise this account’s growing locations in the cloud.');
                 } else {
                     // Older cloud records may not yet contain every location setting. Preserve this device's
                     // existing values for missing fields, then backfill the complete record to the account.
                     const needsLocationSettingsBackfill = !Array.isArray(data.locations) &&
-                        (!data.locations.types || !data.locations.postcodes || !data.locations.coordinates ||
-                         !data.locations.equipment || !data.locations.equipmentNames);
+                        (!data.locations.names || !data.locations.types || !data.locations.details ||
+                         !data.locations.setups || !data.locations.postcodes || !data.locations.coordinates ||
+                         !data.locations.postcodeLocks || !data.locations.equipment || !data.locations.equipmentNames);
                     // Accept the original string-array format and the newer format that includes per-location details.
                     const cloudNames = Array.isArray(data.locations) ? data.locations : data.locations.names;
                     if (Array.isArray(cloudNames)) {
@@ -6438,10 +6461,12 @@ textarea {
                     }
                     if (needsLocationSettingsBackfill) {
                         const backfilled = await savePlantLocationsToCloud();
+                        if (!currentUser || currentUser.id !== requestedUserId) return;
                         if (!backfilled) throw new Error('Could not backfill all growing-location settings to the cloud.');
                     }
                 }
             } catch (err) {
+                if (!currentUser || currentUser.id !== requestedUserId) return;
                 console.error('Failed to load growing locations from cloud:', err);
                 updateSyncBadge('local', 'Location Sync Failed');
                 alert('Could not load your growing locations from the cloud. Your device copy is still available. Check the user_plant_locations table and its access policies in Supabase.');
@@ -6450,15 +6475,27 @@ textarea {
 
         async function savePlantLocationsToCloud() {
             if (!supabaseClient || !currentUser) return false;
+            const requestedUserId = currentUser.id;
+            // Snapshot this account's state before the network request; an account switch
+            // must never cause an in-flight save to pick up the next gardener's data.
+            const locationsSnapshot = {
+                names: [...plantLocations], types: { ...locationTypes }, details: { ...locationDetails },
+                detailsVisibility: { ...locationDetailsVisibility },
+                equipment: JSON.parse(getFloraAccountItem('flora_location_inside_options') || '{}'),
+                equipmentNames: JSON.parse(getFloraAccountItem('flora_location_equipment_names') || '{}'),
+                setups: { ...locationSetups }, postcodes: { ...locationPostcodes },
+                coordinates: { ...locationCoordinates }, postcodeLocks: { ...locationPostcodeLocks }
+            };
             try {
                 const { error } = await supabaseClient
                     .from('user_plant_locations')
                     .upsert({
-                        user_id: currentUser.id,
-                        locations: { names: plantLocations, types: locationTypes, details: locationDetails, detailsVisibility: locationDetailsVisibility, equipment: JSON.parse(getFloraAccountItem('flora_location_inside_options') || '{}'), equipmentNames: JSON.parse(getFloraAccountItem('flora_location_equipment_names') || '{}'), setups: locationSetups, postcodes: locationPostcodes, coordinates: locationCoordinates, postcodeLocks: locationPostcodeLocks },
+                        user_id: requestedUserId,
+                        locations: locationsSnapshot,
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
                 if (error) throw error;
+                if (!currentUser || currentUser.id !== requestedUserId) return false;
                 const queue = getFloraSyncQueue();
                 queue.locationsDirty = false;
                 saveFloraSyncQueue(queue);
