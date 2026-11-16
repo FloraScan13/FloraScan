@@ -5273,7 +5273,7 @@ textarea {
 
                 saveLocalPlantsForCurrentUser(localPlants);
                 saveFloraSyncQueue({
-                    dirty: false, userId: currentUser.id, deletedPlantIds: [], deletedLogIds: [],
+                    dirty: false, plantsDirty: false, userId: currentUser.id, deletedPlantIds: [], deletedLogIds: [],
                     profileDirty: false, plantLibraryDirty: false, locationsDirty: false, syncedAt: new Date().toISOString()
                 });
                 // Pull records created on other devices after this device's pending work is safely uploaded.
