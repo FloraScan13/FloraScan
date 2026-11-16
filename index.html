@@ -2976,7 +2976,7 @@ textarea {
                     <script>
                         (() => {
                             const toggle = document.getElementById('setting-location-header-weather');
-                            if (toggle) toggle.checked = localStorage.getItem('flora_location_header_weather_visible') !== 'false';
+                            if (toggle) toggle.checked = getFloraAccountItem('flora_location_header_weather_visible') !== 'false';
                         })();
                     </script>
                     <div id="setting-plant-locations-list" class="space-y-2"></div>
@@ -4097,7 +4097,79 @@ textarea {
             url: 'https://symklyxbcztdsmktvhgj.supabase.co',
             publishableKey: 'sb_publishable_PKEQJvNbnKkpINoB-CckuA_OjPVU1O1'
         });
-        let appSettings = JSON.parse(localStorage.getItem('flora_settings')) || {
+        let currentUser = null;
+        function floraAccountStorageKey(key, userId = currentUser?.id) { return userId ? key + '_' + userId : key; }
+        function getFloraAccountItem(key) { return localStorage.getItem(floraAccountStorageKey(key)); }
+        function setFloraAccountItem(key, value) {
+            localStorage.setItem(floraAccountStorageKey(key), value);
+            if (!currentUser?.id) localStorage.setItem(key, value);
+        }
+        function activateFloraAccountStorage(userId) {
+            if (!userId) return;
+            const previousUserId = localStorage.getItem('flora_last_user_id');
+            const mayAdoptLegacy = !previousUserId || previousUserId === userId;
+            const defaults = {
+                flora_settings: JSON.stringify({ username: '@kitchengardener', logoUrl: '', supabaseUrl: '', supabaseKey: '', theme: 'light', accentColor: 'green', appearancePreset: 'garden', scannerPreference: 'nfc', rememberScannerPreference: true }),
+                flora_plant_locations: JSON.stringify([...DEFAULT_PLANT_LOCATIONS]),
+                flora_plant_location_types: JSON.stringify({ ...DEFAULT_LOCATION_TYPES }),
+                flora_plant_location_details: '{}', flora_plant_location_details_visibility: '{}',
+                flora_location_header_weather_visible: 'true', flora_plant_location_setups: '{}',
+                flora_plant_location_postcodes: '{}', flora_plant_location_coordinates: '{}',
+                flora_plant_location_postcode_locks: '{}', flora_location_view_modes: '{}',
+                flora_location_inside_options: '{}', flora_location_equipment_names: '{}',
+                flora_personal_plant_library: '[]'
+            };
+            for (const key of ["flora_settings","flora_plant_locations","flora_plant_location_types","flora_plant_location_details","flora_plant_location_details_visibility","flora_location_header_weather_visible","flora_plant_location_setups","flora_plant_location_postcodes","flora_plant_location_coordinates","flora_plant_location_postcode_locks","flora_location_view_modes","flora_location_inside_options","flora_location_equipment_names","flora_personal_plant_library"]) {
+                const scopedKey = floraAccountStorageKey(key, userId);
+                if (localStorage.getItem(scopedKey) === null) {
+                    const legacy = mayAdoptLegacy ? localStorage.getItem(key) : null;
+                    localStorage.setItem(scopedKey, legacy !== null ? legacy : defaults[key]);
+                }
+            }
+            appSettings = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_settings', userId)) || defaults.flora_settings);
+            plantLocations = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_locations', userId)) || defaults.flora_plant_locations);
+            locationTypes = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_types', userId)) || defaults.flora_plant_location_types);
+            locationDetails = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_details', userId)) || '{}');
+            locationDetailsVisibility = Object.fromEntries((plantLocations || []).map(location => [location, false]));
+            locationHeaderWeatherVisible = localStorage.getItem(floraAccountStorageKey('flora_location_header_weather_visible', userId)) !== 'false';
+            locationSetups = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_setups', userId)) || '{}');
+            locationPostcodes = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_postcodes', userId)) || '{}');
+            locationCoordinates = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_coordinates', userId)) || '{}');
+            locationPostcodeLocks = JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_plant_location_postcode_locks', userId)) || '{}');
+            for (const key of Object.keys(plantLocationViewModes)) delete plantLocationViewModes[key];
+            Object.assign(plantLocationViewModes, JSON.parse(localStorage.getItem(floraAccountStorageKey('flora_location_view_modes', userId)) || '{}'));
+            applyBranding();
+        }
+
+        function resetFloraAccountStateForSignedOut() {
+            plants = [];
+            plantLocations = [...DEFAULT_PLANT_LOCATIONS];
+            locationTypes = { ...DEFAULT_LOCATION_TYPES };
+            locationDetails = {};
+            locationSetups = {};
+            locationPostcodes = {};
+            locationCoordinates = {};
+            locationPostcodeLocks = {};
+            locationDetailsVisibility = {};
+            for (const key of Object.keys(plantLocationViewModes)) delete plantLocationViewModes[key];
+            appSettings = { username: '@kitchengardener', logoUrl: '', theme: 'light', accentColor: 'green', appearancePreset: 'garden', scannerPreference: 'nfc', rememberScannerPreference: true };
+            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
+            localStorage.setItem('flora_plant_location_types', JSON.stringify(locationTypes));
+            localStorage.setItem('flora_plant_location_details', '{}');
+            localStorage.setItem('flora_plant_location_setups', '{}');
+            localStorage.setItem('flora_plant_location_postcodes', '{}');
+            localStorage.setItem('flora_plant_location_coordinates', '{}');
+            localStorage.setItem('flora_plant_location_postcode_locks', '{}');
+            localStorage.setItem('flora_location_view_modes', '{}');
+            localStorage.setItem('flora_personal_plant_library', '[]');
+            localStorage.setItem('flora_plants', '[]');
+            applyBranding();
+            renderPlants();
+            renderMyPlantLibrary();
+        }
+
+        let appSettings = JSON.parse(getFloraAccountItem('flora_settings')) || {
             username: '@kitchengardener',
             logoUrl: '',
             supabaseUrl: '',
@@ -4114,25 +4186,24 @@ textarea {
         if (!['nfc', 'qr', 'none'].includes(appSettings.scannerPreference)) appSettings.scannerPreference = 'nfc';
         if (typeof appSettings.rememberScannerPreference !== 'boolean') appSettings.rememberScannerPreference = true;
         if (!appSettings.rememberScannerPreference) appSettings.scannerPreference = 'nfc';
-        localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+        setFloraAccountItem('flora_settings', JSON.stringify(appSettings));
 
         const DEFAULT_PLANT_LOCATIONS = ['Grow Tent', 'Front Garden', 'Back Garden', 'Greenhouse', 'Windowsill'];
-        let plantLocations = JSON.parse(localStorage.getItem('flora_plant_locations') || 'null') || [...DEFAULT_PLANT_LOCATIONS];
+        let plantLocations = JSON.parse(getFloraAccountItem('flora_plant_locations') || 'null') || [...DEFAULT_PLANT_LOCATIONS];
         const DEFAULT_LOCATION_TYPES = { 'Grow Tent': 'indoor', 'Front Garden': 'outdoor', 'Back Garden': 'outdoor', 'Greenhouse': 'indoor', 'Windowsill': 'indoor' };
-        let locationTypes = JSON.parse(localStorage.getItem('flora_plant_location_types') || 'null') || { ...DEFAULT_LOCATION_TYPES };
-        let locationDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
-        let locationDetailsVisibility = JSON.parse(localStorage.getItem('flora_plant_location_details_visibility') || '{}') || {};
-        let locationHeaderWeatherVisible = localStorage.getItem('flora_location_header_weather_visible') !== 'false';
+        let locationTypes = JSON.parse(getFloraAccountItem('flora_plant_location_types') || 'null') || { ...DEFAULT_LOCATION_TYPES };
+        let locationDetails = JSON.parse(getFloraAccountItem('flora_plant_location_details') || '{}') || {};
+        let locationDetailsVisibility = JSON.parse(getFloraAccountItem('flora_plant_location_details_visibility') || '{}') || {};
+        let locationHeaderWeatherVisible = getFloraAccountItem('flora_location_header_weather_visible') !== 'false';
         // Always start with every location's details collapsed on a fresh app load.
         locationDetailsVisibility = Object.fromEntries(plantLocations.map(location => [location, false]));
-        localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
-        let locationSetups = JSON.parse(localStorage.getItem('flora_plant_location_setups') || '{}') || {};
-        let locationPostcodes = JSON.parse(localStorage.getItem('flora_plant_location_postcodes') || '{}') || {};
-        let locationCoordinates = JSON.parse(localStorage.getItem('flora_plant_location_coordinates') || '{}') || {};
-        let locationPostcodeLocks = JSON.parse(localStorage.getItem('flora_plant_location_postcode_locks') || '{}') || {};
+        setFloraAccountItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
+        let locationSetups = JSON.parse(getFloraAccountItem('flora_plant_location_setups') || '{}') || {};
+        let locationPostcodes = JSON.parse(getFloraAccountItem('flora_plant_location_postcodes') || '{}') || {};
+        let locationCoordinates = JSON.parse(getFloraAccountItem('flora_plant_location_coordinates') || '{}') || {};
+        let locationPostcodeLocks = JSON.parse(getFloraAccountItem('flora_plant_location_postcode_locks') || '{}') || {};
 
         let supabaseClient = null;
-        let currentUser = null;
         let plantLocationsRealtimeChannel = null;
         let plantLocationsRefreshListenersInstalled = false;
 
@@ -4193,11 +4264,11 @@ textarea {
             // Reset the Plants screen presentation after local and cloud data have loaded.
             // Keep saved location details and equipment; only collapse their display.
             locationDetailsVisibility = Object.fromEntries(plantLocations.map(location => [location, false]));
-            localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
+            setFloraAccountItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
 
             // Start every growing location in List view on each refresh.
             plantLocations.forEach(location => { plantLocationViewModes[location] = 'list'; });
-            localStorage.setItem('flora_location_view_modes', JSON.stringify(plantLocationViewModes));
+            setFloraAccountItem('flora_location_view_modes', JSON.stringify(plantLocationViewModes));
 
             renderPlants();
             showOverdueFeedReminderPopup();
@@ -4263,33 +4334,33 @@ textarea {
 
         async function loadBrandingSettingsFromCloud() {
             if (!supabaseClient || !currentUser) return;
-            // Keep a locally edited username until its queued cloud update succeeds.
-            if (getFloraSyncQueue().profileDirty) return;
+            const pending = getFloraSyncQueue();
             const { data, error } = await supabaseClient.auth.getUser();
-            if (error) {
-                console.error('Could not load cloud username:', error);
-                return;
-            }
+            if (error) { console.error('Could not load cloud profile:', error); return; }
             currentUser = data.user || currentUser;
-            const cloudUsername = currentUser.user_metadata && currentUser.user_metadata.username;
-            const cloudNotificationEmail = currentUser.user_metadata && currentUser.user_metadata.notification_email;
-            if (typeof cloudNotificationEmail === 'string') {
-                appSettings.notificationEmail = cloudNotificationEmail;
+            const metadata = currentUser.user_metadata || {};
+            if (!pending.profileDirty) {
+                appSettings.username = typeof metadata.username === 'string' && metadata.username.trim() ? metadata.username.trim() : '@kitchengardener';
+                appSettings.notificationEmail = typeof metadata.notification_email === 'string' ? metadata.notification_email : '';
+                setFloraAccountItem('flora_settings', JSON.stringify(appSettings));
+                const usernameInput = document.getElementById('setting-username');
                 const emailInput = document.getElementById('setting-profile-email');
-                if (emailInput) emailInput.value = cloudNotificationEmail;
-                localStorage.setItem('flora_settings', JSON.stringify(appSettings));
-            }
-            if (typeof cloudUsername === 'string' && cloudUsername.trim()) {
-                appSettings.username = cloudUsername.trim();
-                localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+                if (usernameInput) usernameInput.value = appSettings.username;
+                if (emailInput) emailInput.value = appSettings.notificationEmail;
                 applyBranding();
                 updateMobileWelcomeGreeting();
-            } else {
-                // First sign-in for this account: seed its cloud profile from this device's setting.
-                const { error: saveError } = await supabaseClient.auth.updateUser({
-                    data: { username: appSettings.username || '@kitchengardener' }
-                });
-                if (saveError) console.error('Could not initialise cloud username:', saveError);
+            }
+            if (!pending.plantLibraryDirty) {
+                let library = Array.isArray(metadata.personal_plant_library) ? metadata.personal_plant_library : null;
+                if (!library) {
+                    try { library = JSON.parse(getFloraAccountItem('flora_personal_plant_library') || '[]'); }
+                    catch (_) { library = []; }
+                    const { error: librarySaveError } = await supabaseClient.auth.updateUser({ data: { personal_plant_library: library } });
+                    if (librarySaveError) console.error('Could not initialise personal plant library:', librarySaveError);
+                }
+                setFloraAccountItem('flora_personal_plant_library', JSON.stringify(library));
+                renderMyPlantLibrary();
+                if (typeof setupAutocomplete === 'function') setupAutocomplete();
             }
         }
 
@@ -4407,6 +4478,7 @@ textarea {
                     showFloraInviteSessionState(session);
                 } else if (session && session.user) {
                     currentUser = session.user;
+                    activateFloraAccountStorage(currentUser.id);
                     if (isFloraInviteFlow) showFloraInviteSessionState(session);
                     subscribeToPlantLocationChanges();
                     updateAuthUI(true, currentUser.email);
@@ -4420,6 +4492,7 @@ textarea {
                     await syncPendingFloraChanges();
                 } else {
                     currentUser = null;
+                    resetFloraAccountStateForSignedOut();
                     // A signed-out visitor must not see the last account's cached garden.
                     plants = [];
                     localStorage.setItem('flora_plants', '[]');
@@ -4441,6 +4514,7 @@ textarea {
                     }
                     if (session && session.user) {
                         currentUser = session.user;
+                        activateFloraAccountStorage(currentUser.id);
                         subscribeToPlantLocationChanges();
                             updateAuthUI(true, currentUser.email);
                         updateSyncBadge('cloud', 'Cloud Connected');
@@ -4453,6 +4527,7 @@ textarea {
                         await syncPendingFloraChanges();
                     } else {
                         currentUser = null;
+                        resetFloraAccountStateForSignedOut();
                         if (plantLocationsRealtimeChannel) {
                             supabaseClient.removeChannel(plantLocationsRealtimeChannel);
                             plantLocationsRealtimeChannel = null;
@@ -4893,8 +4968,7 @@ textarea {
             if (supabaseClient) {
                 await supabaseClient.auth.signOut();
                 currentUser = null;
-                plants = [];
-                localStorage.setItem('flora_plants', '[]');
+                resetFloraAccountStateForSignedOut();
                 renderPlants();
                 updateAuthUI(false);
                 updateSyncBadge('cloud', 'Supabase Ready (Sign In)');
@@ -4905,7 +4979,7 @@ textarea {
         function saveSupabaseCredentials() {
             appSettings.supabaseUrl = document.getElementById('supabase-url').value.trim();
             appSettings.supabaseKey = document.getElementById('supabase-key').value.trim();
-            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            setFloraAccountItem('flora_settings', JSON.stringify(appSettings));
             initSupabaseClient();
             alert("Supabase credentials updated.");
         }
@@ -5063,7 +5137,7 @@ textarea {
             if (!navigator.onLine || !supabaseClient || !currentUser) return false;
             if (window.floraSyncInProgress) return false;
             let queue = getFloraSyncQueue();
-            if (!queue.dirty && !queue.profileDirty && !queue.locationsDirty &&
+            if (!queue.dirty && !queue.profileDirty && !queue.plantLibraryDirty && !queue.locationsDirty &&
                 !(queue.deletedPlantIds || []).length && !(queue.deletedLogIds || []).length) return true;
             if (!queue.userId) {
                 updateSyncBadge('local', 'Pending Changes · Original Account Unknown');
@@ -5165,8 +5239,8 @@ textarea {
                             types: locationTypes,
                             details: locationDetails,
                             detailsVisibility: locationDetailsVisibility,
-                            equipment: JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}'),
-                            equipmentNames: JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}'),
+                            equipment: JSON.parse(getFloraAccountItem('flora_location_inside_options') || '{}'),
+                            equipmentNames: JSON.parse(getFloraAccountItem('flora_location_equipment_names') || '{}'),
                             postcodes: locationPostcodes,
                             coordinates: locationCoordinates
                         },
@@ -5175,13 +5249,14 @@ textarea {
                     if (error) throw error;
                 }
 
-                if (queue.profileDirty) {
-                    const settings = JSON.parse(localStorage.getItem('flora_settings') || '{}');
+                if (queue.profileDirty || queue.plantLibraryDirty) {
+                    const settings = JSON.parse(getFloraAccountItem('flora_settings') || '{}');
                     if (settings.username || typeof settings.notificationEmail === 'string') {
                         const { error } = await supabaseClient.auth.updateUser({
                             data: {
                                 ...(settings.username ? { username: settings.username } : {}),
-                                ...(typeof settings.notificationEmail === 'string' ? { notification_email: settings.notificationEmail } : {})
+                                ...(typeof settings.notificationEmail === 'string' ? { notification_email: settings.notificationEmail } : {}),
+                                ...(queue.plantLibraryDirty ? { personal_plant_library: JSON.parse(getFloraAccountItem('flora_personal_plant_library') || '[]') } : {})
                             }
                         });
                         if (error) throw error;
@@ -5192,7 +5267,7 @@ textarea {
                 saveLocalPlantsForCurrentUser(localPlants);
                 saveFloraSyncQueue({
                     dirty: false, userId: currentUser.id, deletedPlantIds: [], deletedLogIds: [],
-                    profileDirty: false, locationsDirty: false, syncedAt: new Date().toISOString()
+                    profileDirty: false, plantLibraryDirty: false, locationsDirty: false, syncedAt: new Date().toISOString()
                 });
                 // Pull records created on other devices after this device's pending work is safely uploaded.
                 await fetchPlantsFromCloudOrLocal();
@@ -5530,7 +5605,7 @@ textarea {
                 return;
             }
             appSettings.notificationEmail = notificationEmail;
-            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            setFloraAccountItem('flora_settings', JSON.stringify(appSettings));
             markFloraSyncPending('profile');
             applyBranding();
             let savedToCloud = false;
@@ -5731,7 +5806,7 @@ textarea {
         }
 
         function getPersonalPlantLibrary() {
-            const stored = localStorage.getItem('flora_personal_plant_library');
+            const stored = getFloraAccountItem('flora_personal_plant_library');
             if (stored !== null) {
                 try {
                     const parsed = JSON.parse(stored);
@@ -5756,14 +5831,42 @@ textarea {
                 }
             });
             const initial = [...library.values()];
-            localStorage.setItem('flora_personal_plant_library', JSON.stringify(initial));
+            setFloraAccountItem('flora_personal_plant_library', JSON.stringify(initial));
             return initial;
         }
 
         function savePersonalPlantLibrary(library) {
-            localStorage.setItem('flora_personal_plant_library', JSON.stringify(library));
+            setFloraAccountItem('flora_personal_plant_library', JSON.stringify(library));
             renderMyPlantLibrary();
             if (typeof setupAutocomplete === 'function') setupAutocomplete();
+            if (!currentUser) return;
+            const queue = getFloraSyncQueue();
+            queue.userId = currentUser.id;
+            if (!supabaseClient || !navigator.onLine) {
+                queue.plantLibraryDirty = true;
+                saveFloraSyncQueue(queue);
+                return;
+            }
+            supabaseClient.auth.updateUser({ data: { personal_plant_library: library } }).then(({ error }) => {
+                if (error) {
+                    console.error('Could not sync personal plant library:', error);
+                    const pending = getFloraSyncQueue();
+                    pending.userId = currentUser.id;
+                    pending.plantLibraryDirty = true;
+                    saveFloraSyncQueue(pending);
+                } else {
+                    currentUser = { ...currentUser, user_metadata: { ...(currentUser.user_metadata || {}), personal_plant_library: library } };
+                    const pending = getFloraSyncQueue();
+                    pending.plantLibraryDirty = false;
+                    saveFloraSyncQueue(pending);
+                }
+            }).catch(error => {
+                console.error('Could not sync personal plant library:', error);
+                const pending = getFloraSyncQueue();
+                pending.userId = currentUser.id;
+                pending.plantLibraryDirty = true;
+                saveFloraSyncQueue(pending);
+            });
         }
 
         function updatePersonalLibraryFromPlantEdit(oldName, oldVariety, plant) {
@@ -6278,7 +6381,16 @@ textarea {
                     .maybeSingle();
                 if (error) throw error;
 
-                if (data && data.locations) {
+                if (!data || !data.locations) {
+                    plantLocations = [...DEFAULT_PLANT_LOCATIONS];
+                    locationTypes = { ...DEFAULT_LOCATION_TYPES };
+                    locationDetails = {};
+                    locationSetups = {};
+                    locationPostcodes = {};
+                    locationCoordinates = {};
+                    locationPostcodeLocks = {};
+                    await savePlantLocationsToCloud();
+                } else {
                     // Older cloud records may not yet contain every location setting. Preserve this device's
                     // existing values for missing fields, then backfill the complete record to the account.
                     const needsLocationSettingsBackfill = !Array.isArray(data.locations) &&
@@ -6288,66 +6400,46 @@ textarea {
                     const cloudNames = Array.isArray(data.locations) ? data.locations : data.locations.names;
                     if (Array.isArray(cloudNames)) {
                         plantLocations = [...new Set(cloudNames.map(v => String(v).trim()).filter(Boolean))];
-                        localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
+                        setFloraAccountItem('flora_plant_locations', JSON.stringify(plantLocations));
                     }
                     if (!Array.isArray(data.locations) && data.locations.types && typeof data.locations.types === 'object') {
                         locationTypes = { ...DEFAULT_LOCATION_TYPES, ...data.locations.types };
-                        localStorage.setItem('flora_plant_location_types', JSON.stringify(locationTypes));
+                        setFloraAccountItem('flora_plant_location_types', JSON.stringify(locationTypes));
                     }
                     if (!Array.isArray(data.locations) && data.locations.details && typeof data.locations.details === 'object') {
                         locationDetails = data.locations.details;
-                        localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
+                        setFloraAccountItem('flora_plant_location_details', JSON.stringify(locationDetails));
                     }
                     if (!Array.isArray(data.locations) && data.locations.equipment && typeof data.locations.equipment === 'object') {
-                        localStorage.setItem('flora_location_inside_options', JSON.stringify(data.locations.equipment));
+                        setFloraAccountItem('flora_location_inside_options', JSON.stringify(data.locations.equipment));
                     }
                     if (!Array.isArray(data.locations) && data.locations.equipmentNames && typeof data.locations.equipmentNames === 'object') {
-                        localStorage.setItem('flora_location_equipment_names', JSON.stringify(data.locations.equipmentNames));
+                        setFloraAccountItem('flora_location_equipment_names', JSON.stringify(data.locations.equipmentNames));
                     }
                     if (!Array.isArray(data.locations) && data.locations.setups && typeof data.locations.setups === 'object') {
                         locationSetups = data.locations.setups;
-                        localStorage.setItem('flora_plant_location_setups', JSON.stringify(locationSetups));
+                        setFloraAccountItem('flora_plant_location_setups', JSON.stringify(locationSetups));
                     }
                     // Do not restore expanded/collapsed UI state from the cloud.
                     // Every app load and cloud refresh starts with all location details hidden.
                     locationDetailsVisibility = Object.fromEntries(plantLocations.map(location => [location, false]));
-                    localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
+                    setFloraAccountItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
                     if (!Array.isArray(data.locations) && data.locations.postcodes && typeof data.locations.postcodes === 'object') {
                         locationPostcodes = data.locations.postcodes;
-                        localStorage.setItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
+                        setFloraAccountItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
                     }
                     if (!Array.isArray(data.locations) && data.locations.coordinates && typeof data.locations.coordinates === 'object') {
                         locationCoordinates = data.locations.coordinates;
-                        localStorage.setItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
+                        setFloraAccountItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
                     }
                     if (!Array.isArray(data.locations) && data.locations.postcodeLocks && typeof data.locations.postcodeLocks === 'object') {
                         locationPostcodeLocks = data.locations.postcodeLocks;
-                        localStorage.setItem('flora_plant_location_postcode_locks', JSON.stringify(locationPostcodeLocks));
+                        setFloraAccountItem('flora_plant_location_postcode_locks', JSON.stringify(locationPostcodeLocks));
                     }
                     if (needsLocationSettingsBackfill) {
                         const backfilled = await savePlantLocationsToCloud();
                         if (!backfilled) throw new Error('Could not backfill all growing-location settings to the cloud.');
                     }
-                } else {
-                    // First sign-in for this account: preserve this device's configured list and seed the cloud.
-                    const { error: saveError } = await supabaseClient
-                        .from('user_plant_locations')
-                        .upsert({
-                            user_id: currentUser.id,
-                            locations: {
-                                names: plantLocations.length ? plantLocations : [...DEFAULT_PLANT_LOCATIONS],
-                                types: locationTypes,
-                                details: locationDetails,
-                                detailsVisibility: locationDetailsVisibility,
-                                equipment: JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}'),
-                                equipmentNames: JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}'),
-                                setups: locationSetups,
-                                postcodes: locationPostcodes,
-                                coordinates: locationCoordinates
-                            },
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'user_id' });
-                    if (saveError) throw saveError;
                 }
             } catch (err) {
                 console.error('Failed to load growing locations from cloud:', err);
@@ -6363,7 +6455,7 @@ textarea {
                     .from('user_plant_locations')
                     .upsert({
                         user_id: currentUser.id,
-                        locations: { names: plantLocations, types: locationTypes, details: locationDetails, detailsVisibility: locationDetailsVisibility, equipment: JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}'), equipmentNames: JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}'), setups: locationSetups, postcodes: locationPostcodes, coordinates: locationCoordinates, postcodeLocks: locationPostcodeLocks },
+                        locations: { names: plantLocations, types: locationTypes, details: locationDetails, detailsVisibility: locationDetailsVisibility, equipment: JSON.parse(getFloraAccountItem('flora_location_inside_options') || '{}'), equipmentNames: JSON.parse(getFloraAccountItem('flora_location_equipment_names') || '{}'), setups: locationSetups, postcodes: locationPostcodes, coordinates: locationCoordinates, postcodeLocks: locationPostcodeLocks },
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
                 if (error) throw error;
@@ -6380,11 +6472,11 @@ textarea {
         }
 
         async function persistPlantLocations() {
-            localStorage.setItem('flora_plant_locations', JSON.stringify(plantLocations));
-            localStorage.setItem('flora_plant_location_types', JSON.stringify(locationTypes));
-            localStorage.setItem('flora_plant_location_details', JSON.stringify(locationDetails));
-            localStorage.setItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
-            localStorage.setItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
+            setFloraAccountItem('flora_plant_locations', JSON.stringify(plantLocations));
+            setFloraAccountItem('flora_plant_location_types', JSON.stringify(locationTypes));
+            setFloraAccountItem('flora_plant_location_details', JSON.stringify(locationDetails));
+            setFloraAccountItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
+            setFloraAccountItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
             markFloraSyncPending('locations');
             renderPlantLocationControls();
             renderPlants();
@@ -6422,7 +6514,7 @@ textarea {
         async function toggleOutdoorPostcodeLock(location) {
             if (!plantLocations.includes(location) || locationTypes[location] !== 'outdoor') return;
             locationPostcodeLocks[location] = locationPostcodeLocks[location] === false;
-            localStorage.setItem('flora_plant_location_postcode_locks', JSON.stringify(locationPostcodeLocks));
+            setFloraAccountItem('flora_plant_location_postcode_locks', JSON.stringify(locationPostcodeLocks));
             markFloraSyncPending('locations');
             const saved = await savePlantLocationsToCloud();
             updateSyncBadge(saved ? 'cloud' : 'local', saved ? 'Cloud Synced' : 'Saved Locally');
@@ -6435,8 +6527,8 @@ textarea {
             if (!postcode) {
                 delete locationPostcodes[location];
                 delete locationCoordinates[location];
-                localStorage.setItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
-                localStorage.setItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
+                setFloraAccountItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
+                setFloraAccountItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
                 await savePlantLocationsToCloud();
                 renderPlantLocationControls();
                 return;
@@ -6453,8 +6545,8 @@ textarea {
                 if (!response.ok || result.status !== 200 || !result.result) throw new Error('Postcode not found');
                 locationPostcodes[location] = result.result.postcode;
                 locationCoordinates[location] = { latitude: result.result.latitude, longitude: result.result.longitude };
-                localStorage.setItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
-                localStorage.setItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
+                setFloraAccountItem('flora_plant_location_postcodes', JSON.stringify(locationPostcodes));
+                setFloraAccountItem('flora_plant_location_coordinates', JSON.stringify(locationCoordinates));
                 markFloraSyncPending('locations');
                 const saved = await savePlantLocationsToCloud();
                 updateSyncBadge(saved ? 'cloud' : 'local', saved ? 'Cloud Synced' : 'Saved Locally');
@@ -6469,7 +6561,7 @@ textarea {
         async function setPlantLocationType(location, type) {
             if (!plantLocations.includes(location)) return;
             locationTypes[location] = type === 'outdoor' ? 'outdoor' : 'indoor';
-            localStorage.setItem('flora_plant_location_types', JSON.stringify(locationTypes));
+            setFloraAccountItem('flora_plant_location_types', JSON.stringify(locationTypes));
             markFloraSyncPending('locations');
             const saved = await savePlantLocationsToCloud();
             if (saved) updateSyncBadge('cloud', 'Cloud Synced');
@@ -6520,8 +6612,8 @@ textarea {
             delete locationPostcodes[removed];
             delete locationCoordinates[removed];
             delete locationPostcodeLocks[removed];
-            localStorage.setItem('flora_plant_location_postcode_locks', JSON.stringify(locationPostcodeLocks));
-            localStorage.setItem('flora_plant_location_types', JSON.stringify(locationTypes));
+            setFloraAccountItem('flora_plant_location_postcode_locks', JSON.stringify(locationPostcodeLocks));
+            setFloraAccountItem('flora_plant_location_types', JSON.stringify(locationTypes));
             saveLocalPlantsForCurrentUser(plants);
             plantLocations = next;
             await persistPlantLocations();
@@ -6745,7 +6837,7 @@ textarea {
             ];
             const savedInsideSelections = (() => {
                 try {
-                    const saved = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
+                    const saved = JSON.parse(getFloraAccountItem('flora_location_inside_options') || '{}');
                     return new Set(Array.isArray(saved[location]) ? saved[location] : []);
                 } catch (error) {
                     return new Set();
@@ -6754,7 +6846,7 @@ textarea {
             const draftInsideSelections = new Set(savedInsideSelections);
             const savedEquipmentNames = (() => {
                 try {
-                    const saved = JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}');
+                    const saved = JSON.parse(getFloraAccountItem('flora_location_equipment_names') || '{}');
                     return saved[location] && typeof saved[location] === 'object' ? saved[location] : {};
                 } catch (error) {
                     return {};
@@ -7009,10 +7101,10 @@ textarea {
             });
             modal.querySelector('#save-plant-location-details').addEventListener('click', () => {
                 try {
-                    const saved = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
+                    const saved = JSON.parse(getFloraAccountItem('flora_location_inside_options') || '{}');
                     saved[location] = Array.from(draftInsideSelections);
-                    localStorage.setItem('flora_location_inside_options', JSON.stringify(saved));
-                    const savedNames = JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}');
+                    setFloraAccountItem('flora_location_inside_options', JSON.stringify(saved));
+                    const savedNames = JSON.parse(getFloraAccountItem('flora_location_equipment_names') || '{}');
                     // Use the checkbox label as the equipment name when no custom name was entered.
                     modal.querySelectorAll('.location-equipment-option:checked').forEach(checkbox => {
                         const key = checkbox.dataset.section + '::' + checkbox.dataset.option;
@@ -7021,7 +7113,7 @@ textarea {
                         draftEquipmentNames[key] = customName || checkbox.dataset.option;
                     });
                     savedNames[location] = draftEquipmentNames;
-                    localStorage.setItem('flora_location_equipment_names', JSON.stringify(savedNames));
+                    setFloraAccountItem('flora_location_equipment_names', JSON.stringify(savedNames));
                     markFloraSyncPending('locations');
                     renderPlants();
                     closePlantLocationDetailsModal();
@@ -7050,13 +7142,13 @@ textarea {
 
         function setLocationHeaderWeatherVisibility(visible) {
             locationHeaderWeatherVisible = visible === true;
-            localStorage.setItem('flora_location_header_weather_visible', String(locationHeaderWeatherVisible));
+            setFloraAccountItem('flora_location_header_weather_visible', String(locationHeaderWeatherVisible));
             renderPlants();
         }
 
         async function toggleLocationDetailsVisibility(location) {
             locationDetailsVisibility[location] = locationDetailsVisibility[location] !== true;
-            localStorage.setItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
+            setFloraAccountItem('flora_plant_location_details_visibility', JSON.stringify(locationDetailsVisibility));
             markFloraSyncPending('locations');
             renderPlants();
             if (supabaseClient && currentUser) {
@@ -7216,7 +7308,7 @@ textarea {
                         ? value + ' (' + p.heatedPropagatorTemperatureC + ' °C)'
                         : value);
                 const setupLabel = setupItems.length ? setupItems.join(', ') : 'Not specified';
-                const savedDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
+                const savedDetails = JSON.parse(getFloraAccountItem('flora_plant_location_details') || '{}') || {};
                 const sharedLocationDetails = String(locationDetails[plantLocation] || savedDetails[plantLocation] || '');
                 const feedReminderLog = (Array.isArray(p.logs) ? p.logs : [])
                     .filter(log => log.type === 'Feed' && log.feedReminderDate)
@@ -7290,21 +7382,21 @@ textarea {
                 const isOutdoor = locationTypes[location] === 'outdoor';
                 let selectedLocationEquipment = [];
                 try {
-                    const savedEquipment = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
+                    const savedEquipment = JSON.parse(getFloraAccountItem('flora_location_inside_options') || '{}');
                     const storedSelections = Array.isArray(savedEquipment[location]) ? savedEquipment[location] : [];
                     // Only section-qualified keys correspond to real modal checkboxes.
                     // Discard orphaned legacy labels so they cannot appear as equipment pills.
                     selectedLocationEquipment = storedSelections.filter(item => typeof item === 'string' && item.includes('::'));
                     if (selectedLocationEquipment.length !== storedSelections.length) {
                         savedEquipment[location] = selectedLocationEquipment;
-                        localStorage.setItem('flora_location_inside_options', JSON.stringify(savedEquipment));
+                        setFloraAccountItem('flora_location_inside_options', JSON.stringify(savedEquipment));
                     }
                 } catch (error) {
                     selectedLocationEquipment = [];
                 }
                 let locationEquipmentNames = {};
                 try {
-                    const savedNames = JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}');
+                    const savedNames = JSON.parse(getFloraAccountItem('flora_location_equipment_names') || '{}');
                     locationEquipmentNames = savedNames[location] && typeof savedNames[location] === 'object' ? savedNames[location] : {};
                 } catch (error) {
                     locationEquipmentNames = {};
@@ -7788,7 +7880,7 @@ textarea {
             appSettings.rememberScannerPreference = rememberPreference ? rememberPreference.checked : true;
             // Always persist the selected mode, including "none", regardless of the remember toggle.
             appSettings.scannerPreference = preference;
-            localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+            setFloraAccountItem('flora_settings', JSON.stringify(appSettings));
             applyScannerPreference();
             const savedPreference = appSettings.scannerPreference;
             const status = document.getElementById('setting-scanner-preference-status');
@@ -8455,7 +8547,7 @@ textarea {
                     if (profileError) throw profileError;
                     currentUser = updatedAuth.user || currentUser;
                     appSettings.notificationEmail = 'markriches.mail@gmail.com';
-                    localStorage.setItem('flora_settings', JSON.stringify(appSettings));
+                    setFloraAccountItem('flora_settings', JSON.stringify(appSettings));
                     const profileEmailInput = document.getElementById('setting-profile-email');
                     if (profileEmailInput) profileEmailInput.value = appSettings.notificationEmail;
                 }
@@ -9408,7 +9500,7 @@ textarea {
             document.getElementById('journal-initial-notes').textContent = p.notes ? `"${p.notes}"` : '';
 
             const plantLocation = (p.location || '').trim();
-            const savedLocationDetails = JSON.parse(localStorage.getItem('flora_plant_location_details') || '{}') || {};
+            const savedLocationDetails = JSON.parse(getFloraAccountItem('flora_plant_location_details') || '{}') || {};
             const sharedLocationDetails = String(locationDetails[plantLocation] || savedLocationDetails[plantLocation] || '');
             const setupSection = document.getElementById('journal-location-setup');
             const setupTitle = document.getElementById('journal-location-setup-title');
@@ -9590,9 +9682,9 @@ textarea {
             let locationEquipmentSelections = [];
             let locationEquipmentNames = {};
             try {
-                const allEquipment = JSON.parse(localStorage.getItem('flora_location_inside_options') || '{}');
+                const allEquipment = JSON.parse(getFloraAccountItem('flora_location_inside_options') || '{}');
                 const selected = Array.isArray(allEquipment[plantLocation]) ? allEquipment[plantLocation] : [];
-                const allNames = JSON.parse(localStorage.getItem('flora_location_equipment_names') || '{}');
+                const allNames = JSON.parse(getFloraAccountItem('flora_location_equipment_names') || '{}');
                 locationEquipmentNames = allNames[plantLocation] && typeof allNames[plantLocation] === 'object' ? allNames[plantLocation] : {};
                 locationEquipmentSelections = selected.filter(key => typeof key === 'string' && key.includes('::')).map(key => {
                     const parts = key.split('::');
@@ -11064,7 +11156,7 @@ textarea {
 // Each location stores its own grid/list preference on this device.
         const plantLocationViewModes = (() => {
             try {
-                const saved = JSON.parse(localStorage.getItem('flora_location_view_modes') || '{}');
+                const saved = JSON.parse(getFloraAccountItem('flora_location_view_modes') || '{}');
                 return saved && typeof saved === 'object' ? saved : {};
             } catch (_) { return {}; }
         })();
@@ -11076,7 +11168,7 @@ textarea {
         function setLocationPlantView(location, view) {
             if (!location || !['grid', 'list'].includes(view)) return;
             plantLocationViewModes[location] = view;
-            localStorage.setItem('flora_location_view_modes', JSON.stringify(plantLocationViewModes));
+            setFloraAccountItem('flora_location_view_modes', JSON.stringify(plantLocationViewModes));
             renderPlants();
         }
 ;
