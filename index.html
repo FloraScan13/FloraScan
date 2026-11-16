@@ -6,6 +6,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <style id="flora-auth-setup-first-paint">
+        /* On invite/recovery URLs, show only the setup panel from the very first paint. */
+        html.flora-auth-setup-navigation body > *:not(#flora-invite-registration) {
+            display: none !important;
+        }
+        html.flora-auth-setup-navigation #flora-invite-registration {
+            display: flex !important;
+        }
+        html.flora-auth-setup-navigation,
+        html.flora-auth-setup-navigation body {
+            min-height: 100%;
+            background: #f7f6f0 !important;
+        }
+    </style>
+    <script>
+        // Set the auth-flow class before the browser paints the app underneath.
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('invite') === '1' || params.get('password-recovery') === '1') {
+                document.documentElement.classList.add('flora-auth-setup-navigation');
+            }
+        } catch (error) {
+            console.warn('Could not identify Flora Scan account setup navigation:', error);
+        }
+    </script>
     <style id="settings-first-paint-guard">
         /* Keep Settings hidden from the first paint until the user explicitly selects it. */
         html.flora-settings-inactive #view-settings { display: none !important; }
