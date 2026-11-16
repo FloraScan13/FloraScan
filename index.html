@@ -170,9 +170,21 @@
             }
         }
 
-        /* Mobile welcome screen shown while the app restores its plant data. */
+        /* Full-page account loading screen, shown on desktop and mobile while auth and garden data restore. */
         #mobile-welcome-screen {
-            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 4000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: #ffffff;
+            color: #14532d;
+            text-align: center;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity .28s ease, visibility .28s ease;
         }
         @media (max-width: 768px) {
             #mobile-welcome-screen {
@@ -4232,10 +4244,14 @@ textarea {
             renderPlantLocationControls();
             const weatherToggle = document.getElementById('setting-location-header-weather');
             if (weatherToggle) weatherToggle.checked = locationHeaderWeatherVisible;
-            initSupabaseClient();
-            await fetchPlantsFromCloudOrLocal();
-            // Load this account's growing locations before the first library render.
-            await fetchPlantLocationsFromCloudOrLocal();
+            await initSupabaseClient();
+            // Without a configured Supabase client, restore the account-scoped local library.
+            // When Supabase is configured, checkSupabaseSession already restores the signed-in
+            // account and its plants before resolving.
+            if (!supabaseClient && !isFloraInviteFlow) {
+                await fetchPlantsFromCloudOrLocal();
+                await fetchPlantLocationsFromCloudOrLocal();
+            }
             plantsInitialLoadComplete = true;
             renderPlantLocationControls();
             // Re-apply the saved scanner choice after app data has loaded. If no
@@ -4275,7 +4291,7 @@ textarea {
 
         function showMobileWelcomeScreen() {
             const screen = document.getElementById('mobile-welcome-screen');
-            if (!screen || window.matchMedia('(min-width: 769px)').matches) return;
+            if (!screen) return;
             updateMobileWelcomeGreeting();
             mobileWelcomeShownAt = Date.now();
             screen.classList.remove('is-hidden');
@@ -4423,7 +4439,7 @@ textarea {
 
         // Initialize Supabase Client using the shared app configuration.
         // Visitors do not need to enter or save project credentials themselves.
-        function initSupabaseClient() {
+        async function initSupabaseClient() {
             const url = FLORA_SUPABASE_CONFIG.url || appSettings.supabaseUrl || '';
             const key = FLORA_SUPABASE_CONFIG.publishableKey || appSettings.supabaseKey || '';
 
@@ -4435,7 +4451,7 @@ textarea {
                     supabaseClient = window.supabase.createClient(url, key, isFloraInviteFlow
                         ? { auth: { storageKey: 'flora-invite-auth-token' } }
                         : undefined);
-                    checkSupabaseSession();
+                    await checkSupabaseSession();
                 } catch (e) {
                     console.error('Failed to init Supabase:', e);
                     updateSyncBadge('local', 'Invalid Supabase Config');
