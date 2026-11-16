@@ -2708,7 +2708,7 @@ textarea {
     <div id="mobile-welcome-screen" role="status" aria-live="polite">
         <div>
             <div class="welcome-mark"><i class="fa-solid fa-leaf" aria-hidden="true"></i></div>
-            <p id="mobile-welcome-greeting" class="welcome-greeting">Good morning, @kitchengardener!</p>
+            <p id="mobile-welcome-greeting" class="welcome-greeting">Welcome!</p>
             <h1 class="welcome-title">Welcome to Flora Scan</h1>
             <p class="welcome-caption">Your growing journal</p>
         </div>
@@ -4292,7 +4292,8 @@ textarea {
             const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
             const greetingDisplay = document.getElementById('mobile-welcome-greeting');
             const username = typeof appSettings.username === 'string' ? appSettings.username.trim() : '';
-            if (greetingDisplay) greetingDisplay.textContent = username ? greeting + ', ' + username + '!' : greeting + '!';
+            const displayUsername = username && username.toLowerCase() !== '@kitchengardener' ? username : '';
+            if (greetingDisplay) greetingDisplay.textContent = displayUsername ? greeting + ', ' + displayUsername + '!' : greeting + '!';
         }
 
         function showMobileWelcomeScreen() {
