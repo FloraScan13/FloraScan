@@ -3090,45 +3090,6 @@ textarea {
                     <div id="flora-admin-users" class="space-y-2"><p class="text-xs text-slate-500">Select Refresh to load accounts.</p></div>
                     </div>
                 </div>
-                <!-- Supabase SQL Setup Helper Accordion -->
-                <details class="text-xs bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <summary class="font-bold text-emerald-700 dark:text-emerald-400 cursor-pointer flex items-center space-x-1">
-                        <i class="fa-solid fa-database"></i>
-                        <span>Click to view required Supabase SQL Schema (Tables)</span>
-                    </summary>
-                    <pre class="mt-2 p-3 bg-slate-900 text-emerald-300 rounded-lg text-[10px] font-mono overflow-x-auto leading-relaxed">
--- Run this SQL script in your Supabase SQL Editor:
-
-create table if not exists plants (
-  id text primary key,
-  user_id uuid references auth.users(id) on delete cascade,
-  name text not null,
-  variety text,
-  icon_key text,
-  hex text,
-  date text,
-  medium text,
-  notes text,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
-create table if not exists plant_logs (
-  id text primary key,
-  plant_id text references plants(id) on delete cascade,
-  user_id uuid references auth.users(id) on delete cascade,
-  date text,
-  type text,
-  text text,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
-alter table plants enable row level security;
-alter table plant_logs enable row level security;
-
-create policy "Users can manage own plants" on plants for all using (auth.uid() = user_id);
-create policy "Users can manage own plant logs" on plant_logs for all using (auth.uid() = user_id);
-                    </pre>
-                </details>
                 </div>
             </details>
         </div>
