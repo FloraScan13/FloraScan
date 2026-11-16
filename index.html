@@ -9271,15 +9271,20 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
             const rawLength = Object.getOwnPropertyDescriptor(Storage.prototype, 'length');
             const sessionUserId = () => {
                 try {
-                    for (let i = 0; i < localStorage.length; i++) {
+                    const physicalLength = rawLength ? rawLength.get.call(localStorage) : localStorage.length;
+                    for (let i = 0; i < physicalLength; i++) {
                         const key = rawKey.call(localStorage, i);
                         if (!key || !/^sb-.+-auth-token$/.test(key)) continue;
                         const stored = JSON.parse(rawGet.call(localStorage, key) || '{}');
                         const user = stored.user || stored.currentSession?.user;
-                        if (user?.id) return String(user.id);
+                        if (user?.id) {
+                            const id = String(user.id);
+                            rawSet.call(localStorage, 'flora_active_account_id', id);
+                            return id;
+                        }
                     }
                 } catch (_) {}
-                return null;
+                return rawGet.call(localStorage, 'flora_active_account_id') || null;
             };
             const resolve = key => scoped.has(String(key)) && sessionUserId()
                 ? 'flora_user_' + sessionUserId() + '__' + key
