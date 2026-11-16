@@ -4525,6 +4525,8 @@ textarea {
                         localStorage.setItem('flora_last_user_id', currentUser.id);
                         renderPlantLocationControls();
                         renderPlants();
+                        // Always return to the Plants screen after an account signs in.
+                        switchTab('plants');
                         await syncPendingFloraChanges();
                     } else {
                         currentUser = null;
