@@ -2,22 +2,27 @@
 
 This Edge Function writes a weekly high/low temperature and humidity journal entry to every plant assigned to an outdoor location. It uses the postcode-derived coordinates saved in `user_plant_locations.locations.coordinates`; it does not need a phone/browser to be open or to grant browser geolocation.
 
-## Deploy
+## Deploy and configure secrets
 
 1. Install and sign in to the Supabase CLI for the project linked to this app.
-2. From the repository root, run `supabase functions deploy weekly-outdoor-weather`.
-3. In Supabase Dashboard → Project Settings → Edge Functions → Secrets, make sure `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are available to the function. Never put the service-role key in this repository or in `index.html`.
+2. Generate a long, random secret (at least 32 bytes) locally. Do not use the service-role key as the cron secret.
+3. In Supabase Dashboard → Project Settings → Edge Functions → Secrets, add:
+   - `FLORA_CRON_SECRET`: the random secret generated in step 2.
+   - Confirm `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are available to the function.
+4. Deploy with gateway JWT verification disabled because this scheduled endpoint authenticates its own requests using `FLORA_CRON_SECRET`:
+   ```sh
+   supabase functions deploy weekly-outdoor-weather --no-verify-jwt
+   ```
+5. Store the same cron secret in Vault (replace the example values; never commit real values):
+   ```sql
+   select vault.create_secret('https://YOUR_PROJECT_REF.supabase.co', 'flora_supabase_url');
+   select vault.create_secret('GENERATED_FLORA_CRON_SECRET', 'flora_cron_secret');
+   ```
+   If either Vault secret already exists, update it rather than creating a duplicate.
 
 ## Schedule it weekly
 
-In Supabase SQL Editor, enable the `pg_cron`, `pg_net`, and `vault` extensions if they are not already enabled. Store two secrets in Vault (replace the example values; do not commit real values):
-
-```sql
-select vault.create_secret('https://YOUR_PROJECT_REF.supabase.co', 'flora_supabase_url');
-select vault.create_secret('YOUR_SUPABASE_SERVICE_ROLE_KEY', 'flora_service_role_key');
-```
-
-Then schedule the function for every Monday at 03:15 UTC:
+In Supabase SQL Editor, enable the `pg_cron`, `pg_net`, and `vault` extensions if they are not already enabled. Schedule the function for every Monday at 03:15 UTC:
 
 ```sql
 select cron.schedule(
@@ -29,7 +34,7 @@ select cron.schedule(
       || '/functions/v1/weekly-outdoor-weather',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'flora_service_role_key')
+      'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'flora_cron_secret')
     ),
     body := '{}'::jsonb
   );
@@ -46,4 +51,4 @@ select * from cron.job where jobname = 'flora-weekly-outdoor-weather';
 select cron.unschedule('flora-weekly-outdoor-weather');
 ```
 
-The SQL schedule and Edge Function deployment are project-level setup steps and must be completed in Supabase; a GitHub commit alone does not turn on the background job.
+The SQL schedule, Vault secret, Edge Function secrets, and Edge Function deployment are project-level setup steps and must be completed in Supabase; a GitHub commit alone does not turn on the background job. The cron secret is separate from the service-role key: the former authenticates the scheduler, while the latter remains server-side for privileged database access.
