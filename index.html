@@ -4424,7 +4424,7 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
 
                 // Listen for auth state changes
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    if (event === 'PASSWORD_RECOVERY') setTimeout(() => completeSupabasePasswordRecovery(), 0);
+                    if (event === 'PASSWORD_RECOVERY' && !isFloraInviteFlow) setTimeout(() => completeSupabasePasswordRecovery(), 0);
                     if (isFloraInviteFlow) {
                         showFloraInviteSessionState(session);
                         if (!session?.user) return;
@@ -4596,7 +4596,8 @@ create policy "Users can manage own plant logs" on plant_logs for all using (aut
                 await refreshFloraAdminUsers();
             } catch (error) { setFloraAdminStatus(error.message || 'Account update failed.', true); }
         }
-        let isFloraInviteFlow = new URLSearchParams(window.location.search).get('invite') === '1';
+        const floraInitialParams = new URLSearchParams(window.location.search);
+        let isFloraInviteFlow = floraInitialParams.get('invite') === '1' || floraInitialParams.get('password-recovery') === '1';
 
         function showFloraInviteStatus(message, isError = false) {
             const status = document.getElementById('flora-invite-status');
