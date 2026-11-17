@@ -4634,8 +4634,12 @@ textarea {
 
                 // Listen for auth state changes
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    // The initial session was already restored above. Ignore its duplicate event.
-                    if (event === 'INITIAL_SESSION' && (session?.user?.id || null) === (currentUser?.id || null)) return;
+                    // checkSupabaseSession() has already read and restored the authoritative
+                    // session before this listener is registered. Ignore INITIAL_SESSION
+                    // unconditionally: the SDK's queued initial event can be stale (for
+                    // example, signed-out) if a user signs in while startup is finishing.
+                    // Processing that stale event would immediately hide the signed-in app.
+                    if (event === 'INITIAL_SESSION') return;
                     const restoreGeneration = ++floraAuthRestoreGeneration;
                     const restoringUserId = session?.user?.id || null;
                     if (event === 'PASSWORD_RECOVERY' && !isFloraInviteFlow) setTimeout(() => completeSupabasePasswordRecovery(), 0);
