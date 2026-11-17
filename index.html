@@ -2642,6 +2642,49 @@ textarea {
             }
         }
     </style>
+
+    <style id="flora-sign-in-only-screen">
+        /* When signed out, show only the sign-in panel and hide the rest of the app. */
+        html.flora-sign-in-only,
+        html.flora-sign-in-only body {
+            min-height: 100%;
+            overflow: hidden !important;
+            background: #f7f6f0 !important;
+        }
+        html.flora-sign-in-only body * {
+            visibility: hidden !important;
+        }
+        html.flora-sign-in-only #cloud-auth-screen,
+        html.flora-sign-in-only #cloud-auth-screen * {
+            visibility: visible !important;
+        }
+        html.flora-sign-in-only #cloud-auth-screen {
+            display: block !important;
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 10000 !important;
+            width: 100% !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)) !important;
+            overflow-y: auto !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            background: #f7f6f0 !important;
+        }
+        html.flora-sign-in-only #cloud-auth-screen > div:first-child {
+            max-width: 420px;
+            margin: 12vh auto 20px !important;
+        }
+        html.flora-sign-in-only #cloud-auth-screen #supabase-auth-panel {
+            max-width: 420px;
+            margin: 0 auto;
+        }
+    </style>
+
 </head>
 <body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
     <!-- Standalone invitation registration screen, outside Settings and collapsed accordions. -->
@@ -4889,6 +4932,7 @@ textarea {
             const adminNote = document.getElementById('flora-admin-access-note');
             const accountSession = document.getElementById('settings-account-session');
             const cloudAuthScreen = document.getElementById('cloud-auth-screen');
+            document.documentElement.classList.toggle('flora-sign-in-only', !isLoggedIn && !isFloraInviteFlow);
             if (cloudAuthScreen) cloudAuthScreen.classList.toggle('hidden', isLoggedIn || isFloraInviteFlow);
             const accountEmail = document.getElementById('settings-account-email');
             if (accountSession) accountSession.classList.toggle('hidden', !isLoggedIn);
