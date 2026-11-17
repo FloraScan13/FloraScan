@@ -5212,7 +5212,16 @@ textarea {
             const password = document.getElementById('auth-password').value;
             if (!email || !password) { alert("Please enter email and password."); return; }
 
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            // Return email confirmation to the exact deployed app URL (including
+            // the GitHub Pages repository path), not Supabase's default Site URL.
+            const emailRedirectTo = new URL(window.location.href);
+            emailRedirectTo.search = '';
+            emailRedirectTo.hash = '';
+            const { data, error } = await supabaseClient.auth.signUp({
+                email,
+                password,
+                options: { emailRedirectTo: emailRedirectTo.toString() }
+            });
             if (error) alert("Sign Up Failed: " + error.message);
             else alert("Account Registered! Check your email to confirm registration if enabled.");
         }
