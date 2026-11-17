@@ -25,6 +25,13 @@
         try {
             const params = new URLSearchParams(window.location.search);
             const isAccountSetupNavigation = params.get('invite') === '1' || params.get('password-recovery') === '1';
+            // A login-triggered reload should go straight to the garden, without
+            // showing the normal mobile welcome or refresh interstitials.
+            const isLoginNavigation = window.sessionStorage.getItem('flora_login_navigation') === 'true';
+            if (isLoginNavigation) {
+                window.sessionStorage.removeItem('flora_login_navigation');
+                document.documentElement.classList.add('flora-login-navigation');
+            }
             if (isAccountSetupNavigation) {
                 document.documentElement.classList.add('flora-auth-setup-navigation');
             } else {
@@ -4337,7 +4344,12 @@ textarea {
             const navigationEntry = performance.getEntriesByType('navigation')[0];
             const isPageRefresh = navigationEntry && navigationEntry.type === 'reload';
             const isMobileLayout = window.matchMedia('(max-width: 768px)').matches;
-            if (isPageRefresh && isMobileLayout) {
+            const isLoginNavigation = document.documentElement.classList.contains('flora-login-navigation');
+            if (isLoginNavigation) {
+                // Do not display welcome/refresh screens during the post-login handoff.
+                document.getElementById('mobile-welcome-screen')?.classList.add('is-hidden');
+                document.getElementById('mobile-refresh-screen')?.classList.add('is-hidden');
+            } else if (isPageRefresh && isMobileLayout) {
                 // On mobile reload, replace the welcome overlay with the refresh screen.
                 const welcomeScreen = document.getElementById('mobile-welcome-screen');
                 if (welcomeScreen) welcomeScreen.classList.add('is-hidden');
@@ -5089,9 +5101,9 @@ textarea {
                 if (!data?.session || !data?.user) {
                     throw new Error('The sign-in service did not return an active session. Please try again.');
                 }
-                // Reload after Supabase has persisted the session. This makes the app
-                // restore the authenticated account through its normal startup path,
-                // even if the auth-state listener has not finished initializing yet.
+                // Mark this as a login handoff so startup skips the welcome and
+                // refresh interstitials and opens directly into the authenticated garden.
+                window.sessionStorage.setItem('flora_login_navigation', 'true');
                 window.location.reload();
                 return;
             } catch (error) {
