@@ -2151,8 +2151,10 @@ textarea {
             max-width: 100% !important;
             min-width: 0 !important;
             box-sizing: border-box !important;
-            padding-left: 30px !important;
-            padding-right: 30px !important;
+            /* Keep the app's normal 16px mobile gutter; the 30px login gutter
+               is scoped separately to #cloud-auth-screen while signed out. */
+            padding-left: 16px !important;
+            padding-right: 16px !important;
             overflow-x: hidden !important;
         }
         body > main > #view-plants,
