@@ -4559,11 +4559,26 @@ textarea {
                     // Use a separate auth storage namespace for invitation/recovery links.
                     // This prevents an already signed-in administrator session on this browser from
                     // being reused while a gardener is completing their own account setup.
+                    // Restore the Remember me choice before Supabase reads its stored session.
+                    // Without this, an unchecked choice reverted to the HTML default (checked)
+                    // after reload, so Supabase looked in localStorage instead of sessionStorage.
+                    const rememberMeInput = document.getElementById('auth-remember-me');
+                    const savedRememberChoice = window.sessionStorage.getItem('flora_remember_me');
+                    if (rememberMeInput && savedRememberChoice !== null) {
+                        rememberMeInput.checked = savedRememberChoice !== 'false';
+                    }
+                    if (rememberMeInput && !rememberMeInput.dataset.storageChoiceBound) {
+                        rememberMeInput.addEventListener('change', () => {
+                            window.sessionStorage.setItem('flora_remember_me', rememberMeInput.checked ? 'true' : 'false');
+                        });
+                        rememberMeInput.dataset.storageChoiceBound = 'true';
+                    }
+
                     // Keep ordinary sign-in sessions in local storage when "Remember me" is checked,
                     // or in session storage so they end when the browser session closes when unchecked.
                     const floraLoginStorage = {
-                        getItem: (key) => (document.getElementById('auth-remember-me')?.checked === false ? window.sessionStorage : window.localStorage).getItem(key),
-                        setItem: (key, value) => (document.getElementById('auth-remember-me')?.checked === false ? window.sessionStorage : window.localStorage).setItem(key, value),
+                        getItem: (key) => (rememberMeInput?.checked === false ? window.sessionStorage : window.localStorage).getItem(key),
+                        setItem: (key, value) => (rememberMeInput?.checked === false ? window.sessionStorage : window.localStorage).setItem(key, value),
                         removeItem: (key) => {
                             window.localStorage.removeItem(key);
                             window.sessionStorage.removeItem(key);
