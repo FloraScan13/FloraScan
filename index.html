@@ -5115,9 +5115,10 @@ textarea {
                 const emailInput = document.getElementById('auth-email');
                 const passwordInput = document.getElementById('auth-password');
                 const passwordVisibility = document.getElementById('auth-password-visibility');
-                // Never leave a password visible in the form after logout.
+                // Retain both login details only when Remember me is enabled.
+                // Keep the password masked after logout even when its value is retained.
                 if (passwordInput) {
-                    passwordInput.value = '';
+                    if (!rememberMe) passwordInput.value = '';
                     passwordInput.type = 'password';
                 }
                 if (passwordVisibility) {
