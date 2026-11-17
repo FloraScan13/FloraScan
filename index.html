@@ -181,10 +181,17 @@
         }
         @media (max-width: 768px) {
             #mobile-welcome-screen {
+                display: none !important;
+            }
+            #mobile-welcome-screen.is-hidden {
+                display: none !important;
+            }
+            /* Skip the introductory welcome overlay on mobile. */
+            #mobile-welcome-screen {
                 position: fixed;
                 inset: 0;
                 z-index: 2000;
-                display: flex !important;
+                display: none !important;
                 align-items: center;
                 justify-content: center;
                 padding: 28px;
