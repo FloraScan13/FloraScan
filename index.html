@@ -57,6 +57,17 @@
             visibility: hidden !important;
         }
     </style>
+    <style id="flora-authenticated-no-interstitials">
+        /* Once authentication succeeds, never let mobile welcome/refresh overlays
+           cover the garden during the transition into the Plants tab. */
+        html.flora-authenticated #mobile-welcome-screen,
+        html.flora-authenticated #mobile-refresh-screen {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
     <style id="settings-first-paint-guard">
         /* Keep Settings hidden from the first paint until the user explicitly selects it. */
         html.flora-settings-inactive #view-settings { display: none !important; }
@@ -5060,6 +5071,7 @@ textarea {
             const cloudAuthScreen = document.getElementById('cloud-auth-screen');
             // Session restoration has now made the authoritative signed-in/out decision.
             document.documentElement.classList.remove('flora-auth-pending');
+            document.documentElement.classList.toggle('flora-authenticated', !!isLoggedIn && !isFloraInviteFlow);
             document.documentElement.classList.toggle('flora-sign-in-only', !isLoggedIn && !isFloraInviteFlow);
             if (cloudAuthScreen) cloudAuthScreen.classList.toggle('hidden', isLoggedIn || isFloraInviteFlow);
             const accountEmail = document.getElementById('settings-account-email');
@@ -5121,6 +5133,10 @@ textarea {
                 if (!data?.session || !data?.user) {
                     throw new Error('The sign-in service did not return an active session. Please try again.');
                 }
+                // Suppress mobile interstitials immediately, before the auth-state
+                // listener finishes restoring this account's garden data.
+                document.documentElement.classList.add('flora-authenticated');
+                switchTab('plants');
                 // Stay on the current page. The Supabase SIGNED_IN listener restores
                 // this account's garden and switches straight to the Plants tab; a full
                 // reload would replay startup and briefly show intermediate screens.
