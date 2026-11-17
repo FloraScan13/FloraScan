@@ -4616,9 +4616,11 @@ textarea {
                 } catch (e) {
                     console.error('Failed to init Supabase:', e);
                     updateSyncBadge('local', 'Invalid Supabase Config');
+                    updateAuthUI(false);
                 }
             } else {
                 updateSyncBadge('local', 'Local Storage');
+                updateAuthUI(false);
             }
         }
 
