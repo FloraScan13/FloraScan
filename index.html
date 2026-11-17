@@ -4700,6 +4700,9 @@ textarea {
                     applyScannerPreference();
                         subscribeToPlantLocationChanges();
                             updateAuthUI(true, currentUser.email);
+                        // Reveal the authenticated app directly on Plants while the
+                        // account's plant data finishes loading in the background.
+                        switchTab('plants');
                         updateSyncBadge('cloud', 'Cloud Connected');
                         await loadBrandingSettingsFromCloud();
                         if (restoreGeneration !== floraAuthRestoreGeneration || currentUser?.id !== restoringUserId) return;
@@ -5118,10 +5121,9 @@ textarea {
                 if (!data?.session || !data?.user) {
                     throw new Error('The sign-in service did not return an active session. Please try again.');
                 }
-                // Mark this as a login handoff so startup skips the welcome and
-                // refresh interstitials and opens directly into the authenticated garden.
-                window.sessionStorage.setItem('flora_login_navigation', 'true');
-                window.location.reload();
+                // Stay on the current page. The Supabase SIGNED_IN listener restores
+                // this account's garden and switches straight to the Plants tab; a full
+                // reload would replay startup and briefly show intermediate screens.
                 return;
             } catch (error) {
                 console.error('Flora Scan sign-in failed:', error);
