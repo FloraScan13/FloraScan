@@ -2113,8 +2113,8 @@ textarea {
             max-width: 100% !important;
             min-width: 0 !important;
             box-sizing: border-box !important;
-            padding-left: 10px !important;
-            padding-right: 10px !important;
+            padding-left: 20px !important;
+            padding-right: 20px !important;
             overflow-x: hidden !important;
         }
         body > main > #view-plants,
@@ -9914,16 +9914,6 @@ textarea {
             '<footer class="footer"><span>Flora Scan · ' + title + '</span><span>Generated ' + esc(generated) + '</span></footer></main>' +
             '<div class="print-actions"><button onclick="window.print()">Print / Save as PDF</button><button class="secondary" onclick="window.close()">Close</button><p style="color:#849184;font-size:9pt">Choose “Save as PDF” in your browser’s print destination to save a copy.</p></div>' +
             '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),500));<\/script>
-<style id="mobile-main-side-spacing">
-/* Give the main app content a little more breathing room on phone screens. */
-@media (max-width: 640px) {
-    body > main.flex-1 {
-        padding-left: 20px !important;
-        padding-right: 20px !important;
-    }
-}
-</style>
-
 </body></html>';
             printWindow.document.open();
             printWindow.document.write(html);
