@@ -35,16 +35,28 @@
             if (isAccountSetupNavigation) {
                 document.documentElement.classList.add('flora-auth-setup-navigation');
             } else {
-                // Fail safe: show the login screen immediately while Supabase restores
-                // the session. updateAuthUI() removes this class for signed-in visitors.
-                document.documentElement.classList.add('flora-sign-in-only');
+                // Hold the app behind a neutral startup state until Supabase confirms
+                // whether this visitor is signed in. Showing the login panel here causes
+                // a visible login flash for returning users on every refresh.
+                document.documentElement.classList.add('flora-auth-pending');
             }
         } catch (error) {
-            // Keep the signed-out entry screen available even if URL parsing fails.
-            document.documentElement.classList.add('flora-sign-in-only');
+            document.documentElement.classList.add('flora-auth-pending');
             console.warn('Could not identify Flora Scan account setup navigation:', error);
         }
     </script>
+    <style id="flora-auth-pending-first-paint">
+        /* Keep both the garden and login panel out of view until session restoration
+           chooses the correct signed-in or signed-out screen. */
+        html.flora-auth-pending,
+        html.flora-auth-pending body {
+            min-height: 100%;
+            background: #f7f6f0 !important;
+        }
+        html.flora-auth-pending body {
+            visibility: hidden !important;
+        }
+    </style>
     <style id="settings-first-paint-guard">
         /* Keep Settings hidden from the first paint until the user explicitly selects it. */
         html.flora-settings-inactive #view-settings { display: none !important; }
@@ -5041,6 +5053,8 @@ textarea {
             const adminNote = document.getElementById('flora-admin-access-note');
             const accountSession = document.getElementById('settings-account-session');
             const cloudAuthScreen = document.getElementById('cloud-auth-screen');
+            // Session restoration has now made the authoritative signed-in/out decision.
+            document.documentElement.classList.remove('flora-auth-pending');
             document.documentElement.classList.toggle('flora-sign-in-only', !isLoggedIn && !isFloraInviteFlow);
             if (cloudAuthScreen) cloudAuthScreen.classList.toggle('hidden', isLoggedIn || isFloraInviteFlow);
             const accountEmail = document.getElementById('settings-account-email');
