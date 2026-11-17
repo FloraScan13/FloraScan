@@ -24,10 +24,17 @@
         // Set the auth-flow class before the browser paints the app underneath.
         try {
             const params = new URLSearchParams(window.location.search);
-            if (params.get('invite') === '1' || params.get('password-recovery') === '1') {
+            const isAccountSetupNavigation = params.get('invite') === '1' || params.get('password-recovery') === '1';
+            if (isAccountSetupNavigation) {
                 document.documentElement.classList.add('flora-auth-setup-navigation');
+            } else {
+                // Fail safe: show the login screen immediately while Supabase restores
+                // the session. updateAuthUI() removes this class for signed-in visitors.
+                document.documentElement.classList.add('flora-sign-in-only');
             }
         } catch (error) {
+            // Keep the signed-out entry screen available even if URL parsing fails.
+            document.documentElement.classList.add('flora-sign-in-only');
             console.warn('Could not identify Flora Scan account setup navigation:', error);
         }
     </script>
