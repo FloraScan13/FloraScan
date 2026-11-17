@@ -5222,8 +5222,13 @@ textarea {
                 password,
                 options: { emailRedirectTo: emailRedirectTo.toString() }
             });
-            if (error) alert("Sign Up Failed: " + error.message);
-            else alert("Account Registered! Check your email to confirm registration if enabled.");
+            if (error) {
+                alert("Sign Up Failed: " + error.message);
+            } else if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+                alert("This email may already be registered. Please log in instead, or use Forgot password if you cannot remember your password.");
+            } else {
+                alert("Account registered. Please check your email for a confirmation link before logging in.");
+            }
         }
 
         async function handleSupabaseSignOut() {
