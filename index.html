@@ -4684,7 +4684,12 @@ textarea {
                 });
             } catch (err) {
                 console.error("Session check error:", err);
-                updateSyncBadge('local', 'Local Storage');
+                // Do not leave the page-wide signed-out visibility guard in a
+                // half-initialized state if session restoration fails. Keep the
+                // login panel available and restore the normal page controls.
+                currentUser = null;
+                updateAuthUI(false);
+                updateSyncBadge('local', 'Sign-in service unavailable');
             }
         }
 
