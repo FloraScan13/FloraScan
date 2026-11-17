@@ -2874,7 +2874,7 @@ textarea {
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1">
-                            <button onclick="handleSupabaseLogin()" class="w-full bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">
+                            <button type="button" onclick="handleSupabaseLogin()" class="w-full bg-emerald-900 hover:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition">
                                 <span>Login</span>
                             </button>
                             <a href="#" onclick="event.preventDefault(); handleSupabaseSignUp();" class="block w-full pt-1 text-center text-emerald-900 text-xs font-normal hover:text-emerald-800" style="font-weight: 400;">
@@ -5036,15 +5036,46 @@ textarea {
         }
 
         async function handleSupabaseLogin() {
-            if (!supabaseClient) { alert("Flora Scan cloud sign-in is temporarily unavailable. Please refresh the app or contact your administrator."); return; }
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            if (!email || !password) { alert("Please enter email and password."); return; }
+            const loginButton = document.querySelector('#auth-logged-out button[onclick*="handleSupabaseLogin"]');
+            const emailInput = document.getElementById('auth-email');
+            const passwordInput = document.getElementById('auth-password');
+            const email = emailInput?.value.trim() || '';
+            const password = passwordInput?.value || '';
 
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (error) alert("Sign In Failed: " + error.message);
-            else {
-                alert("Sign In Successful!");
+            if (!supabaseClient) {
+                alert('Flora Scan is still connecting to the sign-in service. Please wait a moment and try again. If this continues, refresh the page.');
+                return;
+            }
+            if (!email || !password) {
+                alert('Please enter your email address and password.');
+                (!email ? emailInput : passwordInput)?.focus();
+                return;
+            }
+
+            const originalButtonText = loginButton?.textContent || 'Login';
+            if (loginButton) {
+                loginButton.disabled = true;
+                loginButton.textContent = 'Signing in…';
+                loginButton.setAttribute('aria-busy', 'true');
+            }
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                if (!data?.session || !data?.user) {
+                    throw new Error('The sign-in service did not return an active session. Please try again.');
+                }
+                // The Supabase auth-state listener updates the app and opens the signed-in view.
+                console.info('Flora Scan sign-in completed successfully.');
+            } catch (error) {
+                console.error('Flora Scan sign-in failed:', error);
+                alert('Sign in failed: ' + (error?.message || 'An unexpected error occurred. Please try again.'));
+            } finally {
+                if (loginButton) {
+                    loginButton.disabled = false;
+                    loginButton.textContent = originalButtonText;
+                    loginButton.removeAttribute('aria-busy');
+                }
             }
         }
 
