@@ -2691,6 +2691,32 @@ textarea {
             max-width: 420px;
             margin: 0 auto;
         }
+        /* Keep the signed-out login screen visible on desktop as well as mobile. */
+        @media (min-width: 769px) {
+            html.flora-sign-in-only body > main {
+                position: static !important;
+                overflow: visible !important;
+                visibility: visible !important;
+            }
+            html.flora-sign-in-only #cloud-auth-screen {
+                display: flex !important;
+                position: fixed !important;
+                inset: 0 !important;
+                z-index: 2147483647 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                visibility: visible !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 40px 24px !important;
+                overflow-y: auto !important;
+                background: #f7f6f0 !important;
+            }
+            html.flora-sign-in-only #cloud-auth-screen > div,
+            html.flora-sign-in-only #cloud-auth-screen #supabase-auth-panel {
+                visibility: visible !important;
+            }
+        }
     </style>
 
 </head>
