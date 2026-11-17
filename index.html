@@ -4836,7 +4836,7 @@ textarea {
                     const email = escapeFloraAdminText(user.email || '(no email)');
                     const status = user.disabled ? 'Disabled' : 'Active';
                     const action = user.disabled ? 'enable' : 'disable';
-                    const button = user.role === 'admin' ? '' : `<div class="flex flex-wrap gap-2"><button type="button" onclick="setFloraAdminUserStatus('${id}','${action}')" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold">${user.disabled ? 'Re-enable' : 'Disable'}</button>${(user.email || '').toLowerCase() === 'k1tchengardener.mail@gmail.com' ? '<button type="button" onclick="deleteFloraAdminTestAccount()" class="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700">Delete test account</button>' : ''}</div>`;
+                    const button = user.role === 'admin' ? '' : `<div class="flex flex-wrap gap-2"><button type="button" onclick="setFloraAdminUserStatus('${id}','${action}')" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold">${user.disabled ? 'Re-enable' : 'Disable'}</button><button type="button" onclick="deleteFloraAdminUser('${id}','${email}')" class="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700">Delete account</button></div>`;
                     return `<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white p-3"><div class="min-w-0"><p class="break-all text-xs font-semibold text-slate-800">${email}</p><p class="text-[11px] text-slate-500">${user.role === 'admin' ? 'Administrator' : 'Gardener'} · ${status}</p></div>${button}</div>`;
                 }).join('');
                 setFloraAdminStatus(`${users.length} account(s) loaded.`);
@@ -4886,6 +4886,27 @@ textarea {
                 await refreshFloraAdminUsers();
             } catch (error) {
                 setFloraAdminStatus(error.message || 'Could not delete the test account.', true);
+            }
+        }
+
+        async function deleteFloraAdminUser(userId, email) {
+            if (!currentUser || currentUser.app_metadata?.role !== 'admin') {
+                setFloraAdminStatus('Administrator access required.', true);
+                return;
+            }
+            if (!userId) return;
+            if (!confirm(`Permanently delete the account ${email || userId}? All linked plants, journal entries, reminders, saved locations and uploaded journal photos will be removed. This cannot be undone.`)) return;
+            setFloraAdminStatus('Removing account data and uploaded photos…');
+            try {
+                const result = await callFloraAdmin('delete-user', { user_id: userId });
+                if (result.deleted) {
+                    setFloraAdminStatus(`Account deleted. ${Number(result.removed_photos) || 0} uploaded photo(s) removed.`);
+                } else {
+                    setFloraAdminStatus(result.message || 'No matching account was found.', true);
+                }
+                await refreshFloraAdminUsers();
+            } catch (error) {
+                setFloraAdminStatus(error.message || 'Could not delete the account. No account deletion was completed.', true);
             }
         }
 
