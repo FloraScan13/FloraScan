@@ -54,7 +54,8 @@
         // overlay never flashes ahead of the refresh screen.
         try {
             const navigation = performance.getEntriesByType('navigation')[0];
-            if (navigation && navigation.type === 'reload') {
+            if (navigation && navigation.type === 'reload' &&
+                !document.documentElement.classList.contains('flora-login-navigation')) {
                 document.documentElement.classList.add('flora-refresh-navigation');
             }
         } catch (error) {
