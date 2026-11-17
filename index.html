@@ -5109,7 +5109,25 @@ textarea {
 
         async function handleSupabaseSignOut() {
             if (supabaseClient) {
+                // Read this before signing out; the preference controls whether the email is retained.
+                const rememberMe = document.getElementById('auth-remember-me')?.checked !== false;
                 await supabaseClient.auth.signOut();
+                const emailInput = document.getElementById('auth-email');
+                const passwordInput = document.getElementById('auth-password');
+                const passwordVisibility = document.getElementById('auth-password-visibility');
+                // Never leave a password visible in the form after logout.
+                if (passwordInput) {
+                    passwordInput.value = '';
+                    passwordInput.type = 'password';
+                }
+                if (passwordVisibility) {
+                    passwordVisibility.setAttribute('aria-pressed', 'false');
+                    passwordVisibility.setAttribute('aria-label', 'Show password');
+                    const visibilityLabel = passwordVisibility.querySelector('span');
+                    if (visibilityLabel) visibilityLabel.textContent = 'Show';
+                }
+                // With Remember me disabled, clear the email as well as the password.
+                if (!rememberMe && emailInput) emailInput.value = '';
                 currentUser = null;
                 resetFloraAccountStateForSignedOut();
                 renderPlants();
