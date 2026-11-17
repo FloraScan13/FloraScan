@@ -2675,11 +2675,19 @@ textarea {
             box-shadow: none !important;
             background: #f7f6f0 !important;
         }
+        html.flora-sign-in-only #cloud-auth-screen {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
         html.flora-sign-in-only #cloud-auth-screen > div:first-child {
+            width: 100%;
             max-width: 420px;
-            margin: 12vh auto 20px !important;
+            margin: 0 auto 20px !important;
         }
         html.flora-sign-in-only #cloud-auth-screen #supabase-auth-panel {
+            width: 100%;
             max-width: 420px;
             margin: 0 auto;
         }
