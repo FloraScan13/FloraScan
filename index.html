@@ -2698,6 +2698,20 @@ textarea {
             max-width: 420px;
             margin: 0 auto;
         }
+        /* Give the full-screen mobile login panel the same 30px side gutters as the app. */
+        @media screen and (max-width: 640px) {
+            html.flora-sign-in-only #cloud-auth-screen {
+                box-sizing: border-box !important;
+                padding-left: 30px !important;
+                padding-right: 30px !important;
+            }
+            html.flora-sign-in-only #cloud-auth-screen > div:first-child,
+            html.flora-sign-in-only #cloud-auth-screen #supabase-auth-panel {
+                box-sizing: border-box !important;
+                width: 100% !important;
+                max-width: 420px !important;
+            }
+        }
         /* Keep the signed-out login screen visible on desktop as well as mobile. */
         @media (min-width: 769px) {
             html.flora-sign-in-only body > main {
