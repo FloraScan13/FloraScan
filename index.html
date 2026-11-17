@@ -5065,8 +5065,11 @@ textarea {
                 if (!data?.session || !data?.user) {
                     throw new Error('The sign-in service did not return an active session. Please try again.');
                 }
-                // The Supabase auth-state listener updates the app and opens the signed-in view.
-                console.info('Flora Scan sign-in completed successfully.');
+                // Reload after Supabase has persisted the session. This makes the app
+                // restore the authenticated account through its normal startup path,
+                // even if the auth-state listener has not finished initializing yet.
+                window.location.reload();
+                return;
             } catch (error) {
                 console.error('Flora Scan sign-in failed:', error);
                 alert('Sign in failed: ' + (error?.message || 'An unexpected error occurred. Please try again.'));
@@ -5078,6 +5081,9 @@ textarea {
                 }
             }
         }
+
+        // Expose the handler explicitly for the login button's inline click action.
+        window.handleSupabaseLogin = handleSupabaseLogin;
 
         async function handleSupabaseChangePassword() {
             if (!supabaseClient) { alert('Supabase is not connected.'); return; }
