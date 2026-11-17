@@ -2804,6 +2804,10 @@ textarea {
                             <div>
                                 <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Password</label>
 <input type="password" id="auth-password" name="flora-login-password" autocomplete="off" value="" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                            <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 mt-3">
+                                <input type="checkbox" id="auth-remember-me" checked class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                <span>Remember me</span>
+                            </label>
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1">
@@ -4497,9 +4501,19 @@ textarea {
                     // Use a separate auth storage namespace for invitation/recovery links.
                     // This prevents an already signed-in administrator session on this browser from
                     // being reused while a gardener is completing their own account setup.
+                    // Keep ordinary sign-in sessions in local storage when "Remember me" is checked,
+                    // or in session storage so they end when the browser session closes when unchecked.
+                    const floraLoginStorage = {
+                        getItem: (key) => (document.getElementById('auth-remember-me')?.checked === false ? window.sessionStorage : window.localStorage).getItem(key),
+                        setItem: (key, value) => (document.getElementById('auth-remember-me')?.checked === false ? window.sessionStorage : window.localStorage).setItem(key, value),
+                        removeItem: (key) => {
+                            window.localStorage.removeItem(key);
+                            window.sessionStorage.removeItem(key);
+                        }
+                    };
                     supabaseClient = window.supabase.createClient(url, key, isFloraInviteFlow
                         ? { auth: { storageKey: 'flora-invite-auth-token' } }
-                        : undefined);
+                        : { auth: { storage: floraLoginStorage } });
                     await checkSupabaseSession();
                 } catch (e) {
                     console.error('Failed to init Supabase:', e);
