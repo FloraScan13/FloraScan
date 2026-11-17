@@ -2804,10 +2804,15 @@ textarea {
                             <div>
                                 <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Password</label>
 <input type="password" id="auth-password" name="flora-login-password" autocomplete="off" value="" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
-                            <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 mt-3">
-                                <input type="checkbox" id="auth-remember-me" checked class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-                                <span>Remember me</span>
-                            </label>
+                            <div class="flex items-center justify-between mt-3">
+                                <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                                    <input type="checkbox" id="auth-remember-me" checked class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                    <span>Remember me</span>
+                                </label>
+                                <button type="button" onclick="handleSupabasePasswordReset()" class="text-emerald-700 underline text-xs font-semibold px-2 py-1">
+                                    Forgot?
+                                </button>
+                            </div>
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2 pt-1">
@@ -2818,9 +2823,6 @@ textarea {
                             <button onclick="handleSupabaseSignUp()" class="bg-slate-800  text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition flex items-center space-x-1.5">
                                 <i class="fa-solid fa-user-plus"></i>
                                 <span>Register Account</span>
-                            </button>
-                            <button type="button" onclick="handleSupabasePasswordReset()" class="text-emerald-700  underline text-xs font-semibold px-2 py-2">
-                                Forgot?
                             </button>
                         </div>
                     </div>
